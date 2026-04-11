@@ -1,361 +1,780 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBSS Signals</title>
+<title>IBSS Signals Center</title>
 
 <style>
-  :root{
-    --bg:#040404;
-    --panel:#0d0d0d;
-    --panel2:#121212;
-    --gold:#d4af37;
-    --text:#e8e8e8;
-    --muted:#9d9d9d;
-    --green:#00d084;
-    --orange:#ff9f1a;
-    --red:#ff4d4f;
-    --border:rgba(212,175,55,.28);
+:root{
+  --bg:#040404;
+  --panel:#0d0d0d;
+  --panel2:#121212;
+  --gold:#d4af37;
+  --text:#e8e8e8;
+  --muted:#9d9d9d;
+  --green:#00d084;
+  --orange:#ff9f1a;
+  --red:#ff4d4f;
+  --border:rgba(212,175,55,.28);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+    var(--bg);
+  color:var(--text);
+}
+
+.wrap{
+  width:min(1150px,92%);
+  margin:auto;
+  padding:20px 0 60px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:14px 0 20px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.brand{
+  color:var(--gold);
+  font-size:28px;
+  font-weight:800;
+  text-decoration:none;
+  letter-spacing:1px;
+}
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.nav{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.nav a{
+  color:var(--muted);
+  text-decoration:none;
+  border:1px solid rgba(255,255,255,.08);
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:14px;
+  transition:.2s ease;
+}
+
+.nav a.active,
+.nav a:hover{
+  color:var(--gold);
+  border-color:var(--border);
+}
+
+.lang-switch{
+  display:flex;
+  gap:6px;
+}
+
+.lang-switch button{
+  background:none;
+  border:1px solid rgba(255,255,255,.1);
+  color:#ccc;
+  padding:8px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:.2s ease;
+  font-size:13px;
+}
+
+.lang-switch button:hover,
+.lang-switch button.active{
+  color:var(--gold);
+  border-color:var(--gold);
+}
+
+.hero{
+  text-align:center;
+  padding:34px 0 18px;
+}
+
+.eyebrow{
+  color:var(--gold);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  font-size:13px;
+  margin-bottom:10px;
+}
+
+h1{
+  margin:0 0 10px;
+  font-size:40px;
+  color:#fff;
+}
+
+.sub{
+  margin:0 auto;
+  max-width:800px;
+  color:var(--muted);
+  line-height:1.8;
+}
+
+.toolbar{
+  margin-top:26px;
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr;
+  gap:12px;
+}
+
+.search,
+.select{
+  width:100%;
+  background:var(--panel2);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  padding:14px 14px;
+  font-size:14px;
+  outline:none;
+}
+
+.search::placeholder{
+  color:#777;
+}
+
+.stats{
+  margin-top:16px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.stat{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:16px;
+  text-align:center;
+}
+
+.stat-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:8px;
+}
+
+.stat-value{
+  color:var(--gold);
+  font-size:24px;
+  font-weight:800;
+}
+
+.grid{
+  margin-top:24px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+}
+
+.signal-card{
+  display:block;
+  text-decoration:none;
+  color:inherit;
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;
+  padding:20px;
+  transition:.2s ease;
+}
+
+.signal-card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(212,175,55,.35);
+  box-shadow:0 0 20px rgba(212,175,55,.06);
+}
+
+.signal-card.disabled{
+  opacity:.62;
+  cursor:default;
+}
+
+.signal-card.disabled:hover{
+  transform:none;
+  border-color:rgba(255,255,255,.08);
+  box-shadow:none;
+}
+
+.card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.badges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.4px;
+}
+
+.high{
+  color:#ffd9d9;
+  background:rgba(255,77,79,.14);
+  border:1px solid rgba(255,77,79,.35);
+}
+
+.medium{
+  color:#ffe1b3;
+  background:rgba(255,159,26,.14);
+  border:1px solid rgba(255,159,26,.35);
+}
+
+.low{
+  color:#d5fff0;
+  background:rgba(0,208,132,.14);
+  border:1px solid rgba(0,208,132,.35);
+}
+
+.region{
+  color:var(--gold);
+  background:rgba(212,175,55,.12);
+  border:1px solid rgba(212,175,55,.25);
+}
+
+.card-title{
+  color:#fff;
+  font-size:28px;
+  font-weight:800;
+  margin:0 0 10px;
+}
+
+.card-desc{
+  color:var(--muted);
+  line-height:1.8;
+  font-size:15px;
+  margin:0 0 18px;
+}
+
+.meta{
+  display:grid;
+  gap:10px;
+}
+
+.meta-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  background:var(--panel2);
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:14px;
+}
+
+.meta-label{
+  color:var(--muted);
+}
+
+.meta-value{
+  color:#fff;
+  font-weight:700;
+  text-align:right;
+}
+
+.coming{
+  margin-top:14px;
+  color:#888;
+  font-size:13px;
+}
+
+.empty{
+  display:none;
+  margin-top:20px;
+  text-align:center;
+  color:#888;
+  padding:24px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;
+  background:var(--panel);
+}
+
+.footer{
+  margin-top:32px;
+  text-align:center;
+  color:#777;
+  border-top:1px solid rgba(255,255,255,.05);
+  padding-top:20px;
+  font-size:14px;
+}
+
+html[dir="rtl"] body{
+  text-align:right;
+}
+
+html[dir="rtl"] .topbar,
+html[dir="rtl"] .top-actions,
+html[dir="rtl"] .nav,
+html[dir="rtl"] .toolbar,
+html[dir="rtl"] .badges{
+  direction:rtl;
+}
+
+html[dir="rtl"] .hero,
+html[dir="rtl"] .stat,
+html[dir="rtl"] .footer,
+html[dir="rtl"] .empty{
+  text-align:center;
+}
+
+html[dir="rtl"] .meta-value{
+  text-align:left;
+}
+
+@media(max-width:950px){
+  .toolbar{
+    grid-template-columns:1fr;
   }
 
-  *{
-    box-sizing:border-box;
-  }
-
-  body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:
-      radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
-      var(--bg);
-    color:var(--text);
-  }
-
-  .wrap{
-    width:min(1100px,92%);
-    margin:0 auto;
-    padding:20px 0 60px;
-  }
-
-  .topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-    padding:14px 0 20px;
-    border-bottom:1px solid rgba(255,255,255,.05);
-  }
-
-  .brand{
-    color:var(--gold);
-    font-size:28px;
-    font-weight:700;
-    letter-spacing:1px;
-    text-decoration:none;
-  }
-
-  .nav{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:center;
-  }
-
-  .nav a{
-    color:var(--muted);
-    text-decoration:none;
-    border:1px solid rgba(255,255,255,.08);
-    padding:10px 14px;
-    border-radius:10px;
-    font-size:14px;
-    transition:.2s ease;
-  }
-
-  .nav a.active,
-  .nav a:hover{
-    color:var(--gold);
-    border-color:var(--border);
-  }
-
-  .hero{
-    padding:28px 0 18px;
-    text-align:center;
-  }
-
-  .eyebrow{
-    color:var(--gold);
-    letter-spacing:2px;
-    text-transform:uppercase;
-    font-size:13px;
-    margin-bottom:10px;
-  }
-
-  h1{
-    margin:0 0 10px;
-    font-size:38px;
-    color:#fff;
-  }
-
-  .sub{
-    margin:0;
-    color:var(--muted);
-    line-height:1.7;
+  .stats{
+    grid-template-columns:repeat(2,1fr);
   }
 
   .grid{
-    display:grid;
-    grid-template-columns:repeat(2, 1fr);
-    gap:18px;
-    margin-top:24px;
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:700px){
+  .topbar{
+    flex-direction:column;
   }
 
-  .signal-card{
-    display:block;
-    text-decoration:none;
-    color:inherit;
-    background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:18px;
-    padding:20px;
-    transition:.2s ease;
+  h1{
+    font-size:32px;
   }
 
-  .signal-card:hover{
-    transform:translateY(-3px);
-    border-color:rgba(212,175,55,.35);
-    box-shadow:0 0 20px rgba(212,175,55,.06);
+  .stats{
+    grid-template-columns:1fr;
   }
-
-  .signal-card.disabled{
-    opacity:.65;
-    cursor:default;
-  }
-
-  .signal-card.disabled:hover{
-    transform:none;
-    border-color:rgba(255,255,255,.08);
-    box-shadow:none;
-  }
-
-  .badge{
-    display:inline-block;
-    padding:4px 8px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:700;
-    margin-bottom:10px;
-    letter-spacing:.5px;
-  }
-
-  .high{
-    color:#ffd9d9;
-    background:rgba(255,77,79,.14);
-    border:1px solid rgba(255,77,79,.35);
-  }
-
-  .medium{
-    color:#ffe1b3;
-    background:rgba(255,159,26,.14);
-    border:1px solid rgba(255,159,26,.35);
-  }
-
-  .low{
-    color:#d5fff0;
-    background:rgba(0,208,132,.14);
-    border:1px solid rgba(0,208,132,.35);
-  }
-
-  .title{
-    color:var(--gold);
-    font-size:24px;
-    font-weight:700;
-    margin:0 0 8px;
-  }
-
-  .desc{
-    color:var(--muted);
-    line-height:1.8;
-    font-size:15px;
-    margin:0 0 16px;
-  }
-
-  .meta{
-    display:grid;
-    gap:8px;
-  }
-
-  .meta-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-    padding:10px 12px;
-    border-radius:12px;
-    background:var(--panel2);
-    border:1px solid rgba(255,255,255,.05);
-    font-size:14px;
-  }
-
-  .meta-label{
-    color:var(--muted);
-  }
-
-  .meta-value{
-    color:#fff;
-    font-weight:700;
-  }
-
-  .coming{
-    margin-top:10px;
-    color:var(--muted);
-    font-size:13px;
-  }
-
-  .footer{
-    margin-top:28px;
-    text-align:center;
-    color:#7f7f7f;
-    font-size:14px;
-    border-top:1px solid rgba(255,255,255,.05);
-    padding-top:20px;
-  }
-
-  @media(max-width:900px){
-    .grid{
-      grid-template-columns:1fr;
-    }
-  }
-
-  @media(max-width:600px){
-    .topbar{
-      flex-direction:column;
-    }
-
-    h1{
-      font-size:30px;
-    }
-  }
+}
 </style>
 </head>
 <body>
-  <div class="wrap">
+<div class="wrap">
 
-    <div class="topbar">
-      <a class="brand" href="index.html">IBSS</a>
+  <div class="topbar">
+    <a class="brand" href="index.html">IBSS</a>
+
+    <div class="top-actions">
       <div class="nav">
-        <a href="index.html">Home</a>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="signals.html" class="active">Signals</a>
-        <a href="reports.html">Reports</a>
-        <a href="models.html">Models</a>
-        <a href="about.html">About</a>
-      </div>
-    </div>
-
-    <div class="hero">
-      <div class="eyebrow">Signal Center</div>
-      <h1>IBSS Signals</h1>
-      <p class="sub">Structured signal files for sovereign monitoring, scenario reading, and decision posture.</p>
-    </div>
-
-    <div class="grid">
-
-      <a class="signal-card" href="signal-lebanon.html">
-        <div class="badge high">HIGH PRIORITY</div>
-        <div class="title">Lebanon Pressure</div>
-        <p class="desc">
-          Northern front pressure remains active with hybrid escalation patterns across military and political channels.
-        </p>
-        <div class="meta">
-          <div class="meta-row">
-            <span class="meta-label">Layer</span>
-            <span class="meta-value">Military / Hybrid</span>
-          </div>
-          <div class="meta-row">
-            <span class="meta-label">Decision Mode</span>
-            <span class="meta-value">WATCH / ACT</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="signal-card" href="signal-iran.html">
-        <div class="badge medium">MEDIUM PRIORITY</div>
-        <div class="title">Iran Negotiations</div>
-        <p class="desc">
-          Diplomatic engagement continues under pressure with unstable leverage and contested escalation boundaries.
-        </p>
-        <div class="meta">
-          <div class="meta-row">
-            <span class="meta-label">Layer</span>
-            <span class="meta-value">Diplomatic</span>
-          </div>
-          <div class="meta-row">
-            <span class="meta-label">Decision Mode</span>
-            <span class="meta-value">PRD</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="signal-card" href="signal-gaza.html">
-        <div class="badge high">HIGH PRIORITY</div>
-        <div class="title">Gaza Structure</div>
-        <p class="desc">
-          A compressed structural conflict space where military, governance, humanitarian, and narrative layers intersect.
-        </p>
-        <div class="meta">
-          <div class="meta-row">
-            <span class="meta-label">Layer</span>
-            <span class="meta-value">Structural</span>
-          </div>
-          <div class="meta-row">
-            <span class="meta-label">Decision Mode</span>
-            <span class="meta-value">WATCH / PRD</span>
-          </div>
-        </div>
-      </a>
-
-      <div class="signal-card disabled">
-        <div class="badge low">COMING SOON</div>
-        <div class="title">Red Sea Tension</div>
-        <p class="desc">
-          Maritime pressure indicators affecting deterrence credibility, logistics confidence, and regional signaling.
-        </p>
-        <div class="meta">
-          <div class="meta-row">
-            <span class="meta-label">Layer</span>
-            <span class="meta-value">Maritime</span>
-          </div>
-          <div class="meta-row">
-            <span class="meta-label">Decision Mode</span>
-            <span class="meta-value">Pending</span>
-          </div>
-        </div>
-        <div class="coming">Signal page not yet published.</div>
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
+        <a href="signals.html" class="active" data-i18n="nav_signals">Signals</a>
+        <a href="reports.html" data-i18n="nav_reports">Reports</a>
+        <a href="models.html" data-i18n="nav_models">Models</a>
+        <a href="about.html" data-i18n="nav_about">About</a>
       </div>
 
-      <div class="signal-card disabled">
-        <div class="badge low">COMING SOON</div>
-        <div class="title">West Bank Escalation</div>
-        <p class="desc">
-          Localized pressure patterns with the capacity to alter broader conflict calculations and internal control logic.
-        </p>
-        <div class="meta">
-          <div class="meta-row">
-            <span class="meta-label">Layer</span>
-            <span class="meta-value">Internal / Security</span>
-          </div>
-          <div class="meta-row">
-            <span class="meta-label">Decision Mode</span>
-            <span class="meta-value">Pending</span>
-          </div>
-        </div>
-        <div class="coming">Signal page not yet published.</div>
+      <div class="lang-switch">
+        <button id="btn-en" onclick="setLang('en')">EN</button>
+        <button id="btn-ar" onclick="setLang('ar')">AR</button>
       </div>
-
     </div>
-
-    <div class="footer">© 2026 IBSS — Sovereign Intelligence Platform</div>
   </div>
+
+  <div class="hero">
+    <div class="eyebrow" data-i18n="eyebrow">Signal Center</div>
+    <h1 data-i18n="title">IBSS Signals Center</h1>
+    <p class="sub" data-i18n="sub">
+      Structured signal files for sovereign monitoring, escalation mapping, and decision posture analysis.
+    </p>
+  </div>
+
+  <div class="toolbar">
+    <input id="searchInput" class="search" type="text" placeholder="Search signals..." data-i18n-placeholder="search_placeholder">
+    <select id="regionFilter" class="select">
+      <option value="all" data-i18n="filter_all_regions">All Regions</option>
+      <option value="Levant" data-i18n="filter_levant">Levant</option>
+      <option value="Gaza" data-i18n="filter_gaza">Gaza</option>
+      <option value="Diplomatic" data-i18n="filter_diplomatic">Diplomatic</option>
+      <option value="Maritime" data-i18n="filter_maritime">Maritime</option>
+      <option value="West Bank" data-i18n="filter_westbank">West Bank</option>
+    </select>
+    <select id="weightFilter" class="select">
+      <option value="all" data-i18n="filter_all_weights">All Weights</option>
+      <option value="HIGH" data-i18n="weight_high">HIGH</option>
+      <option value="MEDIUM" data-i18n="weight_medium">MEDIUM</option>
+      <option value="LOW" data-i18n="weight_low">LOW</option>
+    </select>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_total">Total Signals</div>
+      <div id="statTotal" class="stat-value">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_high">High Priority</div>
+      <div id="statHigh" class="stat-value">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_live">Published Files</div>
+      <div id="statLive" class="stat-value">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_regions">Active Regions</div>
+      <div id="statRegions" class="stat-value">0</div>
+    </div>
+  </div>
+
+  <div id="signalsGrid" class="grid"></div>
+
+  <div id="emptyState" class="empty" data-i18n="empty_state">
+    No signals match the current filters.
+  </div>
+
+  <div class="footer" data-i18n="footer_text">
+    © 2026 IBSS — Signals Center | Founded by Naeem M. Dahalan
+  </div>
+
+</div>
+
+<script>
+const translations = {
+  en: {
+    nav_home: "Home",
+    nav_dashboard: "Dashboard",
+    nav_signals: "Signals",
+    nav_reports: "Reports",
+    nav_models: "Models",
+    nav_about: "About",
+    eyebrow: "Signal Center",
+    title: "IBSS Signals Center",
+    sub: "Structured signal files for sovereign monitoring, escalation mapping, and decision posture analysis.",
+    search_placeholder: "Search signals...",
+    filter_all_regions: "All Regions",
+    filter_levant: "Levant",
+    filter_gaza: "Gaza",
+    filter_diplomatic: "Diplomatic",
+    filter_maritime: "Maritime",
+    filter_westbank: "West Bank",
+    filter_all_weights: "All Weights",
+    weight_high: "HIGH",
+    weight_medium: "MEDIUM",
+    weight_low: "LOW",
+    stat_total: "Total Signals",
+    stat_high: "High Priority",
+    stat_live: "Published Files",
+    stat_regions: "Active Regions",
+    meta_layer: "Layer",
+    meta_mode: "Decision Mode",
+    meta_status: "Status",
+    status_live: "Published",
+    status_soon: "Pending",
+    coming_soon: "Signal page not yet published.",
+    empty_state: "No signals match the current filters.",
+    footer_text: "© 2026 IBSS — Signals Center | Founded by Naeem M. Dahalan",
+
+    sig_lebanon_title: "Lebanon Pressure",
+    sig_lebanon_desc: "Northern front pressure remains active with hybrid escalation patterns across military and political channels.",
+    sig_lebanon_layer: "Military / Hybrid",
+    sig_lebanon_mode: "WATCH / ACT",
+
+    sig_iran_title: "Iran Negotiations",
+    sig_iran_desc: "Diplomatic engagement continues under pressure with unstable leverage and contested escalation boundaries.",
+    sig_iran_layer: "Diplomatic",
+    sig_iran_mode: "PRD",
+
+    sig_gaza_title: "Gaza Structure",
+    sig_gaza_desc: "A compressed structural conflict space where military, governance, humanitarian, and narrative layers intersect.",
+    sig_gaza_layer: "Structural",
+    sig_gaza_mode: "WATCH / PRD",
+
+    sig_redsea_title: "Red Sea Tension",
+    sig_redsea_desc: "Maritime pressure indicators affecting deterrence credibility, logistics confidence, and regional signaling.",
+    sig_redsea_layer: "Maritime",
+    sig_redsea_mode: "Pending",
+
+    sig_westbank_title: "West Bank Escalation",
+    sig_westbank_desc: "Localized pressure patterns with the capacity to alter broader conflict calculations and internal control logic.",
+    sig_westbank_layer: "Internal / Security",
+    sig_westbank_mode: "Pending"
+  },
+  ar: {
+    nav_home: "الرئيسية",
+    nav_dashboard: "لوحة التحكم",
+    nav_signals: "الإشارات",
+    nav_reports: "التقارير",
+    nav_models: "النماذج",
+    nav_about: "حول",
+    eyebrow: "مركز الإشارات",
+    title: "مركز إشارات IBSS",
+    sub: "ملفات إشارات منظمة للمراقبة السيادية، ورسم خرائط التصعيد، وتحليل وضعية القرار.",
+    search_placeholder: "ابحث داخل الإشارات...",
+    filter_all_regions: "كل المناطق",
+    filter_levant: "المشرق",
+    filter_gaza: "غزة",
+    filter_diplomatic: "دبلوماسي",
+    filter_maritime: "بحري",
+    filter_westbank: "الضفة الغربية",
+    filter_all_weights: "كل الأوزان",
+    weight_high: "مرتفع",
+    weight_medium: "متوسط",
+    weight_low: "منخفض",
+    stat_total: "إجمالي الإشارات",
+    stat_high: "إشارات عالية الأولوية",
+    stat_live: "ملفات منشورة",
+    stat_regions: "المناطق النشطة",
+    meta_layer: "الطبقة",
+    meta_mode: "وضع القرار",
+    meta_status: "الحالة",
+    status_live: "منشور",
+    status_soon: "قيد الإعداد",
+    coming_soon: "صفحة الإشارة لم تُنشر بعد.",
+    empty_state: "لا توجد إشارات تطابق الفلاتر الحالية.",
+    footer_text: "© 2026 IBSS — مركز الإشارات | تأسس بواسطة نعيم م. دحلان",
+
+    sig_lebanon_title: "الضغط على لبنان",
+    sig_lebanon_desc: "ضغط الجبهة الشمالية ما يزال نشطًا ضمن أنماط تصعيد هجينة عسكرية وسياسية.",
+    sig_lebanon_layer: "عسكري / هجين",
+    sig_lebanon_mode: "مراقبة / تحرك",
+
+    sig_iran_title: "المفاوضات الإيرانية",
+    sig_iran_desc: "الانخراط الدبلوماسي مستمر تحت الضغط مع نفوذ متقلب وحدود تصعيد متنازع عليها.",
+    sig_iran_layer: "دبلوماسي",
+    sig_iran_mode: "استعداد",
+
+    sig_gaza_title: "بنية غزة",
+    sig_gaza_desc: "حيز صراع بنيوي مضغوط تتقاطع فيه الطبقات العسكرية والحوكمية والإنسانية والسردية.",
+    sig_gaza_layer: "بنيوي",
+    sig_gaza_mode: "مراقبة / استعداد",
+
+    sig_redsea_title: "توتر البحر الأحمر",
+    sig_redsea_desc: "مؤشرات ضغط بحري تؤثر على الردع والثقة اللوجستية والإشارات الإقليمية.",
+    sig_redsea_layer: "بحري",
+    sig_redsea_mode: "قيد الإعداد",
+
+    sig_westbank_title: "تصعيد الضفة الغربية",
+    sig_westbank_desc: "أنماط ضغط موضعية قادرة على تعديل الحسابات الأوسع للصراع ومنطق السيطرة الداخلي.",
+    sig_westbank_layer: "داخلي / أمني",
+    sig_westbank_mode: "قيد الإعداد"
+  }
+};
+
+const signals = [
+  {
+    titleKey: "sig_lebanon_title",
+    descKey: "sig_lebanon_desc",
+    layerKey: "sig_lebanon_layer",
+    modeKey: "sig_lebanon_mode",
+    region: "Levant",
+    weight: "HIGH",
+    link: "signal-lebanon.html",
+    live: true
+  },
+  {
+    titleKey: "sig_iran_title",
+    descKey: "sig_iran_desc",
+    layerKey: "sig_iran_layer",
+    modeKey: "sig_iran_mode",
+    region: "Diplomatic",
+    weight: "MEDIUM",
+    link: "signal-iran.html",
+    live: true
+  },
+  {
+    titleKey: "sig_gaza_title",
+    descKey: "sig_gaza_desc",
+    layerKey: "sig_gaza_layer",
+    modeKey: "sig_gaza_mode",
+    region: "Gaza",
+    weight: "HIGH",
+    link: "signal-gaza.html",
+    live: true
+  },
+  {
+    titleKey: "sig_redsea_title",
+    descKey: "sig_redsea_desc",
+    layerKey: "sig_redsea_layer",
+    modeKey: "sig_redsea_mode",
+    region: "Maritime",
+    weight: "LOW",
+    link: "#",
+    live: false
+  },
+  {
+    titleKey: "sig_westbank_title",
+    descKey: "sig_westbank_desc",
+    layerKey: "sig_westbank_layer",
+    modeKey: "sig_westbank_mode",
+    region: "West Bank",
+    weight: "LOW",
+    link: "#",
+    live: false
+  }
+];
+
+let currentLang = localStorage.getItem("ibss_lang") || "en";
+
+function t(key){
+  return translations[currentLang][key] || key;
+}
+
+function setLang(lang){
+  localStorage.setItem("ibss_lang", lang);
+  currentLang = lang;
+  applyTranslations();
+  renderSignals();
+}
+
+function applyTranslations(){
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    el.placeholder = t(key);
+  });
+
+  document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
+  document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+}
+
+function weightClass(weight){
+  if(weight === "HIGH") return "high";
+  if(weight === "MEDIUM") return "medium";
+  return "low";
+}
+
+function weightLabel(weight){
+  if(weight === "HIGH") return t("weight_high");
+  if(weight === "MEDIUM") return t("weight_medium");
+  return t("weight_low");
+}
+
+function escapeHtml(text){
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function renderStats(filtered){
+  document.getElementById("statTotal").textContent = filtered.length;
+  document.getElementById("statHigh").textContent = filtered.filter(s => s.weight === "HIGH").length;
+  document.getElementById("statLive").textContent = filtered.filter(s => s.live).length;
+  document.getElementById("statRegions").textContent = new Set(filtered.map(s => s.region)).size;
+}
+
+function renderSignals(){
+  const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
+  const regionValue = document.getElementById("regionFilter").value;
+  const weightValue = document.getElementById("weightFilter").value;
+
+  const filtered = signals.filter(signal => {
+    const title = t(signal.titleKey).toLowerCase();
+    const desc = t(signal.descKey).toLowerCase();
+
+    const searchMatch = !searchValue || title.includes(searchValue) || desc.includes(searchValue);
+    const regionMatch = regionValue === "all" || signal.region === regionValue;
+    const weightMatch = weightValue === "all" || signal.weight === weightValue;
+
+    return searchMatch && regionMatch && weightMatch;
+  });
+
+  renderStats(filtered);
+
+  const grid = document.getElementById("signalsGrid");
+  const empty = document.getElementById("emptyState");
+
+  if(filtered.length === 0){
+    grid.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+
+  grid.innerHTML = filtered.map(signal => {
+    const title = escapeHtml(t(signal.titleKey));
+    const desc = escapeHtml(t(signal.descKey));
+    const layer = escapeHtml(t(signal.layerKey));
+    const mode = escapeHtml(t(signal.modeKey));
+    const statusText = signal.live ? t("status_live") : t("status_soon");
+    const disabledClass = signal.live ? "" : " disabled";
+    const tagClass = weightClass(signal.weight);
+
+    const content = `
+      <div class="card-top">
+        <div class="badges">
+          <span class="badge ${tagClass}">${escapeHtml(weightLabel(signal.weight))}</span>
+          <span class="badge region">${escapeHtml(signal.region)}</span>
+        </div>
+      </div>
+
+      <h2 class="card-title">${title}</h2>
+      <p class="card-desc">${desc}</p>
+
+      <div class="meta">
+        <div class="meta-row">
+          <span class="meta-label">${escapeHtml(t("meta_layer"))}</span>
+          <span class="meta-value">${layer}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">${escapeHtml(t("meta_mode"))}</span>
+          <span class="meta-value">${mode}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">${escapeHtml(t("meta_status"))}</span>
+          <span class="meta-value">${escapeHtml(statusText)}</span>
+        </div>
+      </div>
+
+      ${signal.live ? "" : `<div class="coming">${escapeHtml(t("coming_soon"))}</div>`}
+    `;
+
+    if(signal.live){
+      return `<a class="signal-card${disabledClass}" href="${signal.link}">${content}</a>`;
+    }
+
+    return `<div class="signal-card${disabledClass}">${content}</div>`;
+  }).join("");
+}
+
+document.getElementById("searchInput").addEventListener("input", renderSignals);
+document.getElementById("regionFilter").addEventListener("change", renderSignals);
+document.getElementById("weightFilter").addEventListener("change", renderSignals);
+
+applyTranslations();
+renderSignals();
+</script>
 </body>
-  </html>
+</html>
