@@ -1,767 +1,243 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS Dashboard</title>
-  <style>
-    :root{
-      --bg:#040404;
-      --panel:#0d0d0d;
-      --panel2:#121212;
-      --gold:#d4af37;
-      --text:#e8e8e8;
-      --muted:#9d9d9d;
-      --green:#00d084;
-      --orange:#ff9f1a;
-      --red:#ff4d4f;
-      --border:rgba(212,175,55,.28);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBSS Dashboard</title>
 
-    *{box-sizing:border-box}
+<style>
+:root{
+  --gold:#d4af37;
+  --bg:#040404;
+  --panel:#0d0d0d;
+  --text:#fff;
+  --red:#ff4d4f;
+  --orange:#ff9f1a;
+  --green:#00d084;
+}
 
-    body{
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:
-        radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
-        var(--bg);
-      color:var(--text);
-    }
+body{
+  margin:0;
+  font-family:Arial;
+  background:var(--bg);
+  color:var(--text);
+}
 
-    .wrap{
-      width:min(1100px,92%);
-      margin:auto;
-      padding:20px 0 60px;
-    }
+.wrap{
+  width:92%;
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
 
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      padding:14px 0 20px;
-      border-bottom:1px solid rgba(255,255,255,.05);
-      flex-wrap:wrap;
-    }
+h1{
+  text-align:center;
+  color:var(--gold);
+}
 
-    .brand{
-      color:var(--gold);
-      font-size:28px;
-      font-weight:800;
-      text-decoration:none;
-      letter-spacing:1px;
-    }
+.card{
+  background:var(--panel);
+  padding:18px;
+  border-radius:14px;
+  margin:14px 0;
+  border:1px solid #222;
+}
 
-    .top-actions{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
+.high{color:var(--red)}
+.medium{color:var(--orange)}
+.low{color:var(--green)}
 
-    .nav{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
+.alert{
+  display:none;
+  background:#5a1111;
+  padding:14px;
+  border-radius:10px;
+  margin:14px 0;
+  text-align:center;
+  font-weight:bold;
+}
 
-    .nav a{
-      color:var(--muted);
-      text-decoration:none;
-      border:1px solid rgba(255,255,255,.08);
-      padding:10px 14px;
-      border-radius:10px;
-      font-size:14px;
-      transition:.2s ease;
-    }
+.radar{
+  position:relative;
+  height:240px;
+}
 
-    .nav a.active,
-    .nav a:hover{
-      color:var(--gold);
-      border-color:var(--border);
-    }
+.circle{
+  position:absolute;
+  border:1px solid rgba(212,175,55,0.2);
+  border-radius:50%;
+}
 
-    .lang-switch{
-      display:flex;
-      gap:6px;
-    }
+.c1{width:80px;height:80px;top:80px;left:80px;}
+.c2{width:140px;height:140px;top:50px;left:50px;}
+.c3{width:200px;height:200px;top:20px;left:20px;}
 
-    .lang-switch button{
-      background:none;
-      border:1px solid rgba(255,255,255,.1);
-      color:#ccc;
-      padding:8px 10px;
-      border-radius:8px;
-      cursor:pointer;
-      transition:.2s ease;
-      font-size:13px;
-    }
+.dot{
+  width:10px;
+  height:10px;
+  background:var(--gold);
+  border-radius:50%;
+  position:absolute;
+  box-shadow:0 0 10px var(--gold);
+}
 
-    .lang-switch button:hover,
-    .lang-switch button.active{
-      color:var(--gold);
-      border-color:var(--gold);
-    }
+.feed{
+  margin-top:10px;
+}
 
-    .alert{
-      display:none;
-      margin:18px 0 0;
-      padding:14px 16px;
-      border-radius:12px;
-      background:rgba(255,77,79,.12);
-      border:1px solid rgba(255,77,79,.45);
-      color:#ffd5d5;
-      font-weight:700;
-      text-align:center;
-      animation:fadeIn .3s ease;
-    }
+.signal-box{
+  border:1px solid rgba(212,175,55,0.3);
+  padding:14px;
+  border-radius:12px;
+}
 
-    .hero{
-      padding:28px 0 18px;
-      text-align:center;
-    }
-
-    .eyebrow{
-      color:var(--gold);
-      letter-spacing:2px;
-      text-transform:uppercase;
-      font-size:13px;
-      margin-bottom:10px;
-    }
-
-    h1{
-      margin:0 0 10px;
-      font-size:38px;
-      color:#fff;
-    }
-
-    .sub{
-      margin:0;
-      color:var(--muted);
-      line-height:1.7;
-    }
-
-    .system-line{
-      margin-top:14px;
-      color:var(--green);
-      font-size:14px;
-      font-weight:700;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:18px;
-      margin-top:22px;
-    }
-
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
-      padding:20px;
-    }
-
-    .title{
-      color:var(--gold);
-      font-size:22px;
-      font-weight:700;
-      margin-bottom:14px;
-    }
-
-    .state{
-      display:grid;
-      gap:12px;
-    }
-
-    .state-item,
-    .signal-item,
-    .feed-item{
-      background:var(--panel2);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:14px;
-      padding:14px;
-      transition:.25s ease;
-    }
-
-    .state-item:hover,
-    .feed-item:hover,
-    .signal-item:hover{
-      border-color:var(--border);
-      box-shadow:0 0 18px rgba(212,175,55,.06);
-    }
-
-    .label{
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:6px;
-    }
-
-    .value{
-      font-size:20px;
-      font-weight:700;
-      transition:.25s ease;
-    }
-
-    .ssi{
-      color:var(--gold);
-      font-size:26px;
-      font-weight:800;
-      transition:.25s ease;
-    }
-
-    .low{color:var(--green)}
-    .medium{color:var(--orange)}
-    .high{color:var(--red)}
-
-    .signal-item strong{
-      display:block;
-      margin-bottom:6px;
-      color:#fff;
-      font-size:22px;
-    }
-
-    .signal-item span{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.6;
-    }
-
-    .primary{
-      border-color:rgba(212,175,55,.45);
-      box-shadow:0 0 0 1px rgba(212,175,55,.15) inset;
-      cursor:pointer;
-      transition:.25s ease;
-    }
-
-    .primary:hover{
-      transform:translateY(-2px);
-      box-shadow:0 0 0 1px rgba(212,175,55,.18) inset, 0 0 18px rgba(212,175,55,.08);
-    }
-
-    .primary-badge{
-      display:inline-block;
-      margin-bottom:8px;
-      padding:4px 8px;
-      border-radius:999px;
-      background:rgba(212,175,55,.12);
-      color:var(--gold);
-      font-size:12px;
-      font-weight:700;
-      letter-spacing:.5px;
-    }
-
-    .scenario{
-      display:grid;
-      gap:10px;
-    }
-
-    .scenario-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      background:var(--panel2);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:12px;
-      padding:12px 14px;
-      transition:.25s ease;
-    }
-
-    .scenario-row:hover{
-      border-color:var(--border);
-    }
-
-    .decision-box{
-      text-align:center;
-      padding:18px;
-      background:rgba(212,175,55,.05);
-      border:1px solid rgba(212,175,55,.22);
-      border-radius:16px;
-    }
-
-    .decision{
-      font-size:30px;
-      font-weight:800;
-      color:var(--gold);
-      margin:8px 0 6px;
-      transition:.25s ease;
-    }
-
-    .decision-note{
-      color:var(--muted);
-      line-height:1.7;
-      font-size:14px;
-      min-height:48px;
-    }
-
-    .radar{
-      position:relative;
-      height:220px;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      overflow:hidden;
-    }
-
-    .radar-circle{
-      position:absolute;
-      border:1px solid rgba(212,175,55,.18);
-      border-radius:50%;
-    }
-
-    .r1{width:70px;height:70px}
-    .r2{width:120px;height:120px}
-    .r3{width:170px;height:170px}
-    .r4{width:220px;height:220px}
-
-    .pulse{
-      width:14px;
-      height:14px;
-      border-radius:50%;
-      background:var(--gold);
-      box-shadow:0 0 20px rgba(212,175,55,.9);
-      animation:pulse 2s infinite ease-in-out;
-      z-index:2;
-    }
-
-    .sweep{
-      position:absolute;
-      width:110px;
-      height:110px;
-      background:conic-gradient(from 0deg, rgba(212,175,55,.22), transparent 55%);
-      border-radius:50%;
-      animation:spin 4s linear infinite;
-      opacity:.75;
-    }
-
-    .signal-dot{
-      position:absolute;
-      width:10px;
-      height:10px;
-      border-radius:50%;
-      background:var(--gold);
-      box-shadow:0 0 10px rgba(212,175,55,.75);
-      transition:.35s ease;
-    }
-
-    .feed{
-      margin-top:16px;
-      display:grid;
-      gap:10px;
-    }
-
-    .footer{
-      margin-top:24px;
-      text-align:center;
-      color:#7f7f7f;
-      font-size:14px;
-      border-top:1px solid rgba(255,255,255,.05);
-      padding-top:20px;
-    }
-
-    @keyframes pulse{
-      0%,100%{transform:scale(1);opacity:1}
-      50%{transform:scale(1.8);opacity:.45}
-    }
-
-    @keyframes spin{
-      from{transform:rotate(0deg)}
-      to{transform:rotate(360deg)}
-    }
-
-    @keyframes fadeIn{
-      from{opacity:0; transform:translateY(-4px)}
-      to{opacity:1; transform:translateY(0)}
-    }
-
-    html[dir="rtl"] body{
-      text-align:right;
-    }
-
-    html[dir="rtl"] .topbar,
-    html[dir="rtl"] .top-actions,
-    html[dir="rtl"] .nav,
-    html[dir="rtl"] .scenario-row{
-      direction:rtl;
-    }
-
-    html[dir="rtl"] .hero,
-    html[dir="rtl"] .footer,
-    html[dir="rtl"] .alert{
-      text-align:center;
-    }
-
-    @media(max-width:900px){
-      .grid{grid-template-columns:1fr}
-    }
-
-    @media(max-width:600px){
-      .topbar{flex-direction:column}
-      h1{font-size:30px}
-    }
-  </style>
+</style>
 </head>
+
 <body>
-  <div class="wrap">
 
-    <div class="topbar">
-      <a class="brand" href="index.html">IBSS</a>
+<div class="wrap">
 
-      <div class="top-actions">
-        <div class="nav">
-          <a href="index.html" data-i18n="nav_home">Home</a>
-          <a href="dashboard.html" class="active" data-i18n="nav_dashboard">Dashboard</a>
-          <a href="signals.html" data-i18n="nav_signals">Signals</a>
-          <a href="reports.html" data-i18n="nav_reports">Reports</a>
-          <a href="models.html" data-i18n="nav_models">Models</a>
-          <a href="about.html" data-i18n="nav_about">About</a>
-        </div>
+<h1>IBSS Dashboard</h1>
 
-        <div class="lang-switch">
-          <button id="btn-en" onclick="setLang('en')">EN</button>
-          <button id="btn-ar" onclick="setLang('ar')">AR</button>
-        </div>
-      </div>
-    </div>
+<div id="alertBox" class="alert"></div>
 
-    <div id="alertBox" class="alert"></div>
+<div class="card">
+  <div>Level: <span id="level">-</span></div>
+  <div>SSI: <span id="ssi">-</span></div>
+  <div>Decision: <span id="decision">-</span></div>
+</div>
 
-    <div class="hero">
-      <div class="eyebrow" data-i18n="eyebrow">Control Layer</div>
-      <h1 data-i18n="page_title">IBSS Dashboard</h1>
-      <p class="sub" data-i18n="page_sub">System state, pressure score, dominant signal, and decision posture.</p>
-      <p class="system-line" data-i18n="system_active">System Active — Monitoring Global Signals</p>
-    </div>
+<div class="card signal-box">
+  <h3>Primary Signal</h3>
+  <div id="signalTitle"></div>
+  <p id="signalDesc"></p>
+</div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="title" data-i18n="system_state">System State</div>
-
-        <div class="state">
-          <div class="state-item">
-            <div class="label" data-i18n="escalation_level">Escalation Level</div>
-            <div id="level" class="value high">HIGH</div>
-          </div>
-
-          <div class="state-item">
-            <div class="label" data-i18n="waad_status">WAAD Status</div>
-            <div id="waad" class="value" data-i18n="active_word">ACTIVE</div>
-          </div>
-
-          <div class="state-item">
-            <div class="label" data-i18n="system_mode">System Mode</div>
-            <div id="mode" class="value" data-i18n="monitoring_word">MONITORING</div>
-          </div>
-
-          <div class="state-item">
-            <div class="label" data-i18n="ssi_label">Signal Strength Index</div>
-            <div id="ssi" class="ssi">82</div>
-          </div>
-        </div>
-
-        <div style="margin-top:18px" class="title" data-i18n="scenarios">Scenarios</div>
-        <div class="scenario">
-          <div class="scenario-row"><span data-i18n="scenario_a">Scenario A</span><strong id="sa">40%</strong></div>
-          <div class="scenario-row"><span data-i18n="scenario_b">Scenario B</span><strong id="sb">35%</strong></div>
-          <div class="scenario-row"><span data-i18n="scenario_c">Scenario C</span><strong id="sc">25%</strong></div>
-        </div>
-
-        <div style="margin-top:18px" class="title" data-i18n="decision_output">Decision Output</div>
-        <div class="decision-box">
-          <div id="decision" class="decision">ACT</div>
-          <div id="decisionNote" class="decision-note"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="title" data-i18n="priority_signal">Priority Signal</div>
-        <div id="primarySignal" class="signal-item primary">
-          <div class="primary-badge" data-i18n="primary_signal_badge">PRIMARY SIGNAL</div>
-          <strong id="signalTitle">Gaza Structure</strong>
-          <span id="signalText"></span>
-        </div>
-
-        <div style="margin-top:18px" class="title" data-i18n="radar">Radar</div>
-        <div class="radar">
-          <div class="radar-circle r4"></div>
-          <div class="radar-circle r3"></div>
-          <div class="radar-circle r2"></div>
-          <div class="radar-circle r1"></div>
-          <div class="sweep"></div>
-          <div class="pulse"></div>
-          <div id="dot1" class="signal-dot" style="top:42px; left:112px;"></div>
-          <div id="dot2" class="signal-dot" style="top:88px; left:55px;"></div>
-          <div id="dot3" class="signal-dot" style="top:132px; left:158px;"></div>
-        </div>
-
-        <div class="title" data-i18n="live_feed">Live Feed</div>
-        <div id="feed" class="feed">
-          <div class="feed-item" data-i18n="initializing_feed">Initializing live sovereign feed...</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer" data-i18n="footer_text">© 2026 IBSS — Dashboard Layer | Founded by Naeem M. Dahalan</div>
+<div class="card">
+  <h3>Radar</h3>
+  <div class="radar" id="radar">
+    <div class="circle c1"></div>
+    <div class="circle c2"></div>
+    <div class="circle c3"></div>
   </div>
+</div>
 
-  <script src="data.js"></script>
-  <script>
-    const translations = {
-      en: {
-        nav_home: "Home",
-        nav_dashboard: "Dashboard",
-        nav_signals: "Signals",
-        nav_reports: "Reports",
-        nav_models: "Models",
-        nav_about: "About",
-        eyebrow: "Control Layer",
-        page_title: "IBSS Dashboard",
-        page_sub: "System state, pressure score, dominant signal, and decision posture.",
-        system_active: "System Active — Monitoring Global Signals",
-        system_state: "System State",
-        escalation_level: "Escalation Level",
-        waad_status: "WAAD Status",
-        active_word: "ACTIVE",
-        system_mode: "System Mode",
-        monitoring_word: "MONITORING",
-        preparation_word: "PREPARATION",
-        active_response_word: "ACTIVE RESPONSE",
-        ssi_label: "Signal Strength Index",
-        scenarios: "Scenarios",
-        scenario_a: "Scenario A",
-        scenario_b: "Scenario B",
-        scenario_c: "Scenario C",
-        decision_output: "Decision Output",
-        priority_signal: "Priority Signal",
-        primary_signal_badge: "PRIMARY SIGNAL",
-        radar: "Radar",
-        live_feed: "Live Feed",
-        initializing_feed: "Initializing live sovereign feed...",
-        footer_text: "© 2026 IBSS — Dashboard Layer | Founded by Naeem M. Dahalan",
+<div class="card">
+  <h3>Live Feed</h3>
+  <div id="feed" class="feed"></div>
+</div>
 
-        level_low: "LOW",
-        level_medium: "MEDIUM",
-        level_high: "HIGH",
+</div>
 
-        decision_act: "ACT",
-        decision_prd: "PRD",
-        decision_watch: "WATCH",
+<script src="data.js"></script>
 
-        alert_high: "⚠ HIGH ESCALATION DETECTED — SYSTEM SHIFTING TO ACTIVE RESPONSE POSTURE",
-        alert_medium: "⚠ STRUCTURED PRESSURE DETECTED — SYSTEM IN PREPARATION MODE",
-        note_high: "High pressure environment detected. Immediate readiness required.",
-        note_medium: "Structured pressure remains present. Maintain preparation posture.",
-        note_low: "Low pressure. Continue monitoring."
-      },
+<script>
 
-      ar: {
-        nav_home: "الرئيسية",
-        nav_dashboard: "لوحة التحكم",
-        nav_signals: "الإشارات",
-        nav_reports: "التقارير",
-        nav_models: "النماذج",
-        nav_about: "حول",
-        eyebrow: "طبقة التحكم",
-        page_title: "لوحة تحكم IBSS",
-        page_sub: "حالة النظام، درجة الضغط، الإشارة المهيمنة، ووضعية القرار.",
-        system_active: "النظام فعال — يراقب الإشارات العالمية",
-        system_state: "حالة النظام",
-        escalation_level: "مستوى التصعيد",
-        waad_status: "حالة WAAD",
-        active_word: "نشط",
-        system_mode: "وضع النظام",
-        monitoring_word: "مراقبة",
-        preparation_word: "تحضير",
-        active_response_word: "استجابة نشطة",
-        ssi_label: "مؤشر قوة الإشارة",
-        scenarios: "السيناريوهات",
-        scenario_a: "السيناريو أ",
-        scenario_b: "السيناريو ب",
-        scenario_c: "السيناريو ج",
-        decision_output: "مخرجات القرار",
-        priority_signal: "الإشارة ذات الأولوية",
-        primary_signal_badge: "الإشارة الرئيسية",
-        radar: "الرادار",
-        live_feed: "التغذية الحية",
-        initializing_feed: "جارٍ تهيئة التغذية السيادية الحية...",
-        footer_text: "© 2026 IBSS — طبقة لوحة التحكم | تأسس بواسطة نعيم م. دحلان",
+let liveSSI = 70;
 
-        level_low: "منخفض",
-        level_medium: "متوسط",
-        level_high: "مرتفع",
+function getLiveSystemFromSSI(ssi){
 
-        decision_act: "تحرك",
-        decision_prd: "استعداد",
-        decision_watch: "مراقبة",
+  let level="LOW";
+  let decision="WATCH";
+  let scenarios=[22,33,45];
 
-        alert_high: "⚠ تم رصد تصعيد مرتفع — النظام في وضعية استجابة نشطة",
-        alert_medium: "⚠ تم رصد ضغط بنيوي — النظام في وضعية تحضير",
-        note_high: "تم رصد بيئة ضغط مرتفعة. الجاهزية الفورية مطلوبة.",
-        note_medium: "الضغط البنيوي حاضر. حافظ على وضعية التحضير.",
-        note_low: "الضغط منخفض. واصل المراقبة."
-      }
-    };
+  if(ssi>=75){
+    level="HIGH";
+    decision="ACT";
+    scenarios=[60,25,15];
+  }else if(ssi>=50){
+    level="MEDIUM";
+    decision="PRD";
+    scenarios=[40,35,25];
+  }
 
-    let currentLang = localStorage.getItem("ibss_lang") || "en";
-    let currentSignalLink = "#";
-    let liveState = {
-      ssi: 76,
-      direction: 1
-    };
+  return {
+    ssi,
+    level,
+    decision,
+    scenarios,
+    dominantSignal:getDominantSignal()
+  };
+}
 
-    function t(key) {
-      return translations[currentLang][key] || key;
-    }
+function saveLiveSystem(system){
+  localStorage.setItem("ibss_live_system", JSON.stringify({
+    ssi: system.ssi,
+    level: system.level,
+    decision: system.decision,
+    dominantSignalId: system.dominantSignal.id
+  }));
+}
 
-    function applyTranslations() {
-      document.documentElement.lang = currentLang;
-      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+function setLevel(level){
+  const el=document.getElementById("level");
+  el.textContent=level;
+  el.className=level.toLowerCase();
 
-      document.querySelectorAll("[data-i18n]").forEach(el => {
-        const key = el.getAttribute("data-i18n");
-        el.textContent = t(key);
-      });
+  const alertBox=document.getElementById("alertBox");
 
-      document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
-      document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
-    }
+  if(level==="HIGH"){
+    alertBox.style.display="block";
+    alertBox.textContent="⚠ HIGH ESCALATION — ACTIVE RESPONSE";
+  }else{
+    alertBox.style.display="none";
+  }
+}
 
-    function setLang(lang) {
-      localStorage.setItem("ibss_lang", lang);
-      currentLang = lang;
-      applyTranslations();
-      tick();
-    }
+function setPrimarySignal(signal){
+  document.getElementById("signalTitle").textContent=signal.title.en;
+  document.getElementById("signalDesc").textContent=signal.description.en;
+}
 
-    function getLiveSystemFromSSI(ssi) {
-      let level = "LOW";
-      let decision = "WATCH";
-      let mode = "MONITORING";
-      let scenarios = [24, 34, 42];
-      let dominantSignal = IBSS_SIGNALS.find(s => s.id === "iran") || IBSS_SIGNALS[0];
+function moveRadar(){
+  const radar=document.getElementById("radar");
 
-      if (ssi >= 75) {
-        level = "HIGH";
-        decision = "ACT";
-        mode = "ACTIVE RESPONSE";
-        scenarios = [58, 27, 15];
-        dominantSignal = IBSS_SIGNALS.find(s => s.id === "gaza") || dominantSignal;
-      } else if (ssi >= 50) {
-        level = "MEDIUM";
-        decision = "PRD";
-        mode = "PREPARATION";
-        scenarios = [38, 37, 25];
-        dominantSignal = IBSS_SIGNALS.find(s => s.id === "lebanon") || dominantSignal;
-      }
+  radar.querySelectorAll(".dot").forEach(d=>d.remove());
 
-      return { ssi, level, decision, mode, scenarios, dominantSignal };
-    }
+  for(let i=0;i<4;i++){
+    const dot=document.createElement("div");
+    dot.className="dot";
+    dot.style.left=Math.random()*200+"px";
+    dot.style.top=Math.random()*200+"px";
+    radar.appendChild(dot);
+  }
+}
 
-    function setDecision(level) {
-      const decision = document.getElementById("decision");
-      const note = document.getElementById("decisionNote");
-      const mode = document.getElementById("mode");
-      const alertBox = document.getElementById("alertBox");
+function setFeed(){
+  const feed=document.getElementById("feed");
 
-      if (level === "HIGH") {
-        decision.textContent = t("decision_act");
-        note.textContent = t("note_high");
-        mode.textContent = t("active_response_word");
-        alertBox.textContent = t("alert_high");
-        alertBox.style.display = "block";
-      } else if (level === "MEDIUM") {
-        decision.textContent = t("decision_prd");
-        note.textContent = t("note_medium");
-        mode.textContent = t("preparation_word");
-        alertBox.textContent = t("alert_medium");
-        alertBox.style.display = "block";
-      } else {
-        decision.textContent = t("decision_watch");
-        note.textContent = t("note_low");
-        mode.textContent = t("monitoring_word");
-        alertBox.style.display = "none";
-      }
-    }
+  const signals=getRankedSignals().slice(0,4);
 
-    function setLevel(level) {
-      const el = document.getElementById("level");
-      el.textContent = t("level_" + level.toLowerCase());
-      el.className = "value " + level.toLowerCase();
-      setDecision(level);
-    }
+  feed.innerHTML=signals.map(s=>
+    `<div>• ${s.title.en} — ${s.decisionMode.en}</div>`
+  ).join("");
+}
 
-    function setPrimarySignal(signal) {
-      if (!signal) return;
-      document.getElementById("signalTitle").textContent = signal.title[currentLang];
-      document.getElementById("signalText").textContent = signal.description[currentLang];
-      currentSignalLink = signal.link;
-    }
+function tick(){
 
-    function setFeed(system) {
-      const feed = document.getElementById("feed");
-      const rankedSignals = getRankedSignals().slice(0, 4);
+  const delta=Math.floor(Math.random()*7)-3;
+  liveSSI+=delta;
 
-      const feedLines = [
-        `${system.dominantSignal.title[currentLang]} — ${system.dominantSignal.decisionMode[currentLang]}`,
-        `${rankedSignals[1]?.title[currentLang] || ""} — ${rankedSignals[1]?.decisionMode[currentLang] || ""}`,
-        `${currentLang === "ar" ? "تم تحديث مؤشر الضغط إلى" : "Pressure index updated to"} ${system.ssi}`,
-        `${currentLang === "ar" ? "النظام في وضع" : "System mode:"} ${document.getElementById("mode").textContent}`
-      ];
+  if(liveSSI>90) liveSSI=90;
+  if(liveSSI<40) liveSSI=40;
 
-      feed.innerHTML = feedLines.map(line => `<div class="feed-item">${line}</div>`).join("");
-    }
+  const system=getLiveSystemFromSSI(liveSSI);
 
-    function moveRadarDots() {
-      const dots = [
-        document.getElementById("dot1"),
-        document.getElementById("dot2"),
-        document.getElementById("dot3")
-      ];
+  document.getElementById("ssi").textContent=system.ssi;
+  document.getElementById("decision").textContent=system.decision;
 
-      dots.forEach(dot => {
-        const top = 35 + Math.floor(Math.random() * 140);
-        const left = 40 + Math.floor(Math.random() * 140);
-        dot.style.top = top + "px";
-        dot.style.left = left + "px";
-      });
-    }
+  setLevel(system.level);
+  setPrimarySignal(system.dominantSignal);
+  moveRadar();
+  setFeed();
+  saveLiveSystem(system);
+}
 
-    function tick() {
-      const delta = Math.floor(Math.random() * 7) - 3;
-      liveState.ssi += delta;
+setInterval(tick,3000);
+tick();
 
-      if (liveState.ssi > 88) liveState.ssi = 88;
-      if (liveState.ssi < 38) liveState.ssi = 38;
+</script>
 
-      const system = getLiveSystemFromSSI(liveState.ssi);
-
-      setLevel(system.level);
-      document.getElementById("ssi").textContent = system.ssi;
-      document.getElementById("sa").textContent = system.scenarios[0] + "%";
-      document.getElementById("sb").textContent = system.scenarios[1] + "%";
-      document.getElementById("sc").textContent = system.scenarios[2] + "%";
-
-      const ssiEl = document.getElementById("ssi");
-      ssiEl.className = "ssi " + system.level.toLowerCase();
-
-      setPrimarySignal(system.dominantSignal);
-      setFeed(system);
-      moveRadarDots();
-    }
-
-    document.getElementById("primarySignal").addEventListener("click", function () {
-      if (currentSignalLink && currentSignalLink !== "#") {
-        window.location.href = currentSignalLink;
-      }
-    });
-
-    applyTranslations();
-    tick();
-    setInterval(tick, 5000);
-  </script>
 </body>
 </html>
