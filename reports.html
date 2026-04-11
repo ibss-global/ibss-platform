@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBSS Reports</title>
+
+<style>
+:root{
+  --bg:#040404;
+  --panel:#0d0d0d;
+  --panel2:#121212;
+  --gold:#d4af37;
+  --text:#e8e8e8;
+  --muted:#9d9d9d;
+  --border:rgba(212,175,55,.28);
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.wrap{
+  width:min(1100px,92%);
+  margin:auto;
+  padding:20px 0 60px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  padding-bottom:15px;
+}
+
+.brand{
+  color:var(--gold);
+  font-size:26px;
+  font-weight:700;
+  text-decoration:none;
+}
+
+.nav a{
+  color:var(--muted);
+  text-decoration:none;
+  margin:0 6px;
+  padding:8px 12px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+}
+
+.nav a.active,
+.nav a:hover{
+  color:var(--gold);
+  border-color:var(--border);
+}
+
+.hero{
+  text-align:center;
+  padding:30px 0;
+}
+
+.hero h1{
+  font-size:36px;
+  margin:0;
+}
+
+.hero p{
+  color:var(--muted);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:18px;
+}
+
+.report{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:20px;
+  transition:.2s;
+}
+
+.report:hover{
+  border-color:var(--border);
+}
+
+.title{
+  color:var(--gold);
+  font-size:24px;
+  margin-bottom:8px;
+}
+
+.meta{
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:12px;
+}
+
+.content{
+  line-height:1.8;
+}
+
+.footer{
+  margin-top:30px;
+  text-align:center;
+  color:#777;
+  border-top:1px solid rgba(255,255,255,.05);
+  padding-top:20px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<div class="topbar">
+<a class="brand" href="index.html">IBSS</a>
+<div class="nav">
+<a href="index.html">Home</a>
+<a href="dashboard.html">Dashboard</a>
+<a href="signals.html">Signals</a>
+<a href="reports.html" class="active">Reports</a>
+<a href="models.html">Models</a>
+<a href="about.html">About</a>
+</div>
+</div>
+
+<div class="hero">
+<h1>IBSS Reports</h1>
+<p>Decision-grade strategic outputs and sovereign assessments.</p>
+</div>
+
+<div class="grid">
+
+<div class="report">
+<div class="title">SDR-001 — Lebanon Escalation Window</div>
+<div class="meta">Classification: Sovereign | Status: Active</div>
+<div class="content">
+Northern front escalation is entering a controlled instability phase.  
+The probability distribution suggests prolonged pressure without full war breakout.  
+
+Decision Bias: Maintain WATCH posture while preparing rapid escalation response.
+</div>
+</div>
+
+<div class="report">
+<div class="title">PP-001 — Gaza Structural Pressure</div>
+<div class="meta">Policy Paper | Structural Layer</div>
+<div class="content">
+Gaza represents a compressed system where humanitarian, military, and governance pressures converge.  
+
+Any shift in aid, control, or population flow may trigger disproportionate strategic outcomes.
+</div>
+</div>
+
+<div class="report">
+<div class="title">SDB-001 — Iran Negotiation Trajectory</div>
+<div class="meta">Policy Brief</div>
+<div class="content">
+Diplomatic negotiation remains under pressure with unclear enforcement mechanisms.  
+
+Outcome is likely prolonged negotiation rather than decisive breakthrough.
+</div>
+</div>
+
+</div>
+
+<div class="footer">
+© 2026 IBSS — Sovereign Decision System
+</div>
+
+</div>
+</body>
+</html>
