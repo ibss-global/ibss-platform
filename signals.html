@@ -1,157 +1,757 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>IBSS Signals System</title>
 
 <style>
-body {
+:root{
+  --bg:#040404;
+  --panel:#0d0d0d;
+  --panel2:#121212;
+  --gold:#d4af37;
+  --text:#e8e8e8;
+  --muted:#9d9d9d;
+  --green:#00d084;
+  --orange:#ff9f1a;
+  --red:#ff4d4f;
+  --blue:#5a8cff;
+  --border:rgba(212,175,55,.28);
+}
+
+*{box-sizing:border-box}
+
+body{
   margin:0;
-  font-family:Arial;
-  background:#000;
+  font-family:Arial,sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+    var(--bg);
+  color:var(--text);
+}
+
+.wrap{
+  width:min(1180px,92%);
+  margin:auto;
+  padding:20px 0 60px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:14px 0 20px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  flex-wrap:wrap;
+}
+
+.brand{
+  color:var(--gold);
+  font-size:28px;
+  font-weight:800;
+  text-decoration:none;
+  letter-spacing:1px;
+}
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.nav{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.nav a{
+  color:var(--muted);
+  text-decoration:none;
+  border:1px solid rgba(255,255,255,.08);
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:14px;
+  transition:.2s ease;
+}
+
+.nav a.active,
+.nav a:hover{
+  color:var(--gold);
+  border-color:var(--border);
+}
+
+.lang-switch{
+  display:flex;
+  gap:6px;
+}
+
+.lang-switch button{
+  background:none;
+  border:1px solid rgba(255,255,255,.1);
+  color:#ccc;
+  padding:8px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:.2s ease;
+  font-size:13px;
+}
+
+.lang-switch button:hover,
+.lang-switch button.active{
+  color:var(--gold);
+  border-color:var(--gold);
+}
+
+.hero{
+  text-align:center;
+  padding:34px 0 20px;
+}
+
+.eyebrow{
+  color:var(--gold);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  font-size:13px;
+  margin-bottom:10px;
+}
+
+h1{
+  margin:0 0 10px;
+  font-size:40px;
   color:#fff;
 }
 
-.container {
-  padding:20px;
-  max-width:900px;
-  margin:auto;
+.sub{
+  margin:0 auto;
+  max-width:850px;
+  color:var(--muted);
+  line-height:1.8;
 }
 
-h1 {
-  text-align:center;
-  color:#d4af37;
-}
-
-.stats {
+.system-strip{
+  margin-top:24px;
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin:20px 0;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
 }
 
-.card {
-  background:#111;
-  padding:15px;
-  border-radius:10px;
-  border:1px solid #333;
+.system-box{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:16px;
+  text-align:center;
 }
 
-.signal {
-  background:#111;
-  margin:15px 0;
-  padding:15px;
+.system-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:8px;
+}
+
+.system-value{
+  color:var(--gold);
+  font-size:24px;
+  font-weight:800;
+}
+
+.toolbar{
+  margin-top:22px;
+  display:grid;
+  grid-template-columns:1.4fr 1fr 1fr 1fr;
+  gap:12px;
+}
+
+.search,
+.select{
+  width:100%;
+  background:var(--panel2);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.08);
   border-radius:12px;
-  border:1px solid #333;
+  padding:14px;
+  font-size:14px;
+  outline:none;
 }
 
-.tag {
+.search::placeholder{
+  color:#777;
+}
+
+.grid{
+  margin-top:24px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+}
+
+.signal-card{
+  display:block;
+  text-decoration:none;
+  color:inherit;
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;
+  padding:20px;
+  transition:.2s ease;
+}
+
+.signal-card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(212,175,55,.35);
+  box-shadow:0 0 20px rgba(212,175,55,.06);
+}
+
+.signal-card.disabled{
+  opacity:.62;
+  cursor:default;
+}
+
+.signal-card.disabled:hover{
+  transform:none;
+  border-color:rgba(255,255,255,.08);
+  box-shadow:none;
+}
+
+.card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.badges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.badge{
   display:inline-block;
   padding:5px 10px;
-  border-radius:20px;
-  font-size:12px;
-  margin-right:5px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.4px;
 }
 
-.high { background:#8b0000; }
-.medium { background:#b8860b; }
-.low { background:#006400; }
+.high{
+  color:#ffd9d9;
+  background:rgba(255,77,79,.14);
+  border:1px solid rgba(255,77,79,.35);
+}
 
-.published { background:#006666; }
-.pending { background:#444; }
+.medium{
+  color:#ffe1b3;
+  background:rgba(255,159,26,.14);
+  border:1px solid rgba(255,159,26,.35);
+}
 
+.low{
+  color:#d5fff0;
+  background:rgba(0,208,132,.14);
+  border:1px solid rgba(0,208,132,.35);
+}
+
+.live{
+  color:#d5fff0;
+  background:rgba(0,208,132,.14);
+  border:1px solid rgba(0,208,132,.35);
+}
+
+.pending{
+  color:#ddd;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.type{
+  color:var(--gold);
+  background:rgba(212,175,55,.12);
+  border:1px solid rgba(212,175,55,.25);
+}
+
+.band{
+  color:#d7e8ff;
+  background:rgba(90,140,255,.14);
+  border:1px solid rgba(90,140,255,.35);
+}
+
+.card-title{
+  color:#fff;
+  font-size:30px;
+  font-weight:800;
+  margin:0 0 10px;
+}
+
+.card-desc{
+  color:var(--muted);
+  line-height:1.8;
+  font-size:15px;
+  margin:0 0 18px;
+}
+
+.meta{
+  display:grid;
+  gap:10px;
+}
+
+.meta-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  background:var(--panel2);
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:14px;
+}
+
+.meta-label{
+  color:var(--muted);
+}
+
+.meta-value{
+  color:#fff;
+  font-weight:700;
+  text-align:right;
+}
+
+.coming{
+  margin-top:14px;
+  color:#888;
+  font-size:13px;
+}
+
+.empty{
+  display:none;
+  margin-top:20px;
+  text-align:center;
+  color:#888;
+  padding:24px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;
+  background:var(--panel);
+}
+
+.footer{
+  margin-top:32px;
+  text-align:center;
+  color:#777;
+  border-top:1px solid rgba(255,255,255,.05);
+  padding-top:20px;
+  font-size:14px;
+}
+
+html[dir="rtl"] body{
+  text-align:right;
+}
+
+html[dir="rtl"] .topbar,
+html[dir="rtl"] .top-actions,
+html[dir="rtl"] .nav,
+html[dir="rtl"] .toolbar,
+html[dir="rtl"] .badges{
+  direction:rtl;
+}
+
+html[dir="rtl"] .hero,
+html[dir="rtl"] .system-box,
+html[dir="rtl"] .footer,
+html[dir="rtl"] .empty{
+  text-align:center;
+}
+
+html[dir="rtl"] .meta-value{
+  text-align:left;
+}
+
+@media(max-width:980px){
+  .toolbar{
+    grid-template-columns:1fr;
+  }
+
+  .system-strip{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:700px){
+  .topbar{
+    flex-direction:column;
+  }
+
+  h1{
+    font-size:32px;
+  }
+
+  .system-strip{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
-
 <body>
+<div class="wrap">
 
-<div class="container">
+  <div class="topbar">
+    <a class="brand" href="index.html">IBSS</a>
 
-<h1>IBSS Signals System</h1>
-
-<div class="stats">
-  <div class="card">Top Signal: Gaza</div>
-  <div class="card">Live Signals: 5</div>
-  <div class="card">High Priority: 2</div>
-  <div class="card">Dominant: Structural</div>
-</div>
-
-<div id="signals"></div>
-
-</div>
-
-<script>
-
-const signals = [
-{
-  title:"Gaza Structure",
-  weight:"high",
-  region:"Gaza",
-  status:"published",
-  type:"Structural",
-  score:85
-},
-{
-  title:"Lebanon Pressure",
-  weight:"high",
-  region:"Levant",
-  status:"published",
-  type:"Military",
-  score:87
-},
-{
-  title:"Iran Negotiations",
-  weight:"medium",
-  region:"Global",
-  status:"published",
-  type:"Diplomatic",
-  score:61
-},
-{
-  title:"Red Sea Tension",
-  weight:"low",
-  region:"Maritime",
-  status:"pending",
-  type:"Maritime",
-  score:34
-},
-{
-  title:"West Bank Escalation",
-  weight:"low",
-  region:"West Bank",
-  status:"pending",
-  type:"Internal",
-  score:29
-}
-];
-
-function render(){
-  const container = document.getElementById("signals");
-  container.innerHTML = "";
-
-  signals.forEach(s => {
-    container.innerHTML += `
-    <div class="signal">
-      <div>
-        <span class="tag ${s.weight}">${s.weight.toUpperCase()}</span>
-        <span class="tag">${s.region}</span>
-        <span class="tag ${s.status}">${s.status}</span>
+    <div class="top-actions">
+      <div class="nav">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
+        <a href="signals.html" class="active" data-i18n="nav_signals">Signals</a>
+        <a href="reports.html" data-i18n="nav_reports">Reports</a>
+        <a href="models.html" data-i18n="nav_models">Models</a>
+        <a href="about.html" data-i18n="nav_about">About</a>
       </div>
 
-      <h3>${s.title}</h3>
-
-      <p>Type: ${s.type}</p>
-      <p>Score: ${s.score}</p>
-
+      <div class="lang-switch">
+        <button id="btn-en" onclick="setLang('en')">EN</button>
+        <button id="btn-ar" onclick="setLang('ar')">AR</button>
+      </div>
     </div>
-    `;
-  });
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow" data-i18n="eyebrow">Signals System</div>
+    <h1 data-i18n="title">IBSS Signals System</h1>
+    <p class="sub" data-i18n="sub">
+      A ranked sovereign signal architecture based on pressure, influence, publication status, and decision relevance.
+    </p>
+  </div>
+
+  <div class="system-strip">
+    <div class="system-box">
+      <div class="system-label" data-i18n="top_signal">Top Signal</div>
+      <div id="topSignal" class="system-value">-</div>
+    </div>
+    <div class="system-box">
+      <div class="system-label" data-i18n="live_count">Live Signals</div>
+      <div id="liveCount" class="system-value">0</div>
+    </div>
+    <div class="system-box">
+      <div class="system-label" data-i18n="high_count">High Priority</div>
+      <div id="highCount" class="system-value">0</div>
+    </div>
+    <div class="system-box">
+      <div class="system-label" data-i18n="dominant_type">Dominant Type</div>
+      <div id="dominantType" class="system-value">-</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input id="searchInput" class="search" type="text" placeholder="Search signals..." data-i18n-placeholder="search_placeholder">
+
+    <select id="weightFilter" class="select">
+      <option value="all" data-i18n="filter_all_weights">All Weights</option>
+      <option value="HIGH" data-i18n="weight_high">HIGH</option>
+      <option value="MEDIUM" data-i18n="weight_medium">MEDIUM</option>
+      <option value="LOW" data-i18n="weight_low">LOW</option>
+    </select>
+
+    <select id="typeFilter" class="select">
+      <option value="all" data-i18n="filter_all_types">All Types</option>
+      <option value="STRUCTURAL" data-i18n="type_structural">STRUCTURAL</option>
+      <option value="MILITARY" data-i18n="type_military">MILITARY</option>
+      <option value="DIPLOMATIC" data-i18n="type_diplomatic">DIPLOMATIC</option>
+      <option value="MARITIME" data-i18n="type_maritime">MARITIME</option>
+      <option value="SECURITY" data-i18n="type_security">SECURITY</option>
+    </select>
+
+    <select id="statusFilter" class="select">
+      <option value="all" data-i18n="filter_all_status">All Status</option>
+      <option value="live" data-i18n="status_live">Published</option>
+      <option value="pending" data-i18n="status_pending">Pending</option>
+    </select>
+  </div>
+
+  <div id="signalsGrid" class="grid"></div>
+
+  <div id="emptyState" class="empty" data-i18n="empty_state">
+    No signals match the current filters.
+  </div>
+
+  <div class="footer" data-i18n="footer_text">
+    © 2026 IBSS — Signals System | Founded by Naeem M. Dahalan
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+const translations = {
+  en: {
+    nav_home: "Home",
+    nav_dashboard: "Dashboard",
+    nav_signals: "Signals",
+    nav_reports: "Reports",
+    nav_models: "Models",
+    nav_about: "About",
+
+    eyebrow: "Signals System",
+    title: "IBSS Signals System",
+    sub: "A ranked sovereign signal architecture based on pressure, influence, publication status, and decision relevance.",
+
+    top_signal: "Top Signal",
+    live_count: "Live Signals",
+    high_count: "High Priority",
+    dominant_type: "Dominant Type",
+
+    search_placeholder: "Search signals...",
+
+    filter_all_weights: "All Weights",
+    filter_all_types: "All Types",
+    filter_all_status: "All Status",
+
+    weight_high: "HIGH",
+    weight_medium: "MEDIUM",
+    weight_low: "LOW",
+
+    type_structural: "STRUCTURAL",
+    type_military: "MILITARY",
+    type_diplomatic: "DIPLOMATIC",
+    type_maritime: "MARITIME",
+    type_security: "SECURITY",
+
+    status_live: "Published",
+    status_pending: "Pending",
+
+    meta_layer: "Layer",
+    meta_mode: "Decision Mode",
+    meta_score: "Influence Score",
+    meta_band: "Influence Band",
+
+    band_core: "CORE",
+    band_support: "SUPPORT",
+    band_watch: "WATCH",
+
+    coming_soon: "Signal page not yet published.",
+    empty_state: "No signals match the current filters.",
+    footer_text: "© 2026 IBSS — Signals System | Founded by Naeem M. Dahalan"
+  },
+
+  ar: {
+    nav_home: "الرئيسية",
+    nav_dashboard: "لوحة التحكم",
+    nav_signals: "الإشارات",
+    nav_reports: "التقارير",
+    nav_models: "النماذج",
+    nav_about: "حول",
+
+    eyebrow: "نظام الإشارات",
+    title: "نظام إشارات IBSS",
+    sub: "بنية إشارات سيادية مرتبة حسب الضغط والتأثير وحالة النشر وأهمية القرار.",
+
+    top_signal: "الإشارة الأعلى",
+    live_count: "الإشارات الحية",
+    high_count: "عالية الأولوية",
+    dominant_type: "النوع المهيمن",
+
+    search_placeholder: "ابحث داخل الإشارات...",
+
+    filter_all_weights: "كل الأوزان",
+    filter_all_types: "كل الأنواع",
+    filter_all_status: "كل الحالات",
+
+    weight_high: "مرتفع",
+    weight_medium: "متوسط",
+    weight_low: "منخفض",
+
+    type_structural: "بنيوي",
+    type_military: "عسكري",
+    type_diplomatic: "دبلوماسي",
+    type_maritime: "بحري",
+    type_security: "أمني",
+
+    status_live: "منشور",
+    status_pending: "قيد الإعداد",
+
+    meta_layer: "الطبقة",
+    meta_mode: "وضع القرار",
+    meta_score: "درجة التأثير",
+    meta_band: "حزام التأثير",
+
+    band_core: "محوري",
+    band_support: "مساند",
+    band_watch: "مراقبة",
+
+    coming_soon: "صفحة الإشارة لم تُنشر بعد.",
+    empty_state: "لا توجد إشارات تطابق الفلاتر الحالية.",
+    footer_text: "© 2026 IBSS — نظام الإشارات | تأسس بواسطة نعيم م. دحلان"
+  }
+};
+
+let currentLang = localStorage.getItem("ibss_lang") || "en";
+
+function t(key){
+  return translations[currentLang][key] || key;
 }
 
-render();
+function setLang(lang){
+  localStorage.setItem("ibss_lang", lang);
+  currentLang = lang;
+  applyTranslations();
+  renderSignals();
+}
 
+function applyTranslations(){
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    el.placeholder = t(key);
+  });
+
+  document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
+  document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+}
+
+function weightClass(weight){
+  if(weight === "HIGH") return "high";
+  if(weight === "MEDIUM") return "medium";
+  return "low";
+}
+
+function weightLabel(weight){
+  if(weight === "HIGH") return t("weight_high");
+  if(weight === "MEDIUM") return t("weight_medium");
+  return t("weight_low");
+}
+
+function typeLabel(signal){
+  const key = "type_" + signal.signalType.en.toLowerCase();
+  return t(key);
+}
+
+function bandLabel(signal){
+  const key = "band_" + signal.influenceBand.en.toLowerCase();
+  return t(key);
+}
+
+function escapeHtml(text){
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function getSignalItems(){
+  return getRankedSignals().map(signal => ({
+    ...signal,
+    score100: getSignalScore100(signal),
+    status: signal.live ? "live" : "pending"
+  }));
+}
+
+function renderTopStrip(items){
+  const top = items[0] || null;
+  document.getElementById("topSignal").textContent = top ? top.title[currentLang] : "-";
+  document.getElementById("liveCount").textContent = items.filter(i => i.live).length;
+  document.getElementById("highCount").textContent = items.filter(i => i.weight === "HIGH").length;
+  document.getElementById("dominantType").textContent = top ? typeLabel(top) : "-";
+}
+
+function renderSignals(){
+  const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
+  const weightValue = document.getElementById("weightFilter").value;
+  const typeValue = document.getElementById("typeFilter").value;
+  const statusValue = document.getElementById("statusFilter").value;
+
+  const items = getSignalItems().filter(signal => {
+    const title = signal.title[currentLang].toLowerCase();
+    const desc = signal.description[currentLang].toLowerCase();
+    const typeMatch = typeValue === "all" || signal.signalType.en === typeValue;
+    const weightMatch = weightValue === "all" || signal.weight === weightValue;
+    const statusMatch = statusValue === "all" || signal.status === statusValue;
+    const searchMatch = !searchValue || title.includes(searchValue) || desc.includes(searchValue);
+    return typeMatch && weightMatch && statusMatch && searchMatch;
+  });
+
+  renderTopStrip(items);
+
+  const grid = document.getElementById("signalsGrid");
+  const empty = document.getElementById("emptyState");
+
+  if(items.length === 0){
+    grid.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+
+  grid.innerHTML = items.map(signal => {
+    const disabledClass = signal.live ? "" : " disabled";
+    const statusText = signal.live ? t("status_live") : t("status_pending");
+    const content = `
+      <div class="card-top">
+        <div class="badges">
+          <span class="badge ${weightClass(signal.weight)}">${escapeHtml(weightLabel(signal.weight))}</span>
+          <span class="badge type">${escapeHtml(typeLabel(signal))}</span>
+          <span class="badge band">${escapeHtml(bandLabel(signal))}</span>
+          <span class="badge ${signal.live ? "live" : "pending"}">${escapeHtml(statusText)}</span>
+        </div>
+      </div>
+
+      <h2 class="card-title">${escapeHtml(signal.title[currentLang])}</h2>
+      <p class="card-desc">${escapeHtml(signal.description[currentLang])}</p>
+
+      <div class="meta">
+        <div class="meta-row">
+          <span class="meta-label">${escapeHtml(t("meta_layer"))}</span>
+          <span class="meta-value">${escapeHtml(signal.layer[currentLang])}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">${escapeHtml(t("meta_mode"))}</span>
+          <span class="meta-value">${escapeHtml(signal.decisionMode[currentLang])}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">${escapeHtml(t("meta_score"))}</span>
+          <span class="meta-value">${signal.score100}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">${escapeHtml(t("meta_band"))}</span>
+          <span class="meta-value">${escapeHtml(bandLabel(signal))}</span>
+        </div>
+      </div>
+
+      ${signal.live ? "" : `<div class="coming">${escapeHtml(t("coming_soon"))}</div>`}
+    `;
+
+    if(signal.live){
+      return `<a class="signal-card${disabledClass}" href="${signal.link}">${content}</a>`;
+    }
+
+    return `<div class="signal-card${disabledClass}">${content}</div>`;
+  }).join("");
+}
+
+document.getElementById("searchInput").addEventListener("input", renderSignals);
+document.getElementById("weightFilter").addEventListener("change", renderSignals);
+document.getElementById("typeFilter").addEventListener("change", renderSignals);
+document.getElementById("statusFilter").addEventListener("change", renderSignals);
+
+applyTranslations();
+renderSignals();
 </script>
-
 </body>
 </html>
