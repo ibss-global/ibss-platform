@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>IBSS Signals Center</title>
+<title>IBSS Signals System</title>
 
 <style>
 :root{
@@ -31,7 +31,7 @@ body{
 }
 
 .wrap{
-  width:min(1150px,92%);
+  width:min(1180px,92%);
   margin:auto;
   padding:20px 0 60px;
 }
@@ -109,7 +109,7 @@ body{
 
 .hero{
   text-align:center;
-  padding:34px 0 18px;
+  padding:34px 0 20px;
 }
 
 .eyebrow{
@@ -128,15 +128,42 @@ h1{
 
 .sub{
   margin:0 auto;
-  max-width:820px;
+  max-width:850px;
   color:var(--muted);
   line-height:1.8;
 }
 
-.toolbar{
-  margin-top:26px;
+.system-strip{
+  margin-top:24px;
   display:grid;
-  grid-template-columns:1.5fr 1fr 1fr;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.system-box{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:16px;
+  text-align:center;
+}
+
+.system-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:8px;
+}
+
+.system-value{
+  color:var(--gold);
+  font-size:24px;
+  font-weight:800;
+}
+
+.toolbar{
+  margin-top:22px;
+  display:grid;
+  grid-template-columns:1.4fr 1fr 1fr 1fr;
   gap:12px;
 }
 
@@ -147,40 +174,13 @@ h1{
   color:#fff;
   border:1px solid rgba(255,255,255,.08);
   border-radius:12px;
-  padding:14px 14px;
+  padding:14px;
   font-size:14px;
   outline:none;
 }
 
 .search::placeholder{
   color:#777;
-}
-
-.stats{
-  margin-top:16px;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-}
-
-.stat{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:16px;
-  text-align:center;
-}
-
-.stat-label{
-  color:var(--muted);
-  font-size:12px;
-  margin-bottom:8px;
-}
-
-.stat-value{
-  color:var(--gold);
-  font-size:24px;
-  font-weight:800;
 }
 
 .grid{
@@ -259,12 +259,6 @@ h1{
   border:1px solid rgba(0,208,132,.35);
 }
 
-.region{
-  color:var(--gold);
-  background:rgba(212,175,55,.12);
-  border:1px solid rgba(212,175,55,.25);
-}
-
 .live{
   color:#d5fff0;
   background:rgba(0,208,132,.14);
@@ -277,9 +271,21 @@ h1{
   border:1px solid rgba(255,255,255,.12);
 }
 
+.type{
+  color:var(--gold);
+  background:rgba(212,175,55,.12);
+  border:1px solid rgba(212,175,55,.25);
+}
+
+.band{
+  color:#d7e8ff;
+  background:rgba(90,140,255,.14);
+  border:1px solid rgba(90,140,255,.35);
+}
+
 .card-title{
   color:#fff;
-  font-size:28px;
+  font-size:30px;
   font-weight:800;
   margin:0 0 10px;
 }
@@ -357,7 +363,7 @@ html[dir="rtl"] .badges{
 }
 
 html[dir="rtl"] .hero,
-html[dir="rtl"] .stat,
+html[dir="rtl"] .system-box,
 html[dir="rtl"] .footer,
 html[dir="rtl"] .empty{
   text-align:center;
@@ -367,12 +373,12 @@ html[dir="rtl"] .meta-value{
   text-align:left;
 }
 
-@media(max-width:950px){
+@media(max-width:980px){
   .toolbar{
     grid-template-columns:1fr;
   }
 
-  .stats{
+  .system-strip{
     grid-template-columns:repeat(2,1fr);
   }
 
@@ -390,7 +396,7 @@ html[dir="rtl"] .meta-value{
     font-size:32px;
   }
 
-  .stats{
+  .system-strip{
     grid-template-columns:1fr;
   }
 }
@@ -420,48 +426,56 @@ html[dir="rtl"] .meta-value{
   </div>
 
   <div class="hero">
-    <div class="eyebrow" data-i18n="eyebrow">Signal Center</div>
-    <h1 data-i18n="title">IBSS Signals Center</h1>
+    <div class="eyebrow" data-i18n="eyebrow">Signals System</div>
+    <h1 data-i18n="title">IBSS Signals System</h1>
     <p class="sub" data-i18n="sub">
-      Structured signal files ranked by sovereign pressure, decision relevance, and publication status.
+      A ranked sovereign signal architecture based on pressure, influence, publication status, and decision relevance.
     </p>
+  </div>
+
+  <div class="system-strip">
+    <div class="system-box">
+      <div class="system-label" data-i18n="top_signal">Top Signal</div>
+      <div id="topSignal" class="system-value">Gaza Structure</div>
+    </div>
+    <div class="system-box">
+      <div class="system-label" data-i18n="live_count">Live Signals</div>
+      <div id="liveCount" class="system-value">0</div>
+    </div>
+    <div class="system-box">
+      <div class="system-label" data-i18n="high_count">High Priority</div>
+      <div id="highCount" class="system-value">0</div>
+    </div>
+    <div class="system-box">
+      <div class="system-label" data-i18n="dominant_type">Dominant Type</div>
+      <div id="dominantType" class="system-value">STRUCTURAL</div>
+    </div>
   </div>
 
   <div class="toolbar">
     <input id="searchInput" class="search" type="text" placeholder="Search signals..." data-i18n-placeholder="search_placeholder">
-    <select id="regionFilter" class="select">
-      <option value="all" data-i18n="filter_all_regions">All Regions</option>
-      <option value="Levant" data-i18n="filter_levant">Levant</option>
-      <option value="Gaza" data-i18n="filter_gaza">Gaza</option>
-      <option value="Diplomatic" data-i18n="filter_diplomatic">Diplomatic</option>
-      <option value="Maritime" data-i18n="filter_maritime">Maritime</option>
-      <option value="West Bank" data-i18n="filter_westbank">West Bank</option>
-    </select>
+
     <select id="weightFilter" class="select">
       <option value="all" data-i18n="filter_all_weights">All Weights</option>
       <option value="HIGH" data-i18n="weight_high">HIGH</option>
       <option value="MEDIUM" data-i18n="weight_medium">MEDIUM</option>
       <option value="LOW" data-i18n="weight_low">LOW</option>
     </select>
-  </div>
 
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-label" data-i18n="stat_total">Total Signals</div>
-      <div id="statTotal" class="stat-value">0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label" data-i18n="stat_high">High Priority</div>
-      <div id="statHigh" class="stat-value">0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label" data-i18n="stat_live">Published Files</div>
-      <div id="statLive" class="stat-value">0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label" data-i18n="stat_regions">Active Regions</div>
-      <div id="statRegions" class="stat-value">0</div>
-    </div>
+    <select id="typeFilter" class="select">
+      <option value="all" data-i18n="filter_all_types">All Types</option>
+      <option value="STRUCTURAL" data-i18n="type_structural">STRUCTURAL</option>
+      <option value="MILITARY" data-i18n="type_military">MILITARY</option>
+      <option value="DIPLOMATIC" data-i18n="type_diplomatic">DIPLOMATIC</option>
+      <option value="MARITIME" data-i18n="type_maritime">MARITIME</option>
+      <option value="SECURITY" data-i18n="type_security">SECURITY</option>
+    </select>
+
+    <select id="statusFilter" class="select">
+      <option value="all" data-i18n="filter_all_status">All Status</option>
+      <option value="live" data-i18n="status_live">Published</option>
+      <option value="pending" data-i18n="status_pending">Pending</option>
+    </select>
   </div>
 
   <div id="signalsGrid" class="grid"></div>
@@ -471,11 +485,12 @@ html[dir="rtl"] .meta-value{
   </div>
 
   <div class="footer" data-i18n="footer_text">
-    © 2026 IBSS — Signals Center | Founded by Naeem M. Dahalan
+    © 2026 IBSS — Signals System | Founded by Naeem M. Dahalan
   </div>
 
 </div>
 
+<script src="data.js"></script>
 <script>
 const translations = {
   en: {
@@ -486,63 +501,46 @@ const translations = {
     nav_models: "Models",
     nav_about: "About",
 
-    eyebrow: "Signal Center",
-    title: "IBSS Signals Center",
-    sub: "Structured signal files ranked by sovereign pressure, decision relevance, and publication status.",
+    eyebrow: "Signals System",
+    title: "IBSS Signals System",
+    sub: "A ranked sovereign signal architecture based on pressure, influence, publication status, and decision relevance.",
+
+    top_signal: "Top Signal",
+    live_count: "Live Signals",
+    high_count: "High Priority",
+    dominant_type: "Dominant Type",
 
     search_placeholder: "Search signals...",
-    filter_all_regions: "All Regions",
-    filter_levant: "Levant",
-    filter_gaza: "Gaza",
-    filter_diplomatic: "Diplomatic",
-    filter_maritime: "Maritime",
-    filter_westbank: "West Bank",
 
     filter_all_weights: "All Weights",
+    filter_all_types: "All Types",
+    filter_all_status: "All Status",
+
     weight_high: "HIGH",
     weight_medium: "MEDIUM",
     weight_low: "LOW",
 
-    stat_total: "Total Signals",
-    stat_high: "High Priority",
-    stat_live: "Published Files",
-    stat_regions: "Active Regions",
+    type_structural: "STRUCTURAL",
+    type_military: "MILITARY",
+    type_diplomatic: "DIPLOMATIC",
+    type_maritime: "MARITIME",
+    type_security: "SECURITY",
+
+    status_live: "Published",
+    status_pending: "Pending",
 
     meta_layer: "Layer",
     meta_mode: "Decision Mode",
-    meta_status: "Status",
-    meta_score: "Pressure Score",
+    meta_score: "Influence Score",
+    meta_band: "Influence Band",
 
-    status_live: "Published",
-    status_soon: "Pending",
+    band_core: "CORE",
+    band_support: "SUPPORT",
+    band_watch: "WATCH",
+
     coming_soon: "Signal page not yet published.",
     empty_state: "No signals match the current filters.",
-    footer_text: "© 2026 IBSS — Signals Center | Founded by Naeem M. Dahalan",
-
-    sig_lebanon_title: "Lebanon Pressure",
-    sig_lebanon_desc: "Northern front pressure remains active with hybrid escalation patterns across military and political channels.",
-    sig_lebanon_layer: "Military / Hybrid",
-    sig_lebanon_mode: "WATCH / ACT",
-
-    sig_iran_title: "Iran Negotiations",
-    sig_iran_desc: "Diplomatic engagement continues under pressure with unstable leverage and contested escalation boundaries.",
-    sig_iran_layer: "Diplomatic",
-    sig_iran_mode: "PRD",
-
-    sig_gaza_title: "Gaza Structure",
-    sig_gaza_desc: "A compressed structural conflict space where military, governance, humanitarian, and narrative layers intersect.",
-    sig_gaza_layer: "Structural",
-    sig_gaza_mode: "WATCH / PRD",
-
-    sig_redsea_title: "Red Sea Tension",
-    sig_redsea_desc: "Maritime pressure indicators affecting deterrence credibility, logistics confidence, and regional signaling.",
-    sig_redsea_layer: "Maritime",
-    sig_redsea_mode: "Pending",
-
-    sig_westbank_title: "West Bank Escalation",
-    sig_westbank_desc: "Localized pressure patterns with the capacity to alter broader conflict calculations and internal control logic.",
-    sig_westbank_layer: "Internal / Security",
-    sig_westbank_mode: "Pending"
+    footer_text: "© 2026 IBSS — Signals System | Founded by Naeem M. Dahalan"
   },
 
   ar: {
@@ -553,123 +551,48 @@ const translations = {
     nav_models: "النماذج",
     nav_about: "حول",
 
-    eyebrow: "مركز الإشارات",
-    title: "مركز إشارات IBSS",
-    sub: "ملفات إشارات منظمة مرتبة حسب الضغط السيادي وأهمية القرار وحالة النشر.",
+    eyebrow: "نظام الإشارات",
+    title: "نظام إشارات IBSS",
+    sub: "بنية إشارات سيادية مرتبة حسب الضغط والتأثير وحالة النشر وأهمية القرار.",
+
+    top_signal: "الإشارة الأعلى",
+    live_count: "الإشارات الحية",
+    high_count: "عالية الأولوية",
+    dominant_type: "النوع المهيمن",
 
     search_placeholder: "ابحث داخل الإشارات...",
-    filter_all_regions: "كل المناطق",
-    filter_levant: "المشرق",
-    filter_gaza: "غزة",
-    filter_diplomatic: "دبلوماسي",
-    filter_maritime: "بحري",
-    filter_westbank: "الضفة الغربية",
 
     filter_all_weights: "كل الأوزان",
+    filter_all_types: "كل الأنواع",
+    filter_all_status: "كل الحالات",
+
     weight_high: "مرتفع",
     weight_medium: "متوسط",
     weight_low: "منخفض",
 
-    stat_total: "إجمالي الإشارات",
-    stat_high: "إشارات عالية الأولوية",
-    stat_live: "ملفات منشورة",
-    stat_regions: "المناطق النشطة",
+    type_structural: "بنيوي",
+    type_military: "عسكري",
+    type_diplomatic: "دبلوماسي",
+    type_maritime: "بحري",
+    type_security: "أمني",
+
+    status_live: "منشور",
+    status_pending: "قيد الإعداد",
 
     meta_layer: "الطبقة",
     meta_mode: "وضع القرار",
-    meta_status: "الحالة",
-    meta_score: "درجة الضغط",
+    meta_score: "درجة التأثير",
+    meta_band: "حزام التأثير",
 
-    status_live: "منشور",
-    status_soon: "قيد الإعداد",
+    band_core: "محوري",
+    band_support: "مساند",
+    band_watch: "مراقبة",
+
     coming_soon: "صفحة الإشارة لم تُنشر بعد.",
     empty_state: "لا توجد إشارات تطابق الفلاتر الحالية.",
-    footer_text: "© 2026 IBSS — مركز الإشارات | تأسس بواسطة نعيم م. دحلان",
-
-    sig_lebanon_title: "الضغط على لبنان",
-    sig_lebanon_desc: "ضغط الجبهة الشمالية ما يزال نشطًا ضمن أنماط تصعيد هجينة عسكرية وسياسية.",
-    sig_lebanon_layer: "عسكري / هجين",
-    sig_lebanon_mode: "مراقبة / تحرك",
-
-    sig_iran_title: "المفاوضات الإيرانية",
-    sig_iran_desc: "الانخراط الدبلوماسي مستمر تحت الضغط مع نفوذ متقلب وحدود تصعيد متنازع عليها.",
-    sig_iran_layer: "دبلوماسي",
-    sig_iran_mode: "استعداد",
-
-    sig_gaza_title: "بنية غزة",
-    sig_gaza_desc: "حيز صراع بنيوي مضغوط تتقاطع فيه الطبقات العسكرية والحوكمية والإنسانية والسردية.",
-    sig_gaza_layer: "بنيوي",
-    sig_gaza_mode: "مراقبة / استعداد",
-
-    sig_redsea_title: "توتر البحر الأحمر",
-    sig_redsea_desc: "مؤشرات ضغط بحري تؤثر على الردع والثقة اللوجستية والإشارات الإقليمية.",
-    sig_redsea_layer: "بحري",
-    sig_redsea_mode: "قيد الإعداد",
-
-    sig_westbank_title: "تصعيد الضفة الغربية",
-    sig_westbank_desc: "أنماط ضغط موضعية قادرة على تعديل الحسابات الأوسع للصراع ومنطق السيطرة الداخلي.",
-    sig_westbank_layer: "داخلي / أمني",
-    sig_westbank_mode: "قيد الإعداد"
+    footer_text: "© 2026 IBSS — نظام الإشارات | تأسس بواسطة نعيم م. دحلان"
   }
 };
-
-const signals = [
-  {
-    titleKey: "sig_lebanon_title",
-    descKey: "sig_lebanon_desc",
-    layerKey: "sig_lebanon_layer",
-    modeKey: "sig_lebanon_mode",
-    region: "Levant",
-    weight: "HIGH",
-    link: "signal-lebanon.html",
-    live: true,
-    score: 87
-  },
-  {
-    titleKey: "sig_gaza_title",
-    descKey: "sig_gaza_desc",
-    layerKey: "sig_gaza_layer",
-    modeKey: "sig_gaza_mode",
-    region: "Gaza",
-    weight: "HIGH",
-    link: "signal-gaza.html",
-    live: true,
-    score: 85
-  },
-  {
-    titleKey: "sig_iran_title",
-    descKey: "sig_iran_desc",
-    layerKey: "sig_iran_layer",
-    modeKey: "sig_iran_mode",
-    region: "Diplomatic",
-    weight: "MEDIUM",
-    link: "signal-iran.html",
-    live: true,
-    score: 61
-  },
-  {
-    titleKey: "sig_redsea_title",
-    descKey: "sig_redsea_desc",
-    layerKey: "sig_redsea_layer",
-    modeKey: "sig_redsea_mode",
-    region: "Maritime",
-    weight: "LOW",
-    link: "#",
-    live: false,
-    score: 34
-  },
-  {
-    titleKey: "sig_westbank_title",
-    descKey: "sig_westbank_desc",
-    layerKey: "sig_westbank_layer",
-    modeKey: "sig_westbank_mode",
-    region: "West Bank",
-    weight: "LOW",
-    link: "#",
-    live: false,
-    score: 29
-  }
-];
 
 let currentLang = localStorage.getItem("ibss_lang") || "en";
 
@@ -714,43 +637,60 @@ function weightLabel(weight){
   return t("weight_low");
 }
 
+function typeLabel(signal){
+  const key = "type_" + signal.signalType.en.toLowerCase();
+  return t(key);
+}
+
+function bandLabel(signal){
+  const key = "band_" + signal.influenceBand.en.toLowerCase();
+  return t(key);
+}
+
 function escapeHtml(text){
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 }
 
-function renderStats(filtered){
-  document.getElementById("statTotal").textContent = filtered.length;
-  document.getElementById("statHigh").textContent = filtered.filter(s => s.weight === "HIGH").length;
-  document.getElementById("statLive").textContent = filtered.filter(s => s.live).length;
-  document.getElementById("statRegions").textContent = new Set(filtered.map(s => s.region)).size;
+function getSignalItems(){
+  return getRankedSignals().map(signal => ({
+    ...signal,
+    score100: getSignalScore100(signal),
+    status: signal.live ? "live" : "pending"
+  }));
+}
+
+function renderTopStrip(items){
+  const top = items[0] || null;
+  document.getElementById("topSignal").textContent = top ? top.title[currentLang] : "-";
+  document.getElementById("liveCount").textContent = items.filter(i => i.live).length;
+  document.getElementById("highCount").textContent = items.filter(i => i.weight === "HIGH").length;
+  document.getElementById("dominantType").textContent = top ? typeLabel(top) : "-";
 }
 
 function renderSignals(){
   const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
-  const regionValue = document.getElementById("regionFilter").value;
   const weightValue = document.getElementById("weightFilter").value;
+  const typeValue = document.getElementById("typeFilter").value;
+  const statusValue = document.getElementById("statusFilter").value;
 
-  const filtered = signals
-    .filter(signal => {
-      const title = t(signal.titleKey).toLowerCase();
-      const desc = t(signal.descKey).toLowerCase();
+  const items = getSignalItems().filter(signal => {
+    const title = signal.title[currentLang].toLowerCase();
+    const desc = signal.description[currentLang].toLowerCase();
+    const typeMatch = typeValue === "all" || signal.signalType.en === typeValue;
+    const weightMatch = weightValue === "all" || signal.weight === weightValue;
+    const statusMatch = statusValue === "all" || signal.status === statusValue;
+    const searchMatch = !searchValue || title.includes(searchValue) || desc.includes(searchValue);
+    return typeMatch && weightMatch && statusMatch && searchMatch;
+  });
 
-      const searchMatch = !searchValue || title.includes(searchValue) || desc.includes(searchValue);
-      const regionMatch = regionValue === "all" || signal.region === regionValue;
-      const weightMatch = weightValue === "all" || signal.weight === weightValue;
-
-      return searchMatch && regionMatch && weightMatch;
-    })
-    .sort((a, b) => b.score - a.score);
-
-  renderStats(filtered);
+  renderTopStrip(items);
 
   const grid = document.getElementById("signalsGrid");
   const empty = document.getElementById("emptyState");
 
-  if(filtered.length === 0){
+  if(items.length === 0){
     grid.innerHTML = "";
     empty.style.display = "block";
     return;
@@ -758,40 +698,38 @@ function renderSignals(){
 
   empty.style.display = "none";
 
-  grid.innerHTML = filtered.map(signal => {
-    const title = escapeHtml(t(signal.titleKey));
-    const desc = escapeHtml(t(signal.descKey));
-    const layer = escapeHtml(t(signal.layerKey));
-    const mode = escapeHtml(t(signal.modeKey));
-    const statusText = signal.live ? t("status_live") : t("status_soon");
+  grid.innerHTML = items.map(signal => {
     const disabledClass = signal.live ? "" : " disabled";
-    const tagClass = weightClass(signal.weight);
-    const statusClass = signal.live ? "live" : "pending";
-
+    const statusText = signal.live ? t("status_live") : t("status_pending");
     const content = `
       <div class="card-top">
         <div class="badges">
-          <span class="badge ${tagClass}">${escapeHtml(weightLabel(signal.weight))}</span>
-          <span class="badge region">${escapeHtml(signal.region)}</span>
-          <span class="badge ${statusClass}">${escapeHtml(statusText)}</span>
+          <span class="badge ${weightClass(signal.weight)}">${escapeHtml(weightLabel(signal.weight))}</span>
+          <span class="badge type">${escapeHtml(typeLabel(signal))}</span>
+          <span class="badge band">${escapeHtml(bandLabel(signal))}</span>
+          <span class="badge ${signal.live ? "live" : "pending"}">${escapeHtml(statusText)}</span>
         </div>
       </div>
 
-      <h2 class="card-title">${title}</h2>
-      <p class="card-desc">${desc}</p>
+      <h2 class="card-title">${escapeHtml(signal.title[currentLang])}</h2>
+      <p class="card-desc">${escapeHtml(signal.description[currentLang])}</p>
 
       <div class="meta">
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_layer"))}</span>
-          <span class="meta-value">${layer}</span>
+          <span class="meta-value">${escapeHtml(signal.layer[currentLang])}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_mode"))}</span>
-          <span class="meta-value">${mode}</span>
+          <span class="meta-value">${escapeHtml(signal.decisionMode[currentLang])}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_score"))}</span>
-          <span class="meta-value">${signal.score}</span>
+          <span class="meta-value">${signal.score100}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">${escapeHtml(t("meta_band"))}</span>
+          <span class="meta-value">${escapeHtml(bandLabel(signal))}</span>
         </div>
       </div>
 
@@ -807,8 +745,9 @@ function renderSignals(){
 }
 
 document.getElementById("searchInput").addEventListener("input", renderSignals);
-document.getElementById("regionFilter").addEventListener("change", renderSignals);
 document.getElementById("weightFilter").addEventListener("change", renderSignals);
+document.getElementById("typeFilter").addEventListener("change", renderSignals);
+document.getElementById("statusFilter").addEventListener("change", renderSignals);
 
 applyTranslations();
 renderSignals();
