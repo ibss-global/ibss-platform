@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBSS Reports</title>
+<title>IBSS Reports Center</title>
 
 <style>
 :root{
@@ -13,18 +13,25 @@
   --gold:#d4af37;
   --text:#e8e8e8;
   --muted:#9d9d9d;
+  --red:#ff4d4f;
+  --orange:#ff9f1a;
+  --green:#00d084;
   --border:rgba(212,175,55,.28);
 }
+
+*{box-sizing:border-box}
 
 body{
   margin:0;
   font-family:Arial,sans-serif;
-  background:var(--bg);
+  background:
+    radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+    var(--bg);
   color:var(--text);
 }
 
 .wrap{
-  width:min(1100px,92%);
+  width:min(1150px,92%);
   margin:auto;
   padding:20px 0 60px;
 }
@@ -33,24 +40,42 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  gap:12px;
+  padding:14px 0 20px;
   border-bottom:1px solid rgba(255,255,255,.05);
-  padding-bottom:15px;
 }
 
 .brand{
   color:var(--gold);
-  font-size:26px;
-  font-weight:700;
+  font-size:28px;
+  font-weight:800;
   text-decoration:none;
+  letter-spacing:1px;
+}
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.nav{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
 }
 
 .nav a{
   color:var(--muted);
   text-decoration:none;
-  margin:0 6px;
-  padding:8px 12px;
   border:1px solid rgba(255,255,255,.08);
+  padding:10px 14px;
   border-radius:10px;
+  font-size:14px;
+  transition:.2s ease;
 }
 
 .nav a.active,
@@ -59,123 +84,638 @@ body{
   border-color:var(--border);
 }
 
+.lang-switch{
+  display:flex;
+  gap:6px;
+}
+
+.lang-switch button{
+  background:none;
+  border:1px solid rgba(255,255,255,.1);
+  color:#ccc;
+  padding:8px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:.2s ease;
+  font-size:13px;
+}
+
+.lang-switch button:hover,
+.lang-switch button.active{
+  color:var(--gold);
+  border-color:var(--gold);
+}
+
 .hero{
   text-align:center;
-  padding:30px 0;
+  padding:34px 0 18px;
 }
 
-.hero h1{
-  font-size:36px;
-  margin:0;
-}
-
-.hero p{
-  color:var(--muted);
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:18px;
-}
-
-.report{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:18px;
-  padding:20px;
-  transition:.2s;
-}
-
-.report:hover{
-  border-color:var(--border);
-}
-
-.title{
+.eyebrow{
   color:var(--gold);
-  font-size:24px;
-  margin-bottom:8px;
-}
-
-.meta{
+  letter-spacing:2px;
+  text-transform:uppercase;
   font-size:13px;
-  color:var(--muted);
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
 
-.content{
+h1{
+  margin:0 0 10px;
+  font-size:40px;
+  color:#fff;
+}
+
+.sub{
+  margin:0 auto;
+  max-width:800px;
+  color:var(--muted);
   line-height:1.8;
 }
 
+.toolbar{
+  margin-top:26px;
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr;
+  gap:12px;
+}
+
+.search,
+.select{
+  width:100%;
+  background:var(--panel2);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  padding:14px 14px;
+  font-size:14px;
+  outline:none;
+}
+
+.search::placeholder{
+  color:#777;
+}
+
+.stats{
+  margin-top:16px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.stat{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:16px;
+  text-align:center;
+}
+
+.stat-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:8px;
+}
+
+.stat-value{
+  color:var(--gold);
+  font-size:24px;
+  font-weight:800;
+}
+
+.grid{
+  margin-top:24px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+}
+
+.report-card{
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;
+  padding:20px;
+  transition:.2s ease;
+}
+
+.report-card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(212,175,55,.35);
+  box-shadow:0 0 20px rgba(212,175,55,.06);
+}
+
+.card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.badges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.4px;
+}
+
+.grade{
+  color:#fff1cc;
+  background:rgba(212,175,55,.14);
+  border:1px solid rgba(212,175,55,.35);
+}
+
+.high{
+  color:#ffd9d9;
+  background:rgba(255,77,79,.14);
+  border:1px solid rgba(255,77,79,.35);
+}
+
+.medium{
+  color:#ffe1b3;
+  background:rgba(255,159,26,.14);
+  border:1px solid rgba(255,159,26,.35);
+}
+
+.policy{
+  color:#d5fff0;
+  background:rgba(0,208,132,.14);
+  border:1px solid rgba(0,208,132,.35);
+}
+
+.card-title{
+  color:var(--gold);
+  font-size:28px;
+  font-weight:800;
+  margin:0 0 10px;
+}
+
+.card-meta{
+  color:var(--muted);
+  line-height:1.7;
+  font-size:14px;
+  margin-bottom:14px;
+}
+
+.card-desc{
+  color:#ddd;
+  line-height:1.9;
+  font-size:15px;
+  margin:0 0 18px;
+}
+
+.meta{
+  display:grid;
+  gap:10px;
+}
+
+.meta-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  background:var(--panel2);
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:14px;
+}
+
+.meta-label{
+  color:var(--muted);
+}
+
+.meta-value{
+  color:#fff;
+  font-weight:700;
+  text-align:right;
+}
+
+.empty{
+  display:none;
+  margin-top:20px;
+  text-align:center;
+  color:#888;
+  padding:24px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;
+  background:var(--panel);
+}
+
 .footer{
-  margin-top:30px;
+  margin-top:32px;
   text-align:center;
   color:#777;
   border-top:1px solid rgba(255,255,255,.05);
   padding-top:20px;
+  font-size:14px;
+}
+
+html[dir="rtl"] body{
+  text-align:right;
+}
+
+html[dir="rtl"] .topbar,
+html[dir="rtl"] .top-actions,
+html[dir="rtl"] .nav,
+html[dir="rtl"] .toolbar,
+html[dir="rtl"] .badges{
+  direction:rtl;
+}
+
+html[dir="rtl"] .hero,
+html[dir="rtl"] .stat,
+html[dir="rtl"] .footer,
+html[dir="rtl"] .empty{
+  text-align:center;
+}
+
+html[dir="rtl"] .meta-value{
+  text-align:left;
+}
+
+@media(max-width:950px){
+  .toolbar{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:700px){
+  .topbar{
+    flex-direction:column;
+  }
+
+  h1{
+    font-size:32px;
+  }
+
+  .stats{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
-
 <body>
 <div class="wrap">
 
-<div class="topbar">
-<a class="brand" href="index.html">IBSS</a>
-<div class="nav">
-<a href="index.html">Home</a>
-<a href="dashboard.html">Dashboard</a>
-<a href="signals.html">Signals</a>
-<a href="reports.html" class="active">Reports</a>
-<a href="models.html">Models</a>
-<a href="about.html">About</a>
-</div>
+  <div class="topbar">
+    <a class="brand" href="index.html">IBSS</a>
+
+    <div class="top-actions">
+      <div class="nav">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
+        <a href="signals.html" data-i18n="nav_signals">Signals</a>
+        <a href="reports.html" class="active" data-i18n="nav_reports">Reports</a>
+        <a href="models.html" data-i18n="nav_models">Models</a>
+        <a href="about.html" data-i18n="nav_about">About</a>
+      </div>
+
+      <div class="lang-switch">
+        <button id="btn-en" onclick="setLang('en')">EN</button>
+        <button id="btn-ar" onclick="setLang('ar')">AR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow" data-i18n="eyebrow">Reports Layer</div>
+    <h1 data-i18n="title">IBSS Reports Center</h1>
+    <p class="sub" data-i18n="sub">
+      Decision-grade strategic outputs, policy framing, and sovereign analytical summaries.
+    </p>
+  </div>
+
+  <div class="toolbar">
+    <input id="searchInput" class="search" type="text" placeholder="Search reports..." data-i18n-placeholder="search_placeholder">
+    <select id="typeFilter" class="select">
+      <option value="all" data-i18n="filter_all_types">All Types</option>
+      <option value="SDR">SDR</option>
+      <option value="PP">PP</option>
+      <option value="SDB">SDB</option>
+    </select>
+    <select id="priorityFilter" class="select">
+      <option value="all" data-i18n="filter_all_priority">All Priority Levels</option>
+      <option value="HIGH" data-i18n="priority_high">HIGH</option>
+      <option value="MEDIUM" data-i18n="priority_medium">MEDIUM</option>
+    </select>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_total">Total Reports</div>
+      <div id="statTotal" class="stat-value">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_sdr">SDR Reports</div>
+      <div id="statSDR" class="stat-value">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_policy">Policy Papers / Briefs</div>
+      <div id="statPolicy" class="stat-value">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_high">High Priority</div>
+      <div id="statHigh" class="stat-value">0</div>
+    </div>
+  </div>
+
+  <div id="reportsGrid" class="grid"></div>
+
+  <div id="emptyState" class="empty" data-i18n="empty_state">
+    No reports match the current filters.
+  </div>
+
+  <div class="footer" data-i18n="footer_text">
+    © 2026 IBSS — Reports Center | Founded by Naeem M. Dahalan
+  </div>
+
 </div>
 
-<div class="hero">
-<h1>IBSS Reports</h1>
-<p>Decision-grade strategic outputs and sovereign assessments.</p>
-</div>
+<script>
+const translations = {
+  en: {
+    nav_home: "Home",
+    nav_dashboard: "Dashboard",
+    nav_signals: "Signals",
+    nav_reports: "Reports",
+    nav_models: "Models",
+    nav_about: "About",
 
-<div class="grid">
+    eyebrow: "Reports Layer",
+    title: "IBSS Reports Center",
+    sub: "Decision-grade strategic outputs, policy framing, and sovereign analytical summaries.",
 
-<div class="report">
-<div class="title">SDR-001 — Lebanon Escalation Window</div>
-<div class="meta">Classification: Sovereign | Status: Active</div>
-<div class="content">
-Northern front escalation is entering a controlled instability phase.  
-The probability distribution suggests prolonged pressure without full war breakout.  
+    search_placeholder: "Search reports...",
+    filter_all_types: "All Types",
+    filter_all_priority: "All Priority Levels",
+    priority_high: "HIGH",
+    priority_medium: "MEDIUM",
 
-Decision Bias: Maintain WATCH posture while preparing rapid escalation response.
-</div>
-</div>
+    stat_total: "Total Reports",
+    stat_sdr: "SDR Reports",
+    stat_policy: "Policy Papers / Briefs",
+    stat_high: "High Priority",
 
-<div class="report">
-<div class="title">PP-001 — Gaza Structural Pressure</div>
-<div class="meta">Policy Paper | Structural Layer</div>
-<div class="content">
-Gaza represents a compressed system where humanitarian, military, and governance pressures converge.  
+    meta_type: "Type",
+    meta_priority: "Priority",
+    meta_status: "Status",
+    status_active: "Active",
+    status_final: "Final",
 
-Any shift in aid, control, or population flow may trigger disproportionate strategic outcomes.
-</div>
-</div>
+    empty_state: "No reports match the current filters.",
+    footer_text: "© 2026 IBSS — Reports Center | Founded by Naeem M. Dahalan",
 
-<div class="report">
-<div class="title">SDB-001 — Iran Negotiation Trajectory</div>
-<div class="meta">Policy Brief</div>
-<div class="content">
-Diplomatic negotiation remains under pressure with unclear enforcement mechanisms.  
+    r1_title: "SDR-001 — Lebanon Escalation Window",
+    r1_meta: "Classification: Sovereign | Status: Active",
+    r1_desc: "Northern front escalation is entering a controlled instability phase. The probability distribution suggests prolonged pressure without full war breakout. Decision Bias: Maintain WATCH posture while preparing rapid escalation response.",
 
-Outcome is likely prolonged negotiation rather than decisive breakthrough.
-</div>
-</div>
+    r2_title: "PP-001 — Gaza Structural Pressure",
+    r2_meta: "Policy Paper | Structural Layer",
+    r2_desc: "Gaza represents a compressed system where humanitarian, military, and governance pressures converge. Any shift in aid, control, or population flow may trigger disproportionate strategic outcomes.",
 
-</div>
+    r3_title: "SDB-001 — Iran Negotiation Trajectory",
+    r3_meta: "Policy Brief",
+    r3_desc: "Diplomatic negotiation remains under pressure with unclear enforcement mechanisms. The likely outcome is prolonged negotiation rather than decisive breakthrough.",
 
-<div class="footer">
-© 2026 IBSS — Sovereign Decision System
-</div>
+    r4_title: "SDR-002 — Gaza Structural Compression",
+    r4_meta: "Classification: Sovereign | Status: Active",
+    r4_desc: "Gaza has transitioned from a battlefield into a structured pressure system where military force, governance fragility, humanitarian stress, and narrative competition intersect. Decision Bias: Maintain WATCH / PRD posture and monitor structural shifts rather than isolated events."
+  },
 
-</div>
+  ar: {
+    nav_home: "الرئيسية",
+    nav_dashboard: "لوحة التحكم",
+    nav_signals: "الإشارات",
+    nav_reports: "التقارير",
+    nav_models: "النماذج",
+    nav_about: "حول",
+
+    eyebrow: "طبقة التقارير",
+    title: "مركز تقارير IBSS",
+    sub: "مخرجات استراتيجية بدرجة قرار، وتأطير سياساتي، وملخصات تحليلية سيادية.",
+
+    search_placeholder: "ابحث داخل التقارير...",
+    filter_all_types: "كل الأنواع",
+    filter_all_priority: "كل مستويات الأولوية",
+    priority_high: "مرتفع",
+    priority_medium: "متوسط",
+
+    stat_total: "إجمالي التقارير",
+    stat_sdr: "تقارير SDR",
+    stat_policy: "الأوراق والملخصات السياساتية",
+    stat_high: "عالية الأولوية",
+
+    meta_type: "النوع",
+    meta_priority: "الأولوية",
+    meta_status: "الحالة",
+    status_active: "نشط",
+    status_final: "نهائي",
+
+    empty_state: "لا توجد تقارير تطابق الفلاتر الحالية.",
+    footer_text: "© 2026 IBSS — مركز التقارير | تأسس بواسطة نعيم م. دحلان",
+
+    r1_title: "SDR-001 — نافذة التصعيد في لبنان",
+    r1_meta: "التصنيف: سيادي | الحالة: نشط",
+    r1_desc: "الجبهة الشمالية تدخل مرحلة من عدم الاستقرار المضبوط. توزيع الاحتمالات يشير إلى ضغط ممتد دون انفجار حرب شاملة. انحياز القرار: الحفاظ على وضعية المراقبة مع التحضير لاستجابة تصعيدية سريعة.",
+
+    r2_title: "PP-001 — الضغط البنيوي في غزة",
+    r2_meta: "ورقة سياسات | الطبقة البنيوية",
+    r2_desc: "تمثل غزة نظامًا مضغوطًا تتقاطع فيه الضغوط الإنسانية والعسكرية والحوكمية. أي تحول في المساعدات أو السيطرة أو تدفق السكان قد يولد نتائج استراتيجية غير متناسبة.",
+
+    r3_title: "SDB-001 — مسار المفاوضات الإيرانية",
+    r3_meta: "موجز سياساتي",
+    r3_desc: "المفاوضات الدبلوماسية ما تزال تحت الضغط مع غموض في آليات الفرض والتنفيذ. النتيجة الأرجح هي إطالة التفاوض بدلًا من اختراق حاسم.",
+
+    r4_title: "SDR-002 — الانضغاط البنيوي في غزة",
+    r4_meta: "التصنيف: سيادي | الحالة: نشط",
+    r4_desc: "انتقلت غزة من ساحة قتال إلى نظام ضغط بنيوي تتقاطع فيه القوة العسكرية وهشاشة الحوكمة والضغط الإنساني والتنافس السردي. انحياز القرار: الحفاظ على وضعية مراقبة / استعداد ومتابعة التحولات البنيوية بدلًا من الأحداث المعزولة."
+  }
+};
+
+const reports = [
+  {
+    titleKey: "r1_title",
+    metaKey: "r1_meta",
+    descKey: "r1_desc",
+    type: "SDR",
+    priority: "HIGH",
+    status: "active",
+    badgeClass: "grade"
+  },
+  {
+    titleKey: "r2_title",
+    metaKey: "r2_meta",
+    descKey: "r2_desc",
+    type: "PP",
+    priority: "HIGH",
+    status: "final",
+    badgeClass: "policy"
+  },
+  {
+    titleKey: "r3_title",
+    metaKey: "r3_meta",
+    descKey: "r3_desc",
+    type: "SDB",
+    priority: "MEDIUM",
+    status: "final",
+    badgeClass: "policy"
+  },
+  {
+    titleKey: "r4_title",
+    metaKey: "r4_meta",
+    descKey: "r4_desc",
+    type: "SDR",
+    priority: "HIGH",
+    status: "active",
+    badgeClass: "grade"
+  }
+];
+
+let currentLang = localStorage.getItem("ibss_lang") || "en";
+
+function t(key){
+  return translations[currentLang][key] || key;
+}
+
+function setLang(lang){
+  localStorage.setItem("ibss_lang", lang);
+  currentLang = lang;
+  applyTranslations();
+  renderReports();
+}
+
+function applyTranslations(){
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    el.placeholder = t(key);
+  });
+
+  document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
+  document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+}
+
+function escapeHtml(text){
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function priorityLabel(priority){
+  return priority === "HIGH" ? t("priority_high") : t("priority_medium");
+}
+
+function priorityClass(priority){
+  return priority === "HIGH" ? "high" : "medium";
+}
+
+function statusLabel(status){
+  return status === "active" ? t("status_active") : t("status_final");
+}
+
+function renderStats(filtered){
+  document.getElementById("statTotal").textContent = filtered.length;
+  document.getElementById("statSDR").textContent = filtered.filter(r => r.type === "SDR").length;
+  document.getElementById("statPolicy").textContent = filtered.filter(r => r.type === "PP" || r.type === "SDB").length;
+  document.getElementById("statHigh").textContent = filtered.filter(r => r.priority === "HIGH").length;
+}
+
+function renderReports(){
+  const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
+  const typeValue = document.getElementById("typeFilter").value;
+  const priorityValue = document.getElementById("priorityFilter").value;
+
+  const filtered = reports.filter(report => {
+    const title = t(report.titleKey).toLowerCase();
+    const meta = t(report.metaKey).toLowerCase();
+    const desc = t(report.descKey).toLowerCase();
+
+    const searchMatch = !searchValue || title.includes(searchValue) || meta.includes(searchValue) || desc.includes(searchValue);
+    const typeMatch = typeValue === "all" || report.type === typeValue;
+    const priorityMatch = priorityValue === "all" || report.priority === priorityValue;
+
+    return searchMatch && typeMatch && priorityMatch;
+  });
+
+  renderStats(filtered);
+
+  const grid = document.getElementById("reportsGrid");
+  const empty = document.getElementById("emptyState");
+
+  if(filtered.length === 0){
+    grid.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+
+  grid.innerHTML = filtered.map(report => {
+    const title = escapeHtml(t(report.titleKey));
+    const meta = escapeHtml(t(report.metaKey));
+    const desc = escapeHtml(t(report.descKey));
+
+    return `
+      <div class="report-card">
+        <div class="card-top">
+          <div class="badges">
+            <span class="badge ${report.badgeClass}">${escapeHtml(report.type)}</span>
+            <span class="badge ${priorityClass(report.priority)}">${escapeHtml(priorityLabel(report.priority))}</span>
+          </div>
+        </div>
+
+        <h2 class="card-title">${title}</h2>
+        <div class="card-meta">${meta}</div>
+        <p class="card-desc">${desc}</p>
+
+        <div class="meta">
+          <div class="meta-row">
+            <span class="meta-label">${escapeHtml(t("meta_type"))}</span>
+            <span class="meta-value">${escapeHtml(report.type)}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">${escapeHtml(t("meta_priority"))}</span>
+            <span class="meta-value">${escapeHtml(priorityLabel(report.priority))}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">${escapeHtml(t("meta_status"))}</span>
+            <span class="meta-value">${escapeHtml(statusLabel(report.status))}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+document.getElementById("searchInput").addEventListener("input", renderReports);
+document.getElementById("typeFilter").addEventListener("change", renderReports);
+document.getElementById("priorityFilter").addEventListener("change", renderReports);
+
+applyTranslations();
+renderReports();
+</script>
 </body>
 </html>
