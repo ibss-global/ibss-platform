@@ -3,22 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBSS — Sovereign Intelligence Platform</title>
+<title>IBSS — International Bureau of Sovereign Studies</title>
 
 <style>
 :root{
   --bg:#040404;
+  --panel:#0d0d0d;
+  --panel2:#121212;
   --gold:#d4af37;
   --text:#e8e8e8;
   --muted:#9d9d9d;
-  --border:rgba(212,175,55,.28);
-  --panel:#0d0d0d;
   --green:#00d084;
+  --orange:#ff9f1a;
+  --red:#ff4d4f;
+  --border:rgba(212,175,55,.28);
 }
 
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
@@ -30,9 +31,9 @@ body{
 }
 
 .wrap{
-  width:min(1000px,92%);
+  width:min(1100px,92%);
   margin:auto;
-  padding:24px 0 60px;
+  padding:20px 0 60px;
 }
 
 .topbar{
@@ -40,8 +41,9 @@ body{
   justify-content:space-between;
   align-items:center;
   gap:12px;
-  padding-bottom:18px;
+  padding:14px 0 20px;
   border-bottom:1px solid rgba(255,255,255,.05);
+  flex-wrap:wrap;
 }
 
 .brand{
@@ -77,8 +79,8 @@ body{
   transition:.2s ease;
 }
 
-.nav a:hover,
-.nav a.active{
+.nav a.active,
+.nav a:hover{
   color:var(--gold);
   border-color:var(--border);
 }
@@ -107,40 +109,40 @@ body{
 
 .hero{
   text-align:center;
-  padding:56px 0 28px;
+  padding:56px 0 30px;
 }
 
 .hero h1{
-  font-size:clamp(36px, 6vw, 64px);
-  line-height:1.15;
+  font-size:clamp(34px, 5vw, 62px);
+  line-height:1.12;
   color:#fff;
-  margin:0 0 18px;
+  margin:0 0 14px;
 }
 
-.subtitle{
+.hero .official{
   color:var(--gold);
-  font-size:clamp(22px, 3vw, 32px);
-  margin:0 0 16px;
+  font-size:clamp(18px, 2.5vw, 24px);
+  font-weight:700;
+  margin-bottom:14px;
+}
+
+.hero .desc{
+  color:var(--muted);
+  max-width:780px;
+  margin:0 auto;
+  line-height:1.9;
+  font-size:clamp(16px, 2vw, 19px);
+}
+
+.hero .system-line{
+  margin-top:18px;
+  color:var(--green);
+  font-size:15px;
   font-weight:700;
 }
 
-.desc{
-  color:var(--muted);
-  max-width:760px;
-  margin:0 auto;
-  line-height:1.8;
-  font-size:clamp(17px, 2vw, 20px);
-}
-
-.system{
-  margin-top:18px;
-  color:var(--green);
-  font-size:16px;
-  font-weight:600;
-}
-
-.buttons{
-  margin-top:34px;
+.hero-buttons{
+  margin-top:30px;
   display:flex;
   justify-content:center;
   gap:12px;
@@ -151,12 +153,13 @@ body{
   padding:14px 20px;
   border-radius:14px;
   text-decoration:none;
-  font-size:16px;
+  font-size:15px;
   border:1px solid rgba(255,255,255,.1);
   color:#ccc;
   background:transparent;
   transition:.2s ease;
   min-width:180px;
+  text-align:center;
 }
 
 .btn:hover{
@@ -177,6 +180,38 @@ body{
   opacity:.92;
 }
 
+.status-grid{
+  margin-top:34px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+
+.status-card{
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+}
+
+.status-label{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:10px;
+}
+
+.status-value{
+  font-size:30px;
+  font-weight:800;
+  color:#fff;
+}
+
+.status-value.low{color:var(--green)}
+.status-value.medium{color:var(--orange)}
+.status-value.high{color:var(--red)}
+.status-value.gold{color:var(--gold)}
+
 .section{
   margin-top:64px;
 }
@@ -184,7 +219,7 @@ body{
 .section h2{
   color:var(--gold);
   text-align:center;
-  font-size:clamp(28px, 4vw, 42px);
+  font-size:clamp(28px, 4vw, 40px);
   margin-bottom:24px;
 }
 
@@ -192,7 +227,6 @@ body{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:16px;
-  margin-top:20px;
 }
 
 .card{
@@ -205,7 +239,7 @@ body{
 
 .card strong{
   display:block;
-  font-size:clamp(28px, 4vw, 42px);
+  font-size:clamp(24px, 3vw, 38px);
   margin-bottom:14px;
   color:#fff;
 }
@@ -213,8 +247,8 @@ body{
 .card p{
   margin:0;
   color:#ddd;
-  line-height:1.6;
-  font-size:clamp(15px, 2vw, 18px);
+  line-height:1.7;
+  font-size:15px;
 }
 
 .founder{
@@ -233,7 +267,6 @@ body{
   text-align:center;
 }
 
-/* RTL */
 html[dir="rtl"] body{
   text-align:right;
 }
@@ -241,11 +274,12 @@ html[dir="rtl"] body{
 html[dir="rtl"] .topbar,
 html[dir="rtl"] .top-actions,
 html[dir="rtl"] .nav,
-html[dir="rtl"] .buttons{
+html[dir="rtl"] .hero-buttons{
   direction:rtl;
 }
 
 html[dir="rtl"] .hero,
+html[dir="rtl"] .status-card,
 html[dir="rtl"] .section h2,
 html[dir="rtl"] .card,
 html[dir="rtl"] .founder,
@@ -253,7 +287,8 @@ html[dir="rtl"] .footer{
   text-align:center;
 }
 
-@media(max-width:900px){
+@media(max-width:950px){
+  .status-grid,
   .grid{
     grid-template-columns:1fr;
   }
@@ -291,25 +326,34 @@ html[dir="rtl"] .footer{
   </div>
 
   <div class="hero">
-    <h1 data-i18n="hero_title">IBSS — Sovereign Intelligence Platform</h1>
-
-    <p class="subtitle" data-i18n="hero_subtitle">
-      Understand what happens before it becomes obvious.
-    </p>
-
+    <h1>IBSS</h1>
+    <div class="official" data-i18n="hero_official">International Bureau of Sovereign Studies</div>
     <p class="desc" data-i18n="hero_desc">
-      Structured Signals. Strategic Analysis. Sovereign Decision Intelligence.
+      A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.
     </p>
+    <p class="system-line" data-i18n="system_line">System Active — Monitoring Global Signals</p>
 
-    <p class="system" data-i18n="system_line">
-      System Active — Monitoring Global Signals
-    </p>
+    <div class="hero-buttons">
+      <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Open Dashboard</a>
+      <a href="signals.html" class="btn" data-i18n="btn_signals">Explore Signals</a>
+      <a href="reports.html" class="btn" data-i18n="btn_reports">View Reports</a>
+    </div>
 
-    <div class="buttons">
-      <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Access Dashboard</a>
-      <a href="signals.html" class="btn" data-i18n="btn_signals">Signals Center</a>
-      <a href="signal-gaza.html" class="btn" data-i18n="btn_latest">Latest Signal</a>
-      <a href="reports.html" class="btn" data-i18n="btn_reports">Reports</a>
+    <div class="status-grid">
+      <div class="status-card">
+        <div class="status-label" data-i18n="top_threat">Top Threat</div>
+        <div id="topThreat" class="status-value gold">Lebanon Pressure</div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-label" data-i18n="system_pressure">System Pressure</div>
+        <div id="systemPressure" class="status-value high">82</div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-label" data-i18n="decision_mode">Decision Mode</div>
+        <div id="decisionMode" class="status-value gold">ACT</div>
+      </div>
     </div>
   </div>
 
@@ -344,6 +388,7 @@ html[dir="rtl"] .footer{
 
 </div>
 
+<script src="data.js"></script>
 <script>
 const translations = {
   en: {
@@ -354,15 +399,17 @@ const translations = {
     nav_models: "Models",
     nav_about: "About",
 
-    hero_title: "IBSS — Sovereign Intelligence Platform",
-    hero_subtitle: "Understand what happens before it becomes obvious.",
-    hero_desc: "Structured Signals. Strategic Analysis. Sovereign Decision Intelligence.",
+    hero_official: "International Bureau of Sovereign Studies",
+    hero_desc: "A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.",
     system_line: "System Active — Monitoring Global Signals",
 
-    btn_dashboard: "Access Dashboard",
-    btn_signals: "Signals Center",
-    btn_latest: "Latest Signal",
-    btn_reports: "Reports",
+    btn_dashboard: "Open Dashboard",
+    btn_signals: "Explore Signals",
+    btn_reports: "View Reports",
+
+    top_threat: "Top Threat",
+    system_pressure: "System Pressure",
+    decision_mode: "Decision Mode",
 
     core_systems: "Core Systems",
     card_sigma: "Signal to Decision Engine",
@@ -370,7 +417,11 @@ const translations = {
     card_dlm: "Diplomatic Legitimacy Matrix",
 
     founder_line: "Founded by Naeem M. Dahalan",
-    footer_text: "© 2026 IBSS — Founded by Naeem M. Dahalan"
+    footer_text: "© 2026 IBSS — Founded by Naeem M. Dahalan",
+
+    decision_act: "ACT",
+    decision_prd: "PRD",
+    decision_watch: "WATCH"
   },
 
   ar: {
@@ -381,15 +432,17 @@ const translations = {
     nav_models: "النماذج",
     nav_about: "حول",
 
-    hero_title: "IBSS — منصة الاستخبارات السيادية",
-    hero_subtitle: "افهم ما يحدث قبل أن يصبح واضحًا",
-    hero_desc: "إشارات منظمة. تحليل استراتيجي. ذكاء قرار سيادي.",
+    hero_official: "المكتب الدولي للدراسات السيادية",
+    hero_desc: "منصة سيادية للإشارات المنظمة والتحليل الاستراتيجي والاستخبارات بدرجة قرار.",
     system_line: "النظام فعال — يراقب الإشارات العالمية",
 
-    btn_dashboard: "الدخول إلى لوحة التحكم",
-    btn_signals: "مركز الإشارات",
-    btn_latest: "أحدث إشارة",
-    btn_reports: "التقارير",
+    btn_dashboard: "فتح لوحة التحكم",
+    btn_signals: "استكشاف الإشارات",
+    btn_reports: "عرض التقارير",
+
+    top_threat: "التهديد الأعلى",
+    system_pressure: "ضغط النظام",
+    decision_mode: "وضع القرار",
 
     core_systems: "الأنظمة الأساسية",
     card_sigma: "محرك من الإشارة إلى القرار",
@@ -397,33 +450,56 @@ const translations = {
     card_dlm: "مصفوفة الشرعية الدبلوماسية",
 
     founder_line: "تأسس بواسطة نعيم م. دحلان",
-    footer_text: "© 2026 IBSS — تأسس بواسطة نعيم م. دحلان"
+    footer_text: "© 2026 IBSS — تأسس بواسطة نعيم م. دحلان",
+
+    decision_act: "تحرك",
+    decision_prd: "استعداد",
+    decision_watch: "مراقبة"
   }
 };
 
-function applyLanguage(lang) {
-  document.documentElement.lang = lang;
-  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+let currentLang = localStorage.getItem("ibss_lang") || "en";
+
+function t(key){
+  return translations[currentLang][key] || key;
+}
+
+function applyLanguage(){
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
 
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
-    if (translations[lang] && translations[lang][key]) {
-      el.textContent = translations[lang][key];
-    }
+    el.textContent = t(key);
   });
 
-  document.getElementById("btn-en").classList.toggle("active", lang === "en");
-  document.getElementById("btn-ar").classList.toggle("active", lang === "ar");
+  document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
+  document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
 }
 
-function setLang(lang) {
+function setLang(lang){
   localStorage.setItem("ibss_lang", lang);
-  applyLanguage(lang);
+  currentLang = lang;
+  applyLanguage();
+  renderHomeState();
 }
 
-const savedLang = localStorage.getItem("ibss_lang") || "en";
-applyLanguage(savedLang);
-</script>
+function renderHomeState(){
+  const system = getSystemState();
 
+  document.getElementById("topThreat").textContent = system.dominantSignal.title[currentLang];
+  document.getElementById("systemPressure").textContent = system.ssi;
+  document.getElementById("decisionMode").textContent =
+    system.decision === "ACT" ? t("decision_act") :
+    system.decision === "PRD" ? t("decision_prd") :
+    t("decision_watch");
+
+  const pressureEl = document.getElementById("systemPressure");
+  pressureEl.className = "status-value " + system.level.toLowerCase();
+}
+
+applyLanguage();
+renderHomeState();
+</script>
 </body>
-  </html>
+</html>
