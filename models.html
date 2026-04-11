@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Models — IBSS</title>
+
+<style>
+:root{
+  --bg:#040404;
+  --panel:#0d0d0d;
+  --panel2:#121212;
+  --gold:#d4af37;
+  --text:#e8e8e8;
+  --muted:#9d9d9d;
+  --border:rgba(212,175,55,.28);
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+    var(--bg);
+  color:var(--text);
+}
+
+.wrap{
+  width:min(1100px,92%);
+  margin:auto;
+  padding:20px 0 60px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:14px 0 20px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.brand{
+  color:var(--gold);
+  font-size:26px;
+  font-weight:700;
+  text-decoration:none;
+}
+
+.nav{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.nav a{
+  color:var(--muted);
+  text-decoration:none;
+  padding:8px 12px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  font-size:14px;
+  transition:.2s ease;
+}
+
+.nav a.active,
+.nav a:hover{
+  color:var(--gold);
+  border-color:var(--border);
+}
+
+.hero{
+  text-align:center;
+  padding:38px 0 28px;
+}
+
+.hero h1{
+  margin:0;
+  font-size:38px;
+  color:#fff;
+}
+
+.hero p{
+  margin-top:12px;
+  color:var(--muted);
+  line-height:1.8;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:18px;
+  margin-top:24px;
+}
+
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:22px;
+  transition:.2s ease;
+}
+
+.card:hover{
+  border-color:var(--border);
+  transform:translateY(-2px);
+}
+
+.model-code{
+  color:var(--gold);
+  font-size:26px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+.model-title{
+  color:#fff;
+  font-size:20px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.model-text{
+  color:var(--muted);
+  line-height:1.8;
+  font-size:15px;
+}
+
+.section{
+  margin-top:26px;
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:24px;
+}
+
+.section-title{
+  color:var(--gold);
+  font-size:24px;
+  margin-bottom:14px;
+}
+
+.section-text{
+  color:#ddd;
+  line-height:1.9;
+}
+
+.list{
+  margin:14px 0 0;
+  padding-left:18px;
+  color:var(--muted);
+  line-height:1.9;
+}
+
+.footer{
+  margin-top:30px;
+  text-align:center;
+  color:#777;
+  border-top:1px solid rgba(255,255,255,.05);
+  padding-top:20px;
+  font-size:14px;
+}
+
+@media(max-width:900px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:600px){
+  .topbar{
+    flex-direction:column;
+  }
+
+  .hero h1{
+    font-size:30px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="index.html">IBSS</a>
+    <div class="nav">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="signals.html">Signals</a>
+      <a href="reports.html">Reports</a>
+      <a href="models.html" class="active">Models</a>
+      <a href="about.html">About</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>IBSS Models Layer</h1>
+    <p>
+      The conceptual engines behind the platform.  
+      These models convert signals into structure, scenarios into logic,
+      and analysis into sovereign decision posture.
+    </p>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="model-code">Σ-9X</div>
+      <div class="model-title">Sovereign Intelligence Protocol</div>
+      <div class="model-text">
+        The core analytical protocol of IBSS.  
+        Σ-9X structures how signals are received, assessed, and transformed into strategic interpretation.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="model-code">WAAD</div>
+      <div class="model-title">War Acceptance Architecture Doctrine</div>
+      <div class="model-text">
+        A model for understanding how wars are made politically acceptable before they begin operationally.
+        It detects narrative construction, legitimacy transfer, and pre-war conditioning.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="model-code">DLM</div>
+      <div class="model-title">Diplomatic Legitimacy Matrix</div>
+      <div class="model-text">
+        A framework for measuring the political legitimacy environment around negotiations, mediation, and diplomatic positioning.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="model-code">LDE</div>
+      <div class="model-title">Leader Decision Engine</div>
+      <div class="model-text">
+        A model focused on leadership choice architecture: pressure, timing, signaling, and thresholds that shape top-level decisions.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section">
+    <div class="section-title">How the Models Work Together</div>
+    <div class="section-text">
+      IBSS does not treat models as isolated labels.  
+      Each model represents one layer of the decision environment:
+    </div>
+
+    <ul class="list">
+      <li>Σ-9X defines the overall sovereign logic of the system.</li>
+      <li>WAAD explains how conflict becomes politically viable.</li>
+      <li>DLM maps diplomatic space and legitimacy pressure.</li>
+      <li>LDE interprets leadership behavior inside compressed crisis moments.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Why This Matters</div>
+    <div class="section-text">
+      Most analysis explains events after they happen.  
+      IBSS models are designed to structure what is forming before it becomes obvious.
+      <br><br>
+      The purpose is not prediction in the simplistic sense, but disciplined signal interpretation
+      inside a sovereign analytical architecture.
+    </div>
+  </div>
+
+  <div class="footer">
+    © 2026 IBSS — Models Layer | Founded by Naeem M. Dahalan
+  </div>
+
+</div>
+
+</body>
+  </html>
