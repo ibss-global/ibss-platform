@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -241,7 +241,6 @@ body{
   position:absolute;
   border:1px solid rgba(212,175,55,.18);
   border-radius:50%;
-  inset:auto;
 }
 
 .c1{width:90px;height:90px;top:95px;left:95px;}
@@ -277,7 +276,7 @@ body{
   position:absolute;
   border-radius:50%;
   transform:translate(-50%, -50%);
-  transition:.45s ease;
+  transition:.35s ease;
   z-index:4;
 }
 
@@ -358,6 +357,24 @@ body{
 @keyframes spin{
   from{transform:rotate(0deg)}
   to{transform:rotate(360deg)}
+}
+
+html[dir="rtl"] body{
+  text-align:right;
+}
+
+html[dir="rtl"] .topbar,
+html[dir="rtl"] .top-actions,
+html[dir="rtl"] .nav,
+html[dir="rtl"] .legend-item{
+  direction:rtl;
+}
+
+html[dir="rtl"] .hero,
+html[dir="rtl"] .footer,
+html[dir="rtl"] .alert,
+html[dir="rtl"] .decision-box{
+  text-align:center;
 }
 
 @media(max-width:900px){
@@ -465,7 +482,7 @@ body{
 
 <script src="data.js"></script>
 <script>
-if (typeof getDominantSignal === "undefined") {
+if (typeof getSignalScore === "undefined") {
   function getSignalScore(signal) {
     return (
       signal.metrics.weight * 0.5 +
@@ -473,11 +490,17 @@ if (typeof getDominantSignal === "undefined") {
       signal.metrics.impact * 0.2
     );
   }
+}
+
+if (typeof getRankedSignals === "undefined") {
   function getRankedSignals() {
     return [...IBSS_SIGNALS].sort((a, b) => getSignalScore(b) - getSignalScore(a));
   }
+}
+
+if (typeof getDominantSignal === "undefined") {
   function getDominantSignal() {
-    return getRankedSignals()[0];
+    return getRankedSignals()[0] || null;
   }
 }
 
@@ -506,7 +529,9 @@ const ui = {
     levelLow: "LOW",
     decisionHigh: "ACT",
     decisionMed: "PRD",
-    decisionLow: "WATCH"
+    decisionLow: "WATCH",
+    feedUpdate: "Pressure index fixed at",
+    feedDriven: "Decision driven by real signal metrics"
   },
   ar: {
     title: "لوحة تحكم IBSS",
@@ -532,12 +557,13 @@ const ui = {
     levelLow: "منخفض",
     decisionHigh: "تحرك",
     decisionMed: "استعداد",
-    decisionLow: "مراقبة"
+    decisionLow: "مراقبة",
+    feedUpdate: "تم تثبيت المؤشر عند",
+    feedDriven: "القرار مبني على مقاييس الإشارات الحقيقية"
   }
 };
 
 let currentLang = localStorage.getItem("ibss_lang") || "en";
-let liveSSI = 70;
 
 function txt(key){
   return ui[currentLang][key];
@@ -551,7 +577,7 @@ function setLang(lang){
   document.getElementById("btn-en").classList.toggle("active", lang === "en");
   document.getElementById("btn-ar").classList.toggle("active", lang === "ar");
   applyStaticText();
-  tick();
+  renderRealSystem();
 }
 
 function applyStaticText(){
@@ -567,22 +593,32 @@ function applyStaticText(){
   document.getElementById("feedTitle").textContent = txt("feed");
 }
 
-function getLiveSystemFromSSI(ssi){
+function calculateRealSSI(){
+  if (!IBSS_SIGNALS || !IBSS_SIGNALS.length) return 0;
+
+  const total = IBSS_SIGNALS.reduce((sum, signal) => {
+    return sum + getSignalScore(signal);
+  }, 0);
+
+  return Math.round((total / IBSS_SIGNALS.length) * 100);
+}
+
+function getRealSystemState(){
+  const ssi = calculateRealSSI();
+  const dominantSignal = getDominantSignal();
+
   let level = "LOW";
   let decision = "WATCH";
   let mode = "MONITORING";
-  let dominantSignal = IBSS_SIGNALS.find(s => s.id === "iran") || getDominantSignal();
 
   if (ssi >= 75) {
     level = "HIGH";
     decision = "ACT";
     mode = "ACTIVE RESPONSE";
-    dominantSignal = IBSS_SIGNALS.find(s => s.id === "gaza") || dominantSignal;
   } else if (ssi >= 50) {
     level = "MEDIUM";
     decision = "PRD";
     mode = "PREPARATION";
-    dominantSignal = IBSS_SIGNALS.find(s => s.id === "lebanon") || dominantSignal;
   }
 
   return { ssi, level, decision, mode, dominantSignal };
@@ -599,10 +635,12 @@ function saveLiveSystem(system){
   }));
 }
 
-function setLevel(level){
+function setLevel(level, ssi){
   const levelEl = document.getElementById("level");
   const ssiEl = document.getElementById("ssi");
   const alertBox = document.getElementById("alertBox");
+
+  ssiEl.textContent = ssi;
 
   if(level === "HIGH"){
     levelEl.textContent = txt("levelHigh");
@@ -666,12 +704,12 @@ function renderRadar(system){
   const radar = document.getElementById("radar");
   radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
 
-  const ranked = getRankedSignals().slice(0, 4);
+  const ranked = getRankedSignals().slice(0, 5);
   const dominantId = system.dominantSignal ? system.dominantSignal.id : null;
 
   ranked.forEach(signal => {
     const dot = document.createElement("div");
-    const size = signal.weight === "HIGH" ? 14 : signal.weight === "MEDIUM" ? 11 : 9;
+    const size = signal.weight === "HIGH" ? 16 : signal.weight === "MEDIUM" ? 12 : 10;
 
     const x = 20 + (signal.metrics.volatility * 240);
     const y = 20 + (signal.metrics.impact * 240);
@@ -703,32 +741,23 @@ function setFeed(system){
   const feed = document.getElementById("feed");
   const rankedSignals = getRankedSignals().slice(0, 4);
 
-  const lines = rankedSignals.map(signal => {
+  const lines = [
+    `• ${txt("feedUpdate")} ${system.ssi}`,
+    `• ${txt("feedDriven")}`
+  ];
+
+  rankedSignals.forEach(signal => {
     const title = signal.title[currentLang] || signal.title.en;
     const mode = signal.decisionMode[currentLang] || signal.decisionMode.en;
-    return `• ${title} — ${mode}`;
+    lines.push(`• ${title} — ${mode}`);
   });
-
-  lines.unshift(
-    currentLang === "ar"
-      ? `• تم تحديث المؤشر إلى ${system.ssi}`
-      : `• Pressure index updated to ${system.ssi}`
-  );
 
   feed.innerHTML = lines.map(line => `<div class="feed-item">${line}</div>`).join("");
 }
 
-function tick(){
-  const delta = Math.floor(Math.random() * 7) - 3;
-  liveSSI += delta;
-
-  if(liveSSI > 90) liveSSI = 90;
-  if(liveSSI < 40) liveSSI = 40;
-
-  const system = getLiveSystemFromSSI(liveSSI);
-
-  document.getElementById("ssi").textContent = system.ssi;
-  setLevel(system.level);
+function renderRealSystem(){
+  const system = getRealSystemState();
+  setLevel(system.level, system.ssi);
   setDecision(system);
   setPrimarySignal(system.dominantSignal);
   renderRadar(system);
@@ -737,8 +766,7 @@ function tick(){
 }
 
 setLang(currentLang);
-setInterval(tick, 3000);
 </script>
 
 </body>
-          </html>
+        </html>
