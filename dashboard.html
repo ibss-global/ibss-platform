@@ -138,12 +138,6 @@
     margin-bottom:14px;
   }
 
-  .mini{
-    color:var(--muted);
-    font-size:14px;
-    margin-bottom:14px;
-  }
-
   .state{
     display:grid;
     gap:12px;
@@ -173,11 +167,6 @@
   .medium{color:var(--orange)}
   .high{color:var(--red)}
 
-  .signals{
-    display:grid;
-    gap:12px;
-  }
-
   .signal-item strong{
     display:block;
     margin-bottom:6px;
@@ -188,6 +177,15 @@
     color:var(--muted);
     font-size:14px;
     line-height:1.6;
+  }
+
+  .signal-item strong a{
+    color:#fff;
+    text-decoration:none;
+  }
+
+  .signal-item strong a:hover{
+    color:var(--gold);
   }
 
   .primary{
@@ -365,10 +363,12 @@
         <div class="title">Priority Signal</div>
         <div id="primarySignal" class="signal-item primary">
           <div class="primary-badge">PRIMARY SIGNAL</div>
-        <strong id="signalTitle">Lebanon Pressure</strong>
-<span id="signalText">
-  Elevated cross-front pressure remains active with layered military-political messaging.
-</span>
+          <strong>
+            <a id="signalLink" href="signal-lebanon.html">Lebanon Pressure</a>
+          </strong>
+          <span id="signalText">
+            Elevated cross-front pressure remains active with layered military-political messaging.
+          </span>
         </div>
 
         <div style="margin-top:18px" class="title">Radar</div>
@@ -394,23 +394,28 @@
   const signalPool = [
     {
       title: "Iran Negotiations",
-      text: "Diplomatic movement under pressure with unstable escalation boundaries."
+      text: "Diplomatic movement under pressure with unstable escalation boundaries.",
+      link: "signal-iran.html"
     },
     {
       title: "Lebanon Pressure",
-      text: "Northern front pressure remains active with layered military-political messaging."
+      text: "Northern front pressure remains active with layered military-political messaging.",
+      link: "signal-lebanon.html"
     },
     {
       title: "Gaza Structure",
-      text: "Compressed conflict space where governance, military, and humanitarian layers intersect."
+      text: "Compressed conflict space where governance, military, and humanitarian layers intersect.",
+      link: "signal-gaza.html"
     },
     {
       title: "Red Sea Tension",
-      text: "Maritime pressure indicators affecting regional deterrence and logistical confidence."
+      text: "Maritime pressure indicators affecting regional deterrence and logistical confidence.",
+      link: "#"
     },
     {
       title: "West Bank Escalation",
-      text: "Localized pressure patterns capable of shifting broader conflict calculations."
+      text: "Localized pressure patterns capable of shifting broader conflict calculations.",
+      link: "#"
     }
   ];
 
@@ -463,11 +468,9 @@
 
   function setPrimarySignal() {
     const item = signalPool[Math.floor(Math.random() * signalPool.length)];
-    document.getElementById("primarySignal").innerHTML = `
-      <div class="primary-badge">PRIMARY SIGNAL</div>
-      <strong>${item.title}</strong>
-      <span>${item.text}</span>
-    `;
+    document.getElementById("signalLink").textContent = item.title;
+    document.getElementById("signalLink").href = item.link;
+    document.getElementById("signalText").textContent = item.text;
   }
 
   function setFeed() {
