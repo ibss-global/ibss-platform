@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,9 +18,7 @@
     --border:rgba(212,175,55,.28);
   }
 
-  *{
-    box-sizing:border-box;
-  }
+  *{box-sizing:border-box}
 
   body{
     margin:0;
@@ -54,6 +52,14 @@
     text-decoration:none;
   }
 
+  .top-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
   .nav{
     display:flex;
     gap:10px;
@@ -75,6 +81,28 @@
   .nav a:hover{
     color:var(--gold);
     border-color:var(--border);
+  }
+
+  .lang-switch{
+    display:flex;
+    gap:6px;
+  }
+
+  .lang-switch button{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid rgba(255,255,255,.1);
+    padding:8px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:13px;
+    transition:.2s ease;
+  }
+
+  .lang-switch button.active,
+  .lang-switch button:hover{
+    color:var(--gold);
+    border-color:var(--gold);
   }
 
   .alert{
@@ -280,6 +308,24 @@
     padding-top:20px;
   }
 
+  html[dir="rtl"] body{
+    text-align:right;
+  }
+
+  html[dir="rtl"] .topbar,
+  html[dir="rtl"] .top-actions,
+  html[dir="rtl"] .nav{
+    direction:rtl;
+  }
+
+  html[dir="rtl"] .scenario-row{
+    direction:rtl;
+  }
+
+  html[dir="rtl"] .hero{
+    text-align:center;
+  }
+
   @media(max-width:900px){
     .grid{
       grid-template-columns:1fr;
@@ -302,68 +348,77 @@
 
     <div class="topbar">
       <a class="brand" href="index.html">IBSS</a>
-      <div class="nav">
-        <a href="index.html">Home</a>
-        <a href="dashboard.html" class="active">Dashboard</a>
-        <a href="signals.html">Signals</a>
-        <a href="reports.html">Reports</a>
-        <a href="models.html">Models</a>
-        <a href="about.html">About</a>
+
+      <div class="top-actions">
+        <div class="nav">
+          <a href="index.html" data-i18n="nav_home">Home</a>
+          <a href="dashboard.html" class="active" data-i18n="nav_dashboard">Dashboard</a>
+          <a href="signals.html" data-i18n="nav_signals">Signals</a>
+          <a href="reports.html" data-i18n="nav_reports">Reports</a>
+          <a href="models.html" data-i18n="nav_models">Models</a>
+          <a href="about.html" data-i18n="nav_about">About</a>
+        </div>
+
+        <div class="lang-switch">
+          <button id="btn-en" onclick="setLang('en')">EN</button>
+          <button id="btn-ar" onclick="setLang('ar')">AR</button>
+        </div>
       </div>
     </div>
 
-    <div id="alertBox" class="alert">⚠ HIGH ESCALATION DETECTED — SYSTEM SHIFTING TO ACTIVE RESPONSE POSTURE</div>
+    <div id="alertBox" class="alert"></div>
 
     <div class="hero">
-      <div class="eyebrow">Control Layer</div>
-      <h1>IBSS Dashboard</h1>
-      <p class="sub">System state, priority signal, scenario outlook, and decision posture.</p>
-      <p class="system-line">System Active — Monitoring Global Signals</p>
+      <div class="eyebrow" data-i18n="eyebrow">Control Layer</div>
+      <h1 data-i18n="page_title">IBSS Dashboard</h1>
+      <p class="sub" data-i18n="page_sub">System state, priority signal, scenario outlook, and decision posture.</p>
+      <p class="system-line" data-i18n="system_active">System Active — Monitoring Global Signals</p>
     </div>
 
     <div class="grid">
       <div class="card">
-        <div class="title">System State</div>
+        <div class="title" data-i18n="system_state">System State</div>
+
         <div class="state">
           <div class="state-item">
-            <div class="label">Escalation Level</div>
+            <div class="label" data-i18n="escalation_level">Escalation Level</div>
             <div id="level" class="value high">HIGH</div>
           </div>
+
           <div class="state-item">
-            <div class="label">WAAD Status</div>
-            <div id="waad" class="value">ACTIVE</div>
+            <div class="label" data-i18n="waad_status">WAAD Status</div>
+            <div id="waad" class="value" data-i18n="active_word">ACTIVE</div>
           </div>
+
           <div class="state-item">
-            <div class="label">System Mode</div>
-            <div id="mode" class="value">MONITORING</div>
+            <div class="label" data-i18n="system_mode">System Mode</div>
+            <div id="mode" class="value" data-i18n="monitoring_word">MONITORING</div>
           </div>
         </div>
 
-        <div style="margin-top:18px" class="title">Scenarios</div>
+        <div style="margin-top:18px" class="title" data-i18n="scenarios">Scenarios</div>
         <div class="scenario">
-          <div class="scenario-row"><span>Scenario A</span><strong id="sa">40%</strong></div>
-          <div class="scenario-row"><span>Scenario B</span><strong id="sb">35%</strong></div>
-          <div class="scenario-row"><span>Scenario C</span><strong id="sc">25%</strong></div>
+          <div class="scenario-row"><span data-i18n="scenario_a">Scenario A</span><strong id="sa">40%</strong></div>
+          <div class="scenario-row"><span data-i18n="scenario_b">Scenario B</span><strong id="sb">35%</strong></div>
+          <div class="scenario-row"><span data-i18n="scenario_c">Scenario C</span><strong id="sc">25%</strong></div>
         </div>
 
-        <div style="margin-top:18px" class="title">Decision Output</div>
+        <div style="margin-top:18px" class="title" data-i18n="decision_output">Decision Output</div>
         <div class="decision-box">
           <div id="decision" class="decision">ACT</div>
-          <div id="decisionNote" class="decision-note">
-            Active pressure environment detected. Maintain close watch and prepare rapid doctrinal response.
-          </div>
+          <div id="decisionNote" class="decision-note"></div>
         </div>
       </div>
 
       <div class="card">
-        <div class="title">Priority Signal</div>
+        <div class="title" data-i18n="priority_signal">Priority Signal</div>
         <div id="primarySignal" class="signal-item primary">
-          <div class="primary-badge">PRIMARY SIGNAL</div>
+          <div class="primary-badge" data-i18n="primary_signal_badge">PRIMARY SIGNAL</div>
           <strong id="signalTitle">Lebanon Pressure</strong>
-          <span id="signalText">Elevated cross-front pressure remains active with layered military-political messaging.</span>
+          <span id="signalText"></span>
         </div>
 
-        <div style="margin-top:18px" class="title">Radar</div>
+        <div style="margin-top:18px" class="title" data-i18n="radar">Radar</div>
         <div class="radar">
           <div class="radar-circle r4"></div>
           <div class="radar-circle r3"></div>
@@ -372,45 +427,172 @@
           <div class="pulse"></div>
         </div>
 
-        <div class="title">Live Feed</div>
+        <div class="title" data-i18n="live_feed">Live Feed</div>
         <div id="feed" class="feed">
-          <div class="feed-item">Initializing live sovereign feed...</div>
+          <div class="feed-item" data-i18n="initializing_feed">Initializing live sovereign feed...</div>
         </div>
       </div>
     </div>
 
-    <div class="footer">© 2026 IBSS — Sovereign Intelligence Platform</div>
+    <div class="footer" data-i18n="footer_text">© 2026 IBSS — Sovereign Intelligence Platform</div>
   </div>
 
 <script>
+  const translations = {
+    en: {
+      nav_home: "Home",
+      nav_dashboard: "Dashboard",
+      nav_signals: "Signals",
+      nav_reports: "Reports",
+      nav_models: "Models",
+      nav_about: "About",
+      eyebrow: "Control Layer",
+      page_title: "IBSS Dashboard",
+      page_sub: "System state, priority signal, scenario outlook, and decision posture.",
+      system_active: "System Active — Monitoring Global Signals",
+      system_state: "System State",
+      escalation_level: "Escalation Level",
+      waad_status: "WAAD Status",
+      active_word: "ACTIVE",
+      system_mode: "System Mode",
+      monitoring_word: "MONITORING",
+      preparation_word: "PREPARATION",
+      active_response_word: "ACTIVE RESPONSE",
+      scenarios: "Scenarios",
+      scenario_a: "Scenario A",
+      scenario_b: "Scenario B",
+      scenario_c: "Scenario C",
+      decision_output: "Decision Output",
+      priority_signal: "Priority Signal",
+      primary_signal_badge: "PRIMARY SIGNAL",
+      radar: "Radar",
+      live_feed: "Live Feed",
+      initializing_feed: "Initializing live sovereign feed...",
+      footer_text: "© 2026 IBSS — Sovereign Intelligence Platform",
+      level_low: "LOW",
+      level_medium: "MEDIUM",
+      level_high: "HIGH",
+      decision_act: "ACT",
+      decision_prd: "PRD",
+      decision_watch: "WATCH",
+      alert_high: "⚠ HIGH ESCALATION DETECTED — SYSTEM SHIFTING TO ACTIVE RESPONSE POSTURE",
+      note_high: "High escalation environment detected. Shift from passive watch to active response readiness.",
+      note_medium: "Structured pressure remains present. Maintain doctrinal preparation and scenario adjustment.",
+      note_low: "Pressure remains limited. Continue observation and signal accumulation.",
+      signal_iran_title: "Iran Negotiations",
+      signal_iran_text: "Diplomatic movement under pressure with unstable escalation boundaries.",
+      signal_lebanon_title: "Lebanon Pressure",
+      signal_lebanon_text: "Northern front pressure remains active with layered military-political messaging.",
+      signal_gaza_title: "Gaza Structure",
+      signal_gaza_text: "Compressed conflict space where governance, military, and humanitarian layers intersect.",
+      feed_1: "Signal architecture updated across regional fronts.",
+      feed_2: "Narrative pressure pattern detected in active file.",
+      feed_3: "Priority shift observed in diplomatic legitimacy layer.",
+      feed_4: "Escalation threshold under recalculation.",
+      feed_5: "Cross-front monitoring window remains open.",
+      feed_6: "Scenario spread adjusted after new signal intake."
+    },
+    ar: {
+      nav_home: "الرئيسية",
+      nav_dashboard: "لوحة التحكم",
+      nav_signals: "الإشارات",
+      nav_reports: "التقارير",
+      nav_models: "النماذج",
+      nav_about: "حول IBSS",
+      eyebrow: "طبقة التحكم",
+      page_title: "لوحة تحكم IBSS",
+      page_sub: "حالة النظام، الإشارة ذات الأولوية، تقدير السيناريو، ووضعية القرار.",
+      system_active: "النظام فعال — يراقب الإشارات العالمية",
+      system_state: "حالة النظام",
+      escalation_level: "مستوى التصعيد",
+      waad_status: "حالة WAAD",
+      active_word: "نشط",
+      system_mode: "وضع النظام",
+      monitoring_word: "مراقبة",
+      preparation_word: "تحضير",
+      active_response_word: "استجابة نشطة",
+      scenarios: "السيناريوهات",
+      scenario_a: "السيناريو أ",
+      scenario_b: "السيناريو ب",
+      scenario_c: "السيناريو ج",
+      decision_output: "مخرجات القرار",
+      priority_signal: "الإشارة ذات الأولوية",
+      primary_signal_badge: "الإشارة الرئيسية",
+      radar: "الرادار",
+      live_feed: "التغذية الحية",
+      initializing_feed: "جارٍ تهيئة التغذية السيادية الحية...",
+      footer_text: "© 2026 IBSS — منصة الاستخبارات السيادية",
+      level_low: "منخفض",
+      level_medium: "متوسط",
+      level_high: "مرتفع",
+      decision_act: "تحرك",
+      decision_prd: "استعداد",
+      decision_watch: "مراقبة",
+      alert_high: "⚠ تم رصد تصعيد مرتفع — النظام ينتقل إلى وضعية استجابة نشطة",
+      note_high: "تم رصد بيئة تصعيد مرتفعة. انتقل من المراقبة السلبية إلى الجاهزية للاستجابة النشطة.",
+      note_medium: "الضغط البنيوي ما زال حاضرًا. حافظ على التحضير العقائدي وتعديل السيناريوهات.",
+      note_low: "الضغط ما يزال محدودًا. واصل المراقبة وتجميع الإشارات.",
+      signal_iran_title: "المفاوضات الإيرانية",
+      signal_iran_text: "حراك دبلوماسي تحت الضغط مع حدود تصعيد غير مستقرة.",
+      signal_lebanon_title: "الضغط على لبنان",
+      signal_lebanon_text: "ضغط الجبهة الشمالية ما يزال نشطًا مع رسائل عسكرية-سياسية متدرجة.",
+      signal_gaza_title: "بنية غزة",
+      signal_gaza_text: "حيز صراع مضغوط تتقاطع فيه الطبقات العسكرية والحوكمية والإنسانية.",
+      feed_1: "تم تحديث بنية الإشارات عبر الجبهات الإقليمية.",
+      feed_2: "تم رصد نمط ضغط سردي داخل الملف النشط.",
+      feed_3: "تم رصد تحوّل في أولوية طبقة الشرعية الدبلوماسية.",
+      feed_4: "عتبة التصعيد قيد إعادة الحساب.",
+      feed_5: "نافذة المراقبة العابرة للجبهات ما تزال مفتوحة.",
+      feed_6: "تم تعديل توزيع السيناريوهات بعد ورود إشارات جديدة."
+    }
+  };
+
+  let currentLang = localStorage.getItem("ibss_lang") || "en";
+  let currentSignalLink = "#";
+
   const signalPool = [
     {
-      title: "Iran Negotiations",
-      text: "Diplomatic movement under pressure with unstable escalation boundaries.",
+      titleKey: "signal_iran_title",
+      textKey: "signal_iran_text",
       link: "signal-iran.html"
     },
     {
-      title: "Lebanon Pressure",
-      text: "Northern front pressure remains active with layered military-political messaging.",
+      titleKey: "signal_lebanon_title",
+      textKey: "signal_lebanon_text",
       link: "signal-lebanon.html"
     },
     {
-      title: "Gaza Structure",
-      text: "Compressed conflict space where governance, military, and humanitarian layers intersect.",
+      titleKey: "signal_gaza_title",
+      textKey: "signal_gaza_text",
       link: "signal-gaza.html"
     }
   ];
 
-  const feedPool = [
-    "Signal architecture updated across regional fronts.",
-    "Narrative pressure pattern detected in active file.",
-    "Priority shift observed in diplomatic legitimacy layer.",
-    "Escalation threshold under recalculation.",
-    "Cross-front monitoring window remains open.",
-    "Scenario spread adjusted after new signal intake."
-  ];
+  const feedKeys = ["feed_1", "feed_2", "feed_3", "feed_4", "feed_5", "feed_6"];
 
-  let currentSignalLink = "#";
+  function t(key) {
+    return translations[currentLang][key] || key;
+  }
+
+  function applyTranslations() {
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      el.textContent = t(key);
+    });
+
+    document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
+    document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+  }
+
+  function setLang(lang) {
+    localStorage.setItem("ibss_lang", lang);
+    currentLang = lang;
+    applyTranslations();
+    tick();
+  }
 
   function randomScenario() {
     let a = Math.floor(Math.random() * 100);
@@ -426,44 +608,47 @@
     const alertBox = document.getElementById("alertBox");
 
     if (level === "HIGH") {
-      decision.textContent = "ACT";
-      note.textContent = "High escalation environment detected. Shift from passive watch to active response readiness.";
-      mode.textContent = "ACTIVE RESPONSE";
+      decision.textContent = t("decision_act");
+      note.textContent = t("note_high");
+      mode.textContent = t("active_response_word");
+      alertBox.textContent = t("alert_high");
       alertBox.style.display = "block";
     } else if (level === "MEDIUM") {
-      decision.textContent = "PRD";
-      note.textContent = "Structured pressure remains present. Maintain doctrinal preparation and scenario adjustment.";
-      mode.textContent = "PREPARATION";
+      decision.textContent = t("decision_prd");
+      note.textContent = t("note_medium");
+      mode.textContent = t("preparation_word");
       alertBox.style.display = "none";
     } else {
-      decision.textContent = "WATCH";
-      note.textContent = "Pressure remains limited. Continue observation and signal accumulation.";
-      mode.textContent = "MONITORING";
+      decision.textContent = t("decision_watch");
+      note.textContent = t("note_low");
+      mode.textContent = t("monitoring_word");
       alertBox.style.display = "none";
     }
   }
 
   function setLevel(level) {
     const el = document.getElementById("level");
-    el.textContent = level;
+    el.textContent = t("level_" + level.toLowerCase());
     el.className = "value " + level.toLowerCase();
     setDecision(level);
   }
 
   function setPrimarySignal() {
     const item = signalPool[Math.floor(Math.random() * signalPool.length)];
-    document.getElementById("signalTitle").textContent = item.title;
-    document.getElementById("signalText").textContent = item.text;
+    document.getElementById("signalTitle").textContent = t(item.titleKey);
+    document.getElementById("signalText").textContent = t(item.textKey);
     currentSignalLink = item.link;
   }
 
   function setFeed() {
     const feed = document.getElementById("feed");
     let html = "";
+
     for (let i = 0; i < 4; i++) {
-      const msg = feedPool[Math.floor(Math.random() * feedPool.length)];
-      html += `<div class="feed-item">${msg}</div>`;
+      const randomKey = feedKeys[Math.floor(Math.random() * feedKeys.length)];
+      html += `<div class="feed-item">${t(randomKey)}</div>`;
     }
+
     feed.innerHTML = html;
   }
 
@@ -487,8 +672,9 @@
     }
   });
 
+  applyTranslations();
   tick();
   setInterval(tick, 4000);
 </script>
 </body>
-  </html>
+</html>
