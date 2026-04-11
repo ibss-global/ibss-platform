@@ -1,162 +1,499 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>IBSS Dashboard</title>
-
 <style>
-body {
-  background: black;
-  color: #ddd;
-  font-family: Arial;
-  text-align: center;
-  padding: 20px;
-}
+  :root{
+    --bg:#040404;
+    --panel:#0d0d0d;
+    --panel2:#121212;
+    --gold:#d4af37;
+    --text:#e8e8e8;
+    --muted:#9d9d9d;
+    --green:#00d084;
+    --orange:#ff9f1a;
+    --red:#ff4d4f;
+    --border:rgba(212,175,55,.28);
+  }
 
-h1 {
-  color: #d4af37;
-  margin-bottom: 10px;
-}
+  *{box-sizing:border-box}
 
-/* Status Line */
-.status {
-  color: #00ffcc;
-  font-size: 14px;
-  margin-bottom: 25px;
-  opacity: 0.8;
-}
+  body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:
+      radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+      var(--bg);
+    color:var(--text);
+  }
 
-/* Boxes */
-.box {
-  border: 1px solid #d4af37;
-  padding: 15px;
-  margin: 20px auto;
-  width: 90%;
-  max-width: 400px;
-  border-radius: 10px;
-  transition: 0.3s;
-}
+  .wrap{
+    width:min(1100px,92%);
+    margin:0 auto;
+    padding:20px 0 60px;
+  }
 
-.box:hover {
-  box-shadow: 0 0 10px #d4af37;
-}
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:14px 0 20px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
 
-/* Titles */
-.title {
-  color: #d4af37;
-  margin-bottom: 10px;
-  font-weight: bold;
-}
+  .brand{
+    color:var(--gold);
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-decoration:none;
+  }
 
-/* Signals */
-.signal {
-  margin: 5px 0;
-  transition: 0.3s;
-}
+  .nav{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
 
-/* Dynamic colors */
-.low { color: #00ffcc; }
-.medium { color: orange; }
-.high { color: red; }
+  .nav a{
+    color:var(--muted);
+    text-decoration:none;
+    border:1px solid rgba(255,255,255,.08);
+    padding:10px 14px;
+    border-radius:10px;
+    font-size:14px;
+  }
 
-/* Warning text */
-.warning {
-  font-weight: bold;
-}
+  .nav a.active,
+  .nav a:hover{
+    color:var(--gold);
+    border-color:var(--border);
+  }
 
-/* Decision */
-.decision {
-  font-size: 18px;
-  font-weight: bold;
-  color: #d4af37;
-}
+  .alert{
+    display:none;
+    margin:18px 0 0;
+    padding:14px 16px;
+    border-radius:12px;
+    background:rgba(255,77,79,.12);
+    border:1px solid rgba(255,77,79,.45);
+    color:#ffd5d5;
+    font-weight:700;
+    text-align:center;
+  }
 
+  .hero{
+    padding:28px 0 18px;
+    text-align:center;
+  }
+
+  .eyebrow{
+    color:var(--gold);
+    letter-spacing:2px;
+    text-transform:uppercase;
+    font-size:13px;
+    margin-bottom:10px;
+  }
+
+  h1{
+    margin:0 0 10px;
+    font-size:38px;
+    color:#fff;
+  }
+
+  .sub{
+    margin:0;
+    color:var(--muted);
+    line-height:1.7;
+  }
+
+  .system-line{
+    margin-top:14px;
+    color:var(--green);
+    font-size:14px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:18px;
+    margin-top:22px;
+  }
+
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:20px;
+  }
+
+  .title{
+    color:var(--gold);
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:14px;
+  }
+
+  .mini{
+    color:var(--muted);
+    font-size:14px;
+    margin-bottom:14px;
+  }
+
+  .state{
+    display:grid;
+    gap:12px;
+  }
+
+  .state-item,
+  .signal-item,
+  .feed-item{
+    background:var(--panel2);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:14px;
+    padding:14px;
+  }
+
+  .label{
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:6px;
+  }
+
+  .value{
+    font-size:20px;
+    font-weight:700;
+  }
+
+  .low{color:var(--green)}
+  .medium{color:var(--orange)}
+  .high{color:var(--red)}
+
+  .signals{
+    display:grid;
+    gap:12px;
+  }
+
+  .signal-item strong{
+    display:block;
+    margin-bottom:6px;
+    color:#fff;
+  }
+
+  .signal-item span{
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.6;
+  }
+
+  .primary{
+    border-color:rgba(212,175,55,.45);
+    box-shadow:0 0 0 1px rgba(212,175,55,.15) inset;
+  }
+
+  .primary-badge{
+    display:inline-block;
+    margin-bottom:8px;
+    padding:4px 8px;
+    border-radius:999px;
+    background:rgba(212,175,55,.12);
+    color:var(--gold);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.5px;
+  }
+
+  .scenario{
+    display:grid;
+    gap:10px;
+  }
+
+  .scenario-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    background:var(--panel2);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;
+    padding:12px 14px;
+  }
+
+  .decision-box{
+    text-align:center;
+    padding:18px;
+    background:rgba(212,175,55,.05);
+    border:1px solid rgba(212,175,55,.22);
+    border-radius:16px;
+  }
+
+  .decision{
+    font-size:30px;
+    font-weight:800;
+    color:var(--gold);
+    margin:8px 0 6px;
+  }
+
+  .decision-note{
+    color:var(--muted);
+    line-height:1.7;
+    font-size:14px;
+  }
+
+  .radar{
+    position:relative;
+    height:220px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+
+  .radar-circle{
+    position:absolute;
+    border:1px solid rgba(212,175,55,.18);
+    border-radius:50%;
+  }
+
+  .r1{width:70px;height:70px}
+  .r2{width:120px;height:120px}
+  .r3{width:170px;height:170px}
+  .r4{width:220px;height:220px}
+
+  .pulse{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 20px rgba(212,175,55,.9);
+    animation:pulse 2s infinite ease-in-out;
+    z-index:2;
+  }
+
+  @keyframes pulse{
+    0%,100%{transform:scale(1);opacity:1}
+    50%{transform:scale(1.8);opacity:.45}
+  }
+
+  .feed{
+    margin-top:16px;
+    display:grid;
+    gap:10px;
+  }
+
+  .footer{
+    margin-top:24px;
+    text-align:center;
+    color:#7f7f7f;
+    font-size:14px;
+    border-top:1px solid rgba(255,255,255,.05);
+    padding-top:20px;
+  }
+
+  @media(max-width:900px){
+    .grid{grid-template-columns:1fr}
+  }
+
+  @media(max-width:600px){
+    .topbar{flex-direction:column}
+    h1{font-size:30px}
+  }
 </style>
 </head>
-
 <body>
+  <div class="wrap">
 
-<h1>IBSS — Control Dashboard</h1>
-<p class="status">System Active — Monitoring Global Signals</p>
+    <div class="topbar">
+      <a class="brand" href="index.html">IBSS</a>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="signals.html">Signals</a>
+        <a href="reports.html">Reports</a>
+        <a href="models.html">Models</a>
+        <a href="about.html">About</a>
+      </div>
+    </div>
 
-<!-- System State -->
-<div class="box">
-  <div class="title">System State</div>
-  <p>Escalation Level: <span id="level" class="warning high">HIGH</span></p>
-  <p>WAAD Status: ACTIVE</p>
-  <p>System Mode: MONITORING</p>
-</div>
+    <div id="alertBox" class="alert">⚠ HIGH ESCALATION DETECTED — SYSTEM SHIFTING TO ACTIVE RESPONSE POSTURE</div>
 
-<!-- Signals -->
-<div class="box">
-  <div class="title">Active Signals</div>
-  <div class="signal" id="s1">Iran Negotiations</div>
-  <div class="signal" id="s2">Lebanon Pressure</div>
-  <div class="signal" id="s3">Gaza Structure</div>
-</div>
+    <div class="hero">
+      <div class="eyebrow">Control Layer</div>
+      <h1>IBSS Dashboard</h1>
+      <p class="sub">System state, priority signal, scenario outlook, and decision posture.</p>
+      <p class="system-line">System Active — Monitoring Global Signals</p>
+    </div>
 
-<!-- Scenarios -->
-<div class="box">
-  <div class="title">Scenarios</div>
-  <p id="a">A — 40%</p>
-  <p id="b">B — 35%</p>
-  <p id="c">C — 25%</p>
-</div>
+    <div class="grid">
+      <div class="card">
+        <div class="title">System State</div>
+        <div class="state">
+          <div class="state-item">
+            <div class="label">Escalation Level</div>
+            <div id="level" class="value high">HIGH</div>
+          </div>
+          <div class="state-item">
+            <div class="label">WAAD Status</div>
+            <div id="waad" class="value">ACTIVE</div>
+          </div>
+          <div class="state-item">
+            <div class="label">System Mode</div>
+            <div id="mode" class="value">MONITORING</div>
+          </div>
+        </div>
 
-<!-- Decision -->
-<div class="box">
-  <div class="title">Decision Output</div>
-  <p class="decision" id="decision">WATCH</p>
-</div>
+        <div style="margin-top:18px" class="title">Scenarios</div>
+        <div class="scenario">
+          <div class="scenario-row"><span>Scenario A</span><strong id="sa">40%</strong></div>
+          <div class="scenario-row"><span>Scenario B</span><strong id="sb">35%</strong></div>
+          <div class="scenario-row"><span>Scenario C</span><strong id="sc">25%</strong></div>
+        </div>
+
+        <div style="margin-top:18px" class="title">Decision Output</div>
+        <div class="decision-box">
+          <div id="decision" class="decision">ACT</div>
+          <div id="decisionNote" class="decision-note">
+            Active pressure environment detected. Maintain close watch and prepare rapid doctrinal response.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="title">Priority Signal</div>
+        <div id="primarySignal" class="signal-item primary">
+          <div class="primary-badge">PRIMARY SIGNAL</div>
+          <strong>Lebanon Pressure</strong>
+          <span>Elevated cross-front pressure with signaling patterns indicating structured escalation management.</span>
+        </div>
+
+        <div style="margin-top:18px" class="title">Radar</div>
+        <div class="radar">
+          <div class="radar-circle r4"></div>
+          <div class="radar-circle r3"></div>
+          <div class="radar-circle r2"></div>
+          <div class="radar-circle r1"></div>
+          <div class="pulse"></div>
+        </div>
+
+        <div class="title">Live Feed</div>
+        <div id="feed" class="feed">
+          <div class="feed-item">Initializing live sovereign feed...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">© 2026 IBSS — Sovereign Intelligence Platform</div>
+  </div>
 
 <script>
+  const signalPool = [
+    {
+      title: "Iran Negotiations",
+      text: "Diplomatic movement under pressure with unstable escalation boundaries."
+    },
+    {
+      title: "Lebanon Pressure",
+      text: "Northern front pressure remains active with layered military-political messaging."
+    },
+    {
+      title: "Gaza Structure",
+      text: "Compressed conflict space where governance, military, and humanitarian layers intersect."
+    },
+    {
+      title: "Red Sea Tension",
+      text: "Maritime pressure indicators affecting regional deterrence and logistical confidence."
+    },
+    {
+      title: "West Bank Escalation",
+      text: "Localized pressure patterns capable of shifting broader conflict calculations."
+    }
+  ];
 
-// Escalation Levels
-const levels = ["LOW", "MEDIUM", "HIGH"];
+  const feedPool = [
+    "Signal architecture updated across regional fronts.",
+    "Narrative pressure pattern detected in active file.",
+    "Priority shift observed in diplomatic legitimacy layer.",
+    "Escalation threshold under recalculation.",
+    "Cross-front monitoring window remains open.",
+    "Scenario spread adjusted after new signal intake."
+  ];
 
-// Signals list
-const signals = [
-  "Iran Negotiations",
-  "Lebanon Pressure",
-  "Gaza Structure",
-  "Red Sea Tension",
-  "West Bank Escalation"
-];
+  function randomScenario() {
+    let a = Math.floor(Math.random() * 100);
+    let b = Math.floor(Math.random() * (100 - a));
+    let c = 100 - a - b;
+    return [a, b, c];
+  }
 
-// Decision states
-const decisions = ["WATCH", "PRD", "ACT"];
+  function setDecision(level) {
+    const decision = document.getElementById("decision");
+    const note = document.getElementById("decisionNote");
+    const mode = document.getElementById("mode");
+    const alertBox = document.getElementById("alertBox");
 
-// Main Loop
-setInterval(() => {
+    if (level === "HIGH") {
+      decision.textContent = "ACT";
+      note.textContent = "High escalation environment detected. Shift from passive watch to active response readiness.";
+      mode.textContent = "ACTIVE RESPONSE";
+      alertBox.style.display = "block";
+    } else if (level === "MEDIUM") {
+      decision.textContent = "PRD";
+      note.textContent = "Structured pressure remains present. Maintain doctrinal preparation and scenario adjustment.";
+      mode.textContent = "PREPARATION";
+      alertBox.style.display = "none";
+    } else {
+      decision.textContent = "WATCH";
+      note.textContent = "Pressure remains limited. Continue observation and signal accumulation.";
+      mode.textContent = "MONITORING";
+      alertBox.style.display = "none";
+    }
+  }
 
-  // 1) Escalation Level
-  const level = levels[Math.floor(Math.random() * levels.length)];
-  const levelEl = document.getElementById("level");
-  levelEl.innerText = level;
+  function setLevel(level) {
+    const el = document.getElementById("level");
+    el.textContent = level;
+    el.className = "value " + level.toLowerCase();
+    setDecision(level);
+  }
 
-  levelEl.className = "warning " + level.toLowerCase();
+  function setPrimarySignal() {
+    const item = signalPool[Math.floor(Math.random() * signalPool.length)];
+    document.getElementById("primarySignal").innerHTML = `
+      <div class="primary-badge">PRIMARY SIGNAL</div>
+      <strong>${item.title}</strong>
+      <span>${item.text}</span>
+    `;
+  }
 
-  // 2) Signals change
-  document.getElementById("s1").innerText = signals[Math.floor(Math.random() * signals.length)];
-  document.getElementById("s2").innerText = signals[Math.floor(Math.random() * signals.length)];
-  document.getElementById("s3").innerText = signals[Math.floor(Math.random() * signals.length)];
+  function setFeed() {
+    const feed = document.getElementById("feed");
+    let html = "";
+    for (let i = 0; i < 4; i++) {
+      const msg = feedPool[Math.floor(Math.random() * feedPool.length)];
+      html += `<div class="feed-item">${msg}</div>`;
+    }
+    feed.innerHTML = html;
+  }
 
-  // 3) Scenarios change
-  let a = Math.floor(Math.random() * 100);
-  let b = Math.floor(Math.random() * (100 - a));
-  let c = 100 - a - b;
+  function tick() {
+    const levels = ["LOW", "MEDIUM", "HIGH"];
+    const level = levels[Math.floor(Math.random() * levels.length)];
+    setLevel(level);
 
-  document.getElementById("a").innerText = "A — " + a + "%";
-  document.getElementById("b").innerText = "B — " + b + "%";
-  document.getElementById("c").innerText = "C — " + c + "%";
+    const [a, b, c] = randomScenario();
+    document.getElementById("sa").textContent = a + "%";
+    document.getElementById("sb").textContent = b + "%";
+    document.getElementById("sc").textContent = c + "%";
 
-  // 4) Decision
-  document.getElementById("decision").innerText =
-    decisions[Math.floor(Math.random() * decisions.length)];
+    setPrimarySignal();
+    setFeed();
+  }
 
-}, 3000);
-
+  tick();
+  setInterval(tick, 4000);
 </script>
-
 </body>
 </html>
