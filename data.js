@@ -17,6 +17,19 @@ const IBSS_SIGNALS = [
       en: "WATCH / ACT",
       ar: "مراقبة / تحرك"
     },
+    reportMeta: {
+      code: "SDR-001",
+      type: "SDR",
+      priority: "HIGH",
+      status: {
+        en: "Active",
+        ar: "نشط"
+      }
+    },
+    report: {
+      en: "Northern front escalation is entering a controlled instability phase. The probability distribution suggests prolonged pressure without full war breakout. Decision Bias: Maintain WATCH posture while preparing rapid escalation response.",
+      ar: "الجبهة الشمالية تدخل مرحلة من عدم الاستقرار المضبوط. توزيع الاحتمالات يشير إلى ضغط ممتد دون انفجار حرب شاملة. انحياز القرار: الحفاظ على وضعية المراقبة مع التحضير لاستجابة تصعيدية سريعة."
+    },
     region: "Levant",
     weight: "HIGH",
     live: true,
@@ -44,6 +57,19 @@ const IBSS_SIGNALS = [
     decisionMode: {
       en: "WATCH / PRD",
       ar: "مراقبة / استعداد"
+    },
+    reportMeta: {
+      code: "SDR-002",
+      type: "SDR",
+      priority: "HIGH",
+      status: {
+        en: "Active",
+        ar: "نشط"
+      }
+    },
+    report: {
+      en: "Gaza has transitioned from a battlefield into a structured pressure system where military force, governance fragility, humanitarian stress, and narrative competition intersect. Decision Bias: Maintain WATCH / PRD posture and monitor structural shifts rather than isolated events.",
+      ar: "انتقلت غزة من ساحة قتال إلى نظام ضغط بنيوي تتقاطع فيه القوة العسكرية وهشاشة الحوكمة والضغط الإنساني والتنافس السردي. انحياز القرار: الحفاظ على وضعية مراقبة / استعداد ومتابعة التحولات البنيوية بدلًا من الأحداث المعزولة."
     },
     region: "Gaza",
     weight: "HIGH",
@@ -73,6 +99,19 @@ const IBSS_SIGNALS = [
       en: "PRD",
       ar: "استعداد"
     },
+    reportMeta: {
+      code: "SDB-001",
+      type: "SDB",
+      priority: "MEDIUM",
+      status: {
+        en: "Final",
+        ar: "نهائي"
+      }
+    },
+    report: {
+      en: "Diplomatic negotiation remains under pressure with unclear enforcement mechanisms. The likely outcome is prolonged negotiation rather than decisive breakthrough.",
+      ar: "المفاوضات الدبلوماسية ما تزال تحت الضغط مع غموض في آليات الفرض والتنفيذ. النتيجة الأرجح هي إطالة التفاوض بدلًا من اختراق حاسم."
+    },
     region: "Diplomatic",
     weight: "MEDIUM",
     live: true,
@@ -101,6 +140,19 @@ const IBSS_SIGNALS = [
       en: "Pending",
       ar: "قيد الإعداد"
     },
+    reportMeta: {
+      code: "PP-002",
+      type: "PP",
+      priority: "LOW",
+      status: {
+        en: "Pending",
+        ar: "قيد الإعداد"
+      }
+    },
+    report: {
+      en: "Maritime pressure remains below the threshold of full strategic disruption, but the signal indicates a growing need for route-risk monitoring and deterrence reassessment.",
+      ar: "الضغط البحري ما يزال دون عتبة التعطيل الاستراتيجي الكامل، لكن الإشارة تدل على تصاعد الحاجة إلى مراقبة مخاطر المسارات وإعادة تقييم الردع."
+    },
     region: "Maritime",
     weight: "LOW",
     live: false,
@@ -128,6 +180,19 @@ const IBSS_SIGNALS = [
     decisionMode: {
       en: "Pending",
       ar: "قيد الإعداد"
+    },
+    reportMeta: {
+      code: "PP-003",
+      type: "PP",
+      priority: "LOW",
+      status: {
+        en: "Pending",
+        ar: "قيد الإعداد"
+      }
+    },
+    report: {
+      en: "Localized escalation indicators remain fragmented, yet the file deserves monitoring due to its potential to alter wider conflict assumptions.",
+      ar: "مؤشرات التصعيد الموضعية ما تزال متفرقة، لكن الملف يستحق المراقبة بسبب قدرته على تعديل افتراضات الصراع الأوسع."
     },
     region: "West Bank",
     weight: "LOW",
@@ -198,4 +263,4 @@ function getSystemState() {
     liveSignals,
     scenarios
   };
-}
+      }
