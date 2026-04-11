@@ -116,6 +116,7 @@
       color:#ffd5d5;
       font-weight:700;
       text-align:center;
+      animation:fadeIn .3s ease;
     }
 
     .hero{
@@ -183,6 +184,14 @@
       border:1px solid rgba(255,255,255,.06);
       border-radius:14px;
       padding:14px;
+      transition:.25s ease;
+    }
+
+    .state-item:hover,
+    .feed-item:hover,
+    .signal-item:hover{
+      border-color:var(--border);
+      box-shadow:0 0 18px rgba(212,175,55,.06);
     }
 
     .label{
@@ -194,12 +203,14 @@
     .value{
       font-size:20px;
       font-weight:700;
+      transition:.25s ease;
     }
 
     .ssi{
       color:var(--gold);
       font-size:26px;
       font-weight:800;
+      transition:.25s ease;
     }
 
     .low{color:var(--green)}
@@ -210,6 +221,7 @@
       display:block;
       margin-bottom:6px;
       color:#fff;
+      font-size:22px;
     }
 
     .signal-item span{
@@ -222,7 +234,7 @@
       border-color:rgba(212,175,55,.45);
       box-shadow:0 0 0 1px rgba(212,175,55,.15) inset;
       cursor:pointer;
-      transition:.2s ease;
+      transition:.25s ease;
     }
 
     .primary:hover{
@@ -256,6 +268,11 @@
       border:1px solid rgba(255,255,255,.06);
       border-radius:12px;
       padding:12px 14px;
+      transition:.25s ease;
+    }
+
+    .scenario-row:hover{
+      border-color:var(--border);
     }
 
     .decision-box{
@@ -271,12 +288,14 @@
       font-weight:800;
       color:var(--gold);
       margin:8px 0 6px;
+      transition:.25s ease;
     }
 
     .decision-note{
       color:var(--muted);
       line-height:1.7;
       font-size:14px;
+      min-height:48px;
     }
 
     .radar{
@@ -285,6 +304,7 @@
       display:flex;
       justify-content:center;
       align-items:center;
+      overflow:hidden;
     }
 
     .radar-circle{
@@ -308,9 +328,24 @@
       z-index:2;
     }
 
-    @keyframes pulse{
-      0%,100%{transform:scale(1);opacity:1}
-      50%{transform:scale(1.8);opacity:.45}
+    .sweep{
+      position:absolute;
+      width:110px;
+      height:110px;
+      background:conic-gradient(from 0deg, rgba(212,175,55,.22), transparent 55%);
+      border-radius:50%;
+      animation:spin 4s linear infinite;
+      opacity:.75;
+    }
+
+    .signal-dot{
+      position:absolute;
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:var(--gold);
+      box-shadow:0 0 10px rgba(212,175,55,.75);
+      transition:.35s ease;
     }
 
     .feed{
@@ -326,6 +361,21 @@
       font-size:14px;
       border-top:1px solid rgba(255,255,255,.05);
       padding-top:20px;
+    }
+
+    @keyframes pulse{
+      0%,100%{transform:scale(1);opacity:1}
+      50%{transform:scale(1.8);opacity:.45}
+    }
+
+    @keyframes spin{
+      from{transform:rotate(0deg)}
+      to{transform:rotate(360deg)}
+    }
+
+    @keyframes fadeIn{
+      from{opacity:0; transform:translateY(-4px)}
+      to{opacity:1; transform:translateY(0)}
     }
 
     html[dir="rtl"] body{
@@ -441,7 +491,11 @@
           <div class="radar-circle r3"></div>
           <div class="radar-circle r2"></div>
           <div class="radar-circle r1"></div>
+          <div class="sweep"></div>
           <div class="pulse"></div>
+          <div id="dot1" class="signal-dot" style="top:42px; left:112px;"></div>
+          <div id="dot2" class="signal-dot" style="top:88px; left:55px;"></div>
+          <div id="dot3" class="signal-dot" style="top:132px; left:158px;"></div>
         </div>
 
         <div class="title" data-i18n="live_feed">Live Feed</div>
@@ -498,9 +552,10 @@
         decision_watch: "WATCH",
 
         alert_high: "⚠ HIGH ESCALATION DETECTED — SYSTEM SHIFTING TO ACTIVE RESPONSE POSTURE",
-        note_high: "High pressure environment detected. Shift from passive watch to active response readiness.",
-        note_medium: "Structured pressure remains present. Maintain doctrinal preparation and scenario adjustment.",
-        note_low: "Pressure remains limited. Continue observation and signal accumulation."
+        alert_medium: "⚠ STRUCTURED PRESSURE DETECTED — SYSTEM IN PREPARATION MODE",
+        note_high: "High pressure environment detected. Immediate readiness required.",
+        note_medium: "Structured pressure remains present. Maintain preparation posture.",
+        note_low: "Low pressure. Continue monitoring."
       },
 
       ar: {
@@ -543,15 +598,20 @@
         decision_prd: "استعداد",
         decision_watch: "مراقبة",
 
-        alert_high: "⚠ تم رصد تصعيد مرتفع — النظام ينتقل إلى وضعية استجابة نشطة",
-        note_high: "تم رصد بيئة ضغط مرتفعة. انتقل من المراقبة السلبية إلى الجاهزية للاستجابة النشطة.",
-        note_medium: "الضغط البنيوي ما زال حاضرًا. حافظ على التحضير العقائدي وتعديل السيناريوهات.",
-        note_low: "الضغط ما يزال محدودًا. واصل المراقبة وتجميع الإشارات."
+        alert_high: "⚠ تم رصد تصعيد مرتفع — النظام في وضعية استجابة نشطة",
+        alert_medium: "⚠ تم رصد ضغط بنيوي — النظام في وضعية تحضير",
+        note_high: "تم رصد بيئة ضغط مرتفعة. الجاهزية الفورية مطلوبة.",
+        note_medium: "الضغط البنيوي حاضر. حافظ على وضعية التحضير.",
+        note_low: "الضغط منخفض. واصل المراقبة."
       }
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
     let currentSignalLink = "#";
+    let liveState = {
+      ssi: 76,
+      direction: 1
+    };
 
     function t(key) {
       return translations[currentLang][key] || key;
@@ -577,6 +637,30 @@
       tick();
     }
 
+    function getLiveSystemFromSSI(ssi) {
+      let level = "LOW";
+      let decision = "WATCH";
+      let mode = "MONITORING";
+      let scenarios = [24, 34, 42];
+      let dominantSignal = IBSS_SIGNALS.find(s => s.id === "iran") || IBSS_SIGNALS[0];
+
+      if (ssi >= 75) {
+        level = "HIGH";
+        decision = "ACT";
+        mode = "ACTIVE RESPONSE";
+        scenarios = [58, 27, 15];
+        dominantSignal = IBSS_SIGNALS.find(s => s.id === "gaza") || dominantSignal;
+      } else if (ssi >= 50) {
+        level = "MEDIUM";
+        decision = "PRD";
+        mode = "PREPARATION";
+        scenarios = [38, 37, 25];
+        dominantSignal = IBSS_SIGNALS.find(s => s.id === "lebanon") || dominantSignal;
+      }
+
+      return { ssi, level, decision, mode, scenarios, dominantSignal };
+    }
+
     function setDecision(level) {
       const decision = document.getElementById("decision");
       const note = document.getElementById("decisionNote");
@@ -593,7 +677,8 @@
         decision.textContent = t("decision_prd");
         note.textContent = t("note_medium");
         mode.textContent = t("preparation_word");
-        alertBox.style.display = "none";
+        alertBox.textContent = t("alert_medium");
+        alertBox.style.display = "block";
       } else {
         decision.textContent = t("decision_watch");
         note.textContent = t("note_low");
@@ -609,38 +694,50 @@
       setDecision(level);
     }
 
-    function setPrimarySignal(signal, level) {
-      let item = signal;
-
-      if (level === "HIGH") {
-        const gaza = IBSS_SIGNALS.find(s => s.id === "gaza");
-        if (gaza) item = gaza;
-      } else if (level === "MEDIUM") {
-        const lebanon = IBSS_SIGNALS.find(s => s.id === "lebanon");
-        if (lebanon) item = lebanon;
-      } else if (level === "LOW") {
-        const iran = IBSS_SIGNALS.find(s => s.id === "iran");
-        if (iran) item = iran;
-      }
-
-      if (!item) return;
-
-      document.getElementById("signalTitle").textContent = item.title[currentLang];
-      document.getElementById("signalText").textContent = item.description[currentLang];
-      currentSignalLink = item.link;
+    function setPrimarySignal(signal) {
+      if (!signal) return;
+      document.getElementById("signalTitle").textContent = signal.title[currentLang];
+      document.getElementById("signalText").textContent = signal.description[currentLang];
+      currentSignalLink = signal.link;
     }
 
-    function setFeed() {
+    function setFeed(system) {
       const feed = document.getElementById("feed");
       const rankedSignals = getRankedSignals().slice(0, 4);
 
-      feed.innerHTML = rankedSignals.map(signal => `
-        <div class="feed-item">${signal.title[currentLang]} — ${signal.decisionMode[currentLang]}</div>
-      `).join("");
+      const feedLines = [
+        `${system.dominantSignal.title[currentLang]} — ${system.dominantSignal.decisionMode[currentLang]}`,
+        `${rankedSignals[1]?.title[currentLang] || ""} — ${rankedSignals[1]?.decisionMode[currentLang] || ""}`,
+        `${currentLang === "ar" ? "تم تحديث مؤشر الضغط إلى" : "Pressure index updated to"} ${system.ssi}`,
+        `${currentLang === "ar" ? "النظام في وضع" : "System mode:"} ${document.getElementById("mode").textContent}`
+      ];
+
+      feed.innerHTML = feedLines.map(line => `<div class="feed-item">${line}</div>`).join("");
+    }
+
+    function moveRadarDots() {
+      const dots = [
+        document.getElementById("dot1"),
+        document.getElementById("dot2"),
+        document.getElementById("dot3")
+      ];
+
+      dots.forEach(dot => {
+        const top = 35 + Math.floor(Math.random() * 140);
+        const left = 40 + Math.floor(Math.random() * 140);
+        dot.style.top = top + "px";
+        dot.style.left = left + "px";
+      });
     }
 
     function tick() {
-      const system = getSystemState();
+      const delta = Math.floor(Math.random() * 7) - 3;
+      liveState.ssi += delta;
+
+      if (liveState.ssi > 88) liveState.ssi = 88;
+      if (liveState.ssi < 38) liveState.ssi = 38;
+
+      const system = getLiveSystemFromSSI(liveState.ssi);
 
       setLevel(system.level);
       document.getElementById("ssi").textContent = system.ssi;
@@ -648,8 +745,12 @@
       document.getElementById("sb").textContent = system.scenarios[1] + "%";
       document.getElementById("sc").textContent = system.scenarios[2] + "%";
 
-      setPrimarySignal(system.dominantSignal, system.level);
-      setFeed();
+      const ssiEl = document.getElementById("ssi");
+      ssiEl.className = "ssi " + system.level.toLowerCase();
+
+      setPrimarySignal(system.dominantSignal);
+      setFeed(system);
+      moveRadarDots();
     }
 
     document.getElementById("primarySignal").addEventListener("click", function () {
@@ -660,6 +761,7 @@
 
     applyTranslations();
     tick();
+    setInterval(tick, 5000);
   </script>
 </body>
-  </html>
+</html>
