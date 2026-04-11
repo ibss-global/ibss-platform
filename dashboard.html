@@ -481,23 +481,15 @@
     el.className = "value " + level.toLowerCase();
     setDecision(level);
   }
+function setPrimarySignal() {
+  const validSignals = signalPool.filter(s => s.link !== "#");
+  const item = validSignals[Math.floor(Math.random() * validSignals.length)];
 
-  function setPrimarySignal() {
-    const item = signalPool[Math.floor(Math.random() * signalPool.length)];
-    const primarySignal = document.getElementById("primarySignal");
+  document.getElementById("signalTitle").textContent = item.title;
+  document.getElementById("signalText").textContent = item.text;
 
-    document.getElementById("signalTitle").textContent = item.title;
-    document.getElementById("signalText").textContent = item.text;
-
-    currentSignalLink = item.link;
-
-    if (item.link === "#") {
-      primarySignal.classList.add("disabled");
-    } else {
-      primarySignal.classList.remove("disabled");
-    }
-  }
-
+  currentSignalLink = item.link;
+}
   function setFeed() {
     const feed = document.getElementById("feed");
     let html = "";
