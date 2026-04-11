@@ -141,6 +141,19 @@ body{
   font-weight:700;
 }
 
+.home-alert{
+  display:none;
+  margin:22px auto 0;
+  max-width:760px;
+  padding:14px 16px;
+  border-radius:12px;
+  background:rgba(255,77,79,.12);
+  border:1px solid rgba(255,77,79,.45);
+  color:#ffd5d5;
+  font-weight:700;
+  text-align:center;
+}
+
 .hero-buttons{
   margin-top:30px;
   display:flex;
@@ -193,6 +206,13 @@ body{
   border-radius:18px;
   padding:20px;
   text-align:center;
+  transition:.25s ease;
+}
+
+.status-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 0 20px rgba(212,175,55,.08);
+  border-color:var(--border);
 }
 
 .status-label{
@@ -211,6 +231,10 @@ body{
 .status-value.medium{color:var(--orange)}
 .status-value.high{color:var(--red)}
 .status-value.gold{color:var(--gold)}
+
+#topThreat{
+  text-shadow:0 0 12px rgba(212,175,55,.3);
+}
 
 .section{
   margin-top:64px;
@@ -283,7 +307,8 @@ html[dir="rtl"] .status-card,
 html[dir="rtl"] .section h2,
 html[dir="rtl"] .card,
 html[dir="rtl"] .founder,
-html[dir="rtl"] .footer{
+html[dir="rtl"] .footer,
+html[dir="rtl"] .home-alert{
   text-align:center;
 }
 
@@ -332,6 +357,8 @@ html[dir="rtl"] .footer{
       A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.
     </p>
     <p class="system-line" data-i18n="system_line">System Active — Monitoring Global Signals</p>
+
+    <div id="homeAlert" class="home-alert"></div>
 
     <div class="hero-buttons">
       <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Open Dashboard</a>
@@ -390,6 +417,28 @@ html[dir="rtl"] .footer{
 
 <script src="data.js"></script>
 <script>
+if (typeof getSignalScore === "undefined") {
+  function getSignalScore(signal) {
+    return (
+      signal.metrics.weight * 0.5 +
+      signal.metrics.volatility * 0.3 +
+      signal.metrics.impact * 0.2
+    );
+  }
+}
+
+if (typeof getRankedSignals === "undefined") {
+  function getRankedSignals() {
+    return [...IBSS_SIGNALS].sort((a, b) => getSignalScore(b) - getSignalScore(a));
+  }
+}
+
+if (typeof getDominantSignal === "undefined") {
+  function getDominantSignal() {
+    return getRankedSignals()[0] || null;
+  }
+}
+
 const translations = {
   en: {
     nav_home: "Home",
@@ -421,7 +470,10 @@ const translations = {
 
     decision_act: "ACT",
     decision_prd: "PRD",
-    decision_watch: "WATCH"
+    decision_watch: "WATCH",
+
+    high_alert: "⚠ HIGH ESCALATION — SYSTEM IN ACTIVE RESPONSE MODE",
+    medium_alert: "⚠ STRUCTURED PRESSURE — SYSTEM IN PREPARATION MODE"
   },
 
   ar: {
@@ -454,7 +506,10 @@ const translations = {
 
     decision_act: "تحرك",
     decision_prd: "استعداد",
-    decision_watch: "مراقبة"
+    decision_watch: "مراقبة",
+
+    high_alert: "⚠ تم رصد تصعيد مرتفع — النظام في وضعية استجابة نشطة",
+    medium_alert: "⚠ تم رصد ضغط بنيوي — النظام في وضعية تحضير"
   }
 };
 
@@ -484,12 +539,61 @@ function setLang(lang){
   renderHomeState();
 }
 
+function getFallbackSystem(){
+  const ranked = getRankedSignals();
+  const dominant = ranked[0] || null;
+
+  if (!IBSS_SIGNALS || !IBSS_SIGNALS.length) {
+    return {
+      ssi: 0,
+      level: "LOW",
+      decision: "WATCH",
+      dominantSignalId: null
+    };
+  }
+
+  const total = IBSS_SIGNALS.reduce((sum, signal) => sum + getSignalScore(signal), 0);
+  const ssi = Math.round((total / IBSS_SIGNALS.length) * 100);
+
+  let level = "LOW";
+  let decision = "WATCH";
+
+  if (ssi >= 75) {
+    level = "HIGH";
+    decision = "ACT";
+  } else if (ssi >= 50) {
+    level = "MEDIUM";
+    decision = "PRD";
+  }
+
+  return {
+    ssi,
+    level,
+    decision,
+    dominantSignalId: dominant ? dominant.id : null
+  };
+}
+
 function renderHomeState(){
-  const system = getSystemState();
-  const dominant = system.dominantSignal || IBSS_SIGNALS[0] || null;
+  let system = null;
+
+  const saved = localStorage.getItem("ibss_live_system");
+  if (saved) {
+    try {
+      system = JSON.parse(saved);
+    } catch (e) {
+      system = null;
+    }
+  }
+
+  if (!system) {
+    system = getFallbackSystem();
+  }
+
+  const dominant = IBSS_SIGNALS.find(s => s.id === system.dominantSignalId) || getDominantSignal() || null;
 
   document.getElementById("topThreat").textContent =
-    dominant ? dominant.title[currentLang] : "-";
+    dominant ? (dominant.title[currentLang] || dominant.title.en) : "-";
 
   document.getElementById("systemPressure").textContent = system.ssi;
 
@@ -499,11 +603,26 @@ function renderHomeState(){
     t("decision_watch");
 
   const pressureEl = document.getElementById("systemPressure");
-  pressureEl.className = "status-value " + system.level.toLowerCase();
+  pressureEl.className =
+    system.level === "HIGH" ? "status-value high" :
+    system.level === "MEDIUM" ? "status-value medium" :
+    "status-value low";
+
+  const alertBox = document.getElementById("homeAlert");
+  if (system.level === "HIGH") {
+    alertBox.style.display = "block";
+    alertBox.textContent = t("high_alert");
+  } else if (system.level === "MEDIUM") {
+    alertBox.style.display = "block";
+    alertBox.textContent = t("medium_alert");
+  } else {
+    alertBox.style.display = "none";
+  }
 }
 
 applyLanguage();
 renderHomeState();
+setInterval(renderHomeState, 3000);
 </script>
 </body>
-</html>
+  </html>
