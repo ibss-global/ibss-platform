@@ -2,56 +2,105 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Lebanon Signal — IBSS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lebanon Pressure — IBSS</title>
 
 <style>
-body {
-  background: black;
-  color: #ddd;
-  font-family: Arial;
-  padding: 20px;
+body{
+  margin:0;
+  font-family:Arial;
+  background:#050505;
+  color:#eee;
 }
 
-h1 {
-  color: #d4af37;
+.wrap{
+  width:90%;
+  max-width:900px;
+  margin:auto;
+  padding:30px 0;
 }
 
-.section {
-  border: 1px solid #d4af37;
-  border-radius: 10px;
-  padding: 15px;
-  margin-top: 20px;
+h1{
+  color:#d4af37;
 }
 
-.title {
-  color: #d4af37;
-  margin-bottom: 10px;
+.card{
+  border:1px solid rgba(212,175,55,.4);
+  border-radius:16px;
+  padding:20px;
+  margin:20px 0;
+  background:#0d0d0d;
+}
+
+.title{
+  color:#d4af37;
+  margin-bottom:10px;
+  font-weight:bold;
+}
+
+.big{
+  font-size:22px;
+  font-weight:bold;
+  color:#d4af37;
+}
+
+.back{
+  display:inline-block;
+  margin-top:20px;
+  color:#d4af37;
+  text-decoration:none;
 }
 </style>
-</head>
 
+</head>
 <body>
+
+<div class="wrap">
 
 <h1>📡 Lebanon Pressure</h1>
 <p>Signal File — IBSS Analysis Layer</p>
 
-<div class="section">
+<div class="card">
+  <div class="title">Signal Weight</div>
+  <div class="big">HIGH</div>
+</div>
+
+<div class="card">
+  <div class="title">System Layer</div>
+  <div class="big">MILITARY / HYBRID</div>
+</div>
+
+<div class="card">
+  <div class="title">Decision Mode</div>
+  <div class="big">WATCH / ACT</div>
+</div>
+
+<div class="card">
   <div class="title">Signal Overview</div>
   <p>
-  Northern front pressure remains active with structured escalation patterns.
+    Northern front pressure remains active with structured escalation patterns.
+    The Lebanese theater represents a hybrid conflict layer combining deterrence,
+    signaling, and controlled escalation dynamics across military and political channels.
   </p>
 </div>
 
-<div class="section">
+<div class="card">
   <div class="title">Scenario Outlook</div>
   <p>A — Controlled escalation (45%)</p>
   <p>B — Limited conflict expansion (35%)</p>
   <p>C — Rapid escalation (20%)</p>
 </div>
 
-<div class="section">
+<div class="card">
   <div class="title">Decision Posture</div>
-  <p>WATCH — Maintain observation and monitor signal density.</p>
+  <p>
+    WATCH / ACT — Maintain observation while preparing for rapid escalation response
+    if thresholds are crossed.
+  </p>
+</div>
+
+<a class="back" href="dashboard.html">← Back to Dashboard</a>
+
 </div>
 
 </body>
