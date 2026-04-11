@@ -431,7 +431,7 @@
         <div class="title" data-i18n="priority_signal">Priority Signal</div>
         <div id="primarySignal" class="signal-item primary">
           <div class="primary-badge" data-i18n="primary_signal_badge">PRIMARY SIGNAL</div>
-          <strong id="signalTitle">Lebanon Pressure</strong>
+          <strong id="signalTitle">Gaza Structure</strong>
           <span id="signalText"></span>
         </div>
 
@@ -610,22 +610,24 @@
     }
 
     function setPrimarySignal(signal, level) {
+      let item = signal;
 
-  let item = signal;
+      if (level === "HIGH") {
+        const gaza = IBSS_SIGNALS.find(s => s.id === "gaza");
+        if (gaza) item = gaza;
+      } else if (level === "MEDIUM") {
+        const lebanon = IBSS_SIGNALS.find(s => s.id === "lebanon");
+        if (lebanon) item = lebanon;
+      } else if (level === "LOW") {
+        const iran = IBSS_SIGNALS.find(s => s.id === "iran");
+        if (iran) item = iran;
+      }
 
-  // 👇 السيطرة السيادية
-  if (level === "HIGH") {
-    const gaza = signalPool.find(s => s.title === "Gaza Structure");
-    if (gaza) item = gaza;
-  }
+      if (!item) return;
 
-  document.getElementById("signalTitle").textContent = item.title;
-  document.getElementById("signalText").textContent = item.text;
-  currentSignalLink = item.link;
-    }
-      document.getElementById("signalTitle").textContent = signal.title[currentLang];
-      document.getElementById("signalText").textContent = signal.description[currentLang];
-      currentSignalLink = signal.link;
+      document.getElementById("signalTitle").textContent = item.title[currentLang];
+      document.getElementById("signalText").textContent = item.description[currentLang];
+      currentSignalLink = item.link;
     }
 
     function setFeed() {
@@ -660,4 +662,4 @@
     tick();
   </script>
 </body>
-</html>
+  </html>
