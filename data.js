@@ -246,6 +246,10 @@ const IBSS_SIGNALS = [
   }
 ];
 
+/* =========================
+   Core Score Functions
+========================= */
+
 function getSignalScore(signal) {
   return (
     signal.metrics.weight * 0.5 +
@@ -258,20 +262,72 @@ function getSignalScore100(signal) {
   return Math.round(getSignalScore(signal) * 100);
 }
 
+/* =========================
+   Signal Collections
+========================= */
+
+function getAllSignals() {
+  return [...IBSS_SIGNALS];
+}
+
 function getLiveSignals() {
   return IBSS_SIGNALS.filter(signal => signal.live);
 }
+
+function getPendingSignals() {
+  return IBSS_SIGNALS.filter(signal => !signal.live);
+}
+
+function getSignalsByWeight(weight) {
+  return IBSS_SIGNALS.filter(signal => signal.weight === weight);
+}
+
+function getSignalsByType(type) {
+  return IBSS_SIGNALS.filter(signal => signal.signalType.en === type);
+}
+
+function getSignalsByStatus(status) {
+  if (status === "live") return getLiveSignals();
+  if (status === "pending") return getPendingSignals();
+  return getAllSignals();
+}
+
+/* =========================
+   Ranking
+========================= */
 
 function getRankedSignals() {
   return [...IBSS_SIGNALS].sort((a, b) => getSignalScore(b) - getSignalScore(a));
 }
 
-function getDominantSignal() {
-  return getRankedSignals()[0];
+function getRankedLiveSignals() {
+  return getLiveSignals().sort((a, b) => getSignalScore(b) - getSignalScore(a));
 }
+
+function getDominantSignal() {
+  const rankedLive = getRankedLiveSignals();
+  return rankedLive.length ? rankedLive[0] : null;
+}
+
+/* =========================
+   System State
+========================= */
 
 function getSystemState() {
   const liveSignals = getLiveSignals();
+
+  if (!liveSignals.length) {
+    return {
+      ssi: 0,
+      level: "LOW",
+      decision: "WATCH",
+      mode: "MONITORING",
+      dominantSignal: null,
+      liveSignals: [],
+      scenarios: [34, 33, 33]
+    };
+  }
+
   const total = liveSignals.reduce((sum, signal) => sum + getSignalScore(signal), 0);
   const avg = total / liveSignals.length;
   const ssi = Math.round(avg * 100);
