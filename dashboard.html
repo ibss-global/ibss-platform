@@ -1,418 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS Dashboard</title>
-  <style>
-    :root {
-      --bg: #050505;
-      --panel: #0d0d0d;
-      --panel-2: #111111;
-      --text: #f5f5f5;
-      --muted: #a8a8a8;
-      --gold: #d4af37;
-      --border: rgba(212, 175, 55, 0.28);
-      --red: #ff5c5c;
-      --green: #00d084;
-      --blue: #55aaff;
-    }
+<meta charset="UTF-8">
+<title>IBSS Dashboard</title>
 
-    * {
-      box-sizing: border-box;
-    }
+<style>
+body {
+  background: black;
+  color: #ddd;
+  font-family: Arial;
+  text-align: center;
+  padding: 20px;
+}
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background:
-        radial-gradient(circle at top, rgba(212,175,55,0.07), transparent 35%),
-        var(--bg);
-      color: var(--text);
-    }
+h1 {
+  color: #d4af37;
+}
 
-    .container {
-      width: min(1150px, 92%);
-      margin: 0 auto;
-    }
+.box {
+  border: 1px solid #d4af37;
+  padding: 15px;
+  margin: 20px auto;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 10px;
+}
 
-    .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: rgba(5,5,5,0.92);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
+.title {
+  color: #d4af37;
+  margin-bottom: 10px;
+}
 
-    .navbar-inner {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 18px 0;
-      gap: 12px;
-    }
+.signal {
+  margin: 5px 0;
+}
 
-    .brand {
-      color: var(--gold);
-      text-decoration: none;
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      white-space: nowrap;
-    }
+.status {
+  color: #00ffcc;
+}
 
-    .nav-links {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+.warning {
+  color: orange;
+}
 
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 10px;
-    }
-
-    .nav-links a:hover,
-    .nav-links a.active {
-      color: var(--gold);
-      border-color: var(--border);
-    }
-
-    .hero {
-      padding: 54px 0 26px;
-    }
-
-    .eyebrow {
-      color: var(--gold);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-size: 13px;
-      margin-bottom: 12px;
-    }
-
-    h1 {
-      margin: 0 0 10px;
-      font-size: 38px;
-      color: var(--text);
-    }
-
-    .sub {
-      margin: 0;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.7;
-    }
-
-    .status-bar {
-      margin-top: 22px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-    }
-
-    .mini-card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 18px;
-    }
-
-    .mini-card .label {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-
-    .mini-card .value {
-      color: var(--text);
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    .value.gold { color: var(--gold); }
-    .value.red { color: var(--red); }
-    .value.green { color: var(--green); }
-    .value.blue { color: var(--blue); }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 18px;
-      padding: 24px 0 70px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 18px;
-      padding: 22px;
-    }
-
-    .panel-title {
-      margin: 0 0 18px;
-      font-size: 22px;
-      color: var(--gold);
-    }
-
-    .panel-sub {
-      margin: -8px 0 18px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .state-list,
-    .signal-list,
-    .decision-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .state-item,
-    .signal-item,
-    .decision-item {
-      background: var(--panel-2);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 14px;
-      padding: 16px;
-    }
-
-    .state-item strong,
-    .signal-item strong,
-    .decision-item strong {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--text);
-      font-size: 16px;
-    }
-
-    .state-item span,
-    .signal-item span,
-    .decision-item span {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .scenario-blocks {
-      display: grid;
-      gap: 14px;
-    }
-
-    .scenario {
-      border: 1px solid rgba(212,175,55,0.16);
-      border-radius: 14px;
-      padding: 16px;
-      background: linear-gradient(180deg, rgba(212,175,55,0.04), rgba(255,255,255,0.01));
-    }
-
-    .scenario-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-
-    .scenario-head strong {
-      color: var(--text);
-      font-size: 16px;
-    }
-
-    .scenario-head span {
-      color: var(--gold);
-      font-weight: 700;
-    }
-
-    .scenario p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    .footer-note {
-      text-align: center;
-      color: #8b8b8b;
-      font-size: 14px;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 22px 0 34px;
-    }
-
-    @media (max-width: 950px) {
-      .status-bar {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .navbar-inner {
-        flex-direction: column;
-        gap: 14px;
-      }
-
-      .status-bar {
-        grid-template-columns: 1fr;
-      }
-
-      h1 {
-        font-size: 30px;
-      }
-
-      .sub {
-        font-size: 15px;
-      }
-    }
-  </style>
+</style>
 </head>
+
 <body>
 
-  <header class="navbar">
-    <div class="container navbar-inner">
-      <a class="brand" href="index.html">IBSS</a>
-      <nav class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="dashboard.html" class="active">Dashboard</a>
-        <a href="signals.html">Signals</a>
-        <a href="reports.html">Reports</a>
-        <a href="models.html">Models</a>
-        <a href="about.html">About</a>
-      </nav>
-    </div>
-  </header>
+<h1>IBSS — Control Dashboard</h1>
+<p class="status">System Active — Monitoring Global Signals</p>
 
-  <main class="container">
-    <section class="hero">
-      <div class="eyebrow">Control Layer</div>
-      <h1>IBSS Dashboard</h1>
-      <p class="sub">System state, active signals, scenario outlook, and decision posture.</p>
+<div class="box">
+  <div class="title">System State</div>
+  <p>Escalation Level: <span class="warning">HIGH</span></p>
+  <p>WAAD Status: ACTIVE</p>
+  <p>System Mode: MONITORING</p>
+</div>
 
-      <div class="status-bar">
-        <div class="mini-card">
-          <div class="label">Escalation Level</div>
-          <div class="value red">HIGH</div>
-        </div>
-        <div class="mini-card">
-          <div class="label">WAAD Status</div>
-          <div class="value gold">ACTIVE</div>
-        </div>
-        <div class="mini-card">
-          <div class="label">System Mode</div>
-          <div class="value green">MONITORING</div>
-        </div>
-        <div class="mini-card">
-          <div class="label">Decision Posture</div>
-          <div class="value blue">WATCH / PRD</div>
-        </div>
-      </div>
-    </section>
+<div class="box">
+  <div class="title">Active Signals</div>
+  <div class="signal">Iran Negotiations</div>
+  <div class="signal">Lebanon Pressure</div>
+  <div class="signal">Gaza Structure</div>
+</div>
 
-    <section class="dashboard-grid">
-      <div class="panel">
-        <h2 class="panel-title">System State</h2>
-        <p class="panel-sub">Current analytical posture of the platform.</p>
+<div class="box">
+  <div class="title">Scenarios</div>
+  <p>A — 40%</p>
+  <p>B — 35%</p>
+  <p>C — 25%</p>
+</div>
 
-        <div class="state-list">
-          <div class="state-item">
-            <strong>Escalation Window</strong>
-            <span>Regional conditions indicate a sustained pressure environment with elevated conflict potential.</span>
-          </div>
-          <div class="state-item">
-            <strong>Narrative Pressure</strong>
-            <span>Media and diplomatic framing show signs of structured justification patterns before operational movement.</span>
-          </div>
-          <div class="state-item">
-            <strong>Monitoring Status</strong>
-            <span>Signal tracking remains active across Gaza, Lebanon, Iran, and wider strategic spillover zones.</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2 class="panel-title">Active Signals</h2>
-        <p class="panel-sub">Current files under elevated observation.</p>
-
-        <div class="signal-list">
-          <div class="signal-item">
-            <strong>Iran Negotiations</strong>
-            <span>Observed movement in diplomatic channels, pressure signaling, and conditional escalation framing.</span>
-          </div>
-          <div class="signal-item">
-            <strong>Lebanon Pressure</strong>
-            <span>Persistent military and political shaping of the northern front with limited de-escalation indicators.</span>
-          </div>
-          <div class="signal-item">
-            <strong>Gaza Structure</strong>
-            <span>Continued interaction between humanitarian, military, and governance layers in a compressed conflict space.</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2 class="panel-title">Scenario Snapshot</h2>
-        <p class="panel-sub">Current scenario distribution.</p>
-
-        <div class="scenario-blocks">
-          <div class="scenario">
-            <div class="scenario-head">
-              <strong>Scenario A — Controlled Escalation</strong>
-              <span>40%</span>
-            </div>
-            <p>Pressure remains high, but escalation is calibrated and contained within limited operational boundaries.</p>
-          </div>
-
-          <div class="scenario">
-            <div class="scenario-head">
-              <strong>Scenario B — Negotiated Delay</strong>
-              <span>35%</span>
-            </div>
-            <p>Political channels hold temporarily, delaying kinetic expansion without solving the structural dispute.</p>
-          </div>
-
-          <div class="scenario">
-            <div class="scenario-head">
-              <strong>Scenario C — Full Re-engagement</strong>
-              <span>25%</span>
-            </div>
-            <p>Operational logic overrides diplomatic containment, producing an expanded confrontation phase.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2 class="panel-title">Decision Output</h2>
-        <p class="panel-sub">Current strategic recommendation layer.</p>
-
-        <div class="decision-list">
-          <div class="decision-item">
-            <strong>WATCH</strong>
-            <span>Maintain high attention on cross-front indicators and narrative activation signals.</span>
-          </div>
-          <div class="decision-item">
-            <strong>PRD</strong>
-            <span>Prepare rapid doctrinal output if escalation thresholds convert from narrative pressure to operational movement.</span>
-          </div>
-          <div class="decision-item">
-            <strong>Assessment</strong>
-            <span>The environment remains fluid, but pre-war justification architecture is still the key variable to track.</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer-note">
-    © 2026 IBSS — Sovereign Intelligence Platform
-  </footer>
+<div class="box">
+  <div class="title">Decision Output</div>
+  <p>WATCH / PRD</p>
+</div>
 
 </body>
-  </html>
+</html>
