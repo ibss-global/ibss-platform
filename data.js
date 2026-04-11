@@ -1,46 +1,5 @@
 const IBSS_SIGNALS = [
   {
-    id: "lebanon",
-    title: {
-      en: "Lebanon Pressure",
-      ar: "الضغط على لبنان"
-    },
-    description: {
-      en: "Northern front pressure remains active with hybrid escalation patterns across military and political channels.",
-      ar: "ضغط الجبهة الشمالية ما يزال نشطًا ضمن أنماط تصعيد هجينة عسكرية وسياسية."
-    },
-    layer: {
-      en: "Military / Hybrid",
-      ar: "عسكري / هجين"
-    },
-    decisionMode: {
-      en: "WATCH / ACT",
-      ar: "مراقبة / تحرك"
-    },
-    reportMeta: {
-      code: "SDR-001",
-      type: "SDR",
-      priority: "HIGH",
-      status: {
-        en: "Active",
-        ar: "نشط"
-      }
-    },
-    report: {
-      en: "Northern front escalation is entering a controlled instability phase. The probability distribution suggests prolonged pressure without full war breakout. Decision Bias: Maintain WATCH posture while preparing rapid escalation response.",
-      ar: "الجبهة الشمالية تدخل مرحلة من عدم الاستقرار المضبوط. توزيع الاحتمالات يشير إلى ضغط ممتد دون انفجار حرب شاملة. انحياز القرار: الحفاظ على وضعية المراقبة مع التحضير لاستجابة تصعيدية سريعة."
-    },
-    region: "Levant",
-    weight: "HIGH",
-    live: true,
-    link: "signal-lebanon.html",
-    metrics: {
-      weight: 0.90,
-      volatility: 0.80,
-      impact: 0.90
-    }
-  },
-  {
     id: "gaza",
     title: {
       en: "Gaza Structure",
@@ -57,6 +16,14 @@ const IBSS_SIGNALS = [
     decisionMode: {
       en: "WATCH / PRD",
       ar: "مراقبة / استعداد"
+    },
+    signalType: {
+      en: "STRUCTURAL",
+      ar: "بنيوي"
+    },
+    influenceBand: {
+      en: "CORE",
+      ar: "محوري"
     },
     reportMeta: {
       code: "SDR-002",
@@ -76,9 +43,58 @@ const IBSS_SIGNALS = [
     live: true,
     link: "signal-gaza.html",
     metrics: {
-      weight: 0.88,
-      volatility: 0.85,
-      impact: 0.86
+      weight: 0.95,
+      volatility: 0.90,
+      impact: 0.94
+    }
+  },
+  {
+    id: "lebanon",
+    title: {
+      en: "Lebanon Pressure",
+      ar: "الضغط على لبنان"
+    },
+    description: {
+      en: "Northern front pressure remains active with hybrid escalation patterns across military and political channels.",
+      ar: "ضغط الجبهة الشمالية ما يزال نشطًا ضمن أنماط تصعيد هجينة عسكرية وسياسية."
+    },
+    layer: {
+      en: "Military / Hybrid",
+      ar: "عسكري / هجين"
+    },
+    decisionMode: {
+      en: "WATCH / ACT",
+      ar: "مراقبة / تحرك"
+    },
+    signalType: {
+      en: "MILITARY",
+      ar: "عسكري"
+    },
+    influenceBand: {
+      en: "CORE",
+      ar: "محوري"
+    },
+    reportMeta: {
+      code: "SDR-001",
+      type: "SDR",
+      priority: "HIGH",
+      status: {
+        en: "Active",
+        ar: "نشط"
+      }
+    },
+    report: {
+      en: "Northern front escalation is entering a controlled instability phase. The probability distribution suggests prolonged pressure without full war breakout. Decision Bias: Maintain WATCH posture while preparing rapid escalation response.",
+      ar: "الجبهة الشمالية تدخل مرحلة من عدم الاستقرار المضبوط. توزيع الاحتمالات يشير إلى ضغط ممتد دون انفجار حرب شاملة. انحياز القرار: الحفاظ على وضعية المراقبة مع التحضير لاستجابة تصعيدية سريعة."
+    },
+    region: "Levant",
+    weight: "HIGH",
+    live: true,
+    link: "signal-lebanon.html",
+    metrics: {
+      weight: 0.82,
+      volatility: 0.77,
+      impact: 0.84
     }
   },
   {
@@ -99,6 +115,14 @@ const IBSS_SIGNALS = [
       en: "PRD",
       ar: "استعداد"
     },
+    signalType: {
+      en: "DIPLOMATIC",
+      ar: "دبلوماسي"
+    },
+    influenceBand: {
+      en: "SUPPORT",
+      ar: "مساند"
+    },
     reportMeta: {
       code: "SDB-001",
       type: "SDB",
@@ -117,9 +141,9 @@ const IBSS_SIGNALS = [
     live: true,
     link: "signal-iran.html",
     metrics: {
-      weight: 0.64,
-      volatility: 0.58,
-      impact: 0.62
+      weight: 0.56,
+      volatility: 0.52,
+      impact: 0.58
     }
   },
   {
@@ -139,6 +163,14 @@ const IBSS_SIGNALS = [
     decisionMode: {
       en: "Pending",
       ar: "قيد الإعداد"
+    },
+    signalType: {
+      en: "MARITIME",
+      ar: "بحري"
+    },
+    influenceBand: {
+      en: "WATCH",
+      ar: "مراقبة"
     },
     reportMeta: {
       code: "PP-002",
@@ -181,6 +213,14 @@ const IBSS_SIGNALS = [
       en: "Pending",
       ar: "قيد الإعداد"
     },
+    signalType: {
+      en: "SECURITY",
+      ar: "أمني"
+    },
+    influenceBand: {
+      en: "WATCH",
+      ar: "مراقبة"
+    },
     reportMeta: {
       code: "PP-003",
       type: "PP",
@@ -212,6 +252,10 @@ function getSignalScore(signal) {
     signal.metrics.volatility * 0.3 +
     signal.metrics.impact * 0.2
   );
+}
+
+function getSignalScore100(signal) {
+  return Math.round(getSignalScore(signal) * 100);
 }
 
 function getLiveSignals() {
@@ -263,4 +307,4 @@ function getSystemState() {
     liveSignals,
     scenarios
   };
-      }
+}
