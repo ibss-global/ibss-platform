@@ -454,6 +454,7 @@
     <div class="footer" data-i18n="footer_text">© 2026 IBSS — Dashboard Layer | Founded by Naeem M. Dahalan</div>
   </div>
 
+  <script src="data.js"></script>
   <script>
     const translations = {
       en: {
@@ -499,23 +500,7 @@
         alert_high: "⚠ HIGH ESCALATION DETECTED — SYSTEM SHIFTING TO ACTIVE RESPONSE POSTURE",
         note_high: "High pressure environment detected. Shift from passive watch to active response readiness.",
         note_medium: "Structured pressure remains present. Maintain doctrinal preparation and scenario adjustment.",
-        note_low: "Pressure remains limited. Continue observation and signal accumulation.",
-
-        sig_lebanon_title: "Lebanon Pressure",
-        sig_lebanon_text: "Northern front pressure remains active with layered military-political messaging.",
-
-        sig_iran_title: "Iran Negotiations",
-        sig_iran_text: "Diplomatic movement under pressure with unstable escalation boundaries.",
-
-        sig_gaza_title: "Gaza Structure",
-        sig_gaza_text: "Compressed conflict space where governance, military, and humanitarian layers intersect.",
-
-        feed_1: "Signal architecture updated across regional fronts.",
-        feed_2: "Narrative pressure pattern detected in active file.",
-        feed_3: "Priority shift observed in diplomatic legitimacy layer.",
-        feed_4: "Escalation threshold under recalculation.",
-        feed_5: "Cross-front monitoring window remains open.",
-        feed_6: "Scenario spread adjusted after new signal intake."
+        note_low: "Pressure remains limited. Continue observation and signal accumulation."
       },
 
       ar: {
@@ -561,57 +546,12 @@
         alert_high: "⚠ تم رصد تصعيد مرتفع — النظام ينتقل إلى وضعية استجابة نشطة",
         note_high: "تم رصد بيئة ضغط مرتفعة. انتقل من المراقبة السلبية إلى الجاهزية للاستجابة النشطة.",
         note_medium: "الضغط البنيوي ما زال حاضرًا. حافظ على التحضير العقائدي وتعديل السيناريوهات.",
-        note_low: "الضغط ما يزال محدودًا. واصل المراقبة وتجميع الإشارات.",
-
-        sig_lebanon_title: "الضغط على لبنان",
-        sig_lebanon_text: "ضغط الجبهة الشمالية ما يزال نشطًا مع رسائل عسكرية-سياسية متدرجة.",
-
-        sig_iran_title: "المفاوضات الإيرانية",
-        sig_iran_text: "حراك دبلوماسي تحت الضغط مع حدود تصعيد غير مستقرة.",
-
-        sig_gaza_title: "بنية غزة",
-        sig_gaza_text: "حيز صراع مضغوط تتقاطع فيه الطبقات العسكرية والحوكمية والإنسانية.",
-
-        feed_1: "تم تحديث بنية الإشارات عبر الجبهات الإقليمية.",
-        feed_2: "تم رصد نمط ضغط سردي داخل الملف النشط.",
-        feed_3: "تم رصد تحوّل في أولوية طبقة الشرعية الدبلوماسية.",
-        feed_4: "عتبة التصعيد قيد إعادة الحساب.",
-        feed_5: "نافذة المراقبة العابرة للجبهات ما تزال مفتوحة.",
-        feed_6: "تم تعديل توزيع السيناريوهات بعد ورود إشارات جديدة."
+        note_low: "الضغط ما يزال محدودًا. واصل المراقبة وتجميع الإشارات."
       }
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
     let currentSignalLink = "#";
-
-    const signalPool = [
-      {
-        titleKey: "sig_lebanon_title",
-        textKey: "sig_lebanon_text",
-        link: "signal-lebanon.html",
-        weight: 0.90,
-        volatility: 0.80,
-        impact: 0.90
-      },
-      {
-        titleKey: "sig_gaza_title",
-        textKey: "sig_gaza_text",
-        link: "signal-gaza.html",
-        weight: 0.88,
-        volatility: 0.85,
-        impact: 0.86
-      },
-      {
-        titleKey: "sig_iran_title",
-        textKey: "sig_iran_text",
-        link: "signal-iran.html",
-        weight: 0.64,
-        volatility: 0.58,
-        impact: 0.62
-      }
-    ];
-
-    const feedKeys = ["feed_1", "feed_2", "feed_3", "feed_4", "feed_5", "feed_6"];
 
     function t(key) {
       return translations[currentLang][key] || key;
@@ -669,87 +609,36 @@
       setDecision(level);
     }
 
-    function setPrimarySignal(item) {
-      document.getElementById("signalTitle").textContent = t(item.titleKey);
-      document.getElementById("signalText").textContent = t(item.textKey);
-      currentSignalLink = item.link;
+    function setPrimarySignal(signal) {
+      document.getElementById("signalTitle").textContent = signal.title[currentLang];
+      document.getElementById("signalText").textContent = signal.description[currentLang];
+      currentSignalLink = signal.link;
     }
 
     function setFeed() {
       const feed = document.getElementById("feed");
-      let html = "";
+      const rankedSignals = getRankedSignals().slice(0, 4);
 
-      for (let i = 0; i < 4; i++) {
-        const randomKey = feedKeys[Math.floor(Math.random() * feedKeys.length)];
-        html += `<div class="feed-item">${t(randomKey)}</div>`;
-      }
-
-      feed.innerHTML = html;
-    }
-
-    function calculateSystemState() {
-      const signals = signalPool.map(s => ({
-        ...s,
-        score: (s.weight * 0.5) + (s.volatility * 0.3) + (s.impact * 0.2)
-      }));
-
-      let totalScore = 0;
-      signals.forEach(s => totalScore += s.score);
-
-      const avgScore = totalScore / signals.length;
-      const ssi = Math.round(avgScore * 100);
-
-      let level;
-      let decision;
-
-      if (ssi >= 75) {
-        level = "HIGH";
-        decision = "ACT";
-      } else if (ssi >= 50) {
-        level = "MEDIUM";
-        decision = "PRD";
-      } else {
-        level = "LOW";
-        decision = "WATCH";
-      }
-
-      signals.sort((a, b) => b.score - a.score);
-      const dominant = signals[0];
-
-      let a, b, c;
-      if (level === "HIGH") {
-        a = 58; b = 27; c = 15;
-      } else if (level === "MEDIUM") {
-        a = 38; b = 37; c = 25;
-      } else {
-        a = 22; b = 33; c = 45;
-      }
-
-      return {
-        level,
-        decision,
-        ssi,
-        dominant,
-        scenarios: [a, b, c]
-      };
+      feed.innerHTML = rankedSignals.map(signal => `
+        <div class="feed-item">${signal.title[currentLang]} — ${signal.decisionMode[currentLang]}</div>
+      `).join("");
     }
 
     function tick() {
-      const system = calculateSystemState();
+      const system = getSystemState();
 
       setLevel(system.level);
-
       document.getElementById("ssi").textContent = system.ssi;
       document.getElementById("sa").textContent = system.scenarios[0] + "%";
       document.getElementById("sb").textContent = system.scenarios[1] + "%";
       document.getElementById("sc").textContent = system.scenarios[2] + "%";
 
-      setPrimarySignal(system.dominant);
+      setPrimarySignal(system.dominantSignal);
       setFeed();
     }
 
     document.getElementById("primarySignal").addEventListener("click", function () {
-      if (currentSignalLink) {
+      if (currentSignalLink && currentSignalLink !== "#") {
         window.location.href = currentSignalLink;
       }
     });
