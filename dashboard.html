@@ -194,28 +194,6 @@
     box-shadow:0 0 0 1px rgba(212,175,55,.18) inset, 0 0 18px rgba(212,175,55,.08);
   }
 
-  .primary.disabled{
-    cursor:default;
-    opacity:.72;
-  }
-
-  .primary.disabled:hover{
-    transform:none;
-    box-shadow:0 0 0 1px rgba(212,175,55,.15) inset;
-  }
-
-  .primary-badge{
-    display:inline-block;
-    margin-bottom:8px;
-    padding:4px 8px;
-    border-radius:999px;
-    background:rgba(212,175,55,.12);
-    color:var(--gold);
-    font-size:12px;
-    font-weight:700;
-    letter-spacing:.5px;
-  }
-
   .scenario{
     display:grid;
     gap:10px;
@@ -420,16 +398,6 @@
       title: "Gaza Structure",
       text: "Compressed conflict space where governance, military, and humanitarian layers intersect.",
       link: "signal-gaza.html"
-    },
-    {
-      title: "Red Sea Tension",
-      text: "Maritime pressure indicators affecting regional deterrence and logistical confidence.",
-      link: "#"
-    },
-    {
-      title: "West Bank Escalation",
-      text: "Localized pressure patterns capable of shifting broader conflict calculations.",
-      link: "#"
     }
   ];
 
@@ -481,15 +449,14 @@
     el.className = "value " + level.toLowerCase();
     setDecision(level);
   }
-function setPrimarySignal() {
-  const validSignals = signalPool.filter(s => s.link !== "#");
-  const item = validSignals[Math.floor(Math.random() * validSignals.length)];
 
-  document.getElementById("signalTitle").textContent = item.title;
-  document.getElementById("signalText").textContent = item.text;
+  function setPrimarySignal() {
+    const item = signalPool[Math.floor(Math.random() * signalPool.length)];
+    document.getElementById("signalTitle").textContent = item.title;
+    document.getElementById("signalText").textContent = item.text;
+    currentSignalLink = item.link;
+  }
 
-  currentSignalLink = item.link;
-}
   function setFeed() {
     const feed = document.getElementById("feed");
     let html = "";
@@ -515,7 +482,7 @@ function setPrimarySignal() {
   }
 
   document.getElementById("primarySignal").addEventListener("click", function () {
-    if (currentSignalLink !== "#") {
+    if (currentSignalLink) {
       window.location.href = currentSignalLink;
     }
   });
@@ -524,4 +491,4 @@ function setPrimarySignal() {
   setInterval(tick, 4000);
 </script>
 </body>
-</html>
+  </html>
