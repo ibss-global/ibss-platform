@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBSS Reports Center</title>
+<title>IBSS Reports System</title>
 
 <style>
 :root{
@@ -13,9 +13,10 @@
   --gold:#d4af37;
   --text:#e8e8e8;
   --muted:#9d9d9d;
-  --red:#ff4d4f;
-  --orange:#ff9f1a;
   --green:#00d084;
+  --orange:#ff9f1a;
+  --red:#ff4d4f;
+  --blue:#5a8cff;
   --border:rgba(212,175,55,.28);
 }
 
@@ -31,7 +32,7 @@ body{
 }
 
 .wrap{
-  width:min(1150px,92%);
+  width:min(1180px,92%);
   margin:auto;
   padding:20px 0 60px;
 }
@@ -109,7 +110,7 @@ body{
 
 .hero{
   text-align:center;
-  padding:34px 0 18px;
+  padding:34px 0 20px;
 }
 
 .eyebrow{
@@ -128,15 +129,42 @@ h1{
 
 .sub{
   margin:0 auto;
-  max-width:800px;
+  max-width:860px;
   color:var(--muted);
   line-height:1.8;
 }
 
-.toolbar{
-  margin-top:26px;
+.system-strip{
+  margin-top:24px;
   display:grid;
-  grid-template-columns:1.5fr 1fr 1fr;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.system-box{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:16px;
+  text-align:center;
+}
+
+.system-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:8px;
+}
+
+.system-value{
+  color:var(--gold);
+  font-size:24px;
+  font-weight:800;
+}
+
+.toolbar{
+  margin-top:22px;
+  display:grid;
+  grid-template-columns:1.4fr 1fr 1fr;
   gap:12px;
 }
 
@@ -147,40 +175,13 @@ h1{
   color:#fff;
   border:1px solid rgba(255,255,255,.08);
   border-radius:12px;
-  padding:14px 14px;
+  padding:14px;
   font-size:14px;
   outline:none;
 }
 
 .search::placeholder{
   color:#777;
-}
-
-.stats{
-  margin-top:16px;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-}
-
-.stat{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:16px;
-  text-align:center;
-}
-
-.stat-label{
-  color:var(--muted);
-  font-size:12px;
-  margin-bottom:8px;
-}
-
-.stat-value{
-  color:var(--gold);
-  font-size:24px;
-  font-weight:800;
 }
 
 .grid{
@@ -243,8 +244,8 @@ h1{
   border:1px solid rgba(212,175,55,.35);
 }
 
-.type-pp,
-.type-sdb{
+.type-sdb,
+.type-pp{
   color:#d5fff0;
   background:rgba(0,208,132,.14);
   border:1px solid rgba(0,208,132,.35);
@@ -281,22 +282,15 @@ h1{
 }
 
 .card-title{
-  color:var(--gold);
+  color:#fff;
   font-size:28px;
   font-weight:800;
   margin:0 0 10px;
 }
 
-.card-meta{
-  color:var(--muted);
-  line-height:1.7;
-  font-size:14px;
-  margin-bottom:14px;
-}
-
 .card-desc{
-  color:#ddd;
-  line-height:1.9;
+  color:var(--muted);
+  line-height:1.8;
   font-size:15px;
   margin:0 0 18px;
 }
@@ -361,7 +355,7 @@ html[dir="rtl"] .badges{
 }
 
 html[dir="rtl"] .hero,
-html[dir="rtl"] .stat,
+html[dir="rtl"] .system-box,
 html[dir="rtl"] .footer,
 html[dir="rtl"] .empty{
   text-align:center;
@@ -371,12 +365,12 @@ html[dir="rtl"] .meta-value{
   text-align:left;
 }
 
-@media(max-width:950px){
+@media(max-width:980px){
   .toolbar{
     grid-template-columns:1fr;
   }
 
-  .stats{
+  .system-strip{
     grid-template-columns:repeat(2,1fr);
   }
 
@@ -394,7 +388,7 @@ html[dir="rtl"] .meta-value{
     font-size:32px;
   }
 
-  .stats{
+  .system-strip{
     grid-template-columns:1fr;
   }
 }
@@ -424,46 +418,48 @@ html[dir="rtl"] .meta-value{
   </div>
 
   <div class="hero">
-    <div class="eyebrow" data-i18n="eyebrow">Reports Layer</div>
-    <h1 data-i18n="title">IBSS Reports Center</h1>
+    <div class="eyebrow" data-i18n="eyebrow">Reports System</div>
+    <h1 data-i18n="title">IBSS Reports System</h1>
     <p class="sub" data-i18n="sub">
       Decision-grade outputs generated from the same sovereign signal architecture that drives the platform.
     </p>
   </div>
 
+  <div class="system-strip">
+    <div class="system-box">
+      <div class="system-label" data-i18n="top_report">Top Report</div>
+      <div id="topReport" class="system-value">-</div>
+    </div>
+    <div class="system-box">
+      <div class="system-label" data-i18n="published_reports">Published Reports</div>
+      <div id="publishedReports" class="system-value">0</div>
+    </div>
+    <div class="system-box">
+      <div class="system-label" data-i18n="high_priority">High Priority</div>
+      <div id="highPriorityReports" class="system-value">0</div>
+    </div>
+    <div class="system-box">
+      <div class="system-label" data-i18n="report_types">Report Types</div>
+      <div id="reportTypes" class="system-value">0</div>
+    </div>
+  </div>
+
   <div class="toolbar">
     <input id="searchInput" class="search" type="text" placeholder="Search reports..." data-i18n-placeholder="search_placeholder">
+
     <select id="typeFilter" class="select">
       <option value="all" data-i18n="filter_all_types">All Types</option>
       <option value="SDR">SDR</option>
-      <option value="PP">PP</option>
       <option value="SDB">SDB</option>
+      <option value="PP">PP</option>
     </select>
+
     <select id="priorityFilter" class="select">
-      <option value="all" data-i18n="filter_all_priority">All Priority Levels</option>
+      <option value="all" data-i18n="filter_all_priority">All Priorities</option>
       <option value="HIGH" data-i18n="priority_high">HIGH</option>
       <option value="MEDIUM" data-i18n="priority_medium">MEDIUM</option>
       <option value="LOW" data-i18n="priority_low">LOW</option>
     </select>
-  </div>
-
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-label" data-i18n="stat_total">Total Reports</div>
-      <div id="statTotal" class="stat-value">0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label" data-i18n="stat_live">Published Reports</div>
-      <div id="statLive" class="stat-value">0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label" data-i18n="stat_high">High Priority</div>
-      <div id="statHigh" class="stat-value">0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label" data-i18n="stat_types">Report Types</div>
-      <div id="statTypes" class="stat-value">0</div>
-    </div>
   </div>
 
   <div id="reportsGrid" class="grid"></div>
@@ -473,7 +469,7 @@ html[dir="rtl"] .meta-value{
   </div>
 
   <div class="footer" data-i18n="footer_text">
-    © 2026 IBSS — Reports Center | Founded by Naeem M. Dahalan
+    © 2026 IBSS — Reports System | Founded by Naeem M. Dahalan
   </div>
 
 </div>
@@ -489,32 +485,33 @@ const translations = {
     nav_models: "Models",
     nav_about: "About",
 
-    eyebrow: "Reports Layer",
-    title: "IBSS Reports Center",
+    eyebrow: "Reports System",
+    title: "IBSS Reports System",
     sub: "Decision-grade outputs generated from the same sovereign signal architecture that drives the platform.",
+
+    top_report: "Top Report",
+    published_reports: "Published Reports",
+    high_priority: "High Priority",
+    report_types: "Report Types",
 
     search_placeholder: "Search reports...",
     filter_all_types: "All Types",
-    filter_all_priority: "All Priority Levels",
+    filter_all_priority: "All Priorities",
 
     priority_high: "HIGH",
     priority_medium: "MEDIUM",
     priority_low: "LOW",
 
-    stat_total: "Total Reports",
-    stat_live: "Published Reports",
-    stat_high: "High Priority",
-    stat_types: "Report Types",
+    status_live: "Published",
+    status_pending: "Pending",
 
+    meta_source: "Source Signal",
     meta_type: "Type",
     meta_priority: "Priority",
     meta_status: "Status",
-    meta_source: "Source Signal",
 
-    status_live: "Published",
-    status_pending: "Pending",
-    footer_text: "© 2026 IBSS — Reports Center | Founded by Naeem M. Dahalan",
-    empty_state: "No reports match the current filters."
+    empty_state: "No reports match the current filters.",
+    footer_text: "© 2026 IBSS — Reports System | Founded by Naeem M. Dahalan"
   },
 
   ar: {
@@ -525,32 +522,33 @@ const translations = {
     nav_models: "النماذج",
     nav_about: "حول",
 
-    eyebrow: "طبقة التقارير",
-    title: "مركز تقارير IBSS",
+    eyebrow: "نظام التقارير",
+    title: "نظام تقارير IBSS",
     sub: "مخرجات بدرجة قرار مولّدة من نفس البنية السيادية للإشارات التي تقود المنصة.",
+
+    top_report: "التقرير الأعلى",
+    published_reports: "التقارير المنشورة",
+    high_priority: "عالية الأولوية",
+    report_types: "أنواع التقارير",
 
     search_placeholder: "ابحث داخل التقارير...",
     filter_all_types: "كل الأنواع",
-    filter_all_priority: "كل مستويات الأولوية",
+    filter_all_priority: "كل الأولويات",
 
     priority_high: "مرتفع",
     priority_medium: "متوسط",
     priority_low: "منخفض",
 
-    stat_total: "إجمالي التقارير",
-    stat_live: "التقارير المنشورة",
-    stat_high: "عالية الأولوية",
-    stat_types: "أنواع التقارير",
+    status_live: "منشور",
+    status_pending: "قيد الإعداد",
 
+    meta_source: "الإشارة المصدر",
     meta_type: "النوع",
     meta_priority: "الأولوية",
     meta_status: "الحالة",
-    meta_source: "الإشارة المصدر",
 
-    status_live: "منشور",
-    status_pending: "قيد الإعداد",
-    footer_text: "© 2026 IBSS — مركز التقارير | تأسس بواسطة نعيم م. دحلان",
-    empty_state: "لا توجد تقارير تطابق الفلاتر الحالية."
+    empty_state: "لا توجد تقارير تطابق الفلاتر الحالية.",
+    footer_text: "© 2026 IBSS — نظام التقارير | تأسس بواسطة نعيم م. دحلان"
   }
 };
 
@@ -585,7 +583,13 @@ function applyTranslations(){
   document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
 }
 
-function weightClass(priority){
+function escapeHtml(text){
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function priorityClass(priority){
   if(priority === "HIGH") return "priority-high";
   if(priority === "MEDIUM") return "priority-medium";
   return "priority-low";
@@ -597,16 +601,10 @@ function priorityLabel(priority){
   return t("priority_low");
 }
 
-function escapeHtml(text){
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
-
 function getReportItems(){
-  return IBSS_SIGNALS.map(signal => ({
+  return getRankedSignals().map(signal => ({
     id: signal.id,
-    title: signal.reportMeta.code + " — " + signal.title[currentLang],
+    title: `${signal.reportMeta.code} — ${signal.title[currentLang]}`,
     description: signal.report[currentLang],
     type: signal.reportMeta.type,
     priority: signal.reportMeta.priority,
@@ -616,11 +614,12 @@ function getReportItems(){
   }));
 }
 
-function renderStats(filtered){
-  document.getElementById("statTotal").textContent = filtered.length;
-  document.getElementById("statLive").textContent = filtered.filter(r => r.status === "live").length;
-  document.getElementById("statHigh").textContent = filtered.filter(r => r.priority === "HIGH").length;
-  document.getElementById("statTypes").textContent = new Set(filtered.map(r => r.type)).size;
+function renderTopStrip(items){
+  const top = items[0] || null;
+  document.getElementById("topReport").textContent = top ? top.title : "-";
+  document.getElementById("publishedReports").textContent = items.filter(i => i.live).length;
+  document.getElementById("highPriorityReports").textContent = items.filter(i => i.priority === "HIGH").length;
+  document.getElementById("reportTypes").textContent = new Set(items.map(i => i.type)).size;
 }
 
 function renderReports(){
@@ -628,7 +627,7 @@ function renderReports(){
   const typeValue = document.getElementById("typeFilter").value;
   const priorityValue = document.getElementById("priorityFilter").value;
 
-  const reports = getReportItems().filter(report => {
+  const items = getReportItems().filter(report => {
     const title = report.title.toLowerCase();
     const desc = report.description.toLowerCase();
     const source = report.sourceTitle.toLowerCase();
@@ -640,12 +639,12 @@ function renderReports(){
     return searchMatch && typeMatch && priorityMatch;
   });
 
-  renderStats(reports);
+  renderTopStrip(items);
 
   const grid = document.getElementById("reportsGrid");
   const empty = document.getElementById("emptyState");
 
-  if(reports.length === 0){
+  if(items.length === 0){
     grid.innerHTML = "";
     empty.style.display = "block";
     return;
@@ -653,13 +652,13 @@ function renderReports(){
 
   empty.style.display = "none";
 
-  grid.innerHTML = reports.map(report => `
-    <div class="report-card${report.status === "pending" ? " disabled" : ""}">
+  grid.innerHTML = items.map(report => `
+    <div class="report-card${report.live ? "" : " disabled"}">
       <div class="card-top">
         <div class="badges">
           <span class="badge type-${report.type.toLowerCase()}">${escapeHtml(report.type)}</span>
-          <span class="badge ${weightClass(report.priority)}">${escapeHtml(priorityLabel(report.priority))}</span>
-          <span class="badge ${report.status === "live" ? "status-live" : "status-pending"}">${escapeHtml(report.status === "live" ? t("status_live") : t("status_pending"))}</span>
+          <span class="badge ${priorityClass(report.priority)}">${escapeHtml(priorityLabel(report.priority))}</span>
+          <span class="badge ${report.live ? "status-live" : "status-pending"}">${escapeHtml(report.live ? t("status_live") : t("status_pending"))}</span>
         </div>
       </div>
 
@@ -667,6 +666,10 @@ function renderReports(){
       <p class="card-desc">${escapeHtml(report.description)}</p>
 
       <div class="meta">
+        <div class="meta-row">
+          <span class="meta-label">${escapeHtml(t("meta_source"))}</span>
+          <span class="meta-value">${escapeHtml(report.sourceTitle)}</span>
+        </div>
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_type"))}</span>
           <span class="meta-value">${escapeHtml(report.type)}</span>
@@ -677,11 +680,7 @@ function renderReports(){
         </div>
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_status"))}</span>
-          <span class="meta-value">${escapeHtml(report.status === "live" ? t("status_live") : t("status_pending"))}</span>
-        </div>
-        <div class="meta-row">
-          <span class="meta-label">${escapeHtml(t("meta_source"))}</span>
-          <span class="meta-value">${escapeHtml(report.sourceTitle)}</span>
+          <span class="meta-value">${escapeHtml(report.live ? t("status_live") : t("status_pending"))}</span>
         </div>
       </div>
     </div>
@@ -696,4 +695,4 @@ applyTranslations();
 renderReports();
 </script>
 </body>
-  </html>
+</html>
