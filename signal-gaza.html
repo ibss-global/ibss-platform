@@ -1,390 +1,161 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gaza Structure — IBSS</title>
 
 <style>
-:root{
-  --bg:#040404;
-  --panel:#0d0d0d;
-  --panel2:#121212;
-  --gold:#d4af37;
-  --text:#e8e8e8;
-  --muted:#9d9d9d;
-  --border:rgba(212,175,55,.28);
-  --green:#00d084;
-}
-
-*{box-sizing:border-box}
-
 body{
   margin:0;
-  font-family:Arial,sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
-    var(--bg);
-  color:var(--text);
+  font-family:Arial;
+  background:#040404;
+  color:#e8e8e8;
+  direction:rtl;
 }
 
 .wrap{
-  width:min(1000px,92%);
+  width:92%;
+  max-width:900px;
   margin:auto;
   padding:20px 0 50px;
 }
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:14px 0 20px;
-  border-bottom:1px solid rgba(255,255,255,.05);
-}
-
-.brand{
-  color:var(--gold);
-  font-size:26px;
-  font-weight:700;
-  text-decoration:none;
-}
-
-.nav{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-
-.nav a{
-  color:var(--muted);
-  text-decoration:none;
-  padding:8px 12px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:10px;
-  font-size:14px;
-}
-
-.nav a.active,
-.nav a:hover{
-  color:var(--gold);
-  border-color:var(--border);
-}
-
-.hero{
-  padding:34px 0 20px;
-  text-align:center;
-}
-
-.eyebrow{
-  color:var(--gold);
-  letter-spacing:2px;
-  text-transform:uppercase;
-  font-size:13px;
-  margin-bottom:8px;
-}
-
 h1{
-  margin:0 0 10px;
-  font-size:38px;
-  color:#fff;
+  color:#d4af37;
+  font-size:32px;
+  margin-bottom:5px;
 }
 
 .sub{
-  color:var(--muted);
-  line-height:1.8;
-  max-width:760px;
-  margin:auto;
+  color:#888;
+  margin-bottom:25px;
 }
 
-.meta{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  margin:28px 0 20px;
-}
-
-.meta-box{
-  background:var(--panel2);
-  border:1px solid rgba(255,255,255,.08);
+.card{
+  background:#0d0d0d;
+  border:1px solid rgba(212,175,55,.3);
   border-radius:14px;
-  padding:14px;
+  padding:18px;
+  margin-bottom:18px;
 }
 
-.meta-label{
-  color:var(--muted);
-  font-size:12px;
-  margin-bottom:6px;
-}
-
-.meta-value{
-  color:var(--gold);
+.title{
+  color:#d4af37;
+  font-weight:700;
+  margin-bottom:10px;
   font-size:18px;
-  font-weight:700;
-}
-
-.section{
-  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:18px;
-  padding:22px;
-  margin:16px 0;
-}
-
-.section-title{
-  color:var(--gold);
-  font-size:22px;
-  margin-bottom:12px;
-  font-weight:700;
 }
 
 .text{
-  color:#ddd;
-  line-height:1.9;
-  font-size:15px;
+  line-height:1.8;
+  color:#ccc;
 }
 
-.layers{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-  margin-top:14px;
+.highlight{
+  color:#00d084;
+  font-weight:bold;
 }
 
-.layer-box{
-  background:var(--panel2);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:14px;
-  padding:16px;
-}
-
-.layer-box strong{
-  display:block;
-  color:#fff;
+.scenario{
   margin-bottom:8px;
 }
 
-.layer-box p{
-  margin:0;
-  color:var(--muted);
-  line-height:1.8;
-  font-size:14px;
-}
-
-.scenario-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:14px;
-  background:var(--panel2);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:14px;
-  padding:14px;
-  margin-top:10px;
-}
-
-.scenario-name{
-  color:#fff;
-  font-weight:700;
-}
-
-.scenario-prob{
-  color:var(--gold);
-  font-weight:700;
-  white-space:nowrap;
-}
-
 .decision{
-  color:var(--green);
-  font-size:24px;
-  font-weight:800;
+  text-align:center;
+  font-size:22px;
+  color:#d4af37;
+  font-weight:bold;
   margin-bottom:10px;
-}
-
-.signature{
-  margin-top:18px;
-  color:var(--muted);
-  line-height:1.8;
 }
 
 .back{
   display:inline-block;
-  margin-top:10px;
-  color:var(--gold);
+  margin-top:20px;
+  color:#d4af37;
   text-decoration:none;
 }
-
-.footer{
-  margin-top:28px;
-  text-align:center;
-  color:#777;
-  border-top:1px solid rgba(255,255,255,.05);
-  padding-top:20px;
-  font-size:14px;
-}
-
-@media(max-width:900px){
-  .meta{grid-template-columns:repeat(2,1fr)}
-  .layers{grid-template-columns:1fr}
-}
-
-@media(max-width:600px){
-  .topbar{flex-direction:column}
-  .meta{grid-template-columns:1fr}
-  h1{font-size:30px}
-}
 </style>
+
 </head>
+
 <body>
 
 <div class="wrap">
 
-  <div class="topbar">
-    <a class="brand" href="index.html">IBSS</a>
-    <div class="nav">
-      <a href="index.html">Home</a>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="signals.html" class="active">Signals</a>
-      <a href="reports.html">Reports</a>
-      <a href="models.html">Models</a>
-      <a href="about.html">About</a>
-    </div>
-  </div>
+<h1>📡 Gaza Structure</h1>
+<div class="sub">Signal File — IBSS Analysis Layer</div>
 
-  <div class="hero">
-    <div class="eyebrow">Signal File</div>
-    <h1>Gaza Structure</h1>
-    <p class="sub">
-      Gaza is no longer a conventional battlefield. It has become a compressed pressure system
-      where military force, governance fragility, humanitarian pressure, and narrative engineering
-      interact within one decision space.
-    </p>
-  </div>
+<!-- Executive Brief -->
+<div class="card">
+<div class="title">📌 الملخص التنفيذي</div>
+<div class="text">
+غزة تمثل <span class="highlight">بيئة ضغط مركبة</span> حيث تتقاطع الأبعاد العسكرية، الإنسانية، السياسية، والإعلامية ضمن نفس مساحة القرار.  
+الإشارة هنا ليست حدثًا منفردًا، بل <span class="highlight">نظام مستمر من التفاعلات عالية الكثافة</span>.
+</div>
+</div>
 
-  <div class="meta">
-    <div class="meta-box">
-      <div class="meta-label">Classification</div>
-      <div class="meta-value">Sovereign</div>
-    </div>
-    <div class="meta-box">
-      <div class="meta-label">Status</div>
-      <div class="meta-value">Active</div>
-    </div>
-    <div class="meta-box">
-      <div class="meta-label">Signal Type</div>
-      <div class="meta-value">Structural Compression</div>
-    </div>
-    <div class="meta-box">
-      <div class="meta-label">Region</div>
-      <div class="meta-value">Gaza Strip</div>
-    </div>
-  </div>
+<!-- Signal Breakdown -->
+<div class="card">
+<div class="title">🧠 تفكيك الإشارة</div>
+<div class="text">
+- ضغط عسكري متكرر دون حسم نهائي  
+<br>
+- هشاشة في بنية الحكم والإدارة  
+<br>
+- ضغط إنساني عالي التأثير على الرأي العام  
+<br>
+- هندسة سردية مستمرة على المستوى الدولي  
+<br><br>
+النظام يعمل كـ <span class="highlight">Closed Pressure Loop</span> يعيد إنتاج نفسه.
+</div>
+</div>
 
-  <div class="section">
-    <div class="section-title">Executive Signal</div>
-    <div class="text">
-      Gaza no longer functions as a “battlefield” in the narrow military sense. It now operates as
-      a compound pressure environment where war, governance, humanitarian stress, and narrative control
-      overlap. The result is not fast victory, but a prolonged decision environment that reshapes the
-      conflict over the medium term.
-    </div>
-  </div>
+<!-- Structural Interpretation -->
+<div class="card">
+<div class="title">⚙️ التفسير البنيوي</div>
+<div class="text">
+غزة ليست “جبهة” تقليدية…  
+بل <span class="highlight">نظام ضغط استراتيجي مضغوط</span> يتم فيه اختبار:
+<br><br>
+- حدود القوة العسكرية  
+- قدرة التحمل السكاني  
+- فعالية الضغط الدولي  
+<br><br>
+كل تغيير صغير يحمل أثرًا استراتيجيًا كبيرًا.
+</div>
+</div>
 
-  <div class="section">
-    <div class="section-title">Signal Layers</div>
+<!-- Scenario Engine -->
+<div class="card">
+<div class="title">📊 محرك السيناريو</div>
 
-    <div class="layers">
-      <div class="layer-box">
-        <strong>Military Layer</strong>
-        <p>
-          Continued operations without final resolution, firepower superiority versus adaptive resistance,
-          and attrition logic instead of decisive closure.
-        </p>
-      </div>
+<div class="scenario">A — تثبيت الضغط الحالي (50%)</div>
+<div class="scenario">B — انفجار موضعي محدود (30%)</div>
+<div class="scenario">C — توسع إقليمي مرتبط بجبهات أخرى (20%)</div>
 
-      <div class="layer-box">
-        <strong>Governance Layer</strong>
-        <p>
-          Fragile administrative structure, absence of a stable governance model, and a vacuum that remains
-          open to political redesign.
-        </p>
-      </div>
+</div>
 
-      <div class="layer-box">
-        <strong>Humanitarian Layer</strong>
-        <p>
-          High humanitarian pressure, degraded essential services, and increasing use of civilian conditions
-          as part of the wider pressure environment.
-        </p>
-      </div>
+<!-- Decision -->
+<div class="card">
+<div class="title">🎯 مخرجات القرار</div>
 
-      <div class="layer-box">
-        <strong>Narrative Layer</strong>
-        <p>
-          Global struggle over legitimacy, attempts to redefine acceptable force, and erosion of older framing models.
-        </p>
-      </div>
-    </div>
-  </div>
+<div class="decision">WATCH / PRD</div>
 
-  <div class="section">
-    <div class="section-title">Structural Shift</div>
-    <div class="text">
-      The real transformation is not only military. Gaza has shifted from a limited war zone into a
-      strategic testing space for redesigning conflict logic itself. It now functions as a layered laboratory
-      of pressure where operational, humanitarian, and political variables feed one another.
-    </div>
-  </div>
+<div class="text">
+الحالة الحالية تتطلب:
+<br><br>
+- مراقبة كثافة الإشارة  
+- الاستعداد لتحول مفاجئ  
+<br><br>
+البيئة غير مستقرة لكن لم تصل لمرحلة الانفجار الكامل.
+</div>
 
-  <div class="section">
-    <div class="section-title">Scenario Engine</div>
+</div>
 
-    <div class="scenario-row">
-      <div>
-        <div class="scenario-name">A — Prolonged Compression</div>
-        <div class="text">Sustained pressure without decisive resolution. Most likely near-term trajectory.</div>
-      </div>
-      <div class="scenario-prob">50%</div>
-    </div>
+<a href="dashboard.html" class="back">← العودة إلى لوحة التحكم</a>
 
-    <div class="scenario-row">
-      <div>
-        <div class="scenario-name">B — Controlled Reconfiguration</div>
-        <div class="text">Gradual political or security restructuring driven by external or imposed arrangements.</div>
-      </div>
-      <div class="scenario-prob">30%</div>
-    </div>
-
-    <div class="scenario-row">
-      <div>
-        <div class="scenario-name">C — Escalation Breakout</div>
-        <div class="text">A wider or sharper escalation triggered by regional spillover or internal collapse points.</div>
-      </div>
-      <div class="scenario-prob">20%</div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Decision Posture</div>
-    <div class="decision">WATCH / PRD</div>
-    <div class="text">
-      Maintain continuous observation, preserve readiness for structural shifts, and avoid assuming
-      a near-term end-state. Gaza must be read as a system, not as a sequence of isolated events.
-    </div>
-
-    <div class="signature">
-      — Naeem M. Dahalan<br>
-      Founder — IBSS
-    </div>
-  </div>
-
-  <a class="back" href="signals.html">← Back to Signals</a>
-
-  <div class="footer">
-    © 2026 IBSS — Signal File | Gaza Structure
-  </div>
 </div>
 
 </body>
-      </html>
+</html>
