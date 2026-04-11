@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBSS Signals</title>
+
+<style>
+  :root{
+    --bg:#040404;
+    --panel:#0d0d0d;
+    --panel2:#121212;
+    --gold:#d4af37;
+    --text:#e8e8e8;
+    --muted:#9d9d9d;
+    --green:#00d084;
+    --orange:#ff9f1a;
+    --red:#ff4d4f;
+    --border:rgba(212,175,55,.28);
+  }
+
+  *{
+    box-sizing:border-box;
+  }
+
+  body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:
+      radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+      var(--bg);
+    color:var(--text);
+  }
+
+  .wrap{
+    width:min(1100px,92%);
+    margin:0 auto;
+    padding:20px 0 60px;
+  }
+
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:14px 0 20px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+
+  .brand{
+    color:var(--gold);
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-decoration:none;
+  }
+
+  .nav{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  .nav a{
+    color:var(--muted);
+    text-decoration:none;
+    border:1px solid rgba(255,255,255,.08);
+    padding:10px 14px;
+    border-radius:10px;
+    font-size:14px;
+    transition:.2s ease;
+  }
+
+  .nav a.active,
+  .nav a:hover{
+    color:var(--gold);
+    border-color:var(--border);
+  }
+
+  .hero{
+    padding:28px 0 18px;
+    text-align:center;
+  }
+
+  .eyebrow{
+    color:var(--gold);
+    letter-spacing:2px;
+    text-transform:uppercase;
+    font-size:13px;
+    margin-bottom:10px;
+  }
+
+  h1{
+    margin:0 0 10px;
+    font-size:38px;
+    color:#fff;
+  }
+
+  .sub{
+    margin:0;
+    color:var(--muted);
+    line-height:1.7;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:18px;
+    margin-top:24px;
+  }
+
+  .signal-card{
+    display:block;
+    text-decoration:none;
+    color:inherit;
+    background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:20px;
+    transition:.2s ease;
+  }
+
+  .signal-card:hover{
+    transform:translateY(-3px);
+    border-color:rgba(212,175,55,.35);
+    box-shadow:0 0 20px rgba(212,175,55,.06);
+  }
+
+  .signal-card.disabled{
+    opacity:.65;
+    cursor:default;
+  }
+
+  .signal-card.disabled:hover{
+    transform:none;
+    border-color:rgba(255,255,255,.08);
+    box-shadow:none;
+  }
+
+  .badge{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:10px;
+    letter-spacing:.5px;
+  }
+
+  .high{
+    color:#ffd9d9;
+    background:rgba(255,77,79,.14);
+    border:1px solid rgba(255,77,79,.35);
+  }
+
+  .medium{
+    color:#ffe1b3;
+    background:rgba(255,159,26,.14);
+    border:1px solid rgba(255,159,26,.35);
+  }
+
+  .low{
+    color:#d5fff0;
+    background:rgba(0,208,132,.14);
+    border:1px solid rgba(0,208,132,.35);
+  }
+
+  .title{
+    color:var(--gold);
+    font-size:24px;
+    font-weight:700;
+    margin:0 0 8px;
+  }
+
+  .desc{
+    color:var(--muted);
+    line-height:1.8;
+    font-size:15px;
+    margin:0 0 16px;
+  }
+
+  .meta{
+    display:grid;
+    gap:8px;
+  }
+
+  .meta-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:var(--panel2);
+    border:1px solid rgba(255,255,255,.05);
+    font-size:14px;
+  }
+
+  .meta-label{
+    color:var(--muted);
+  }
+
+  .meta-value{
+    color:#fff;
+    font-weight:700;
+  }
+
+  .coming{
+    margin-top:10px;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .footer{
+    margin-top:28px;
+    text-align:center;
+    color:#7f7f7f;
+    font-size:14px;
+    border-top:1px solid rgba(255,255,255,.05);
+    padding-top:20px;
+  }
+
+  @media(max-width:900px){
+    .grid{
+      grid-template-columns:1fr;
+    }
+  }
+
+  @media(max-width:600px){
+    .topbar{
+      flex-direction:column;
+    }
+
+    h1{
+      font-size:30px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="topbar">
+      <a class="brand" href="index.html">IBSS</a>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="signals.html" class="active">Signals</a>
+        <a href="reports.html">Reports</a>
+        <a href="models.html">Models</a>
+        <a href="about.html">About</a>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="eyebrow">Signal Center</div>
+      <h1>IBSS Signals</h1>
+      <p class="sub">Structured signal files for sovereign monitoring, scenario reading, and decision posture.</p>
+    </div>
+
+    <div class="grid">
+
+      <a class="signal-card" href="signal-lebanon.html">
+        <div class="badge high">HIGH PRIORITY</div>
+        <div class="title">Lebanon Pressure</div>
+        <p class="desc">
+          Northern front pressure remains active with hybrid escalation patterns across military and political channels.
+        </p>
+        <div class="meta">
+          <div class="meta-row">
+            <span class="meta-label">Layer</span>
+            <span class="meta-value">Military / Hybrid</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Decision Mode</span>
+            <span class="meta-value">WATCH / ACT</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="signal-card" href="signal-iran.html">
+        <div class="badge medium">MEDIUM PRIORITY</div>
+        <div class="title">Iran Negotiations</div>
+        <p class="desc">
+          Diplomatic engagement continues under pressure with unstable leverage and contested escalation boundaries.
+        </p>
+        <div class="meta">
+          <div class="meta-row">
+            <span class="meta-label">Layer</span>
+            <span class="meta-value">Diplomatic</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Decision Mode</span>
+            <span class="meta-value">PRD</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="signal-card" href="signal-gaza.html">
+        <div class="badge high">HIGH PRIORITY</div>
+        <div class="title">Gaza Structure</div>
+        <p class="desc">
+          A compressed structural conflict space where military, governance, humanitarian, and narrative layers intersect.
+        </p>
+        <div class="meta">
+          <div class="meta-row">
+            <span class="meta-label">Layer</span>
+            <span class="meta-value">Structural</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Decision Mode</span>
+            <span class="meta-value">WATCH / PRD</span>
+          </div>
+        </div>
+      </a>
+
+      <div class="signal-card disabled">
+        <div class="badge low">COMING SOON</div>
+        <div class="title">Red Sea Tension</div>
+        <p class="desc">
+          Maritime pressure indicators affecting deterrence credibility, logistics confidence, and regional signaling.
+        </p>
+        <div class="meta">
+          <div class="meta-row">
+            <span class="meta-label">Layer</span>
+            <span class="meta-value">Maritime</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Decision Mode</span>
+            <span class="meta-value">Pending</span>
+          </div>
+        </div>
+        <div class="coming">Signal page not yet published.</div>
+      </div>
+
+      <div class="signal-card disabled">
+        <div class="badge low">COMING SOON</div>
+        <div class="title">West Bank Escalation</div>
+        <p class="desc">
+          Localized pressure patterns with the capacity to alter broader conflict calculations and internal control logic.
+        </p>
+        <div class="meta">
+          <div class="meta-row">
+            <span class="meta-label">Layer</span>
+            <span class="meta-value">Internal / Security</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Decision Mode</span>
+            <span class="meta-value">Pending</span>
+          </div>
+        </div>
+        <div class="coming">Signal page not yet published.</div>
+      </div>
+
+    </div>
+
+    <div class="footer">© 2026 IBSS — Sovereign Intelligence Platform</div>
+  </div>
+</body>
+  </html>
