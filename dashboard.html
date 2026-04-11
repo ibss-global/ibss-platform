@@ -609,7 +609,20 @@
       setDecision(level);
     }
 
-    function setPrimarySignal(signal) {
+    function setPrimarySignal(signal, level) {
+
+  let item = signal;
+
+  // 👇 السيطرة السيادية
+  if (level === "HIGH") {
+    const gaza = signalPool.find(s => s.title === "Gaza Structure");
+    if (gaza) item = gaza;
+  }
+
+  document.getElementById("signalTitle").textContent = item.title;
+  document.getElementById("signalText").textContent = item.text;
+  currentSignalLink = item.link;
+    }
       document.getElementById("signalTitle").textContent = signal.title[currentLang];
       document.getElementById("signalText").textContent = signal.description[currentLang];
       currentSignalLink = signal.link;
