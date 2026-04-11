@@ -18,7 +18,9 @@
     --border:rgba(212,175,55,.28);
   }
 
-  *{box-sizing:border-box}
+  *{
+    box-sizing:border-box;
+  }
 
   body{
     margin:0;
@@ -66,6 +68,7 @@
     padding:10px 14px;
     border-radius:10px;
     font-size:14px;
+    transition:.2s ease;
   }
 
   .nav a.active,
@@ -179,17 +182,25 @@
     line-height:1.6;
   }
 
-  .signal-item strong a{
-    color:#fff;
-    text-decoration:none;
-  }
-
-  .signal-item strong a:hover{
-    color:var(--gold);
-  }
-
   .primary{
     border-color:rgba(212,175,55,.45);
+    box-shadow:0 0 0 1px rgba(212,175,55,.15) inset;
+    transition:.2s ease;
+    cursor:pointer;
+  }
+
+  .primary:hover{
+    transform:translateY(-2px);
+    box-shadow:0 0 0 1px rgba(212,175,55,.18) inset, 0 0 18px rgba(212,175,55,.08);
+  }
+
+  .primary.disabled{
+    cursor:default;
+    opacity:.72;
+  }
+
+  .primary.disabled:hover{
+    transform:none;
     box-shadow:0 0 0 1px rgba(212,175,55,.15) inset;
   }
 
@@ -292,12 +303,19 @@
   }
 
   @media(max-width:900px){
-    .grid{grid-template-columns:1fr}
+    .grid{
+      grid-template-columns:1fr;
+    }
   }
 
   @media(max-width:600px){
-    .topbar{flex-direction:column}
-    h1{font-size:30px}
+    .topbar{
+      flex-direction:column;
+    }
+
+    h1{
+      font-size:30px;
+    }
   }
 </style>
 </head>
@@ -363,12 +381,8 @@
         <div class="title">Priority Signal</div>
         <div id="primarySignal" class="signal-item primary">
           <div class="primary-badge">PRIMARY SIGNAL</div>
-          <strong>
-            <a id="signalLink" href="signal-lebanon.html">Lebanon Pressure</a>
-          </strong>
-          <span id="signalText">
-            Elevated cross-front pressure remains active with layered military-political messaging.
-          </span>
+          <strong id="signalTitle">Lebanon Pressure</strong>
+          <span id="signalText">Elevated cross-front pressure remains active with layered military-political messaging.</span>
         </div>
 
         <div style="margin-top:18px" class="title">Radar</div>
@@ -428,6 +442,8 @@
     "Scenario spread adjusted after new signal intake."
   ];
 
+  let currentSignalLink = "#";
+
   function randomScenario() {
     let a = Math.floor(Math.random() * 100);
     let b = Math.floor(Math.random() * (100 - a));
@@ -468,9 +484,18 @@
 
   function setPrimarySignal() {
     const item = signalPool[Math.floor(Math.random() * signalPool.length)];
-    document.getElementById("signalLink").textContent = item.title;
-    document.getElementById("signalLink").href = item.link;
+    const primarySignal = document.getElementById("primarySignal");
+
+    document.getElementById("signalTitle").textContent = item.title;
     document.getElementById("signalText").textContent = item.text;
+
+    currentSignalLink = item.link;
+
+    if (item.link === "#") {
+      primarySignal.classList.add("disabled");
+    } else {
+      primarySignal.classList.remove("disabled");
+    }
   }
 
   function setFeed() {
@@ -496,6 +521,12 @@
     setPrimarySignal();
     setFeed();
   }
+
+  document.getElementById("primarySignal").addEventListener("click", function () {
+    if (currentSignalLink !== "#") {
+      window.location.href = currentSignalLink;
+    }
+  });
 
   tick();
   setInterval(tick, 4000);
