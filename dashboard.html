@@ -15,8 +15,18 @@ body {
 
 h1 {
   color: #d4af37;
+  margin-bottom: 10px;
 }
 
+/* Status Line */
+.status {
+  color: #00ffcc;
+  font-size: 14px;
+  margin-bottom: 25px;
+  opacity: 0.8;
+}
+
+/* Boxes */
 .box {
   border: 1px solid #d4af37;
   padding: 15px;
@@ -24,23 +34,41 @@ h1 {
   width: 90%;
   max-width: 400px;
   border-radius: 10px;
+  transition: 0.3s;
 }
 
+.box:hover {
+  box-shadow: 0 0 10px #d4af37;
+}
+
+/* Titles */
 .title {
   color: #d4af37;
   margin-bottom: 10px;
+  font-weight: bold;
 }
 
+/* Signals */
 .signal {
   margin: 5px 0;
+  transition: 0.3s;
 }
 
-.status {
-  color: #00ffcc;
-}
+/* Dynamic colors */
+.low { color: #00ffcc; }
+.medium { color: orange; }
+.high { color: red; }
 
+/* Warning text */
 .warning {
-  color: orange;
+  font-weight: bold;
+}
+
+/* Decision */
+.decision {
+  font-size: 18px;
+  font-weight: bold;
+  color: #d4af37;
 }
 
 </style>
@@ -51,31 +79,84 @@ h1 {
 <h1>IBSS — Control Dashboard</h1>
 <p class="status">System Active — Monitoring Global Signals</p>
 
+<!-- System State -->
 <div class="box">
   <div class="title">System State</div>
-  <p>Escalation Level: <span class="warning">HIGH</span></p>
+  <p>Escalation Level: <span id="level" class="warning high">HIGH</span></p>
   <p>WAAD Status: ACTIVE</p>
   <p>System Mode: MONITORING</p>
 </div>
 
+<!-- Signals -->
 <div class="box">
   <div class="title">Active Signals</div>
-  <div class="signal">Iran Negotiations</div>
-  <div class="signal">Lebanon Pressure</div>
-  <div class="signal">Gaza Structure</div>
+  <div class="signal" id="s1">Iran Negotiations</div>
+  <div class="signal" id="s2">Lebanon Pressure</div>
+  <div class="signal" id="s3">Gaza Structure</div>
 </div>
 
+<!-- Scenarios -->
 <div class="box">
   <div class="title">Scenarios</div>
-  <p>A — 40%</p>
-  <p>B — 35%</p>
-  <p>C — 25%</p>
+  <p id="a">A — 40%</p>
+  <p id="b">B — 35%</p>
+  <p id="c">C — 25%</p>
 </div>
 
+<!-- Decision -->
 <div class="box">
   <div class="title">Decision Output</div>
-  <p>WATCH / PRD</p>
+  <p class="decision" id="decision">WATCH</p>
 </div>
+
+<script>
+
+// Escalation Levels
+const levels = ["LOW", "MEDIUM", "HIGH"];
+
+// Signals list
+const signals = [
+  "Iran Negotiations",
+  "Lebanon Pressure",
+  "Gaza Structure",
+  "Red Sea Tension",
+  "West Bank Escalation"
+];
+
+// Decision states
+const decisions = ["WATCH", "PRD", "ACT"];
+
+// Main Loop
+setInterval(() => {
+
+  // 1) Escalation Level
+  const level = levels[Math.floor(Math.random() * levels.length)];
+  const levelEl = document.getElementById("level");
+  levelEl.innerText = level;
+
+  levelEl.className = "warning " + level.toLowerCase();
+
+  // 2) Signals change
+  document.getElementById("s1").innerText = signals[Math.floor(Math.random() * signals.length)];
+  document.getElementById("s2").innerText = signals[Math.floor(Math.random() * signals.length)];
+  document.getElementById("s3").innerText = signals[Math.floor(Math.random() * signals.length)];
+
+  // 3) Scenarios change
+  let a = Math.floor(Math.random() * 100);
+  let b = Math.floor(Math.random() * (100 - a));
+  let c = 100 - a - b;
+
+  document.getElementById("a").innerText = "A — " + a + "%";
+  document.getElementById("b").innerText = "B — " + b + "%";
+  document.getElementById("c").innerText = "C — " + c + "%";
+
+  // 4) Decision
+  document.getElementById("decision").innerText =
+    decisions[Math.floor(Math.random() * decisions.length)];
+
+}, 3000);
+
+</script>
 
 </body>
 </html>
