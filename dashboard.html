@@ -549,7 +549,11 @@ const ui = {
 let currentLang = localStorage.getItem("ibss_lang") || "en";
 
 function txt(key){
-  return ui[currentLang][key];
+  return ui[currentLang][key] || key;
+}
+
+function safeText(value, fallback = "-"){
+  return typeof value === "string" && value.trim() ? value : fallback;
 }
 
 function setLang(lang){
@@ -581,7 +585,7 @@ function setLevel(level, ssi){
   const ssiEl = document.getElementById("ssi");
   const alertBox = document.getElementById("alertBox");
 
-  ssiEl.textContent = ssi;
+  ssiEl.textContent = Number.isFinite(ssi) ? ssi : 0;
 
   if(level === "HIGH"){
     levelEl.textContent = txt("levelHigh");
@@ -628,11 +632,16 @@ function setDecision(system){
 }
 
 function setPrimarySignal(signal){
-  if(!signal) return;
+  if(!signal){
+    document.getElementById("signalTitle").textContent = "-";
+    document.getElementById("signalDesc").textContent = "-";
+    return;
+  }
+
   document.getElementById("signalTitle").textContent =
-    signal.title[currentLang] || signal.title.en || "-";
+    safeText(signal.title?.[currentLang] || signal.title?.en);
   document.getElementById("signalDesc").textContent =
-    signal.description[currentLang] || signal.description.en || "-";
+    safeText(signal.description?.[currentLang] || signal.description?.en);
 }
 
 function priorityClass(priority){
@@ -645,14 +654,16 @@ function renderRadar(system){
   const radar = document.getElementById("radar");
   radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
 
-  const ranked = system.rankedSignals.slice(0, 5);
+  const ranked = Array.isArray(system.rankedSignals) ? system.rankedSignals.slice(0, 5) : [];
   const dominantId = system.dominantSignal ? system.dominantSignal.id : null;
 
   ranked.forEach(signal => {
+    if (!signal?.metrics) return;
+
     const dot = document.createElement("div");
     const size = signal.weight === "HIGH" ? 16 : signal.weight === "MEDIUM" ? 12 : 10;
-    const x = 20 + (signal.metrics.volatility * 240);
-    const y = 20 + (signal.metrics.impact * 240);
+    const x = 20 + ((signal.metrics.volatility || 0) * 240);
+    const y = 20 + ((signal.metrics.impact || 0) * 240);
 
     dot.className = `radar-signal ${priorityClass(signal.weight)}${signal.id === dominantId ? " dominant" : ""}`;
     dot.style.width = size + "px";
@@ -668,10 +679,10 @@ function renderRadar(system){
     <div class="legend-item">
       <div class="legend-left">
         <span class="legend-dot ${priorityClass(signal.weight)}"></span>
-        <span class="legend-name">${signal.title[currentLang] || signal.title.en}</span>
+        <span class="legend-name">${safeText(signal.title?.[currentLang] || signal.title?.en)}</span>
       </div>
       <div class="legend-meta">
-        ${signal.signalType[currentLang] || signal.signalType.en}
+        ${safeText(signal.signalType?.[currentLang] || signal.signalType?.en)}
       </div>
     </div>
   `).join("");
@@ -679,18 +690,18 @@ function renderRadar(system){
 
 function setFeed(system){
   const feed = document.getElementById("feed");
-  const rankedSignals = system.rankedSignals.slice(0, 4);
+  const rankedSignals = Array.isArray(system.rankedSignals) ? system.rankedSignals.slice(0, 4) : [];
 
   const lines = [
-    `• ${txt("feedUpdate")} ${system.ssi}`,
+    `• ${txt("feedUpdate")} ${Number.isFinite(system.ssi) ? system.ssi : 0}`,
     `• ${txt("feedDriven")}`,
     `• ${txt("feedMemory")}`,
     `• ${txt("feedLock")}`
   ];
 
   rankedSignals.forEach(signal => {
-    const title = signal.title[currentLang] || signal.title.en;
-    const mode = signal.decisionMode[currentLang] || signal.decisionMode.en;
+    const title = safeText(signal.title?.[currentLang] || signal.title?.en);
+    const mode = safeText(signal.decisionMode?.[currentLang] || signal.decisionMode?.en);
     lines.push(`• ${title} — ${mode}`);
   });
 
@@ -698,7 +709,18 @@ function setFeed(system){
 }
 
 function renderFromEngine(){
+  if (!window.IBSS_ENGINE || typeof IBSS_ENGINE.tick !== "function") {
+    console.error("IBSS_ENGINE not loaded correctly");
+    return;
+  }
+
   const system = IBSS_ENGINE.tick();
+
+  if (!system || typeof system !== "object") {
+    console.error("Invalid system state from engine");
+    return;
+  }
+
   setLevel(system.level, system.ssi);
   setDecision(system);
   setPrimarySignal(system.dominantSignal);
@@ -707,8 +729,8 @@ function renderFromEngine(){
 }
 
 setLang(currentLang);
-setInterval(renderFromEngine, IBSS_ENGINE.CONFIG.tickIntervalMs);
+setInterval(renderFromEngine, IBSS_ENGINE?.CONFIG?.tickIntervalMs || 3000);
 </script>
 
 </body>
-</html>
+    </html>
