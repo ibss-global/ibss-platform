@@ -1,551 +1,3 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBSS Dashboard</title>
-
-<style>
-:root{
-  --gold:#d4af37;
-  --bg:#040404;
-  --panel:#0d0d0d;
-  --panel2:#121212;
-  --text:#fff;
-  --muted:#9d9d9d;
-  --red:#ff4d4f;
-  --orange:#ff9f1a;
-  --green:#00d084;
-  --border:rgba(212,175,55,.28);
-}
-
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
-    var(--bg);
-  color:var(--text);
-}
-
-.wrap{
-  width:92%;
-  max-width:1100px;
-  margin:auto;
-  padding:20px;
-}
-
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:14px 0 20px;
-  border-bottom:1px solid rgba(255,255,255,.05);
-  flex-wrap:wrap;
-}
-
-.brand{
-  color:var(--gold);
-  font-size:28px;
-  font-weight:800;
-  text-decoration:none;
-  letter-spacing:1px;
-}
-
-.nav{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.nav a{
-  color:var(--muted);
-  text-decoration:none;
-  border:1px solid rgba(255,255,255,.08);
-  padding:10px 14px;
-  border-radius:10px;
-  font-size:14px;
-  transition:.2s ease;
-}
-
-.nav a.active,
-.nav a:hover{
-  color:var(--gold);
-  border-color:var(--border);
-}
-
-.lang-switch{
-  display:flex;
-  gap:6px;
-}
-
-.lang-switch button{
-  background:none;
-  border:1px solid rgba(255,255,255,.1);
-  color:#ccc;
-  padding:8px 10px;
-  border-radius:8px;
-  cursor:pointer;
-  transition:.2s ease;
-  font-size:13px;
-}
-
-.lang-switch button:hover,
-.lang-switch button.active{
-  color:var(--gold);
-  border-color:var(--gold);
-}
-
-.top-actions{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-
-.hero{
-  text-align:center;
-  padding:28px 0 18px;
-}
-
-.hero h1{
-  color:var(--gold);
-  margin:0 0 8px;
-  font-size:42px;
-}
-
-.hero p{
-  color:var(--muted);
-  margin:0;
-}
-
-.boot-banner{
-  margin:16px 0;
-  padding:14px;
-  border-radius:12px;
-  text-align:center;
-  font-weight:700;
-  line-height:1.7;
-  display:none;
-}
-
-.boot-banner.booting{
-  display:block;
-  background:rgba(255,159,26,.12);
-  border:1px solid rgba(255,159,26,.35);
-  color:#ffe1b3;
-}
-
-.boot-banner.error{
-  display:block;
-  background:rgba(255,77,79,.12);
-  border:1px solid rgba(255,77,79,.35);
-  color:#ffd4d4;
-}
-
-.boot-banner.ready{
-  display:block;
-  background:rgba(0,208,132,.10);
-  border:1px solid rgba(0,208,132,.28);
-  color:#d5fff0;
-}
-
-.alert{
-  display:none;
-  background:rgba(255,77,79,.14);
-  border:1px solid rgba(255,77,79,.4);
-  color:#ffd1d1;
-  padding:14px;
-  border-radius:12px;
-  margin:16px 0;
-  text-align:center;
-  font-weight:700;
-  line-height:1.7;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
-  margin-top:20px;
-}
-
-.card{
-  background:var(--panel);
-  padding:20px;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.08);
-}
-
-.title{
-  color:var(--gold);
-  font-size:24px;
-  font-weight:800;
-  margin-bottom:16px;
-}
-
-.state,
-.feed,
-.reasons,
-.scenarios,
-.trends,
-.legend{
-  display:grid;
-  gap:10px;
-}
-
-.state-item,
-.feed-item,
-.signal-box,
-.reason-row,
-.scenario-row,
-.trend-row,
-.legend-item{
-  background:var(--panel2);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:14px;
-  padding:14px;
-}
-
-.label{
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:6px;
-}
-
-.value{
-  font-size:22px;
-  font-weight:800;
-}
-
-.high{color:var(--red)}
-.medium{color:var(--orange)}
-.low{color:var(--green)}
-
-.decision-box{
-  margin-top:18px;
-  text-align:center;
-  background:rgba(212,175,55,.05);
-  border:1px solid rgba(212,175,55,.22);
-  border-radius:16px;
-  padding:18px;
-}
-
-.decision{
-  font-size:30px;
-  font-weight:900;
-  color:var(--gold);
-  margin-bottom:8px;
-}
-
-.decision-note{
-  color:var(--muted);
-  line-height:1.7;
-  min-height:48px;
-}
-
-.signal-box{
-  border-color:rgba(212,175,55,.3);
-}
-
-.signal-box h3{
-  margin:0 0 10px;
-  font-size:30px;
-  color:#fff;
-}
-
-.signal-box p{
-  margin:0;
-  color:#ddd;
-  line-height:1.8;
-}
-
-.radar-wrap{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:10px 0 4px;
-}
-
-.radar{
-  position:relative;
-  width:280px;
-  height:280px;
-  border-radius:50%;
-}
-
-.circle{
-  position:absolute;
-  border:1px solid rgba(212,175,55,.18);
-  border-radius:50%;
-}
-
-.c1{width:90px;height:90px;top:95px;left:95px;}
-.c2{width:150px;height:150px;top:65px;left:65px;}
-.c3{width:210px;height:210px;top:35px;left:35px;}
-.c4{width:280px;height:280px;top:0;left:0;}
-
-.center-dot{
-  position:absolute;
-  width:16px;
-  height:16px;
-  border-radius:50%;
-  background:var(--gold);
-  top:132px;
-  left:132px;
-  box-shadow:0 0 18px rgba(212,175,55,.8);
-  z-index:3;
-}
-
-.sweep{
-  position:absolute;
-  width:220px;
-  height:220px;
-  top:30px;
-  left:30px;
-  border-radius:50%;
-  background:conic-gradient(rgba(212,175,55,.28), rgba(212,175,55,.04), transparent 45%);
-  animation:spin 4s linear infinite;
-  opacity:.8;
-}
-
-.radar-signal{
-  position:absolute;
-  border-radius:50%;
-  transform:translate(-50%, -50%);
-  transition:.35s ease;
-  z-index:4;
-}
-
-.radar-signal.high{
-  background:var(--red);
-  box-shadow:0 0 14px rgba(255,77,79,.75);
-}
-
-.radar-signal.medium{
-  background:var(--orange);
-  box-shadow:0 0 14px rgba(255,159,26,.75);
-}
-
-.radar-signal.low{
-  background:var(--green);
-  box-shadow:0 0 14px rgba(0,208,132,.75);
-}
-
-.radar-signal.dominant{
-  outline:2px solid rgba(212,175,55,.7);
-  outline-offset:4px;
-}
-
-.reason-row,
-.scenario-row,
-.trend-row,
-.legend-item{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-}
-
-.reason-key,
-.scenario-key,
-.trend-key{
-  color:var(--muted);
-  font-size:14px;
-}
-
-.reason-val,
-.scenario-val,
-.trend-val{
-  color:#fff;
-  font-weight:700;
-  text-align:right;
-}
-
-.legend-left{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  min-width:0;
-}
-
-.legend-dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  flex:0 0 auto;
-}
-
-.legend-name{
-  color:#fff;
-}
-
-.legend-meta{
-  color:var(--muted);
-  white-space:nowrap;
-}
-
-.trend-up{color:var(--red)}
-.trend-flat{color:var(--orange)}
-.trend-down{color:var(--green)}
-
-.footer{
-  margin-top:26px;
-  text-align:center;
-  color:#777;
-  font-size:14px;
-  border-top:1px solid rgba(255,255,255,.05);
-  padding-top:20px;
-}
-
-@keyframes spin{
-  from{transform:rotate(0deg)}
-  to{transform:rotate(360deg)}
-}
-
-html[dir="rtl"] body{
-  text-align:right;
-}
-
-html[dir="rtl"] .topbar,
-html[dir="rtl"] .top-actions,
-html[dir="rtl"] .nav,
-html[dir="rtl"] .reason-row,
-html[dir="rtl"] .scenario-row,
-html[dir="rtl"] .trend-row,
-html[dir="rtl"] .legend-item{
-  direction:rtl;
-}
-
-html[dir="rtl"] .hero,
-html[dir="rtl"] .footer,
-html[dir="rtl"] .alert,
-html[dir="rtl"] .boot-banner,
-html[dir="rtl"] .decision-box{
-  text-align:center;
-}
-
-@media(max-width:900px){
-  .grid{grid-template-columns:1fr}
-}
-
-@media(max-width:700px){
-  .topbar{flex-direction:column}
-}
-</style>
-</head>
-<body>
-
-<div class="wrap">
-
-  <div class="topbar">
-    <a class="brand" href="index.html">IBSS</a>
-
-    <div class="top-actions">
-      <div class="nav">
-        <a href="index.html" data-i18n="nav_home">Home</a>
-        <a href="dashboard.html" class="active" data-i18n="nav_dashboard">Dashboard</a>
-        <a href="signals.html" data-i18n="nav_signals">Signals</a>
-        <a href="reports.html" data-i18n="nav_reports">Reports</a>
-        <a href="models.html" data-i18n="nav_models">Models</a>
-        <a href="about.html" data-i18n="nav_about">About</a>
-      </div>
-
-      <div class="lang-switch">
-        <button id="btn-en" onclick="setLang('en')">EN</button>
-        <button id="btn-ar" onclick="setLang('ar')">AR</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="hero">
-    <h1 id="pageTitle">IBSS Dashboard</h1>
-    <p id="pageSub">Decision Engine Visual System</p>
-  </div>
-
-  <div id="bootBanner" class="boot-banner booting">SYSTEM BOOTING...</div>
-  <div id="alertBox" class="alert"></div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="title" id="stateTitle">System State</div>
-
-      <div class="state">
-        <div class="state-item">
-          <div class="label" id="levelLabel">Level</div>
-          <div id="level" class="value medium">-</div>
-        </div>
-
-        <div class="state-item">
-          <div class="label" id="ssiLabel">SSI</div>
-          <div id="ssi" class="value medium">0</div>
-        </div>
-
-        <div class="state-item">
-          <div class="label" id="decisionLabel">Decision</div>
-          <div id="decision" class="value">-</div>
-        </div>
-
-        <div class="state-item">
-          <div class="label" id="modeLabel">Mode</div>
-          <div id="mode" class="value">-</div>
-        </div>
-      </div>
-
-      <div class="decision-box">
-        <div class="decision" id="decisionWord">-</div>
-        <div class="decision-note" id="decisionNote">-</div>
-      </div>
-
-      <div class="title" style="margin-top:18px" id="trendTitle">Trend Layer</div>
-      <div class="trends" id="trendBox"></div>
-
-      <div class="title" style="margin-top:18px" id="reasonTitle">Decision Reason</div>
-      <div class="reasons" id="reasonBox"></div>
-    </div>
-
-    <div class="card">
-      <div class="title" id="signalTitleLabel">Primary Signal</div>
-
-      <div class="signal-box">
-        <h3 id="signalTitle">-</h3>
-        <p id="signalDesc">-</p>
-      </div>
-
-      <div class="title" style="margin-top:18px" id="radarTitle">Radar</div>
-      <div class="radar-wrap">
-        <div class="radar" id="radar">
-          <div class="circle c4"></div>
-          <div class="circle c3"></div>
-          <div class="circle c2"></div>
-          <div class="circle c1"></div>
-          <div class="sweep"></div>
-          <div class="center-dot"></div>
-        </div>
-      </div>
-
-      <div class="legend" id="radarLegend"></div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:18px">
-    <div class="title" id="scenarioTitle">Scenario Engine</div>
-    <div class="scenarios" id="scenarioBox"></div>
-  </div>
-
-  <div class="card" style="margin-top:18px">
-    <div class="title" id="feedTitle">Live Feed</div>
-    <div id="feed" class="feed"></div>
-  </div>
-
-  <div class="footer">© 2026 IBSS — Dashboard Layer</div>
-
-</div>
-
 <script src="data.js"></script>
 <script src="engine.js"></script>
 <script>
@@ -585,10 +37,6 @@ const ui = {
     decisionHigh: "ACT",
     decisionMed: "PRD",
     decisionLow: "WATCH",
-    feedUpdate: "Pressure index updated to",
-    feedDriven: "Decision driven by engine",
-    feedMemory: "Escalation memory active",
-    feedLock: "Decision lock engaged",
     trendPrev: "Previous SSI",
     trendNow: "Current SSI",
     trendDir: "Trend",
@@ -596,20 +44,13 @@ const ui = {
     trendFlat: "STABLE",
     trendDown: "FALLING",
     reasonPrimary: "Primary Driver",
-    reasonSecondary: "Secondary Driver",
-    reasonMemory: "Memory State",
-    reasonLock: "Lock State",
-    memoryOn: "ACTIVE",
-    memoryOff: "INACTIVE",
-    lockOn: "ENGAGED",
-    lockOff: "OPEN",
+    reasonSecondary: "System Mode",
     scenarioA: "Scenario A",
     scenarioB: "Scenario B",
     scenarioC: "Scenario C",
-    alertWhyHigh: "Driver: dominant escalation exceeds high threshold.",
-    alertWhyMed: "Driver: structured pressure remains above preparation threshold.",
+    alertWhyHigh: "Driver: pressure exceeded the high threshold.",
+    alertWhyMed: "Driver: pressure remains above preparation threshold.",
     alertWhyLow: "Driver: pressure remains below escalation threshold.",
-    booting: "SYSTEM BOOTING...",
     bootReady: "SYSTEM ONLINE",
     bootNoData: "DATA NOT LOADED",
     bootNoEngine: "ENGINE OFFLINE",
@@ -650,10 +91,6 @@ const ui = {
     decisionHigh: "تحرك",
     decisionMed: "استعداد",
     decisionLow: "مراقبة",
-    feedUpdate: "تم تحديث المؤشر إلى",
-    feedDriven: "القرار مبني على المحرك",
-    feedMemory: "ذاكرة التصعيد مفعّلة",
-    feedLock: "قفل القرار مفعّل",
     trendPrev: "SSI السابق",
     trendNow: "SSI الحالي",
     trendDir: "الاتجاه",
@@ -661,20 +98,13 @@ const ui = {
     trendFlat: "مستقر",
     trendDown: "هابط",
     reasonPrimary: "المحرّك الأساسي",
-    reasonSecondary: "المحرّك الثانوي",
-    reasonMemory: "حالة الذاكرة",
-    reasonLock: "حالة القفل",
-    memoryOn: "مفعّلة",
-    memoryOff: "غير مفعّلة",
-    lockOn: "مفعّل",
-    lockOff: "مفتوح",
+    reasonSecondary: "وضع النظام",
     scenarioA: "السيناريو أ",
     scenarioB: "السيناريو ب",
     scenarioC: "السيناريو ج",
-    alertWhyHigh: "السبب: الإشارة المهيمنة تجاوزت عتبة التصعيد المرتفع.",
-    alertWhyMed: "السبب: الضغط البنيوي ما زال فوق عتبة التحضير.",
+    alertWhyHigh: "السبب: الضغط تجاوز عتبة التصعيد المرتفع.",
+    alertWhyMed: "السبب: الضغط ما زال فوق عتبة التحضير.",
     alertWhyLow: "السبب: الضغط ما يزال دون عتبة التصعيد.",
-    booting: "النظام في طور الإقلاع...",
     bootReady: "النظام متصل",
     bootNoData: "بيانات الإشارات غير محمّلة",
     bootNoEngine: "محرك القرار غير متصل",
@@ -684,8 +114,6 @@ const ui = {
 
 let currentLang = localStorage.getItem("ibss_lang") || "en";
 let previousSSI = null;
-let bootInterval = null;
-let liveInterval = null;
 
 function txt(key){
   return ui[currentLang][key] || key;
@@ -695,10 +123,11 @@ function safeText(value, fallback = "-"){
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
-function showBoot(stateKey, variant){
-  const el = document.getElementById("bootBanner");
-  el.className = "boot-banner " + variant;
-  el.textContent = txt(stateKey);
+function setLang(lang){
+  currentLang = lang;
+  localStorage.setItem("ibss_lang", lang);
+  applyTranslations();
+  renderDashboard();
 }
 
 function applyTranslations(){
@@ -712,115 +141,49 @@ function applyTranslations(){
 
   document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
   document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
-}
 
-function setLang(lang){
-  currentLang = lang;
-  localStorage.setItem("ibss_lang", lang);
-  applyTranslations();
-}
-
-function getSignalScoreLocal(signal){
-  if (!signal || !signal.metrics) return 0;
-  return (
-    (signal.metrics.weight || 0) * 0.5 +
-    (signal.metrics.volatility || 0) * 0.3 +
-    (signal.metrics.impact || 0) * 0.2
-  );
-}
-
-function getRankedSignalsLocal(){
-  const source = Array.isArray(window.IBSS_SIGNALS) ? window.IBSS_SIGNALS : [];
-  return [...source].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a));
-}
-
-function getFallbackSystem(){
-  const rankedSignals = getRankedSignalsLocal();
-  const dominantSignal = rankedSignals[0] || null;
-
-  if (!rankedSignals.length) {
-    return {
-      ssi: 0,
-      level: "LOW",
-      decision: "WATCH",
-      mode: "MONITORING",
-      dominantSignal: null,
-      rankedSignals: [],
-      liveSignals: [],
-      scenarios: [34, 33, 33]
-    };
-  }
-
-  const total = rankedSignals.reduce((sum, signal) => sum + getSignalScoreLocal(signal), 0);
-  const ssi = Math.round((total / rankedSignals.length) * 100);
-
-  let level = "LOW";
-  let decision = "WATCH";
-  let mode = "MONITORING";
-  let scenarios = [22, 33, 45];
-
-  if (ssi >= 75) {
-    level = "HIGH";
-    decision = "ACT";
-    mode = "ACTIVE RESPONSE";
-    scenarios = [58, 27, 15];
-  } else if (ssi >= 50) {
-    level = "MEDIUM";
-    decision = "PRD";
-    mode = "PREPARATION";
-    scenarios = [38, 37, 25];
-  }
-
-  return {
-    ssi,
-    level,
-    decision,
-    mode,
-    dominantSignal,
-    rankedSignals,
-    liveSignals: rankedSignals.filter(signal => signal.live),
-    scenarios
-  };
+  document.getElementById("pageTitle").textContent = txt("title");
+  document.getElementById("pageSub").textContent = txt("sub");
+  document.getElementById("stateTitle").textContent = txt("state");
+  document.getElementById("levelLabel").textContent = txt("level");
+  document.getElementById("ssiLabel").textContent = txt("ssi");
+  document.getElementById("decisionLabel").textContent = txt("decision");
+  document.getElementById("modeLabel").textContent = txt("mode");
+  document.getElementById("signalTitleLabel").textContent = txt("signal");
+  document.getElementById("radarTitle").textContent = txt("radar");
+  document.getElementById("feedTitle").textContent = txt("feed");
+  document.getElementById("trendTitle").textContent = txt("trendTitle");
+  document.getElementById("reasonTitle").textContent = txt("reasonTitle");
+  document.getElementById("scenarioTitle").textContent = txt("scenarioTitle");
 }
 
 function checkBootStatus(){
   const hasData = Array.isArray(window.IBSS_SIGNALS) && window.IBSS_SIGNALS.length > 0;
-  const hasEngine = !!(window.IBSS_ENGINE && typeof window.IBSS_ENGINE.tick === "function");
+  const hasEngine = !!(
+    window.IBSS_ENGINE &&
+    typeof window.IBSS_ENGINE.getCurrentState === "function"
+  );
+
+  const banner = document.getElementById("bootBanner");
 
   if (!hasData) {
-    showBoot("bootNoData", "error");
-    return { ready:false, reason:"no-data" };
+    banner.className = "boot-banner error";
+    banner.textContent = txt("bootNoData");
+    return false;
   }
 
   if (!hasEngine) {
-    showBoot("bootNoEngine", "error");
-    return { ready:false, reason:"no-engine" };
+    banner.className = "boot-banner error";
+    banner.textContent = txt("bootNoEngine");
+    return false;
   }
 
-  showBoot("bootReady", "ready");
-  return { ready:true };
+  banner.className = "boot-banner ready";
+  banner.textContent = txt("bootReady");
+  return true;
 }
 
-function buildSystem(){
-  const boot = checkBootStatus();
-  if (!boot.ready) return null;
-
-  try{
-    const system = window.IBSS_ENGINE.tick();
-    if (!system || typeof system !== "object") {
-      showBoot("bootBadState", "error");
-      return null;
-    }
-    showBoot("bootReady", "ready");
-    return system;
-  }catch(e){
-    console.error(e);
-    showBoot("bootBadState", "error");
-    return null;
-  }
-}
-
-function setLevel(level, ssi){
+function renderLevel(level, ssi){
   const levelEl = document.getElementById("level");
   const ssiEl = document.getElementById("ssi");
   const alertBox = document.getElementById("alertBox");
@@ -848,7 +211,7 @@ function setLevel(level, ssi){
   }
 }
 
-function setDecision(system){
+function renderDecision(system){
   const decisionEl = document.getElementById("decision");
   const decisionWord = document.getElementById("decisionWord");
   const decisionNote = document.getElementById("decisionNote");
@@ -868,4 +231,186 @@ function setDecision(system){
     decisionEl.textContent = txt("decisionLow");
     decisionWord.textContent = txt("decisionLow");
     decisionNote.textContent = txt("noteLow");
-    modeEl.textContent = txt(
+    modeEl.textContent = txt("modeLow");
+  }
+}
+
+function renderPrimarySignal(system){
+  const titleEl = document.getElementById("signalTitle");
+  const descEl = document.getElementById("signalDesc");
+
+  const signal = system.topSignal;
+  if (!signal) {
+    titleEl.textContent = "-";
+    descEl.textContent = "-";
+    return;
+  }
+
+  titleEl.textContent = safeText(signal.title?.[currentLang], signal.id || "-");
+  descEl.textContent = safeText(signal.description?.[currentLang], "-");
+}
+
+function renderTrends(system){
+  const box = document.getElementById("trendBox");
+  const currentSSI = system.ssi ?? 0;
+  const prev = previousSSI ?? currentSSI;
+
+  let trendText = txt("trendFlat");
+  let trendClass = "trend-flat";
+
+  if (currentSSI > prev) {
+    trendText = txt("trendUp");
+    trendClass = "trend-up";
+  } else if (currentSSI < prev) {
+    trendText = txt("trendDown");
+    trendClass = "trend-down";
+  }
+
+  box.innerHTML = `
+    <div class="trend-row">
+      <span class="trend-key">${txt("trendPrev")}</span>
+      <span class="trend-val">${prev}</span>
+    </div>
+    <div class="trend-row">
+      <span class="trend-key">${txt("trendNow")}</span>
+      <span class="trend-val">${currentSSI}</span>
+    </div>
+    <div class="trend-row">
+      <span class="trend-key">${txt("trendDir")}</span>
+      <span class="trend-val ${trendClass}">${trendText}</span>
+    </div>
+  `;
+
+  previousSSI = currentSSI;
+}
+
+function renderReasons(system){
+  const box = document.getElementById("reasonBox");
+  const signal = system.topSignal;
+
+  box.innerHTML = `
+    <div class="reason-row">
+      <span class="reason-key">${txt("reasonPrimary")}</span>
+      <span class="reason-val">${safeText(signal?.title?.[currentLang], "-")}</span>
+    </div>
+    <div class="reason-row">
+      <span class="reason-key">${txt("reasonSecondary")}</span>
+      <span class="reason-val">${safeText(system.mode, "-")}</span>
+    </div>
+  `;
+}
+
+function renderScenarios(system){
+  const box = document.getElementById("scenarioBox");
+  const scenarios = Array.isArray(system.scenarios) ? system.scenarios : [];
+
+  const fallbackLabels = ["A", "B", "C"];
+
+  box.innerHTML = scenarios.map((item, index) => {
+    const label = item.label || fallbackLabels[index] || "?";
+    const title = item.title || "-";
+    const probability = item.probability ?? item ?? 0;
+
+    return `
+      <div class="scenario-row">
+        <span class="scenario-key">${txt("scenario" + label)}</span>
+        <span class="scenario-val">${title} — ${probability}%</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderFeed(system){
+  const box = document.getElementById("feed");
+  const signals = Array.isArray(system.rankedSignals) ? system.rankedSignals.slice(0, 3) : [];
+
+  box.innerHTML = signals.map(signal => `
+    <div class="feed-item">
+      <div class="label">${safeText(signal.layer?.[currentLang], "Signal")}</div>
+      <div class="value" style="font-size:18px">${safeText(signal.title?.[currentLang], "-")}</div>
+    </div>
+  `).join("");
+}
+
+function renderRadar(system){
+  const radar = document.getElementById("radar");
+  const legend = document.getElementById("radarLegend");
+
+  radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
+
+  const signals = Array.isArray(system.rankedSignals) ? system.rankedSignals.slice(0, 5) : [];
+  const positions = [
+    { x: 140, y: 42 },
+    { x: 224, y: 98 },
+    { x: 198, y: 210 },
+    { x: 82, y: 210 },
+    { x: 54, y: 112 }
+  ];
+
+  legend.innerHTML = "";
+
+  signals.forEach((signal, index) => {
+    const pos = positions[index] || { x: 140, y: 140 };
+    const size = Math.max(10, Math.min(24, Math.round((window.IBSS_ENGINE.scoreSignal(signal) / 100) * 24)));
+
+    const dot = document.createElement("div");
+    const levelClass =
+      signal.weight === "HIGH" ? "high" :
+      signal.weight === "MEDIUM" ? "medium" : "low";
+
+    dot.className = `radar-signal ${levelClass} ${signal.id === system.topSignal?.id ? "dominant" : ""}`;
+    dot.style.left = pos.x + "px";
+    dot.style.top = pos.y + "px";
+    dot.style.width = size + "px";
+    dot.style.height = size + "px";
+    radar.appendChild(dot);
+
+    const score = window.IBSS_ENGINE.scoreSignal(signal);
+
+    legend.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-left">
+          <span class="legend-dot ${levelClass}" style="background:currentColor;"></span>
+          <span class="legend-name">${safeText(signal.title?.[currentLang], signal.id)}</span>
+        </div>
+        <span class="legend-meta">${score}</span>
+      </div>
+    `;
+  });
+}
+
+function renderDashboard(){
+  if (!checkBootStatus()) return;
+
+  let system = null;
+
+  try {
+    system = window.IBSS_ENGINE.getCurrentState();
+  } catch (e) {
+    console.error(e);
+    system = null;
+  }
+
+  if (!system || typeof system !== "object") {
+    document.getElementById("bootBanner").className = "boot-banner error";
+    document.getElementById("bootBanner").textContent = txt("bootBadState");
+    return;
+  }
+
+  renderLevel(system.level, system.ssi);
+  renderDecision(system);
+  renderPrimarySignal(system);
+  renderTrends(system);
+  renderReasons(system);
+  renderScenarios(system);
+  renderFeed(system);
+  renderRadar(system);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  applyTranslations();
+  renderDashboard();
+});
+</script>
+</body>
+</html>
