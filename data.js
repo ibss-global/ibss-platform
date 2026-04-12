@@ -35,8 +35,8 @@ const IBSS_SIGNALS = [
       }
     },
     report: {
-      en: "Gaza has transitioned from a battlefield into a structured pressure system where military force, governance fragility, humanitarian stress, and narrative competition intersect. Decision Bias: Maintain WATCH / PRD posture and monitor structural shifts rather than isolated events.",
-      ar: "انتقلت غزة من ساحة قتال إلى نظام ضغط بنيوي تتقاطع فيه القوة العسكرية وهشاشة الحوكمة والضغط الإنساني والتنافس السردي. انحياز القرار: الحفاظ على وضعية مراقبة / استعداد ومتابعة التحولات البنيوية بدلًا من الأحداث المعزولة."
+      en: "Gaza has transitioned from a battlefield into a structured pressure system where military force, governance fragility, humanitarian stress, and narrative competition intersect.",
+      ar: "انتقلت غزة من ساحة قتال إلى نظام ضغط بنيوي تتقاطع فيه القوة العسكرية وهشاشة الحوكمة والضغط الإنساني والتنافس السردي."
     },
     region: "Gaza",
     weight: "HIGH",
@@ -84,8 +84,8 @@ const IBSS_SIGNALS = [
       }
     },
     report: {
-      en: "Northern front escalation is entering a controlled instability phase. The probability distribution suggests prolonged pressure without full war breakout. Decision Bias: Maintain WATCH posture while preparing rapid escalation response.",
-      ar: "الجبهة الشمالية تدخل مرحلة من عدم الاستقرار المضبوط. توزيع الاحتمالات يشير إلى ضغط ممتد دون انفجار حرب شاملة. انحياز القرار: الحفاظ على وضعية المراقبة مع التحضير لاستجابة تصعيدية سريعة."
+      en: "Northern front escalation is entering a controlled instability phase with prolonged pressure and rapid-response requirements.",
+      ar: "الجبهة الشمالية تدخل مرحلة من عدم الاستقرار المضبوط مع ضغط ممتد وحاجة إلى استجابة سريعة."
     },
     region: "Levant",
     weight: "HIGH",
@@ -133,8 +133,8 @@ const IBSS_SIGNALS = [
       }
     },
     report: {
-      en: "Diplomatic negotiation remains under pressure with unclear enforcement mechanisms. The likely outcome is prolonged negotiation rather than decisive breakthrough.",
-      ar: "المفاوضات الدبلوماسية ما تزال تحت الضغط مع غموض في آليات الفرض والتنفيذ. النتيجة الأرجح هي إطالة التفاوض بدلًا من اختراق حاسم."
+      en: "Diplomatic negotiation remains under pressure with unclear enforcement mechanisms and extended bargaining horizons.",
+      ar: "المفاوضات الدبلوماسية ما تزال تحت الضغط مع غموض في آليات التنفيذ وآفاق تفاوض ممتدة."
     },
     region: "Diplomatic",
     weight: "MEDIUM",
@@ -182,8 +182,8 @@ const IBSS_SIGNALS = [
       }
     },
     report: {
-      en: "Maritime pressure remains below the threshold of full strategic disruption, but the signal indicates a growing need for route-risk monitoring and deterrence reassessment.",
-      ar: "الضغط البحري ما يزال دون عتبة التعطيل الاستراتيجي الكامل، لكن الإشارة تدل على تصاعد الحاجة إلى مراقبة مخاطر المسارات وإعادة تقييم الردع."
+      en: "Maritime pressure remains below the threshold of full strategic disruption, but still warrants monitoring.",
+      ar: "الضغط البحري ما يزال دون عتبة التعطيل الاستراتيجي الكامل، لكنه يستحق المراقبة."
     },
     region: "Maritime",
     weight: "LOW",
@@ -231,8 +231,8 @@ const IBSS_SIGNALS = [
       }
     },
     report: {
-      en: "Localized escalation indicators remain fragmented, yet the file deserves monitoring due to its potential to alter wider conflict assumptions.",
-      ar: "مؤشرات التصعيد الموضعية ما تزال متفرقة، لكن الملف يستحق المراقبة بسبب قدرته على تعديل افتراضات الصراع الأوسع."
+      en: "Localized escalation indicators remain fragmented, yet the file deserves monitoring due to broader spillover potential.",
+      ar: "مؤشرات التصعيد الموضعية ما تزال متفرقة، لكن الملف يستحق المراقبة بسبب قدرته على التأثير الأوسع."
     },
     region: "West Bank",
     weight: "LOW",
@@ -246,121 +246,4 @@ const IBSS_SIGNALS = [
   }
 ];
 
-/* =========================
-   Core Score Functions
-========================= */
-
-function getSignalScore(signal) {
-  return (
-    signal.metrics.weight * 0.5 +
-    signal.metrics.volatility * 0.3 +
-    signal.metrics.impact * 0.2
-  );
-}
-
-function getSignalScore100(signal) {
-  return Math.round(getSignalScore(signal) * 100);
-}
-
-/* =========================
-   Signal Collections
-========================= */
-
-function getAllSignals() {
-  return [...IBSS_SIGNALS];
-}
-
-function getLiveSignals() {
-  return IBSS_SIGNALS.filter(signal => signal.live);
-}
-
-function getPendingSignals() {
-  return IBSS_SIGNALS.filter(signal => !signal.live);
-}
-
-function getSignalsByWeight(weight) {
-  return IBSS_SIGNALS.filter(signal => signal.weight === weight);
-}
-
-function getSignalsByType(type) {
-  return IBSS_SIGNALS.filter(signal => signal.signalType.en === type);
-}
-
-function getSignalsByStatus(status) {
-  if (status === "live") return getLiveSignals();
-  if (status === "pending") return getPendingSignals();
-  return getAllSignals();
-}
-
-/* =========================
-   Ranking
-========================= */
-
-function getRankedSignals() {
-  return [...IBSS_SIGNALS].sort((a, b) => getSignalScore(b) - getSignalScore(a));
-}
-
-function getRankedLiveSignals() {
-  return getLiveSignals().sort((a, b) => getSignalScore(b) - getSignalScore(a));
-}
-
-function getDominantSignal() {
-  const rankedLive = getRankedLiveSignals();
-  return rankedLive.length ? rankedLive[0] : null;
-}
-
-/* =========================
-   System State
-========================= */
-
-function getSystemState() {
-  const liveSignals = getLiveSignals();
-
-  if (!liveSignals.length) {
-    return {
-      ssi: 0,
-      level: "LOW",
-      decision: "WATCH",
-      mode: "MONITORING",
-      dominantSignal: null,
-      liveSignals: [],
-      scenarios: [34, 33, 33]
-    };
-  }
-
-  const total = liveSignals.reduce((sum, signal) => sum + getSignalScore(signal), 0);
-  const avg = total / liveSignals.length;
-  const ssi = Math.round(avg * 100);
-
-  let level = "LOW";
-  let decision = "WATCH";
-  let mode = "MONITORING";
-
-  if (ssi >= 75) {
-    level = "HIGH";
-    decision = "ACT";
-    mode = "ACTIVE RESPONSE";
-  } else if (ssi >= 50) {
-    level = "MEDIUM";
-    decision = "PRD";
-    mode = "PREPARATION";
-  }
-
-  let scenarios = [22, 33, 45];
-
-  if (level === "HIGH") {
-    scenarios = [58, 27, 15];
-  } else if (level === "MEDIUM") {
-    scenarios = [38, 37, 25];
-  }
-
-  return {
-    ssi,
-    level,
-    decision,
-    mode,
-    dominantSignal: getDominantSignal(),
-    liveSignals,
-    scenarios
-  };
-}
+globalThis.IBSS_SIGNALS = IBSS_SIGNALS;
