@@ -601,6 +601,10 @@ function t(key){
   return translations[currentLang][key] || key;
 }
 
+function safeText(value, fallback = "-"){
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
 function setLang(lang){
   localStorage.setItem("ibss_lang", lang);
   currentLang = lang;
@@ -642,7 +646,7 @@ function getSignalScoreLocal(signal){
 }
 
 function getRankedSignalsLocal(){
-  const source = Array.isArray(IBSS_SIGNALS) ? IBSS_SIGNALS : [];
+  const source = Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
   return [...source].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a));
 }
 
@@ -663,13 +667,13 @@ function weightLabel(weight){
 }
 
 function typeLabel(signal){
-  const type = signal.signalType?.en || "";
+  const type = safeText(signal.signalType?.en, "");
   const key = "type_" + type.toLowerCase();
   return t(key);
 }
 
 function bandLabel(signal){
-  const band = signal.influenceBand?.en || "";
+  const band = safeText(signal.influenceBand?.en, "");
   const key = "band_" + band.toLowerCase();
   return t(key);
 }
@@ -684,7 +688,7 @@ function getSignalItems(){
 
 function renderTopStrip(allItems){
   const top = allItems[0] || null;
-  document.getElementById("topSignal").textContent = top ? (top.title?.[currentLang] || top.title?.en || "-") : "-";
+  document.getElementById("topSignal").textContent = top ? safeText(top.title?.[currentLang] || top.title?.en) : "-";
   document.getElementById("liveCount").textContent = allItems.filter(i => i.live).length;
   document.getElementById("highCount").textContent = allItems.filter(i => i.weight === "HIGH").length;
   document.getElementById("dominantType").textContent = top ? typeLabel(top) : "-";
@@ -700,8 +704,8 @@ function renderSignals(){
   renderTopStrip(allItems);
 
   const items = allItems.filter(signal => {
-    const title = (signal.title?.[currentLang] || signal.title?.en || "").toLowerCase();
-    const desc = (signal.description?.[currentLang] || signal.description?.en || "").toLowerCase();
+    const title = safeText(signal.title?.[currentLang] || signal.title?.en, "").toLowerCase();
+    const desc = safeText(signal.description?.[currentLang] || signal.description?.en, "").toLowerCase();
     const typeMatch = typeValue === "all" || signal.signalType?.en === typeValue;
     const weightMatch = weightValue === "all" || signal.weight === weightValue;
     const statusMatch = statusValue === "all" || signal.status === statusValue;
@@ -733,17 +737,17 @@ function renderSignals(){
         </div>
       </div>
 
-      <h2 class="card-title">${escapeHtml(signal.title?.[currentLang] || signal.title?.en || "-")}</h2>
-      <p class="card-desc">${escapeHtml(signal.description?.[currentLang] || signal.description?.en || "-")}</p>
+      <h2 class="card-title">${escapeHtml(safeText(signal.title?.[currentLang] || signal.title?.en))}</h2>
+      <p class="card-desc">${escapeHtml(safeText(signal.description?.[currentLang] || signal.description?.en))}</p>
 
       <div class="meta">
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_layer"))}</span>
-          <span class="meta-value">${escapeHtml(signal.layer?.[currentLang] || signal.layer?.en || "-")}</span>
+          <span class="meta-value">${escapeHtml(safeText(signal.layer?.[currentLang] || signal.layer?.en))}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_mode"))}</span>
-          <span class="meta-value">${escapeHtml(signal.decisionMode?.[currentLang] || signal.decisionMode?.en || "-")}</span>
+          <span class="meta-value">${escapeHtml(safeText(signal.decisionMode?.[currentLang] || signal.decisionMode?.en))}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_score"))}</span>
