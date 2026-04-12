@@ -157,17 +157,23 @@ body{
   margin-bottom:16px;
 }
 
-.state{
+.state,
+.feed,
+.reasons,
+.scenarios,
+.trends,
+.legend{
   display:grid;
-  gap:12px;
+  gap:10px;
 }
 
 .state-item,
 .feed-item,
 .signal-box,
-.scenario-row,
 .reason-row,
-.trend-row{
+.scenario-row,
+.trend-row,
+.legend-item{
   background:var(--panel2);
   border:1px solid rgba(255,255,255,.06);
   border-radius:14px;
@@ -304,21 +310,29 @@ body{
   outline-offset:4px;
 }
 
-.legend{
-  margin-top:16px;
-  display:grid;
-  gap:10px;
-}
-
+.reason-row,
+.scenario-row,
+.trend-row,
 .legend-item{
   display:flex;
   justify-content:space-between;
+  align-items:center;
   gap:12px;
-  background:var(--panel2);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:12px;
-  padding:12px 14px;
+}
+
+.reason-key,
+.scenario-key,
+.trend-key{
+  color:var(--muted);
   font-size:14px;
+}
+
+.reason-val,
+.scenario-val,
+.trend-val{
+  color:#fff;
+  font-weight:700;
+  text-align:right;
 }
 
 .legend-left{
@@ -342,38 +356,6 @@ body{
 .legend-meta{
   color:var(--muted);
   white-space:nowrap;
-}
-
-.feed,
-.reasons,
-.scenarios,
-.trends{
-  display:grid;
-  gap:10px;
-}
-
-.reason-row,
-.scenario-row,
-.trend-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-}
-
-.reason-key,
-.scenario-key,
-.trend-key{
-  color:var(--muted);
-  font-size:14px;
-}
-
-.reason-val,
-.scenario-val,
-.trend-val{
-  color:#fff;
-  font-weight:700;
-  text-align:right;
 }
 
 .trend-up{color:var(--red)}
@@ -401,10 +383,10 @@ html[dir="rtl"] body{
 html[dir="rtl"] .topbar,
 html[dir="rtl"] .top-actions,
 html[dir="rtl"] .nav,
-html[dir="rtl"] .legend-item,
 html[dir="rtl"] .reason-row,
 html[dir="rtl"] .scenario-row,
-html[dir="rtl"] .trend-row{
+html[dir="rtl"] .trend-row,
+html[dir="rtl"] .legend-item{
   direction:rtl;
 }
 
@@ -462,28 +444,28 @@ html[dir="rtl"] .decision-box{
       <div class="state">
         <div class="state-item">
           <div class="label" id="levelLabel">Level</div>
-          <div id="level" class="value medium">MEDIUM</div>
+          <div id="level" class="value medium">-</div>
         </div>
 
         <div class="state-item">
           <div class="label" id="ssiLabel">SSI</div>
-          <div id="ssi" class="value medium">71</div>
+          <div id="ssi" class="value medium">0</div>
         </div>
 
         <div class="state-item">
           <div class="label" id="decisionLabel">Decision</div>
-          <div id="decision" class="value">PRD</div>
+          <div id="decision" class="value">-</div>
         </div>
 
         <div class="state-item">
           <div class="label" id="modeLabel">Mode</div>
-          <div id="mode" class="value">PREPARATION</div>
+          <div id="mode" class="value">-</div>
         </div>
       </div>
 
       <div class="decision-box">
-        <div class="decision" id="decisionWord">PRD</div>
-        <div class="decision-note" id="decisionNote"></div>
+        <div class="decision" id="decisionWord">-</div>
+        <div class="decision-note" id="decisionNote">-</div>
       </div>
 
       <div class="title" style="margin-top:18px" id="trendTitle">Trend Layer</div>
@@ -497,7 +479,7 @@ html[dir="rtl"] .decision-box{
       <div class="title" id="signalTitleLabel">Primary Signal</div>
 
       <div class="signal-box">
-        <h3 id="signalTitle">Gaza Structure</h3>
+        <h3 id="signalTitle">-</h3>
         <p id="signalDesc">-</p>
       </div>
 
@@ -686,7 +668,7 @@ function getSignalScoreLocal(signal){
 }
 
 function getRankedSignalsLocal(){
-  const source = Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
+  const source = Array.isArray(window.IBSS_SIGNALS) ? window.IBSS_SIGNALS : [];
   return [...source].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a));
 }
 
@@ -708,7 +690,7 @@ function getFallbackSystem(){
   }
 
   const total = rankedSignals.reduce((sum, signal) => sum + getSignalScoreLocal(signal), 0);
-  const ssi = Math.round(total / rankedSignals.length * 100);
+  const ssi = Math.round((total / rankedSignals.length) * 100);
 
   let level = "LOW";
   let decision = "WATCH";
@@ -728,15 +710,27 @@ function getFallbackSystem(){
   }
 
   return {
-    ssi,
-    level,
-    decision,
-    mode,
-    dominantSignal,
-    rankedSignals,
+    ssi: ssi,
+    level: level,
+    decision: decision,
+    mode: mode,
+    dominantSignal: dominantSignal,
+    rankedSignals: rankedSignals,
     liveSignals: rankedSignals.filter(signal => signal.live),
-    scenarios
+    scenarios: scenarios
   };
+}
+
+function getEngineSystem(){
+  try{
+    if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.tick === "function") {
+      const system = window.IBSS_ENGINE.tick();
+      if (system && typeof system === "object") return system;
+    }
+  }catch(e){
+    console.error("Engine failed, fallback used:", e);
+  }
+  return getFallbackSystem();
 }
 
 function setLang(lang){
@@ -778,19 +772,19 @@ function setLevel(level, ssi){
     levelEl.className = "value high";
     ssiEl.className = "value high";
     alertBox.style.display = "block";
-    alertBox.innerHTML = `${txt("highAlert")}<br>${txt("alertWhyHigh")}`;
+    alertBox.innerHTML = txt("highAlert") + "<br>" + txt("alertWhyHigh");
   } else if(level === "MEDIUM"){
     levelEl.textContent = txt("levelMed");
     levelEl.className = "value medium";
     ssiEl.className = "value medium";
     alertBox.style.display = "block";
-    alertBox.innerHTML = `${txt("medAlert")}<br>${txt("alertWhyMed")}`;
+    alertBox.innerHTML = txt("medAlert") + "<br>" + txt("alertWhyMed");
   } else {
     levelEl.textContent = txt("levelLow");
     levelEl.className = "value low";
     ssiEl.className = "value low";
     alertBox.style.display = "block";
-    alertBox.innerHTML = `${txt("lowAlert")}<br>${txt("alertWhyLow")}`;
+    alertBox.innerHTML = txt("lowAlert") + "<br>" + txt("alertWhyLow");
   }
 }
 
@@ -819,16 +813,17 @@ function setDecision(system){
 }
 
 function setPrimarySignal(signal){
+  const titleEl = document.getElementById("signalTitle");
+  const descEl = document.getElementById("signalDesc");
+
   if(!signal){
-    document.getElementById("signalTitle").textContent = "-";
-    document.getElementById("signalDesc").textContent = "-";
+    titleEl.textContent = "-";
+    descEl.textContent = "-";
     return;
   }
 
-  document.getElementById("signalTitle").textContent =
-    safeText(signal.title?.[currentLang] || signal.title?.en);
-  document.getElementById("signalDesc").textContent =
-    safeText(signal.description?.[currentLang] || signal.description?.en);
+  titleEl.textContent = safeText(signal.title && (signal.title[currentLang] || signal.title.en));
+  descEl.textContent = safeText(signal.description && (signal.description[currentLang] || signal.description.en));
 }
 
 function priorityClass(priority){
@@ -845,20 +840,13 @@ function renderRadar(system){
   const dominantId = system.dominantSignal ? system.dominantSignal.id : null;
 
   ranked.forEach(signal => {
-    if (!signal?.metrics) return;
+    if (!signal || !signal.metrics) return;
 
     const dot = document.createElement("div");
     const size = signal.weight === "HIGH" ? 16 : signal.weight === "MEDIUM" ? 12 : 10;
     const x = 20 + ((signal.metrics.volatility || 0) * 240);
     const y = 20 + ((signal.metrics.impact || 0) * 240);
 
-    dot.className = `radar-signal ${priorityClass(signal.weight)}${signal.id === dominantId ? " dominant" : ""}`;
+    dot.className = "radar-signal " + priorityClass(signal.weight) + (signal.id === dominantId ? " dominant" : "");
     dot.style.width = size + "px";
-    dot.style.height = size + "px";
-    dot.style.left = x + "px";
-    dot.style.top = y + "px";
-
-    radar.appendChild(dot);
-  });
-
-  const legend = document.getE
+    dot.style.height = siz
