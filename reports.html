@@ -558,6 +558,10 @@ function t(key){
   return translations[currentLang][key] || key;
 }
 
+function safeText(value, fallback = "-"){
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
 function setLang(lang){
   localStorage.setItem("ibss_lang", lang);
   currentLang = lang;
@@ -611,21 +615,21 @@ function getSignalScoreLocal(signal){
 }
 
 function getRankedSignalsLocal(){
-  const source = Array.isArray(IBSS_SIGNALS) ? IBSS_SIGNALS : [];
+  const source = Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
   return [...source].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a));
 }
 
 function getReportItems(){
   return getRankedSignalsLocal()
-    .filter(signal => signal.reportMeta && signal.report)
+    .filter(signal => signal && signal.reportMeta && signal.report)
     .map(signal => ({
       id: signal.id,
-      title: `${signal.reportMeta.code} — ${signal.title?.[currentLang] || signal.title?.en || "-"}`,
-      description: signal.report?.[currentLang] || signal.report?.en || "-",
-      type: signal.reportMeta.type || "-",
-      priority: signal.reportMeta.priority || "LOW",
+      title: `${safeText(signal.reportMeta?.code, "REP")} — ${safeText(signal.title?.[currentLang] || signal.title?.en)}`,
+      description: safeText(signal.report?.[currentLang] || signal.report?.en),
+      type: safeText(signal.reportMeta?.type, "PP"),
+      priority: safeText(signal.reportMeta?.priority, "LOW"),
       status: signal.live ? "live" : "pending",
-      sourceTitle: signal.title?.[currentLang] || signal.title?.en || "-",
+      sourceTitle: safeText(signal.title?.[currentLang] || signal.title?.en),
       live: !!signal.live
     }));
 }
