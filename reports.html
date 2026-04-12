@@ -585,7 +585,7 @@ function applyTranslations(){
 
 function escapeHtml(text){
   const div = document.createElement("div");
-  div.textContent = text;
+  div.textContent = text ?? "";
   return div.innerHTML;
 }
 
@@ -601,25 +601,41 @@ function priorityLabel(priority){
   return t("priority_low");
 }
 
-function getReportItems(){
-  return getRankedSignals().map(signal => ({
-    id: signal.id,
-    title: `${signal.reportMeta.code} — ${signal.title[currentLang]}`,
-    description: signal.report[currentLang],
-    type: signal.reportMeta.type,
-    priority: signal.reportMeta.priority,
-    status: signal.live ? "live" : "pending",
-    sourceTitle: signal.title[currentLang],
-    live: signal.live
-  }));
+function getSignalScoreLocal(signal){
+  if (!signal || !signal.metrics) return 0;
+  return (
+    (signal.metrics.weight || 0) * 0.5 +
+    (signal.metrics.volatility || 0) * 0.3 +
+    (signal.metrics.impact || 0) * 0.2
+  );
 }
 
-function renderTopStrip(items){
-  const top = items[0] || null;
+function getRankedSignalsLocal(){
+  const source = Array.isArray(IBSS_SIGNALS) ? IBSS_SIGNALS : [];
+  return [...source].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a));
+}
+
+function getReportItems(){
+  return getRankedSignalsLocal()
+    .filter(signal => signal.reportMeta && signal.report)
+    .map(signal => ({
+      id: signal.id,
+      title: `${signal.reportMeta.code} — ${signal.title?.[currentLang] || signal.title?.en || "-"}`,
+      description: signal.report?.[currentLang] || signal.report?.en || "-",
+      type: signal.reportMeta.type || "-",
+      priority: signal.reportMeta.priority || "LOW",
+      status: signal.live ? "live" : "pending",
+      sourceTitle: signal.title?.[currentLang] || signal.title?.en || "-",
+      live: !!signal.live
+    }));
+}
+
+function renderTopStrip(allItems){
+  const top = allItems[0] || null;
   document.getElementById("topReport").textContent = top ? top.title : "-";
-  document.getElementById("publishedReports").textContent = items.filter(i => i.live).length;
-  document.getElementById("highPriorityReports").textContent = items.filter(i => i.priority === "HIGH").length;
-  document.getElementById("reportTypes").textContent = new Set(items.map(i => i.type)).size;
+  document.getElementById("publishedReports").textContent = allItems.filter(i => i.live).length;
+  document.getElementById("highPriorityReports").textContent = allItems.filter(i => i.priority === "HIGH").length;
+  document.getElementById("reportTypes").textContent = new Set(allItems.map(i => i.type)).size;
 }
 
 function renderReports(){
@@ -627,10 +643,13 @@ function renderReports(){
   const typeValue = document.getElementById("typeFilter").value;
   const priorityValue = document.getElementById("priorityFilter").value;
 
-  const items = getReportItems().filter(report => {
-    const title = report.title.toLowerCase();
-    const desc = report.description.toLowerCase();
-    const source = report.sourceTitle.toLowerCase();
+  const allItems = getReportItems();
+  renderTopStrip(allItems);
+
+  const items = allItems.filter(report => {
+    const title = (report.title || "").toLowerCase();
+    const desc = (report.description || "").toLowerCase();
+    const source = (report.sourceTitle || "").toLowerCase();
 
     const searchMatch = !searchValue || title.includes(searchValue) || desc.includes(searchValue) || source.includes(searchValue);
     const typeMatch = typeValue === "all" || report.type === typeValue;
@@ -638,8 +657,6 @@ function renderReports(){
 
     return searchMatch && typeMatch && priorityMatch;
   });
-
-  renderTopStrip(items);
 
   const grid = document.getElementById("reportsGrid");
   const empty = document.getElementById("emptyState");
@@ -656,7 +673,7 @@ function renderReports(){
     <div class="report-card${report.live ? "" : " disabled"}">
       <div class="card-top">
         <div class="badges">
-          <span class="badge type-${report.type.toLowerCase()}">${escapeHtml(report.type)}</span>
+          <span class="badge type-${String(report.type).toLowerCase()}">${escapeHtml(report.type)}</span>
           <span class="badge ${priorityClass(report.priority)}">${escapeHtml(priorityLabel(report.priority))}</span>
           <span class="badge ${report.live ? "status-live" : "status-pending"}">${escapeHtml(report.live ? t("status_live") : t("status_pending"))}</span>
         </div>
@@ -695,4 +712,4 @@ applyTranslations();
 renderReports();
 </script>
 </body>
-</html>
+  </html>
