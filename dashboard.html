@@ -133,6 +133,7 @@ body{
   margin:16px 0;
   text-align:center;
   font-weight:700;
+  line-height:1.7;
 }
 
 .grid{
@@ -163,7 +164,10 @@ body{
 
 .state-item,
 .feed-item,
-.signal-box{
+.signal-box,
+.scenario-row,
+.reason-row,
+.trend-row{
   background:var(--panel2);
   border:1px solid rgba(255,255,255,.06);
   border-radius:14px;
@@ -340,10 +344,41 @@ body{
   white-space:nowrap;
 }
 
-.feed{
+.feed,
+.reasons,
+.scenarios,
+.trends{
   display:grid;
   gap:10px;
 }
+
+.reason-row,
+.scenario-row,
+.trend-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+
+.reason-key,
+.scenario-key,
+.trend-key{
+  color:var(--muted);
+  font-size:14px;
+}
+
+.reason-val,
+.scenario-val,
+.trend-val{
+  color:#fff;
+  font-weight:700;
+  text-align:right;
+}
+
+.trend-up{color:var(--red)}
+.trend-flat{color:var(--orange)}
+.trend-down{color:var(--green)}
 
 .footer{
   margin-top:26px;
@@ -366,7 +401,10 @@ html[dir="rtl"] body{
 html[dir="rtl"] .topbar,
 html[dir="rtl"] .top-actions,
 html[dir="rtl"] .nav,
-html[dir="rtl"] .legend-item{
+html[dir="rtl"] .legend-item,
+html[dir="rtl"] .reason-row,
+html[dir="rtl"] .scenario-row,
+html[dir="rtl"] .trend-row{
   direction:rtl;
 }
 
@@ -447,6 +485,12 @@ html[dir="rtl"] .decision-box{
         <div class="decision" id="decisionWord">PRD</div>
         <div class="decision-note" id="decisionNote"></div>
       </div>
+
+      <div class="title" style="margin-top:18px" id="trendTitle">Trend Layer</div>
+      <div class="trends" id="trendBox"></div>
+
+      <div class="title" style="margin-top:18px" id="reasonTitle">Decision Reason</div>
+      <div class="reasons" id="reasonBox"></div>
     </div>
 
     <div class="card">
@@ -474,6 +518,11 @@ html[dir="rtl"] .decision-box{
   </div>
 
   <div class="card" style="margin-top:18px">
+    <div class="title" id="scenarioTitle">Scenario Engine</div>
+    <div class="scenarios" id="scenarioBox"></div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
     <div class="title" id="feedTitle">Live Feed</div>
     <div id="feed" class="feed"></div>
   </div>
@@ -497,24 +546,58 @@ const ui = {
     signal: "Primary Signal",
     radar: "Radar",
     feed: "Live Feed",
+    trendTitle: "Trend Layer",
+    reasonTitle: "Decision Reason",
+    scenarioTitle: "Scenario Engine",
+
     highAlert: "⚠ HIGH ESCALATION — ACTIVE RESPONSE",
     medAlert: "⚠ STRUCTURED PRESSURE — PREPARATION MODE",
+    lowAlert: "✓ LOW PRESSURE — MONITORING STABLE",
+
     noteHigh: "High pressure environment detected. Immediate readiness required.",
     noteMedium: "Structured pressure remains present. Maintain preparation posture.",
     noteLow: "Low pressure. Continue monitoring.",
+
     modeHigh: "ACTIVE RESPONSE",
     modeMed: "PREPARATION",
     modeLow: "MONITORING",
+
     levelHigh: "HIGH",
     levelMed: "MEDIUM",
     levelLow: "LOW",
+
     decisionHigh: "ACT",
     decisionMed: "PRD",
     decisionLow: "WATCH",
+
     feedUpdate: "Pressure index updated to",
     feedDriven: "Decision driven by engine",
     feedMemory: "Escalation memory active",
-    feedLock: "Decision lock engaged"
+    feedLock: "Decision lock engaged",
+
+    trendPrev: "Previous SSI",
+    trendNow: "Current SSI",
+    trendDir: "Trend",
+    trendUp: "RISING",
+    trendFlat: "STABLE",
+    trendDown: "FALLING",
+
+    reasonPrimary: "Primary Driver",
+    reasonSecondary: "Secondary Driver",
+    reasonMemory: "Memory State",
+    reasonLock: "Lock State",
+    memoryOn: "ACTIVE",
+    memoryOff: "INACTIVE",
+    lockOn: "ENGAGED",
+    lockOff: "OPEN",
+
+    scenarioA: "Scenario A",
+    scenarioB: "Scenario B",
+    scenarioC: "Scenario C",
+
+    alertWhyHigh: "Driver: dominant escalation exceeds high threshold.",
+    alertWhyMed: "Driver: structured pressure remains above preparation threshold.",
+    alertWhyLow: "Driver: pressure remains below escalation threshold."
   },
   ar: {
     title: "لوحة تحكم IBSS",
@@ -527,28 +610,63 @@ const ui = {
     signal: "الإشارة ذات الأولوية",
     radar: "الرادار",
     feed: "التغذية الحية",
+    trendTitle: "طبقة الاتجاه",
+    reasonTitle: "سبب القرار",
+    scenarioTitle: "محرك السيناريو",
+
     highAlert: "⚠ تم رصد تصعيد مرتفع — استجابة نشطة",
     medAlert: "⚠ تم رصد ضغط بنيوي — وضعية تحضير",
+    lowAlert: "✓ ضغط منخفض — مراقبة مستقرة",
+
     noteHigh: "تم رصد بيئة ضغط مرتفعة. الجاهزية الفورية مطلوبة.",
     noteMedium: "الضغط البنيوي حاضر. حافظ على وضعية التحضير.",
     noteLow: "الضغط منخفض. واصل المراقبة.",
+
     modeHigh: "استجابة نشطة",
     modeMed: "تحضير",
     modeLow: "مراقبة",
+
     levelHigh: "مرتفع",
     levelMed: "متوسط",
     levelLow: "منخفض",
+
     decisionHigh: "تحرك",
     decisionMed: "استعداد",
     decisionLow: "مراقبة",
+
     feedUpdate: "تم تحديث المؤشر إلى",
     feedDriven: "القرار مبني على المحرك",
     feedMemory: "ذاكرة التصعيد مفعّلة",
-    feedLock: "قفل القرار مفعّل"
+    feedLock: "قفل القرار مفعّل",
+
+    trendPrev: "SSI السابق",
+    trendNow: "SSI الحالي",
+    trendDir: "الاتجاه",
+    trendUp: "صاعد",
+    trendFlat: "مستقر",
+    trendDown: "هابط",
+
+    reasonPrimary: "المحرّك الأساسي",
+    reasonSecondary: "المحرّك الثانوي",
+    reasonMemory: "حالة الذاكرة",
+    reasonLock: "حالة القفل",
+    memoryOn: "مفعّلة",
+    memoryOff: "غير مفعّلة",
+    lockOn: "مفعّل",
+    lockOff: "مفتوح",
+
+    scenarioA: "السيناريو أ",
+    scenarioB: "السيناريو ب",
+    scenarioC: "السيناريو ج",
+
+    alertWhyHigh: "السبب: الإشارة المهيمنة تجاوزت عتبة التصعيد المرتفع.",
+    alertWhyMed: "السبب: الضغط البنيوي ما زال فوق عتبة التحضير.",
+    alertWhyLow: "السبب: الضغط ما يزال دون عتبة التصعيد."
   }
 };
 
 let currentLang = localStorage.getItem("ibss_lang") || "en";
+let previousSSI = null;
 
 function txt(key){
   return ui[currentLang][key] || key;
@@ -584,7 +702,8 @@ function getFallbackSystem(){
       mode: "MONITORING",
       dominantSignal: null,
       rankedSignals: [],
-      liveSignals: []
+      liveSignals: [],
+      scenarios: [34, 33, 33]
     };
   }
 
@@ -594,15 +713,18 @@ function getFallbackSystem(){
   let level = "LOW";
   let decision = "WATCH";
   let mode = "MONITORING";
+  let scenarios = [22, 33, 45];
 
   if (ssi >= 75) {
     level = "HIGH";
     decision = "ACT";
     mode = "ACTIVE RESPONSE";
+    scenarios = [58, 27, 15];
   } else if (ssi >= 50) {
     level = "MEDIUM";
     decision = "PRD";
     mode = "PREPARATION";
+    scenarios = [38, 37, 25];
   }
 
   return {
@@ -612,7 +734,8 @@ function getFallbackSystem(){
     mode,
     dominantSignal,
     rankedSignals,
-    liveSignals: rankedSignals.filter(signal => signal.live)
+    liveSignals: rankedSignals.filter(signal => signal.live),
+    scenarios
   };
 }
 
@@ -638,6 +761,9 @@ function applyStaticText(){
   document.getElementById("signalTitleLabel").textContent = txt("signal");
   document.getElementById("radarTitle").textContent = txt("radar");
   document.getElementById("feedTitle").textContent = txt("feed");
+  document.getElementById("trendTitle").textContent = txt("trendTitle");
+  document.getElementById("reasonTitle").textContent = txt("reasonTitle");
+  document.getElementById("scenarioTitle").textContent = txt("scenarioTitle");
 }
 
 function setLevel(level, ssi){
@@ -652,18 +778,19 @@ function setLevel(level, ssi){
     levelEl.className = "value high";
     ssiEl.className = "value high";
     alertBox.style.display = "block";
-    alertBox.textContent = txt("highAlert");
+    alertBox.innerHTML = `${txt("highAlert")}<br>${txt("alertWhyHigh")}`;
   } else if(level === "MEDIUM"){
     levelEl.textContent = txt("levelMed");
     levelEl.className = "value medium";
     ssiEl.className = "value medium";
     alertBox.style.display = "block";
-    alertBox.textContent = txt("medAlert");
+    alertBox.innerHTML = `${txt("medAlert")}<br>${txt("alertWhyMed")}`;
   } else {
     levelEl.textContent = txt("levelLow");
     levelEl.className = "value low";
     ssiEl.className = "value low";
-    alertBox.style.display = "none";
+    alertBox.style.display = "block";
+    alertBox.innerHTML = `${txt("lowAlert")}<br>${txt("alertWhyLow")}`;
   }
 }
 
@@ -734,65 +861,4 @@ function renderRadar(system){
     radar.appendChild(dot);
   });
 
-  const legend = document.getElementById("radarLegend");
-  legend.innerHTML = ranked.map(signal => `
-    <div class="legend-item">
-      <div class="legend-left">
-        <span class="legend-dot ${priorityClass(signal.weight)}"></span>
-        <span class="legend-name">${safeText(signal.title?.[currentLang] || signal.title?.en)}</span>
-      </div>
-      <div class="legend-meta">
-        ${safeText(signal.signalType?.[currentLang] || signal.signalType?.en)}
-      </div>
-    </div>
-  `).join("");
-}
-
-function setFeed(system){
-  const feed = document.getElementById("feed");
-  const rankedSignals = Array.isArray(system.rankedSignals) ? system.rankedSignals.slice(0, 4) : [];
-
-  const lines = [
-    `• ${txt("feedUpdate")} ${Number.isFinite(system.ssi) ? system.ssi : 0}`,
-    `• ${txt("feedDriven")}`,
-    `• ${txt("feedMemory")}`,
-    `• ${txt("feedLock")}`
-  ];
-
-  rankedSignals.forEach(signal => {
-    const title = safeText(signal.title?.[currentLang] || signal.title?.en);
-    const mode = safeText(signal.decisionMode?.[currentLang] || signal.decisionMode?.en);
-    lines.push(`• ${title} — ${mode}`);
-  });
-
-  feed.innerHTML = lines.map(line => `<div class="feed-item">${line}</div>`).join("");
-}
-
-function getEngineSystem(){
-  if (window.IBSS_ENGINE && typeof IBSS_ENGINE.tick === "function") {
-    try {
-      const system = IBSS_ENGINE.tick();
-      if (system && typeof system === "object") return system;
-    } catch (e) {
-      console.error("Engine tick failed:", e);
-    }
-  }
-
-  return getFallbackSystem();
-}
-
-function renderSystem(){
-  const system = getEngineSystem();
-  setLevel(system.level, system.ssi);
-  setDecision(system);
-  setPrimarySignal(system.dominantSignal);
-  renderRadar(system);
-  setFeed(system);
-}
-
-setLang(currentLang);
-setInterval(renderSystem, window.IBSS_ENGINE?.CONFIG?.tickIntervalMs || 3000);
-</script>
-
-</body>
-  </html>
+  const legend = document.getE
