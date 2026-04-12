@@ -416,29 +416,8 @@ html[dir="rtl"] .home-alert{
 </div>
 
 <script src="data.js"></script>
+<script src="engine.js"></script>
 <script>
-if (typeof getSignalScore === "undefined") {
-  function getSignalScore(signal) {
-    return (
-      signal.metrics.weight * 0.5 +
-      signal.metrics.volatility * 0.3 +
-      signal.metrics.impact * 0.2
-    );
-  }
-}
-
-if (typeof getRankedSignals === "undefined") {
-  function getRankedSignals() {
-    return [...IBSS_SIGNALS].sort((a, b) => getSignalScore(b) - getSignalScore(a));
-  }
-}
-
-if (typeof getDominantSignal === "undefined") {
-  function getDominantSignal() {
-    return getRankedSignals()[0] || null;
-  }
-}
-
 const translations = {
   en: {
     nav_home: "Home",
@@ -519,6 +498,10 @@ function t(key){
   return translations[currentLang][key] || key;
 }
 
+function safeText(value, fallback = "-"){
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
 function applyLanguage(){
   document.documentElement.lang = currentLang;
   document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
@@ -539,63 +522,41 @@ function setLang(lang){
   renderHomeState();
 }
 
-function getFallbackSystem(){
-  const ranked = getRankedSignals();
-  const dominant = ranked[0] || null;
+function getSystemFromEngine(){
+  if (!window.IBSS_ENGINE) return null;
 
-  if (!IBSS_SIGNALS || !IBSS_SIGNALS.length) {
-    return {
-      ssi: 0,
-      level: "LOW",
-      decision: "WATCH",
-      dominantSignalId: null
-    };
+  if (typeof IBSS_ENGINE.readSavedSystem === "function") {
+    const saved = IBSS_ENGINE.readSavedSystem();
+    if (saved) return saved;
   }
 
-  const total = IBSS_SIGNALS.reduce((sum, signal) => sum + getSignalScore(signal), 0);
-  const ssi = Math.round((total / IBSS_SIGNALS.length) * 100);
-
-  let level = "LOW";
-  let decision = "WATCH";
-
-  if (ssi >= 75) {
-    level = "HIGH";
-    decision = "ACT";
-  } else if (ssi >= 50) {
-    level = "MEDIUM";
-    decision = "PRD";
+  if (typeof IBSS_ENGINE.getStaticSystemFallback === "function") {
+    return IBSS_ENGINE.getStaticSystemFallback();
   }
 
-  return {
-    ssi,
-    level,
-    decision,
-    dominantSignalId: dominant ? dominant.id : null
-  };
+  return null;
 }
 
 function renderHomeState(){
-  let system = null;
-
-  const saved = localStorage.getItem("ibss_live_system");
-  if (saved) {
-    try {
-      system = JSON.parse(saved);
-    } catch (e) {
-      system = null;
-    }
-  }
+  const system = getSystemFromEngine();
 
   if (!system) {
-    system = getFallbackSystem();
+    document.getElementById("topThreat").textContent = "-";
+    document.getElementById("systemPressure").textContent = "0";
+    document.getElementById("decisionMode").textContent = "-";
+    document.getElementById("homeAlert").style.display = "none";
+    return;
   }
 
-  const dominant = IBSS_SIGNALS.find(s => s.id === system.dominantSignalId) || getDominantSignal() || null;
+  const dominant = Array.isArray(globalThis.IBSS_SIGNALS)
+    ? globalThis.IBSS_SIGNALS.find(s => s.id === system.dominantSignalId)
+    : null;
 
   document.getElementById("topThreat").textContent =
-    dominant ? (dominant.title[currentLang] || dominant.title.en) : "-";
+    dominant ? safeText(dominant.title?.[currentLang] || dominant.title?.en) : "-";
 
-  document.getElementById("systemPressure").textContent = system.ssi;
+  document.getElementById("systemPressure").textContent =
+    Number.isFinite(system.ssi) ? system.ssi : 0;
 
   document.getElementById("decisionMode").textContent =
     system.decision === "ACT" ? t("decision_act") :
