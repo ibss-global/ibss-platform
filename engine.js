@@ -58,16 +58,24 @@ const IBSS_ENGINE = (() => {
   }
 
   function ensureSignals() {
-    return Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
+    if (typeof IBSS_SIGNALS !== "undefined" && Array.isArray(IBSS_SIGNALS)) {
+      return IBSS_SIGNALS;
+    }
+
+    if (Array.isArray(globalThis.IBSS_SIGNALS)) {
+      return globalThis.IBSS_SIGNALS;
+    }
+
+    return [];
   }
 
   function getSignalScore(signal) {
     if (!signal || !signal.metrics) return 0;
 
     return (
-      signal.metrics.weight * CONFIG.scoreWeights.weight +
-      signal.metrics.volatility * CONFIG.scoreWeights.volatility +
-      signal.metrics.impact * CONFIG.scoreWeights.impact
+      (signal.metrics.weight || 0) * CONFIG.scoreWeights.weight +
+      (signal.metrics.volatility || 0) * CONFIG.scoreWeights.volatility +
+      (signal.metrics.impact || 0) * CONFIG.scoreWeights.impact
     );
   }
 
@@ -85,7 +93,8 @@ const IBSS_ENGINE = (() => {
   }
 
   function getDominantSignal() {
-    return getRankedSignals()[0] || null;
+    const liveRanked = getLiveSignals().sort((a, b) => getSignalScore(b) - getSignalScore(a));
+    return liveRanked[0] || getRankedSignals()[0] || null;
   }
 
   function calculateBaseSSI() {
@@ -104,15 +113,15 @@ const IBSS_ENGINE = (() => {
     if (!dominant) return 0;
 
     const dominantVolatility = Math.round(
-      dominant.metrics.volatility * CONFIG.reactiveBias.dominantVolatilityBoost
+      (dominant.metrics.volatility || 0) * CONFIG.reactiveBias.dominantVolatilityBoost
     );
 
     const dominantImpact = Math.round(
-      dominant.metrics.impact * CONFIG.reactiveBias.dominantImpactBoost
+      (dominant.metrics.impact || 0) * CONFIG.reactiveBias.dominantImpactBoost
     );
 
     const secondaryImpact = secondary
-      ? Math.round(secondary.metrics.impact * CONFIG.reactiveBias.secondaryImpactBoost)
+      ? Math.round((secondary.metrics.impact || 0) * CONFIG.reactiveBias.secondaryImpactBoost)
       : 0;
 
     const noise = randInt(
@@ -147,12 +156,12 @@ const IBSS_ENGINE = (() => {
     let delta = 0;
 
     if (dominant) {
-      delta += Math.round((dominant.metrics.volatility - 0.5) * 12);
-      delta += Math.round((dominant.metrics.impact - 0.5) * 8);
+      delta += Math.round(((dominant.metrics.volatility || 0) - 0.5) * 12);
+      delta += Math.round(((dominant.metrics.impact || 0) - 0.5) * 8);
     }
 
     if (secondary) {
-      delta += Math.round((secondary.metrics.impact - 0.5) * 4);
+      delta += Math.round(((secondary.metrics.impact || 0) - 0.5) * 4);
     }
 
     delta += randInt(
@@ -249,17 +258,21 @@ const IBSS_ENGINE = (() => {
   }
 
   function getDominantSignalForLevel(level) {
+    const liveRanked = getLiveSignals().sort((a, b) => getSignalScore(b) - getSignalScore(a));
     const ranked = getRankedSignals();
+    const source = liveRanked.length ? liveRanked : ranked;
+
+    if (!source.length) return null;
 
     if (level === "HIGH") {
-      return ranked.find(s => s.weight === "HIGH") || ranked[0] || null;
+      return source.find(s => s.weight === "HIGH") || source[0] || null;
     }
 
     if (level === "MEDIUM") {
-      return ranked.find(s => s.weight === "MEDIUM") || ranked[1] || ranked[0] || null;
+      return source.find(s => s.weight === "MEDIUM") || source[0] || null;
     }
 
-    return ranked.find(s => s.weight === "LOW") || ranked[ranked.length - 1] || ranked[0] || null;
+    return source.find(s => s.weight === "LOW") || source[source.length - 1] || source[0] || null;
   }
 
   function buildScenarios(level) {
@@ -327,16 +340,10 @@ const IBSS_ENGINE = (() => {
     }
   }
 
-  function tick() {
-    const system = computeSystemState();
-    saveSystem(system);
-    return system;
-  }
-
   function getStaticSystemFallback() {
     const signals = ensureSignals();
     const rankedSignals = getRankedSignals();
-    const dominantSignal = rankedSignals[0] || null;
+    const dominantSignal = getDominantSignal();
     const ssi = calculateBaseSSI();
     const rawLevel = getRawLevel(ssi);
     const { decision, mode } = getDecisionAndMode(rawLevel);
@@ -350,9 +357,24 @@ const IBSS_ENGINE = (() => {
       dominantSignal,
       scenarios: buildScenarios(rawLevel),
       rankedSignals,
-      liveSignals: getLiveSignals(),
+      liveSignals: signals.filter(signal => signal.live),
       timestamp: Date.now()
     };
+  }
+
+  function tick() {
+    const signals = ensureSignals();
+
+    if (!signals.length) {
+      const fallback = getStaticSystemFallback();
+      saveSystem(fallback);
+      state.lastSystem = fallback;
+      return fallback;
+    }
+
+    const system = computeSystemState();
+    saveSystem(system);
+    return system;
   }
 
   function reset() {
