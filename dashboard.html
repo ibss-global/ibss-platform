@@ -531,39 +531,31 @@ const ui = {
     trendTitle: "Trend Layer",
     reasonTitle: "Decision Reason",
     scenarioTitle: "Scenario Engine",
-
     highAlert: "⚠ HIGH ESCALATION — ACTIVE RESPONSE",
     medAlert: "⚠ STRUCTURED PRESSURE — PREPARATION MODE",
     lowAlert: "✓ LOW PRESSURE — MONITORING STABLE",
-
     noteHigh: "High pressure environment detected. Immediate readiness required.",
     noteMedium: "Structured pressure remains present. Maintain preparation posture.",
     noteLow: "Low pressure. Continue monitoring.",
-
     modeHigh: "ACTIVE RESPONSE",
     modeMed: "PREPARATION",
     modeLow: "MONITORING",
-
     levelHigh: "HIGH",
     levelMed: "MEDIUM",
     levelLow: "LOW",
-
     decisionHigh: "ACT",
     decisionMed: "PRD",
     decisionLow: "WATCH",
-
     feedUpdate: "Pressure index updated to",
     feedDriven: "Decision driven by engine",
     feedMemory: "Escalation memory active",
     feedLock: "Decision lock engaged",
-
     trendPrev: "Previous SSI",
     trendNow: "Current SSI",
     trendDir: "Trend",
     trendUp: "RISING",
     trendFlat: "STABLE",
     trendDown: "FALLING",
-
     reasonPrimary: "Primary Driver",
     reasonSecondary: "Secondary Driver",
     reasonMemory: "Memory State",
@@ -572,11 +564,9 @@ const ui = {
     memoryOff: "INACTIVE",
     lockOn: "ENGAGED",
     lockOff: "OPEN",
-
     scenarioA: "Scenario A",
     scenarioB: "Scenario B",
     scenarioC: "Scenario C",
-
     alertWhyHigh: "Driver: dominant escalation exceeds high threshold.",
     alertWhyMed: "Driver: structured pressure remains above preparation threshold.",
     alertWhyLow: "Driver: pressure remains below escalation threshold."
@@ -595,39 +585,31 @@ const ui = {
     trendTitle: "طبقة الاتجاه",
     reasonTitle: "سبب القرار",
     scenarioTitle: "محرك السيناريو",
-
     highAlert: "⚠ تم رصد تصعيد مرتفع — استجابة نشطة",
     medAlert: "⚠ تم رصد ضغط بنيوي — وضعية تحضير",
     lowAlert: "✓ ضغط منخفض — مراقبة مستقرة",
-
     noteHigh: "تم رصد بيئة ضغط مرتفعة. الجاهزية الفورية مطلوبة.",
     noteMedium: "الضغط البنيوي حاضر. حافظ على وضعية التحضير.",
     noteLow: "الضغط منخفض. واصل المراقبة.",
-
     modeHigh: "استجابة نشطة",
     modeMed: "تحضير",
     modeLow: "مراقبة",
-
     levelHigh: "مرتفع",
     levelMed: "متوسط",
     levelLow: "منخفض",
-
     decisionHigh: "تحرك",
     decisionMed: "استعداد",
     decisionLow: "مراقبة",
-
     feedUpdate: "تم تحديث المؤشر إلى",
     feedDriven: "القرار مبني على المحرك",
     feedMemory: "ذاكرة التصعيد مفعّلة",
     feedLock: "قفل القرار مفعّل",
-
     trendPrev: "SSI السابق",
     trendNow: "SSI الحالي",
     trendDir: "الاتجاه",
     trendUp: "صاعد",
     trendFlat: "مستقر",
     trendDown: "هابط",
-
     reasonPrimary: "المحرّك الأساسي",
     reasonSecondary: "المحرّك الثانوي",
     reasonMemory: "حالة الذاكرة",
@@ -636,11 +618,9 @@ const ui = {
     memoryOff: "غير مفعّلة",
     lockOn: "مفعّل",
     lockOff: "مفتوح",
-
     scenarioA: "السيناريو أ",
     scenarioB: "السيناريو ب",
     scenarioC: "السيناريو ج",
-
     alertWhyHigh: "السبب: الإشارة المهيمنة تجاوزت عتبة التصعيد المرتفع.",
     alertWhyMed: "السبب: الضغط البنيوي ما زال فوق عتبة التحضير.",
     alertWhyLow: "السبب: الضغط ما يزال دون عتبة التصعيد."
@@ -710,14 +690,14 @@ function getFallbackSystem(){
   }
 
   return {
-    ssi: ssi,
-    level: level,
-    decision: decision,
-    mode: mode,
-    dominantSignal: dominantSignal,
-    rankedSignals: rankedSignals,
+    ssi,
+    level,
+    decision,
+    mode,
+    dominantSignal,
+    rankedSignals,
     liveSignals: rankedSignals.filter(signal => signal.live),
-    scenarios: scenarios
+    scenarios
   };
 }
 
@@ -849,4 +829,8 @@ function renderRadar(system){
 
     dot.className = "radar-signal " + priorityClass(signal.weight) + (signal.id === dominantId ? " dominant" : "");
     dot.style.width = size + "px";
-    dot.style.height = siz
+    dot.style.height = size + "px";
+    dot.style.left = x + "px";
+    dot.style.top = y + "px";
+
+    radar.appendCh
