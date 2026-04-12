@@ -399,6 +399,8 @@ html[dir="rtl"] .decision-box{
         <a href="dashboard.html" class="active">Dashboard</a>
         <a href="signals.html">Signals</a>
         <a href="reports.html">Reports</a>
+        <a href="models.html">Models</a>
+        <a href="about.html">About</a>
       </div>
 
       <div class="lang-switch">
@@ -556,6 +558,64 @@ function safeText(value, fallback = "-"){
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
+function getSignalScoreLocal(signal){
+  if (!signal || !signal.metrics) return 0;
+  return (
+    (signal.metrics.weight || 0) * 0.5 +
+    (signal.metrics.volatility || 0) * 0.3 +
+    (signal.metrics.impact || 0) * 0.2
+  );
+}
+
+function getRankedSignalsLocal(){
+  const source = Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
+  return [...source].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a));
+}
+
+function getFallbackSystem(){
+  const rankedSignals = getRankedSignalsLocal();
+  const dominantSignal = rankedSignals[0] || null;
+
+  if (!rankedSignals.length) {
+    return {
+      ssi: 0,
+      level: "LOW",
+      decision: "WATCH",
+      mode: "MONITORING",
+      dominantSignal: null,
+      rankedSignals: [],
+      liveSignals: []
+    };
+  }
+
+  const total = rankedSignals.reduce((sum, signal) => sum + getSignalScoreLocal(signal), 0);
+  const ssi = Math.round(total / rankedSignals.length * 100);
+
+  let level = "LOW";
+  let decision = "WATCH";
+  let mode = "MONITORING";
+
+  if (ssi >= 75) {
+    level = "HIGH";
+    decision = "ACT";
+    mode = "ACTIVE RESPONSE";
+  } else if (ssi >= 50) {
+    level = "MEDIUM";
+    decision = "PRD";
+    mode = "PREPARATION";
+  }
+
+  return {
+    ssi,
+    level,
+    decision,
+    mode,
+    dominantSignal,
+    rankedSignals,
+    liveSignals: rankedSignals.filter(signal => signal.live)
+  };
+}
+
 function setLang(lang){
   currentLang = lang;
   localStorage.setItem("ibss_lang", lang);
@@ -564,7 +624,7 @@ function setLang(lang){
   document.getElementById("btn-en").classList.toggle("active", lang === "en");
   document.getElementById("btn-ar").classList.toggle("active", lang === "ar");
   applyStaticText();
-  renderFromEngine();
+  renderSystem();
 }
 
 function applyStaticText(){
@@ -708,19 +768,21 @@ function setFeed(system){
   feed.innerHTML = lines.map(line => `<div class="feed-item">${line}</div>`).join("");
 }
 
-function renderFromEngine(){
-  if (!window.IBSS_ENGINE || typeof IBSS_ENGINE.tick !== "function") {
-    console.error("IBSS_ENGINE not loaded correctly");
-    return;
+function getEngineSystem(){
+  if (window.IBSS_ENGINE && typeof IBSS_ENGINE.tick === "function") {
+    try {
+      const system = IBSS_ENGINE.tick();
+      if (system && typeof system === "object") return system;
+    } catch (e) {
+      console.error("Engine tick failed:", e);
+    }
   }
 
-  const system = IBSS_ENGINE.tick();
+  return getFallbackSystem();
+}
 
-  if (!system || typeof system !== "object") {
-    console.error("Invalid system state from engine");
-    return;
-  }
-
+function renderSystem(){
+  const system = getEngineSystem();
   setLevel(system.level, system.ssi);
   setDecision(system);
   setPrimarySignal(system.dominantSignal);
@@ -729,8 +791,8 @@ function renderFromEngine(){
 }
 
 setLang(currentLang);
-setInterval(renderFromEngine, IBSS_ENGINE?.CONFIG?.tickIntervalMs || 3000);
+setInterval(renderSystem, window.IBSS_ENGINE?.CONFIG?.tickIntervalMs || 3000);
 </script>
 
 </body>
-    </html>
+  </html>
