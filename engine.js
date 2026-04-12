@@ -263,14 +263,8 @@ const IBSS_ENGINE = (() => {
   }
 
   function buildScenarios(level) {
-    if (level === "HIGH") {
-      return [58, 27, 15];
-    }
-
-    if (level === "MEDIUM") {
-      return [38, 37, 25];
-    }
-
+    if (level === "HIGH") return [58, 27, 15];
+    if (level === "MEDIUM") return [38, 37, 25];
     return [22, 33, 45];
   }
 
@@ -367,4 +361,29 @@ const IBSS_ENGINE = (() => {
     state.history = [];
     state.highMemoryTicks = 0;
     state.mediumMemoryTicks = 0;
-    state.lockedLevel = null
+    state.lockedLevel = null;
+    state.lastSystem = null;
+  }
+
+  return {
+    CONFIG,
+    state,
+    getSignalScore,
+    getSignalScore100,
+    getRankedSignals,
+    getLiveSignals,
+    getDominantSignal,
+    calculateBaseSSI,
+    calculateReactiveBias,
+    getRawLevel,
+    getDecisionAndMode,
+    getDominantSignalForLevel,
+    buildScenarios,
+    computeSystemState,
+    tick,
+    saveSystem,
+    readSavedSystem,
+    getStaticSystemFallback,
+    reset
+  };
+})();
