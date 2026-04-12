@@ -502,6 +502,87 @@ function safeText(value, fallback = "-"){
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
+function getSignalScoreLocal(signal){
+  if (!signal || !signal.metrics) return 0;
+  return (
+    (signal.metrics.weight || 0) * 0.5 +
+    (signal.metrics.volatility || 0) * 0.3 +
+    (signal.metrics.impact || 0) * 0.2
+  );
+}
+
+function getDominantSignalLocal(){
+  const source = Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
+  if (!source.length) return null;
+
+  return [...source].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a))[0] || null;
+}
+
+function getFallbackSystem(){
+  const source = Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
+
+  if (!source.length) {
+    return {
+      ssi: 0,
+      level: "LOW",
+      decision: "WATCH",
+      dominantSignalId: null
+    };
+  }
+
+  const total = source.reduce((sum, signal) => sum + getSignalScoreLocal(signal), 0);
+  const ssi = Math.round((total / source.length) * 100);
+
+  let level = "LOW";
+  let decision = "WATCH";
+
+  if (ssi >= 75) {
+    level = "HIGH";
+    decision = "ACT";
+  } else if (ssi >= 50) {
+    level = "MEDIUM";
+    decision = "PRD";
+  }
+
+  const dominant = getDominantSignalLocal();
+
+  return {
+    ssi,
+    level,
+    decision,
+    dominantSignalId: dominant ? dominant.id : null
+  };
+}
+
+function getSystemState(){
+  if (window.IBSS_ENGINE) {
+    try {
+      if (typeof IBSS_ENGINE.readSavedSystem === "function") {
+        const saved = IBSS_ENGINE.readSavedSystem();
+        if (saved) return saved;
+      }
+
+      if (typeof IBSS_ENGINE.getStaticSystemFallback === "function") {
+        return IBSS_ENGINE.getStaticSystemFallback();
+      }
+    } catch (e) {
+      console.error("Engine read failed:", e);
+    }
+  }
+
+  try {
+    const raw = localStorage.getItem("ibss_live_system");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed) return parsed;
+    }
+  } catch (e) {
+    console.error("Storage read failed:", e);
+  }
+
+  return getFallbackSystem();
+}
+
 function applyLanguage(){
   document.documentElement.lang = currentLang;
   document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
@@ -522,38 +603,17 @@ function setLang(lang){
   renderHomeState();
 }
 
-function getSystemFromEngine(){
-  if (!window.IBSS_ENGINE) return null;
-
-  if (typeof IBSS_ENGINE.readSavedSystem === "function") {
-    const saved = IBSS_ENGINE.readSavedSystem();
-    if (saved) return saved;
-  }
-
-  if (typeof IBSS_ENGINE.getStaticSystemFallback === "function") {
-    return IBSS_ENGINE.getStaticSystemFallback();
-  }
-
-  return null;
-}
-
 function renderHomeState(){
-  const system = getSystemFromEngine();
-
-  if (!system) {
-    document.getElementById("topThreat").textContent = "-";
-    document.getElementById("systemPressure").textContent = "0";
-    document.getElementById("decisionMode").textContent = "-";
-    document.getElementById("homeAlert").style.display = "none";
-    return;
-  }
+  const system = getSystemState();
 
   const dominant = Array.isArray(globalThis.IBSS_SIGNALS)
     ? globalThis.IBSS_SIGNALS.find(s => s.id === system.dominantSignalId)
     : null;
 
+  const realDominant = dominant || getDominantSignalLocal();
+
   document.getElementById("topThreat").textContent =
-    dominant ? safeText(dominant.title?.[currentLang] || dominant.title?.en) : "-";
+    realDominant ? safeText(realDominant.title?.[currentLang] || realDominant.title?.en) : "-";
 
   document.getElementById("systemPressure").textContent =
     Number.isFinite(system.ssi) ? system.ssi : 0;
