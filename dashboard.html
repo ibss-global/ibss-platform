@@ -481,29 +481,8 @@ html[dir="rtl"] .decision-box{
 </div>
 
 <script src="data.js"></script>
+<script src="engine.js"></script>
 <script>
-if (typeof getSignalScore === "undefined") {
-  function getSignalScore(signal) {
-    return (
-      signal.metrics.weight * 0.5 +
-      signal.metrics.volatility * 0.3 +
-      signal.metrics.impact * 0.2
-    );
-  }
-}
-
-if (typeof getRankedSignals === "undefined") {
-  function getRankedSignals() {
-    return [...IBSS_SIGNALS].sort((a, b) => getSignalScore(b) - getSignalScore(a));
-  }
-}
-
-if (typeof getDominantSignal === "undefined") {
-  function getDominantSignal() {
-    return getRankedSignals()[0] || null;
-  }
-}
-
 const ui = {
   en: {
     title: "IBSS Dashboard",
@@ -530,8 +509,10 @@ const ui = {
     decisionHigh: "ACT",
     decisionMed: "PRD",
     decisionLow: "WATCH",
-    feedUpdate: "Pressure index fixed at",
-    feedDriven: "Decision driven by real signal metrics"
+    feedUpdate: "Pressure index updated to",
+    feedDriven: "Decision driven by engine",
+    feedMemory: "Escalation memory active",
+    feedLock: "Decision lock engaged"
   },
   ar: {
     title: "لوحة تحكم IBSS",
@@ -558,8 +539,10 @@ const ui = {
     decisionHigh: "تحرك",
     decisionMed: "استعداد",
     decisionLow: "مراقبة",
-    feedUpdate: "تم تثبيت المؤشر عند",
-    feedDriven: "القرار مبني على مقاييس الإشارات الحقيقية"
+    feedUpdate: "تم تحديث المؤشر إلى",
+    feedDriven: "القرار مبني على المحرك",
+    feedMemory: "ذاكرة التصعيد مفعّلة",
+    feedLock: "قفل القرار مفعّل"
   }
 };
 
@@ -577,7 +560,7 @@ function setLang(lang){
   document.getElementById("btn-en").classList.toggle("active", lang === "en");
   document.getElementById("btn-ar").classList.toggle("active", lang === "ar");
   applyStaticText();
-  renderRealSystem();
+  renderFromEngine();
 }
 
 function applyStaticText(){
@@ -591,48 +574,6 @@ function applyStaticText(){
   document.getElementById("signalTitleLabel").textContent = txt("signal");
   document.getElementById("radarTitle").textContent = txt("radar");
   document.getElementById("feedTitle").textContent = txt("feed");
-}
-
-function calculateRealSSI(){
-  if (!IBSS_SIGNALS || !IBSS_SIGNALS.length) return 0;
-
-  const total = IBSS_SIGNALS.reduce((sum, signal) => {
-    return sum + getSignalScore(signal);
-  }, 0);
-
-  return Math.round((total / IBSS_SIGNALS.length) * 100);
-}
-
-function getRealSystemState(){
-  const ssi = calculateRealSSI();
-  const dominantSignal = getDominantSignal();
-
-  let level = "LOW";
-  let decision = "WATCH";
-  let mode = "MONITORING";
-
-  if (ssi >= 75) {
-    level = "HIGH";
-    decision = "ACT";
-    mode = "ACTIVE RESPONSE";
-  } else if (ssi >= 50) {
-    level = "MEDIUM";
-    decision = "PRD";
-    mode = "PREPARATION";
-  }
-
-  return { ssi, level, decision, mode, dominantSignal };
-}
-
-function saveLiveSystem(system){
-  localStorage.setItem("ibss_live_system", JSON.stringify({
-    ssi: system.ssi,
-    level: system.level,
-    decision: system.decision,
-    mode: system.mode,
-    dominantSignalId: system.dominantSignal ? system.dominantSignal.id : null,
-    timestamp: Date.now()
-  }));
 }
 
 function setLevel(level, ssi){
@@ -704,13 +645,12 @@ function renderRadar(system){
   const radar = document.getElementById("radar");
   radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
 
-  const ranked = getRankedSignals().slice(0, 5);
+  const ranked = system.rankedSignals.slice(0, 5);
   const dominantId = system.dominantSignal ? system.dominantSignal.id : null;
 
   ranked.forEach(signal => {
     const dot = document.createElement("div");
     const size = signal.weight === "HIGH" ? 16 : signal.weight === "MEDIUM" ? 12 : 10;
-
     const x = 20 + (signal.metrics.volatility * 240);
     const y = 20 + (signal.metrics.impact * 240);
 
@@ -739,11 +679,13 @@ function renderRadar(system){
 
 function setFeed(system){
   const feed = document.getElementById("feed");
-  const rankedSignals = getRankedSignals().slice(0, 4);
+  const rankedSignals = system.rankedSignals.slice(0, 4);
 
   const lines = [
     `• ${txt("feedUpdate")} ${system.ssi}`,
-    `• ${txt("feedDriven")}`
+    `• ${txt("feedDriven")}`,
+    `• ${txt("feedMemory")}`,
+    `• ${txt("feedLock")}`
   ];
 
   rankedSignals.forEach(signal => {
@@ -755,18 +697,18 @@ function setFeed(system){
   feed.innerHTML = lines.map(line => `<div class="feed-item">${line}</div>`).join("");
 }
 
-function renderRealSystem(){
-  const system = getRealSystemState();
+function renderFromEngine(){
+  const system = IBSS_ENGINE.tick();
   setLevel(system.level, system.ssi);
   setDecision(system);
   setPrimarySignal(system.dominantSignal);
   renderRadar(system);
   setFeed(system);
-  saveLiveSystem(system);
 }
 
 setLang(currentLang);
+setInterval(renderFromEngine, IBSS_ENGINE.CONFIG.tickIntervalMs);
 </script>
 
 </body>
-        </html>
+</html>
