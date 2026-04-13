@@ -1,30 +1,44 @@
-// IBSS ENGINE — FINAL VERSION (Dashboard Compatible)
+// IBSS ENGINE — CLEAN STABLE VERSION
 
 (function () {
   "use strict";
 
   function safe(val, fallback = "-") {
-    return (val !== undefined && val !== null && val !== "") ? val : fallback;
+    return val !== undefined && val !== null && val !== "" ? val : fallback;
   }
 
   function getSignals() {
     return Array.isArray(window.IBSS_SIGNALS) ? window.IBSS_SIGNALS : [];
   }
 
+  function getPriority(signal) {
+    return safe(signal?.reportMeta?.priority, signal?.weight || "LOW");
+  }
+
   function scoreSignal(signal) {
     const metrics = signal?.metrics || {};
-    const weight = Number(metrics.weight || 0);
-    const volatility = Number(metrics.volatility || 0);
-    const impact = Number(metrics.impact || 0);
+
+    const weight = Number(metrics.weight) || 0;
+    const volatility = Number(metrics.volatility) || 0;
+    const impact = Number(metrics.impact) || 0;
 
     let priorityBoost = 0;
-    if (signal?.priority === "HIGH") priorityBoost = 0.08;
-    else if (signal?.priority === "MEDIUM") priorityBoost = 0.04;
+    const priority = getPriority(signal);
 
-    return Math.min(
-      ((weight * 0.5) + (volatility * 0.25) + (impact * 0.25) + priorityBoost),
-      1
-    );
+    if (priority === "HIGH") priorityBoost = 0.04;
+    else if (priority === "MEDIUM") priorityBoost = 0.02;
+
+    const rawScore =
+      (weight * 0.5) +
+      (volatility * 0.3) +
+      (impact * 0.2) +
+      priorityBoost;
+
+    return Math.min(rawScore, 0.95);
+  }
+
+  function getScore100(signal) {
+    return Math.round(scoreSignal(signal) * 100);
   }
 
   function buildSystem() {
@@ -33,37 +47,40 @@
     const rankedSignals = [...signals]
       .map(signal => ({
         ...signal,
-        score: scoreSignal(signal)
+        score: scoreSignal(signal),
+        score100: getScore100(signal),
+        priority: getPriority(signal)
       }))
       .sort((a, b) => b.score - a.score);
 
     const topSignal = rankedSignals[0] || null;
+    const secondSignal = rankedSignals[1] || null;
 
     const avgScore = rankedSignals.length
       ? rankedSignals.reduce((sum, signal) => sum + signal.score, 0) / rankedSignals.length
       : 0;
 
-    const activeSignals = rankedSignals.filter(signal => signal.active || signal.live).length;
+    const activeSignals = rankedSignals.filter(signal => signal.live === true || signal.active === true);
+    const highSignals = rankedSignals.filter(signal => signal.priority === "HIGH");
 
-    let systemPressure = Math.round(
-      Math.min(
-        (avgScore * 55) +
-        ((topSignal?.score || 0) * 25) +
-        Math.min(activeSignals, 10),
-        100
-      )
-    );
+    let systemPressure = Math.round(avgScore * 100);
 
     if (topSignal?.priority === "HIGH") {
-      systemPressure = Math.min(systemPressure + 9, 100);
+      systemPressure += 4;
     } else if (topSignal?.priority === "MEDIUM") {
-      systemPressure = Math.min(systemPressure + 5, 100);
+      systemPressure += 2;
     }
+
+    systemPressure = Math.min(systemPressure, 95);
 
     return {
       systemPressure,
       topSignal,
-      rankedSignals
+      secondSignal,
+      rankedSignals,
+      activeSignals,
+      highSignals,
+      timestamp: Date.now()
     };
   }
 
@@ -74,11 +91,11 @@
 
     if (!levelEl || !ssiEl || !alertBox) return "LOW";
 
-    const pressure = system.systemPressure || 0;
+    const pressure = Number(system.systemPressure) || 0;
 
     let level = "LOW";
-    if (pressure >= 70) level = "HIGH";
-    else if (pressure >= 40) level = "MEDIUM";
+    if (pressure >= 75) level = "HIGH";
+    else if (pressure >= 50) level = "MEDIUM";
 
     levelEl.textContent = level;
     ssiEl.textContent = pressure;
@@ -93,8 +110,8 @@
       alertBox.style.display = "block";
       alertBox.textContent = "⚠ STRUCTURED PRESSURE — PREPARATION MODE";
     } else {
-      alertBox.style.display = "none";
-      alertBox.textContent = "";
+      alertBox.style.display = "block";
+      alertBox.textContent = "✓ LOW PRESSURE — MONITORING STABLE";
     }
 
     return level;
@@ -158,35 +175,41 @@
 
     if (!radar || !legend) return;
 
-    radar.querySelectorAll(".radar-signal").forEach(e => e.remove());
+    radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
 
-    const signals = system.rankedSignals || [];
+    const signals = (system.rankedSignals || []).slice(0, 5);
 
-    signals.forEach(signal => {
-      if (!signal.metrics) return;
+    const positions = [
+      { x: 50, y: 18 },
+      { x: 78, y: 38 },
+      { x: 68, y: 72 },
+      { x: 28, y: 68 },
+      { x: 18, y: 45 }
+    ];
 
+    signals.forEach((signal, index) => {
       const dot = document.createElement("div");
+      const pos = positions[index] || { x: 50, y: 50 };
 
-      const size = signal.priority === "HIGH" ? 14 : signal.priority === "MEDIUM" ? 10 : 8;
-      const x = 20 + ((Number(signal.metrics.volatility || 0)) * 60);
-      const y = 20 + ((Number(signal.metrics.impact || 0)) * 60);
+      const size = Math.max(10, Math.min(24, Math.round(signal.score * 24)));
+      const cls = priorityClass(signal.priority);
 
-      dot.className = "radar-signal " + priorityClass(signal.priority);
+      dot.className = "radar-signal " + cls + (index === 0 ? " dominant" : "");
       dot.style.width = size + "px";
       dot.style.height = size + "px";
-      dot.style.left = x + "%";
-      dot.style.top = y + "%";
+      dot.style.left = pos.x + "%";
+      dot.style.top = pos.y + "%";
 
       radar.appendChild(dot);
     });
 
-    legend.innerHTML = signals.map(signal => `
+    legend.innerHTML = signals.map((signal, index) => `
       <div class="legend-item">
         <div class="legend-left">
           <span class="legend-dot ${priorityClass(signal.priority)}"></span>
           <span class="legend-name">${safe(signal.title?.en || signal.title)}</span>
         </div>
-        <div class="legend-meta">${safe(signal.signalType?.en || signal.signalType)}</div>
+        <div class="legend-meta">${signal.score100}</div>
       </div>
     `).join("");
   }
@@ -200,11 +223,11 @@
     const lines = [
       "• Pressure index updated to " + safe(system.systemPressure, 0),
       "• Decision driven by engine",
-      "• Escalation memory active",
-      "• Decision lock engaged"
+      "• Ranked signal matrix synchronized",
+      "• Primary file now drives system posture"
     ];
 
-    signals.forEach(signal => {
+    signals.slice(0, 5).forEach(signal => {
       const title = safe(signal.title?.en || signal.title);
       const mode = safe(signal.decisionMode?.en || signal.decisionMode);
       lines.push(`• ${title} — ${mode}`);
@@ -225,6 +248,11 @@
       console.error("Render error:", e);
     }
   }
+
+  window.IBSS_ENGINE = {
+    getCurrentState: buildSystem,
+    render
+  };
 
   window.addEventListener("load", () => {
     render();
