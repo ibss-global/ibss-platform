@@ -1,769 +1,476 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBSS Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IBSS Dashboard</title>
 
-<style>
-:root{
-  --gold:#d4af37;
-  --bg:#040404;
-  --panel:#0d0d0d;
-  --panel2:#121212;
-  --text:#fff;
-  --muted:#9d9d9d;
-  --red:#ff4d4f;
-  --orange:#ff9f1a;
-  --green:#00d084;
-  --border:rgba(212,175,55,.28);
-}
+  <style>
+    :root{
+      --gold:#d4af37;
+      --bg:#040404;
+      --panel:#0d0d0d;
+      --panel2:#121212;
+      --text:#ffffff;
+      --muted:#9d9d9d;
+      --red:#ff4d4f;
+      --orange:#ff9f1a;
+      --green:#00d084;
+      --border:rgba(212,175,55,.28);
+      --soft-border:rgba(255,255,255,.08);
+      --soft-border-2:rgba(255,255,255,.06);
+    }
 
-*{box-sizing:border-box}
+    *{ box-sizing:border-box; }
 
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
-    var(--bg);
-  color:var(--text);
-}
+    html, body{
+      margin:0;
+      padding:0;
+      background:
+        radial-gradient(circle at top, rgba(212,175,55,.06), transparent 26%),
+        var(--bg);
+      color:var(--text);
+      font-family:Arial, sans-serif;
+    }
 
-.wrap{
-  width:92%;
-  max-width:1100px;
-  margin:auto;
-  padding:20px;
-}
+    body{
+      min-height:100vh;
+    }
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:14px 0 20px;
-  border-bottom:1px solid rgba(255,255,255,.05);
-  flex-wrap:wrap;
-}
+    .wrap{
+      width:min(1100px, 92%);
+      margin:auto;
+      padding:20px 0 36px;
+    }
 
-.brand{
-  color:var(--gold);
-  font-size:28px;
-  font-weight:800;
-  text-decoration:none;
-  letter-spacing:1px;
-}
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      padding:12px 0 22px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      flex-wrap:wrap;
+    }
 
-.nav{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
+    .brand{
+      color:var(--gold);
+      font-size:30px;
+      font-weight:900;
+      text-decoration:none;
+      letter-spacing:1px;
+    }
 
-.nav a{
-  color:var(--muted);
-  text-decoration:none;
-  border:1px solid rgba(255,255,255,.08);
-  padding:10px 14px;
-  border-radius:10px;
-  font-size:14px;
-  transition:.2s ease;
-}
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-.nav a.active,
-.nav a:hover{
-  color:var(--gold);
-  border-color:var(--border);
-}
+    .nav a{
+      color:var(--muted);
+      text-decoration:none;
+      border:1px solid var(--soft-border);
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:14px;
+      transition:.2s ease;
+    }
 
-.lang-switch{
-  display:flex;
-  gap:6px;
-}
+    .nav a:hover,
+    .nav a.active{
+      color:var(--gold);
+      border-color:var(--border);
+      box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
+    }
 
-.lang-switch button{
-  background:none;
-  border:1px solid rgba(255,255,255,.1);
-  color:#ccc;
-  padding:8px 10px;
-  border-radius:8px;
-  cursor:pointer;
-  transition:.2s ease;
-  font-size:13px;
-}
+    .hero{
+      text-align:center;
+      padding:30px 0 18px;
+    }
 
-.lang-switch button:hover,
-.lang-switch button.active{
-  color:var(--gold);
-  border-color:var(--gold);
-}
+    .hero h1{
+      margin:0 0 10px;
+      font-size:42px;
+      color:var(--gold);
+      font-weight:900;
+      letter-spacing:.5px;
+    }
 
-.top-actions{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.8;
+    }
 
-.hero{
-  text-align:center;
-  padding:28px 0 18px;
-}
+    .alert{
+      display:none;
+      margin:18px 0 0;
+      text-align:center;
+      padding:14px;
+      border-radius:14px;
+      background:rgba(255,77,79,.14);
+      border:1px solid rgba(255,77,79,.40);
+      color:#ffd1d1;
+      font-weight:800;
+    }
 
-.hero h1{
-  color:var(--gold);
-  margin:0 0 8px;
-  font-size:42px;
-}
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:22px;
+    }
 
-.hero p{
-  color:var(--muted);
-  margin:0;
-}
+    .card{
+      background:var(--panel);
+      border:1px solid var(--soft-border);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+    }
 
-.alert{
-  display:none;
-  background:rgba(255,77,79,.14);
-  border:1px solid rgba(255,77,79,.4);
-  color:#ffd1d1;
-  padding:14px;
-  border-radius:12px;
-  margin:16px 0;
-  text-align:center;
-  font-weight:700;
-}
+    .title{
+      color:var(--gold);
+      font-size:24px;
+      font-weight:900;
+      margin-bottom:16px;
+    }
 
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
-  margin-top:20px;
-}
+    .state{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
 
-.card{
-  background:var(--panel);
-  padding:20px;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.08);
-}
+    .state-item,
+    .signal-box,
+    .legend-item,
+    .feed-item,
+    .decision-box{
+      background:var(--panel2);
+      border:1px solid var(--soft-border-2);
+      border-radius:16px;
+    }
 
-.title{
-  color:var(--gold);
-  font-size:24px;
-  font-weight:800;
-  margin-bottom:16px;
-}
+    .state-item{
+      padding:14px;
+      min-height:96px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
 
-.state{
-  display:grid;
-  gap:12px;
-}
+    .label{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:8px;
+    }
 
-.state-item,
-.feed-item,
-.signal-box{
-  background:var(--panel2);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:14px;
-  padding:14px;
-}
+    .value{
+      font-size:24px;
+      font-weight:900;
+      letter-spacing:.3px;
+    }
 
-.label{
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:6px;
-}
+    .high{ color:var(--red); }
+    .medium{ color:var(--orange); }
+    .low{ color:var(--green); }
 
-.value{
-  font-size:22px;
-  font-weight:800;
-}
+    .decision-box{
+      margin-top:18px;
+      text-align:center;
+      padding:18px;
+      border-color:rgba(212,175,55,.22);
+      background:rgba(212,175,55,.05);
+    }
 
-.high{color:var(--red)}
-.medium{color:var(--orange)}
-.low{color:var(--green)}
+    .decision{
+      font-size:30px;
+      font-weight:900;
+      color:var(--gold);
+      margin-bottom:8px;
+    }
 
-.decision-box{
-  margin-top:18px;
-  text-align:center;
-  background:rgba(212,175,55,.05);
-  border:1px solid rgba(212,175,55,.22);
-  border-radius:16px;
-  padding:18px;
-}
+    .decision-note{
+      color:var(--muted);
+      line-height:1.8;
+      min-height:50px;
+      font-size:14px;
+    }
 
-.decision{
-  font-size:30px;
-  font-weight:900;
-  color:var(--gold);
-  margin-bottom:8px;
-}
+    .signal-box{
+      padding:16px;
+      border-color:rgba(212,175,55,.24);
+    }
 
-.decision-note{
-  color:var(--muted);
-  line-height:1.7;
-  min-height:48px;
-}
+    .signal-box h3{
+      margin:0 0 10px;
+      font-size:30px;
+      color:#fff;
+      line-height:1.25;
+    }
 
-.signal-box{
-  border-color:rgba(212,175,55,.3);
-}
+    .signal-box p{
+      margin:0;
+      color:#ddd;
+      line-height:1.8;
+      font-size:14px;
+    }
 
-.signal-box h3{
-  margin:0 0 10px;
-  font-size:30px;
-  color:#fff;
-}
+    .radar-wrap{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:8px 0 4px;
+    }
 
-.signal-box p{
-  margin:0;
-  color:#ddd;
-  line-height:1.8;
-}
+    .radar{
+      position:relative;
+      width:280px;
+      height:280px;
+      border-radius:50%;
+    }
 
-.radar-wrap{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:10px 0 4px;
-}
+    .circle{
+      position:absolute;
+      border:1px solid rgba(212,175,55,.18);
+      border-radius:50%;
+    }
 
-.radar{
-  position:relative;
-  width:280px;
-  height:280px;
-  border-radius:50%;
-}
+    .c1{ width:90px; height:90px; top:95px; left:95px; }
+    .c2{ width:150px; height:150px; top:65px; left:65px; }
+    .c3{ width:210px; height:210px; top:35px; left:35px; }
+    .c4{ width:280px; height:280px; top:0; left:0; }
 
-.circle{
-  position:absolute;
-  border:1px solid rgba(212,175,55,.18);
-  border-radius:50%;
-}
+    .center-dot{
+      position:absolute;
+      width:16px;
+      height:16px;
+      border-radius:50%;
+      background:var(--gold);
+      top:132px;
+      left:132px;
+      box-shadow:0 0 18px rgba(212,175,55,.8);
+      z-index:3;
+    }
 
-.c1{width:90px;height:90px;top:95px;left:95px;}
-.c2{width:150px;height:150px;top:65px;left:65px;}
-.c3{width:210px;height:210px;top:35px;left:35px;}
-.c4{width:280px;height:280px;top:0;left:0;}
+    .sweep{
+      position:absolute;
+      width:220px;
+      height:220px;
+      top:30px;
+      left:30px;
+      border-radius:50%;
+      background:conic-gradient(rgba(212,175,55,.28), transparent 34%);
+      animation:spin 4s linear infinite;
+      opacity:.8;
+    }
 
-.center-dot{
-  position:absolute;
-  width:16px;
-  height:16px;
-  border-radius:50%;
-  background:var(--gold);
-  top:132px;
-  left:132px;
-  box-shadow:0 0 18px rgba(212,175,55,.8);
-  z-index:3;
-}
+    .radar-signal{
+      position:absolute;
+      border-radius:50%;
+      transform:translate(-50%, -50%);
+      transition:.35s ease;
+      z-index:4;
+    }
 
-.sweep{
-  position:absolute;
-  width:220px;
-  height:220px;
-  top:30px;
-  left:30px;
-  border-radius:50%;
-  background:conic-gradient(rgba(212,175,55,.28), rgba(212,175,55,.04), transparent 45%);
-  animation:spin 4s linear infinite;
-  opacity:.8;
-}
+    .radar-signal.high{
+      background:var(--red);
+      box-shadow:0 0 14px rgba(255,77,79,.75);
+    }
 
-.radar-signal{
-  position:absolute;
-  border-radius:50%;
-  transform:translate(-50%, -50%);
-  transition:.35s ease;
-  z-index:4;
-}
+    .radar-signal.medium{
+      background:var(--orange);
+      box-shadow:0 0 14px rgba(255,159,26,.75);
+    }
 
-.radar-signal.high{
-  background:var(--red);
-  box-shadow:0 0 14px rgba(255,77,79,.75);
-}
+    .radar-signal.low{
+      background:var(--green);
+      box-shadow:0 0 14px rgba(0,208,132,.75);
+    }
 
-.radar-signal.medium{
-  background:var(--orange);
-  box-shadow:0 0 14px rgba(255,159,26,.75);
-}
+    .legend{
+      margin-top:16px;
+      display:grid;
+      gap:10px;
+    }
 
-.radar-signal.low{
-  background:var(--green);
-  box-shadow:0 0 14px rgba(0,208,132,.75);
-}
+    .legend-item{
+      padding:12px 14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
 
-.radar-signal.dominant{
-  outline:2px solid rgba(212,175,55,.7);
-  outline-offset:4px;
-}
+    .legend-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
 
-.legend{
-  margin-top:16px;
-  display:grid;
-  gap:10px;
-}
+    .legend-dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      flex:0 0 auto;
+    }
 
-.legend-item{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  background:var(--panel2);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:12px;
-  padding:12px 14px;
-  font-size:14px;
-}
+    .legend-dot.high{ background:var(--red); }
+    .legend-dot.medium{ background:var(--orange); }
+    .legend-dot.low{ background:var(--green); }
 
-.legend-left{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  min-width:0;
-}
+    .legend-name{
+      color:#fff;
+      font-size:14px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:320px;
+    }
 
-.legend-dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  flex:0 0 auto;
-}
+    .legend-meta{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+    }
 
-.legend-name{
-  color:#fff;
-}
+    .feed{
+      display:grid;
+      gap:10px;
+    }
 
-.legend-meta{
-  color:var(--muted);
-  white-space:nowrap;
-}
+    .feed-item{
+      padding:12px 14px;
+      color:#ddd;
+      line-height:1.7;
+      font-size:14px;
+    }
 
-.feed{
-  display:grid;
-  gap:10px;
-}
+    .footer{
+      margin-top:26px;
+      text-align:center;
+      color:#777;
+      font-size:14px;
+      border-top:1px solid rgba(255,255,255,.05);
+      padding-top:22px;
+    }
 
-.footer{
-  margin-top:26px;
-  text-align:center;
-  color:#777;
-  font-size:14px;
-  border-top:1px solid rgba(255,255,255,.05);
-  padding-top:20px;
-}
+    @keyframes spin{
+      from{ transform:rotate(0deg); }
+      to{ transform:rotate(360deg); }
+    }
 
-@keyframes spin{
-  from{transform:rotate(0deg)}
-  to{transform:rotate(360deg)}
-}
+    @media (max-width: 900px){
+      .grid{ grid-template-columns:1fr; }
+    }
 
-html[dir="rtl"] body{
-  text-align:right;
-}
-
-html[dir="rtl"] .topbar,
-html[dir="rtl"] .top-actions,
-html[dir="rtl"] .nav,
-html[dir="rtl"] .legend-item{
-  direction:rtl;
-}
-
-html[dir="rtl"] .hero,
-html[dir="rtl"] .footer,
-html[dir="rtl"] .alert,
-html[dir="rtl"] .decision-box{
-  text-align:center;
-}
-
-@media(max-width:900px){
-  .grid{grid-template-columns:1fr}
-}
-
-@media(max-width:700px){
-  .topbar{flex-direction:column}
-}
-</style>
+    @media (max-width: 640px){
+      .hero h1{ font-size:34px; }
+      .state{ grid-template-columns:1fr 1fr; }
+      .topbar{ flex-direction:column; }
+      .nav{ justify-content:center; }
+      .brand{ text-align:center; }
+      .legend-item{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .legend-meta{ white-space:normal; }
+    }
+  </style>
 </head>
 <body>
+  <div class="wrap">
 
-<div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="index.html">IBSS</a>
 
-  <div class="topbar">
-    <a class="brand" href="index.html">IBSS</a>
-
-    <div class="top-actions">
       <div class="nav">
-        <a href="index.html" data-i18n="nav_home">Home</a>
-        <a href="dashboard.html" class="active" data-i18n="nav_dashboard">Dashboard</a>
-        <a href="signals.html" data-i18n="nav_signals">Signals</a>
-        <a href="reports.html" data-i18n="nav_reports">Reports</a>
-        <a href="models.html" data-i18n="nav_models">Models</a>
-        <a href="about.html" data-i18n="nav_about">About</a>
-      </div>
-
-      <div class="lang-switch">
-        <button id="btn-en" onclick="setLang('en')">EN</button>
-        <button id="btn-ar" onclick="setLang('ar')">AR</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="hero">
-    <h1 id="pageTitle">IBSS Dashboard</h1>
-    <p id="pageSub">Decision Engine Visual System</p>
-  </div>
-
-  <div id="alertBox" class="alert"></div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="title" id="stateTitle">System State</div>
-
-      <div class="state">
-        <div class="state-item">
-          <div class="label" id="levelLabel">Level</div>
-          <div id="level" class="value medium">MEDIUM</div>
-        </div>
-
-        <div class="state-item">
-          <div class="label" id="ssiLabel">SSI</div>
-          <div id="ssi" class="value medium">71</div>
-        </div>
-
-        <div class="state-item">
-          <div class="label" id="decisionLabel">Decision</div>
-          <div id="decision" class="value">PRD</div>
-        </div>
-
-        <div class="state-item">
-          <div class="label" id="modeLabel">Mode</div>
-          <div id="mode" class="value">PREPARATION</div>
-        </div>
-      </div>
-
-      <div class="decision-box">
-        <div class="decision" id="decisionWord">PRD</div>
-        <div class="decision-note" id="decisionNote"></div>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="signals.html">Signals</a>
+        <a href="reports.html">Reports</a>
+        <a href="models.html">Models</a>
+        <a href="about.html">About</a>
       </div>
     </div>
 
-    <div class="card">
-      <div class="title" id="signalTitleLabel">Primary Signal</div>
+    <div class="hero">
+      <h1>IBSS Dashboard</h1>
+      <p>Decision Engine Visual System</p>
+    </div>
 
-      <div class="signal-box">
-        <h3 id="signalTitle">Gaza Structure</h3>
-        <p id="signalDesc">-</p>
-      </div>
+    <div id="alertBox" class="alert"></div>
 
-      <div class="title" style="margin-top:18px" id="radarTitle">Radar</div>
-      <div class="radar-wrap">
-        <div class="radar" id="radar">
-          <div class="circle c4"></div>
-          <div class="circle c3"></div>
-          <div class="circle c2"></div>
-          <div class="circle c1"></div>
-          <div class="sweep"></div>
-          <div class="center-dot"></div>
+    <div class="grid">
+      <div class="card">
+        <div class="title">System State</div>
+
+        <div class="state">
+          <div class="state-item">
+            <div class="label">Level</div>
+            <div id="level" class="value medium">MEDIUM</div>
+          </div>
+
+          <div class="state-item">
+            <div class="label">SSI</div>
+            <div id="ssi" class="value medium">0</div>
+          </div>
+
+          <div class="state-item">
+            <div class="label">Decision</div>
+            <div id="decision" class="value">PRD</div>
+          </div>
+
+          <div class="state-item">
+            <div class="label">Mode</div>
+            <div id="mode" class="value">PREPARATION</div>
+          </div>
+        </div>
+
+        <div class="decision-box">
+          <div class="decision" id="decisionWord">PRD</div>
+          <div class="decision-note" id="decisionNote">Awaiting live engine state.</div>
         </div>
       </div>
 
-      <div class="legend" id="radarLegend"></div>
-    </div>
-  </div>
+      <div class="card">
+        <div class="title">Primary Signal</div>
 
-  <div class="card" style="margin-top:18px">
-    <div class="title" id="feedTitle">Live Feed</div>
-    <div id="feed" class="feed"></div>
-  </div>
+        <div class="signal-box">
+          <h3 id="signalTitle">-</h3>
+          <p id="signalDesc">-</p>
+        </div>
 
-  <div class="footer">© 2026 IBSS — Dashboard Layer</div>
+        <div class="title" style="margin-top:18px;">Radar</div>
 
-</div>
+        <div class="radar-wrap">
+          <div class="radar" id="radar">
+            <div class="circle c4"></div>
+            <div class="circle c3"></div>
+            <div class="circle c2"></div>
+            <div class="circle c1"></div>
+            <div class="sweep"></div>
+            <div class="center-dot"></div>
+          </div>
+        </div>
 
-<script src="data.js"></script>
-<script src="engine.js"></script>
-<script>
-const ui = {
-  en: {
-    nav_home: "Home",
-    nav_dashboard: "Dashboard",
-    nav_signals: "Signals",
-    nav_reports: "Reports",
-    nav_models: "Models",
-    nav_about: "About",
-    title: "IBSS Dashboard",
-    sub: "Decision Engine Visual System",
-    state: "System State",
-    level: "Level",
-    ssi: "SSI",
-    decision: "Decision",
-    mode: "Mode",
-    signal: "Primary Signal",
-    radar: "Radar",
-    feed: "Live Feed",
-    highAlert: "⚠ HIGH ESCALATION — ACTIVE RESPONSE",
-    medAlert: "⚠ STRUCTURED PRESSURE — PREPARATION MODE",
-    noteHigh: "High pressure environment detected. Immediate readiness required.",
-    noteMedium: "Structured pressure remains present. Maintain preparation posture.",
-    noteLow: "Low pressure. Continue monitoring.",
-    modeHigh: "ACTIVE RESPONSE",
-    modeMed: "PREPARATION",
-    modeLow: "MONITORING",
-    levelHigh: "HIGH",
-    levelMed: "MEDIUM",
-    levelLow: "LOW",
-    decisionHigh: "ACT",
-    decisionMed: "PRD",
-    decisionLow: "WATCH",
-    feedUpdate: "Pressure index updated to",
-    feedDriven: "Decision driven by engine",
-    feedMemory: "Escalation memory active",
-    feedLock: "Decision lock engaged"
-  },
-  ar: {
-    nav_home: "الرئيسية",
-    nav_dashboard: "لوحة التحكم",
-    nav_signals: "الإشارات",
-    nav_reports: "التقارير",
-    nav_models: "النماذج",
-    nav_about: "حول",
-    title: "لوحة تحكم IBSS",
-    sub: "النظام البصري لمحرك القرار",
-    state: "حالة النظام",
-    level: "المستوى",
-    ssi: "مؤشر SSI",
-    decision: "القرار",
-    mode: "الوضع",
-    signal: "الإشارة ذات الأولوية",
-    radar: "الرادار",
-    feed: "التغذية الحية",
-    highAlert: "⚠ تم رصد تصعيد مرتفع — استجابة نشطة",
-    medAlert: "⚠ تم رصد ضغط بنيوي — وضعية تحضير",
-    noteHigh: "تم رصد بيئة ضغط مرتفعة. الجاهزية الفورية مطلوبة.",
-    noteMedium: "الضغط البنيوي حاضر. حافظ على وضعية التحضير.",
-    noteLow: "الضغط منخفض. واصل المراقبة.",
-    modeHigh: "استجابة نشطة",
-    modeMed: "تحضير",
-    modeLow: "مراقبة",
-    levelHigh: "مرتفع",
-    levelMed: "متوسط",
-    levelLow: "منخفض",
-    decisionHigh: "تحرك",
-    decisionMed: "استعداد",
-    decisionLow: "مراقبة",
-    feedUpdate: "تم تحديث المؤشر إلى",
-    feedDriven: "القرار مبني على المحرك",
-    feedMemory: "ذاكرة التصعيد مفعّلة",
-    feedLock: "قفل القرار مفعّل"
-  }
-};
-
-let currentLang = localStorage.getItem("ibss_lang") || "en";
-
-function txt(key){
-  return ui[currentLang][key] || key;
-}
-
-function safeText(value, fallback = "-"){
-  return typeof value === "string" && value.trim() ? value : fallback;
-}
-
-function applyTranslations(){
-  document.documentElement.lang = currentLang;
-  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
-
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.getAttribute("data-i18n");
-    el.textContent = txt(key);
-  });
-
-  document.getElementById("pageTitle").textContent = txt("title");
-  document.getElementById("pageSub").textContent = txt("sub");
-  document.getElementById("stateTitle").textContent = txt("state");
-  document.getElementById("levelLabel").textContent = txt("level");
-  document.getElementById("ssiLabel").textContent = txt("ssi");
-  document.getElementById("decisionLabel").textContent = txt("decision");
-  document.getElementById("modeLabel").textContent = txt("mode");
-  document.getElementById("signalTitleLabel").textContent = txt("signal");
-  document.getElementById("radarTitle").textContent = txt("radar");
-  document.getElementById("feedTitle").textContent = txt("feed");
-
-  document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
-  document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
-}
-
-function setLang(lang){
-  currentLang = lang;
-  localStorage.setItem("ibss_lang", lang);
-  applyTranslations();
-  renderFromEngine();
-}
-
-function setLevel(level, ssi){
-  const levelEl = document.getElementById("level");
-  const ssiEl = document.getElementById("ssi");
-  const alertBox = document.getElementById("alertBox");
-
-  ssiEl.textContent = Number.isFinite(ssi) ? ssi : 0;
-
-  if(level === "HIGH"){
-    levelEl.textContent = txt("levelHigh");
-    levelEl.className = "value high";
-    ssiEl.className = "value high";
-    alertBox.style.display = "block";
-    alertBox.textContent = txt("highAlert");
-  } else if(level === "MEDIUM"){
-    levelEl.textContent = txt("levelMed");
-    levelEl.className = "value medium";
-    ssiEl.className = "value medium";
-    alertBox.style.display = "block";
-    alertBox.textContent = txt("medAlert");
-  } else {
-    levelEl.textContent = txt("levelLow");
-    levelEl.className = "value low";
-    ssiEl.className = "value low";
-    alertBox.style.display = "none";
-  }
-}
-
-function setDecision(system){
-  const decisionEl = document.getElementById("decision");
-  const decisionWord = document.getElementById("decisionWord");
-  const decisionNote = document.getElementById("decisionNote");
-  const modeEl = document.getElementById("mode");
-
-  if(system.level === "HIGH"){
-    decisionEl.textContent = txt("decisionHigh");
-    decisionWord.textContent = txt("decisionHigh");
-    decisionNote.textContent = txt("noteHigh");
-    modeEl.textContent = txt("modeHigh");
-  } else if(system.level === "MEDIUM"){
-    decisionEl.textContent = txt("decisionMed");
-    decisionWord.textContent = txt("decisionMed");
-    decisionNote.textContent = txt("noteMedium");
-    modeEl.textContent = txt("modeMed");
-  } else {
-    decisionEl.textContent = txt("decisionLow");
-    decisionWord.textContent = txt("decisionLow");
-    decisionNote.textContent = txt("noteLow");
-    modeEl.textContent = txt("modeLow");
-  }
-}
-
-function setPrimarySignal(signal){
-  if(!signal){
-    document.getElementById("signalTitle").textContent = "-";
-    document.getElementById("signalDesc").textContent = "-";
-    return;
-  }
-
-  document.getElementById("signalTitle").textContent =
-    safeText(signal.title?.[currentLang] || signal.title?.en);
-
-  document.getElementById("signalDesc").textContent =
-    safeText(signal.description?.[currentLang] || signal.description?.en);
-}
-
-function priorityClass(priority){
-  if(priority === "HIGH") return "high";
-  if(priority === "MEDIUM") return "medium";
-  return "low";
-}
-
-function renderRadar(system){
-  const radar = document.getElementById("radar");
-  radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
-
-  const ranked = Array.isArray(system?.rankedSignals) ? system.rankedSignals.slice(0, 5) : [];
-  const dominantId = system?.dominantSignal ? system.dominantSignal.id : null;
-
-  ranked.forEach(signal => {
-    if (!signal?.metrics) return;
-
-    const dot = document.createElement("div");
-    const size = signal.weight === "HIGH" ? 16 : signal.weight === "MEDIUM" ? 12 : 10;
-    const x = 20 + ((signal.metrics.volatility || 0) * 240);
-    const y = 20 + ((signal.metrics.impact || 0) * 240);
-
-    dot.className = `radar-signal ${priorityClass(signal.weight)}${signal.id === dominantId ? " dominant" : ""}`;
-    dot.style.width = size + "px";
-    dot.style.height = size + "px";
-    dot.style.left = x + "px";
-    dot.style.top = y + "px";
-
-    radar.appendChild(dot);
-  });
-
-  const legend = document.getElementById("radarLegend");
-  legend.innerHTML = ranked.map(signal => `
-    <div class="legend-item">
-      <div class="legend-left">
-        <span class="legend-dot ${priorityClass(signal.weight)}"></span>
-        <span class="legend-name">${safeText(signal.title?.[currentLang] || signal.title?.en)}</span>
-      </div>
-      <div class="legend-meta">
-        ${safeText(signal.signalType?.[currentLang] || signal.signalType?.en)}
+        <div class="legend" id="radarLegend"></div>
       </div>
     </div>
-  `).join("");
-}
 
-function setFeed(system){
-  const feed = document.getElementById("feed");
-  const rankedSignals = Array.isArray(system?.rankedSignals) ? system.rankedSignals.slice(0, 4) : [];
+    <div class="card" style="margin-top:18px;">
+      <div class="title">Live Feed</div>
+      <div id="feed" class="feed"></div>
+    </div>
 
-  const lines = [
-    `• ${txt("feedUpdate")} ${Number.isFinite(system?.ssi) ? system.ssi : 0}`,
-    `• ${txt("feedDriven")}`,
-    `• ${txt("feedMemory")}`,
-    `• ${txt("feedLock")}`
-  ];
+    <div class="footer">© 2026 IBSS — Dashboard Layer</div>
+  </div>
 
-  rankedSignals.forEach(signal => {
-    const title = safeText(signal.title?.[currentLang] || signal.title?.en);
-    const mode = safeText(signal.decisionMode?.[currentLang] || signal.decisionMode?.en);
-    lines.push(`• ${title} — ${mode}`);
-  });
-
-  feed.innerHTML = lines.map(line => `<div class="feed-item">${line}</div>`).join("");
-}
-
-function renderFromEngine(){
-  try{
-    if (!window.IBSS_ENGINE || typeof window.IBSS_ENGINE.tick !== "function") {
-      console.error("IBSS_ENGINE not loaded");
-      return;
-    }
-
-    const system = window.IBSS_ENGINE.tick();
-
-    if (!system || typeof system !== "object") {
-      console.error("Invalid system state");
-      return;
-    }
-
-    setLevel(system.level, system.ssi);
-    setDecision(system);
-    setPrimarySignal(system.dominantSignal);
-    renderRadar(system);
-    setFeed(system);
-  }catch(error){
-    console.error("Dashboard render error:", error);
-  }
-}
-
-applyTranslations();
-window.addEventListener("load", () => {
-  renderFromEngine();
-  if (window.IBSS_ENGINE && window.IBSS_ENGINE.CONFIG) {
-    setInterval(renderFromEngine, window.IBSS_ENGINE.CONFIG.tickIntervalMs || 3000);
-  } else {
-    setInterval(renderFromEngine, 3000);
-  }
-});
-</script>
-
+  <script src="data.js"></script>
+  <script src="engine.js"></script>
 </body>
 </html>
