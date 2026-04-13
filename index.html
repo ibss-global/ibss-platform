@@ -17,9 +17,12 @@
       --orange:#ff9f1a;
       --red:#ff4d4f;
       --border:rgba(212,175,55,.28);
+      --soft-border:rgba(255,255,255,.08);
+      --soft-border-2:rgba(255,255,255,.06);
     }
 
     *{box-sizing:border-box}
+
     html{scroll-behavior:smooth}
 
     body{
@@ -179,6 +182,12 @@
       background:rgba(255,159,26,.08);
     }
 
+    .meta-badge.storage{
+      color:#9fd4ff;
+      border-color:rgba(159,212,255,.28);
+      background:rgba(159,212,255,.08);
+    }
+
     .home-alert{
       display:none;
       margin:22px auto 0;
@@ -190,6 +199,7 @@
       color:#ffd5d5;
       font-weight:700;
       text-align:center;
+      line-height:1.8;
     }
 
     .hero-buttons{
@@ -276,7 +286,7 @@
     }
 
     .section{
-      margin-top:64px;
+      margin-top:32px;
     }
 
     .section h2{
@@ -314,6 +324,58 @@
       font-size:15px;
     }
 
+    .feed-box,
+    .country-box{
+      display:grid;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .feed-item,
+    .country-item{
+      border:1px solid var(--soft-border-2);
+      border-radius:16px;
+      background:var(--panel2);
+      padding:14px 16px;
+    }
+
+    .country-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .country-left{
+      min-width:0;
+    }
+
+    .country-name{
+      color:#fff;
+      font-weight:800;
+      font-size:16px;
+      margin-bottom:6px;
+    }
+
+    .country-meta{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .country-score{
+      color:var(--gold);
+      font-weight:900;
+      font-size:28px;
+      flex:0 0 auto;
+    }
+
+    .feed-item{
+      color:#ddd;
+      line-height:1.8;
+      font-size:14px;
+    }
+
     .founder{
       margin-top:42px;
       text-align:center;
@@ -338,7 +400,8 @@
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
     html[dir="rtl"] .hero-buttons,
-    html[dir="rtl"] .system-meta{
+    html[dir="rtl"] .system-meta,
+    html[dir="rtl"] .country-item{
       direction:rtl;
     }
 
@@ -353,16 +416,30 @@
     }
 
     @media(max-width:1000px){
-      .status-grid{grid-template-columns:repeat(2,1fr);}
+      .status-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
     }
 
     @media(max-width:950px){
-      .grid{grid-template-columns:1fr;}
+      .grid{
+        grid-template-columns:1fr;
+      }
     }
 
     @media(max-width:700px){
-      .topbar{flex-direction:column;}
-      .status-grid{grid-template-columns:1fr;}
+      .topbar{
+        flex-direction:column;
+      }
+
+      .status-grid{
+        grid-template-columns:1fr;
+      }
+
+      .country-item{
+        flex-direction:column;
+        align-items:flex-start;
+      }
     }
   </style>
 </head>
@@ -392,15 +469,15 @@
     <div class="hero">
       <h1>IBSS</h1>
 
-      <div class="official" data-i18n="hero_official">
+      <div class="official" id="officialLine" data-i18n="hero_official">
         International Bureau of Sovereign Studies
       </div>
 
-      <p class="desc" data-i18n="hero_desc">
+      <p class="desc" id="heroDesc" data-i18n="hero_desc">
         A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.
       </p>
 
-      <p class="system-line" data-i18n="system_line">
+      <p class="system-line" id="systemLine" data-i18n="system_line">
         System Active — Monitoring Global Signals
       </p>
 
@@ -409,8 +486,8 @@
       </p>
 
       <div class="system-meta">
-        <span id="systemSourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
-        <span id="systemHealthBadge" class="meta-badge">ENGINE — READY</span>
+        <span id="systemSourceBadge" class="meta-badge fallback">SOURCE — ENGINE</span>
+        <span id="systemHealthBadge" class="meta-badge live">ENGINE — READY</span>
       </div>
 
       <div id="homeAlert" class="home-alert"></div>
@@ -459,10 +536,20 @@
         </div>
 
         <div class="card">
-          <strong>DLM</strong>
-          <p data-i18n="card_dlm">Diplomatic Legitimacy Matrix</p>
+          <strong>CRU</strong>
+          <p data-i18n="card_cru">Country Risk Unit</p>
         </div>
       </div>
+    </div>
+
+    <div class="section">
+      <h2 data-i18n="country_unit">Country Risk Unit</h2>
+      <div id="countryBox" class="country-box"></div>
+    </div>
+
+    <div class="section">
+      <h2 data-i18n="live_feed">Live Feed</h2>
+      <div id="feedBox" class="feed-box"></div>
     </div>
 
     <div class="founder" data-i18n="founder_line">
@@ -503,7 +590,9 @@
         core_systems: "Core Systems",
         card_sigma: "Signal to Decision Engine",
         card_waad: "War Acceptance Architecture",
-        card_dlm: "Diplomatic Legitimacy Matrix",
+        card_cru: "Country Risk Unit",
+        country_unit: "Country Risk Unit",
+        live_feed: "Live Feed",
 
         founder_line: "Founded by Naeem M. Dahalan",
         footer_text: "© 2026 IBSS — Founded by Naeem M. Dahalan",
@@ -514,13 +603,16 @@
 
         high_alert: "⚠ HIGH ESCALATION — SYSTEM IN ACTIVE RESPONSE MODE",
         medium_alert: "⚠ STRUCTURED PRESSURE — SYSTEM IN PREPARATION MODE",
+        low_alert: "✓ LOW PRESSURE — SYSTEM IN MONITORING MODE",
 
         last_update: "Last Update",
-        local_state: "Local State",
         source_engine: "SOURCE — ENGINE",
+        source_storage: "SOURCE — STORAGE",
         source_fallback: "SOURCE — FALLBACK",
         engine_ready: "ENGINE — READY",
-        engine_limited: "ENGINE — LIMITED"
+        engine_limited: "ENGINE — LIMITED",
+        risk_level: "Risk Level",
+        trend: "Trend"
       },
 
       ar: {
@@ -547,7 +639,9 @@
         core_systems: "الأنظمة الأساسية",
         card_sigma: "محرك من الإشارة إلى القرار",
         card_waad: "هندسة قبول الحرب",
-        card_dlm: "مصفوفة الشرعية الدبلوماسية",
+        card_cru: "وحدة تتبع مخاطر الدول",
+        country_unit: "وحدة تتبع مخاطر الدول",
+        live_feed: "التغذية الحية",
 
         founder_line: "تأسس بواسطة نعيم م. دحلان",
         footer_text: "© 2026 IBSS — تأسس بواسطة نعيم م. دحلان",
@@ -558,13 +652,16 @@
 
         high_alert: "⚠ تم رصد تصعيد مرتفع — النظام في وضعية استجابة نشطة",
         medium_alert: "⚠ تم رصد ضغط بنيوي — النظام في وضعية تحضير",
+        low_alert: "✓ ضغط منخفض — النظام في وضعية مراقبة",
 
         last_update: "آخر تحديث",
-        local_state: "حالة محلية",
         source_engine: "المصدر — المحرك",
+        source_storage: "المصدر — التخزين",
         source_fallback: "المصدر — الاحتياطي",
         engine_ready: "المحرك — جاهز",
-        engine_limited: "المحرك — محدود"
+        engine_limited: "المحرك — محدود",
+        risk_level: "مستوى الخطر",
+        trend: "الاتجاه"
       }
     };
 
@@ -578,105 +675,10 @@
       return typeof value === "string" && value.trim() ? value.trim() : fallback;
     }
 
-    function getSignalsArray(){
-      return Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
-    }
-
-    function getSignalScoreLocal(signal){
-      const metrics = signal?.metrics || {};
-      const weight = Number(metrics.weight) || 0;
-      const volatility = Number(metrics.volatility) || 0;
-      const impact = Number(metrics.impact) || 0;
-      return (weight * 0.5) + (volatility * 0.3) + (impact * 0.2);
-    }
-
-    function getDominantSignalLocal(){
-      const signals = getSignalsArray();
-      if (!signals.length) return null;
-      return [...signals].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a))[0] || null;
-    }
-
-    function getFallbackSystem(){
-      const signals = getSignalsArray();
-
-      if (!signals.length) {
-        return {
-          ssi: 0,
-          level: "LOW",
-          decision: "WATCH",
-          topSignal: null,
-          updatedAt: null,
-          source: "fallback"
-        };
-      }
-
-      const total = signals.reduce((sum, signal) => sum + getSignalScoreLocal(signal), 0);
-      const ssi = Math.round((total / signals.length) * 100);
-
-      let level = "LOW";
-      let decision = "WATCH";
-
-      if (ssi >= 75) {
-        level = "HIGH";
-        decision = "ACT";
-      } else if (ssi >= 50) {
-        level = "MEDIUM";
-        decision = "PRD";
-      }
-
-      return {
-        ssi,
-        level,
-        decision,
-        topSignal: getDominantSignalLocal(),
-        updatedAt: new Date().toISOString(),
-        source: "fallback"
-      };
-    }
-
-    function getEngineSystem(){
-      try {
-        if (
-          window.IBSS_ENGINE &&
-          typeof window.IBSS_ENGINE.getCurrentState === "function"
-        ) {
-          const state = window.IBSS_ENGINE.getCurrentState();
-          if (state && typeof state === "object") {
-            return {
-              ...state,
-              source: "engine"
-            };
-          }
-        }
-        return null;
-      } catch (error) {
-        console.error("Engine read failed:", error);
-        return null;
-      }
-    }
-
-    function getSystemState(){
-      return getEngineSystem() || getFallbackSystem();
-    }
-
-    function formatDateTime(value){
-      if (!value) return t("local_state");
-
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return t("local_state");
-
-      return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-    }
-
-    function getActiveSignalsCount(){
-      const signals = getSignalsArray();
-      return signals.filter(signal => signal?.live === true).length || 0;
+    function getLocalizedText(value){
+      if (!value) return "-";
+      if (typeof value === "string") return value;
+      return value[currentLang] || value.en || value.ar || "-";
     }
 
     function applyLanguage(){
@@ -692,6 +694,38 @@
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
     }
 
+    function getSystemState(){
+      try {
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+          return window.IBSS_ENGINE.getSystemState();
+        }
+
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
+          return window.IBSS_ENGINE.getStaticSystemFallback();
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Index render error:", error);
+        return null;
+      }
+    }
+
+    function formatDateTime(value){
+      if (!value) return "-";
+
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "-";
+
+      return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
     function updateSourceBadge(source){
       const badge = document.getElementById("systemSourceBadge");
       badge.className = "meta-badge";
@@ -699,16 +733,19 @@
       if (source === "engine") {
         badge.textContent = t("source_engine");
         badge.classList.add("live");
+      } else if (source === "storage") {
+        badge.textContent = t("source_storage");
+        badge.classList.add("storage");
       } else {
         badge.textContent = t("source_fallback");
         badge.classList.add("fallback");
       }
     }
 
-    function updateHealthBadge(){
+    function updateHealthBadge(system){
       const badge = document.getElementById("systemHealthBadge");
 
-      if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getCurrentState === "function") {
+      if (system?.source === "engine") {
         badge.textContent = t("engine_ready");
         badge.className = "meta-badge live";
       } else {
@@ -717,64 +754,33 @@
       }
     }
 
-    function renderHome(){
-      const system = getSystemState();
-      const topSignal = system.topSignal || getDominantSignalLocal();
-
-      document.getElementById("topThreat").textContent =
-        safeText(topSignal?.title?.[currentLang] || topSignal?.title?.en, "-");
-
-      const pressureEl = document.getElementById("systemPressure");
-      pressureEl.textContent = Number.isFinite(system.ssi) ? system.ssi : 0;
-      pressureEl.className =
-        "status-value " + (system.level === "HIGH" ? "high" : system.level === "MEDIUM" ? "medium" : "low");
-
-      document.getElementById("decisionMode").textContent =
-        system.level === "HIGH"
-          ? t("decision_act")
-          : system.level === "MEDIUM"
-          ? t("decision_prd")
-          : t("decision_watch");
-
-      document.getElementById("activeSignals").textContent = getActiveSignalsCount();
-
-      document.getElementById("lastUpdateLine").textContent =
-        `${t("last_update")} — ${formatDateTime(system.updatedAt || system.timestamp)}`;
-
-      updateSourceBadge(system.source);
-      updateHealthBadge();
-
+    function updateAlert(level){
       const alert = document.getElementById("homeAlert");
-      if (system.level === "HIGH") {
+
+      if (level === "HIGH") {
         alert.style.display = "block";
         alert.textContent = t("high_alert");
-      } else if (system.level === "MEDIUM") {
+      } else if (level === "MEDIUM") {
         alert.style.display = "block";
         alert.textContent = t("medium_alert");
       } else {
-        alert.style.display = "none";
-        alert.textContent = "";
+        alert.style.display = "block";
+        alert.textContent = t("low_alert");
       }
     }
 
-    document.getElementById("btn-en").addEventListener("click", () => {
-      currentLang = "en";
-      localStorage.setItem("ibss_lang", "en");
-      applyLanguage();
-      renderHome();
-    });
+    function updateStatusCards(system){
+      const topThreat = document.getElementById("topThreat");
+      const systemPressure = document.getElementById("systemPressure");
+      const decisionMode = document.getElementById("decisionMode");
+      const activeSignals = document.getElementById("activeSignals");
 
-    document.getElementById("btn-ar").addEventListener("click", () => {
-      currentLang = "ar";
-      localStorage.setItem("ibss_lang", "ar");
-      applyLanguage();
-      renderHome();
-    });
+      const signal = system?.topSignal || system?.dominantSignal || null;
+      const pressure = Number(system?.systemPressure || system?.ssi || 0);
+      const decision = safeText(system?.decision, "-");
+      const liveCount = Number(system?.liveSignalsCount || system?.liveSignals?.length || 0);
 
-    document.addEventListener("DOMContentLoaded", () => {
-      applyLanguage();
-      renderHome();
-    });
-  </script>
-</body>
-</html>
+      topThreat.textContent = signal ? getLocalizedText(signal.title) : "-";
+      systemPressure.textContent = pressure;
+      decisionMode.textContent =
+        decision === "A
