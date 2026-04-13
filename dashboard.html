@@ -16,7 +16,6 @@
       --red:#ff4d4f;
       --orange:#ff9f1a;
       --green:#00d084;
-      --blue:#5a8cff;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
@@ -34,9 +33,7 @@
       color:var(--text);
     }
 
-    body{
-      min-height:100vh;
-    }
+    body{min-height:100vh}
 
     .wrap{
       width:min(1120px,92%);
@@ -136,6 +133,12 @@
       line-height:1.8;
     }
 
+    .meta-line{
+      margin-top:10px;
+      color:#8a8a8a;
+      font-size:13px;
+    }
+
     .alert{
       display:none;
       margin:18px 0 0;
@@ -181,7 +184,9 @@
     .signal-box,
     .legend-item,
     .feed-item,
-    .decision-box{
+    .decision-box,
+    .scenario-row,
+    .country-row{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -334,10 +339,16 @@
         0 0 24px rgba(212,175,55,.28);
     }
 
-    .legend{
-      margin-top:18px;
+    .legend,
+    .feed,
+    .scenario-box,
+    .country-box{
       display:grid;
       gap:12px;
+    }
+
+    .legend{
+      margin-top:18px;
     }
 
     .legend-item{
@@ -426,16 +437,25 @@
       border-color:rgba(0,208,132,.28);
     }
 
-    .feed{
-      display:grid;
-      gap:10px;
-    }
-
-    .feed-item{
+    .feed-item,
+    .scenario-row,
+    .country-row{
       padding:13px 15px;
       color:#e3e3e3;
       line-height:1.7;
       font-size:14px;
+    }
+
+    .scenario-row,
+    .country-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .muted{
+      color:var(--muted);
     }
 
     .footer{
@@ -459,7 +479,9 @@
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
-    html[dir="rtl"] .legend-item{
+    html[dir="rtl"] .legend-item,
+    html[dir="rtl"] .scenario-row,
+    html[dir="rtl"] .country-row{
       direction:rtl;
     }
 
@@ -543,6 +565,7 @@
     <div class="hero">
       <h1 id="pageTitle">IBSS Dashboard</h1>
       <p id="pageSub">Decision Engine Visual System</p>
+      <div id="metaLine" class="meta-line">Engine source: -</div>
     </div>
 
     <div id="alertBox" class="alert"></div>
@@ -605,6 +628,16 @@
     </div>
 
     <div class="card" style="margin-top:18px">
+      <div class="title" id="scenarioTitle">Scenario Engine</div>
+      <div id="scenarioBox" class="scenario-box"></div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <div class="title" id="countryTitle">Country Risk Unit</div>
+      <div id="countryBox" class="country-box"></div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
       <div class="title" id="feedTitle">Live Feed</div>
       <div id="feed" class="feed"></div>
     </div>
@@ -634,6 +667,8 @@
         signal: "Primary Signal",
         radar: "Radar",
         feed: "Live Feed",
+        scenario: "Scenario Engine",
+        country: "Country Risk Unit",
         levelHigh: "HIGH",
         levelMed: "MEDIUM",
         levelLow: "LOW",
@@ -649,7 +684,14 @@
         alertHigh: "⚠ HIGH ESCALATION — ACTIVE RESPONSE",
         alertMed: "⚠ STRUCTURED PRESSURE — PREPARATION MODE",
         alertLow: "✓ LOW PRESSURE — MONITORING STABLE",
-        unknownType: "Unknown"
+        scenarioA: "Scenario A",
+        scenarioB: "Scenario B",
+        scenarioC: "Scenario C",
+        riskScore: "Risk Score",
+        riskLevel: "Risk Level",
+        trend: "Trend",
+        sourceEngine: "Engine source",
+        updatedAt: "Updated"
       },
       ar: {
         nav_home: "الرئيسية",
@@ -668,6 +710,8 @@
         signal: "الإشارة الأساسية",
         radar: "الرادار",
         feed: "التغذية الحية",
+        scenario: "محرك السيناريو",
+        country: "وحدة تتبع مخاطر الدول",
         levelHigh: "مرتفع",
         levelMed: "متوسط",
         levelLow: "منخفض",
@@ -683,7 +727,14 @@
         alertHigh: "⚠ تم رصد تصعيد مرتفع — استجابة نشطة",
         alertMed: "⚠ تم رصد ضغط بنيوي — وضعية تحضير",
         alertLow: "✓ ضغط منخفض — مراقبة مستقرة",
-        unknownType: "غير معروف"
+        scenarioA: "السيناريو أ",
+        scenarioB: "السيناريو ب",
+        scenarioC: "السيناريو ج",
+        riskScore: "درجة الخطر",
+        riskLevel: "مستوى الخطر",
+        trend: "الاتجاه",
+        sourceEngine: "مصدر المحرك",
+        updatedAt: "آخر تحديث"
       }
     };
 
@@ -693,68 +744,14 @@
       return UI[currentLang]?.[key] || key;
     }
 
-    function safe(val, fallback = "-"){
-      return val !== undefined && val !== null && val !== "" ? val : fallback;
+    function safe(value, fallback = "-"){
+      return value !== undefined && value !== null && value !== "" ? value : fallback;
     }
 
-    function escapeHtml(text){
-      return String(safe(text, "")).replace(/[&<>"']/g, function(char){
-        const map = {
-          "&":"&amp;",
-          "<":"&lt;",
-          ">":"&gt;",
-          '"':"&quot;",
-          "'":"&#39;"
-        };
-        return map[char];
-      });
-    }
-
-    function priorityClass(priority){
-      if (priority === "HIGH") return "high";
-      if (priority === "MEDIUM") return "medium";
-      return "low";
-    }
-
-    function getSignalsArray(){
-      return Array.isArray(window.IBSS_SIGNALS) ? window.IBSS_SIGNALS : [];
-    }
-
-    function getLocalScore(signal){
-      const metrics = signal?.metrics || {};
-      const weight = Number(metrics.weight || 0);
-      const volatility = Number(metrics.volatility || 0);
-      const impact = Number(metrics.impact || 0);
-      return (weight * 0.5) + (volatility * 0.3) + (impact * 0.2);
-    }
-
-    function getPriority(signal){
-      return safe(signal?.priority, safe(signal?.reportMeta?.priority, safe(signal?.weight, "LOW")));
-    }
-
-    function getSignalTitle(signal){
-      return safe(signal?.title?.[currentLang], safe(signal?.title?.en, safe(signal?.title, "-")));
-    }
-
-    function getSignalDesc(signal){
-      return safe(
-        signal?.description?.[currentLang],
-        safe(signal?.description?.en, safe(signal?.description, "-"))
-      );
-    }
-
-    function getSignalType(signal){
-      return safe(
-        signal?.signalType?.[currentLang],
-        safe(signal?.signalType?.en, safe(signal?.signalType, t("unknownType")))
-      );
-    }
-
-    function getSignalDecisionMode(signal){
-      return safe(
-        signal?.decisionMode?.[currentLang],
-        safe(signal?.decisionMode?.en, safe(signal?.decisionMode, "-"))
-      );
+    function getLocalizedText(value){
+      if (!value) return "-";
+      if (typeof value === "string") return value;
+      return value[currentLang] || value.en || value.ar || "-";
     }
 
     function applyLanguage(){
@@ -776,105 +773,31 @@
       document.getElementById("signalTitleLabel").textContent = t("signal");
       document.getElementById("radarTitle").textContent = t("radar");
       document.getElementById("feedTitle").textContent = t("feed");
+      document.getElementById("scenarioTitle").textContent = t("scenario");
+      document.getElementById("countryTitle").textContent = t("country");
 
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
     }
 
-    function normalizeRankedSignals(signals){
-      return (signals || []).map(signal => {
-        const localScore100 = Math.round(getLocalScore(signal) * 100);
-        return {
-          ...signal,
-          balancedScore100: Number(
-            signal?.balancedScore100 ??
-            signal?.score100 ??
-            Math.round((signal?.score || 0) * 100) ??
-            localScore100
-          )
-        };
-      });
+    function renderMeta(system){
+      const line = document.getElementById("metaLine");
+      const dateText = system?.updatedAt
+        ? new Date(system.updatedAt).toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US")
+        : "-";
+
+      line.textContent = `${t("sourceEngine")}: ${safe(system?.source, "-")} | ${t("updatedAt")}: ${dateText}`;
     }
 
-    function buildLocalSystem(){
-      const rankedSignals = normalizeRankedSignals(
-        [...getSignalsArray()].sort((a, b) => getLocalScore(b) - getLocalScore(a))
-      );
-
-      const topSignal = rankedSignals[0] || null;
-
-      const total = rankedSignals.reduce((sum, signal) => sum + (signal.balancedScore100 || 0), 0);
-      const systemPressure = rankedSignals.length ? Math.round(total / rankedSignals.length) : 0;
-
-      return {
-        systemPressure,
-        rankedSignals,
-        topSignal
-      };
-    }
-
-    function adaptEngineState(raw){
-      if (!raw || typeof raw !== "object") return null;
-
-      const rankedSignals = normalizeRankedSignals(
-        raw.rankedSignals ||
-        raw.liveSignals ||
-        raw.signals ||
-        []
-      );
-
-      const topSignal =
-        raw.topSignal ||
-        raw.dominantSignal ||
-        rankedSignals[0] ||
-        null;
-
-
-    function getSystem(){
-      try {
-        if (window.IBSS_ENGINE) {
-          if (typeof window.IBSS_ENGINE.getCurrentState === "function") {
-            const state = adaptEngineState(window.IBSS_ENGINE.getCurrentState());
-            if (state) return state;
-          }
-
-          if (typeof window.IBSS_ENGINE.computeSystemState === "function") {
-            const state = adaptEngineState(window.IBSS_ENGINE.computeSystemState());
-            if (state) return state;
-          }
-
-          if (typeof window.IBSS_ENGINE.tick === "function") {
-            const state = adaptEngineState(window.IBSS_ENGINE.tick());
-            if (state) return state;
-          }
-
-          if (typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
-            const state = adaptEngineState(window.IBSS_ENGINE.getStaticSystemFallback());
-            if (state) return state;
-          }
-
-          if (typeof window.IBSS_ENGINE.readSavedSystem === "function") {
-            const saved = adaptEngineState(window.IBSS_ENGINE.readSavedSystem());
-            if (saved) return saved;
-          }
-        }
-      } catch (error) {
-        console.error("IBSS engine read error:", error);
-      }
-
-      return buildLocalSystem();
-    }
-
-    function setLevelUI(systemPressure){
+    function renderLevel(system){
       const levelEl = document.getElementById("level");
       const ssiEl = document.getElementById("ssi");
       const alertBox = document.getElementById("alertBox");
 
-      const pressure = Number(systemPressure) || 0;
-      let level = "LOW";
+      const pressure = Number(system?.ssi || system?.systemPressure || 0);
+      const level = safe(system?.level, "LOW");
 
-      if (pressure >= 75) level = "HIGH";
-      else if (pressure >= 50) level = "MEDIUM";
+      ssiEl.textContent = pressure;
 
       if (level === "HIGH") {
         levelEl.textContent = t("levelHigh");
@@ -896,11 +819,10 @@
         alertBox.textContent = t("alertLow");
       }
 
-      ssiEl.textContent = pressure;
       return level;
     }
 
-    function setDecisionUI(level){
+    function renderDecision(level){
       const decisionEl = document.getElementById("decision");
       const decisionWord = document.getElementById("decisionWord");
       const decisionNote = document.getElementById("decisionNote");
@@ -924,7 +846,7 @@
       }
     }
 
-    function setPrimarySignalUI(signal){
+    function renderPrimarySignal(signal){
       const titleEl = document.getElementById("signalTitle");
       const descEl = document.getElementById("signalDesc");
 
@@ -934,8 +856,8 @@
         return;
       }
 
-      titleEl.textContent = getSignalTitle(signal);
-      descEl.textContent = getSignalDesc(signal);
+      titleEl.textContent = getLocalizedText(signal.title);
+      descEl.textContent = getLocalizedText(signal.description);
     }
 
     function renderRadar(system){
@@ -946,7 +868,7 @@
 
       radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
 
-      const signals = (system.rankedSignals || []).slice(0, 5);
+      const signals = (system?.rankedSignals || []).slice(0, 5);
 
       const positions = [
         { x: 50, y: 18 },
@@ -959,11 +881,15 @@
       signals.forEach((signal, index) => {
         const dot = document.createElement("div");
         const pos = positions[index] || { x: 50, y: 50 };
-        const score = Number(signal.balancedScore100 || 0);
+        const score = Number(signal?.balancedScore100 ?? signal?.score100 ?? 0);
         const size = Math.max(10, Math.min(26, Math.round(score / 5)));
-        const priority = getPriority(signal);
 
-        dot.className = "radar-signal " + priorityClass(priority) + (index === 0 ? " dominant" : "");
+        const priority = signal?.priority || signal?.weight || "LOW";
+        const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+
+        dot.className = "radar-signal " + cls;
+        if (index === 0) dot.classList.add("dominant");
+
         dot.style.width = size + "px";
         dot.style.height = size + "px";
         dot.style.left = pos.x + "%";
@@ -972,77 +898,126 @@
         radar.appendChild(dot);
       });
 
-      legend.innerHTML = signals.map(signal => {
-        const score = Number(signal.balancedScore100 || 0);
-        const priority = getPriority(signal);
+      legend.innerHTML = signals.map((signal, index) => {
+        const score = Number(signal?.balancedScore100 ?? signal?.score100 ?? 0);
+        const priority = signal?.priority || signal?.weight || "LOW";
+        const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+        const title = getLocalizedText(signal.title);
+        const sub = getLocalizedText(signal.signalType);
 
         return `
           <div class="legend-item">
             <div class="legend-left">
-              <span class="legend-dot ${priorityClass(priority)}"></span>
+              <span class="legend-dot ${cls}"></span>
               <div class="legend-texts">
-                <div class="legend-name">${escapeHtml(getSignalTitle(signal))}</div>
-                <div class="legend-sub">${escapeHtml(getSignalType(signal))}</div>
+                <div class="legend-name">${escapeHtml(title)}</div>
+                <div class="legend-sub">${escapeHtml(sub)}</div>
               </div>
             </div>
             <div class="legend-right">
               <div class="legend-score">${score}</div>
-              <span class="legend-badge ${priorityClass(priority)}">${escapeHtml(priority)}</span>
+              <span class="legend-badge ${cls}">${index === 0 ? "TOP" : escapeHtml(priority)}</span>
             </div>
           </div>
         `;
       }).join("");
     }
 
-    function setFeed(system){
+    function renderScenarios(system){
+      const box = document.getElementById("scenarioBox");
+      const scenarios = system?.scenarios || [];
+
+      const labels = [t("scenarioA"), t("scenarioB"), t("scenarioC")];
+
+      box.innerHTML = scenarios.map((item, index) => {
+        const value = typeof item === "object" ? item.value : item;
+        return `
+          <div class="scenario-row">
+            <span class="muted">${labels[index] || safe(item?.key, "Scenario")}</span>
+            <strong>${safe(value, 0)}%</strong>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderCountries(system){
+      const box = document.getElementById("countryBox");
+      const items = (system?.countryRiskFeed || []).slice(0, 5);
+
+      box.innerHTML = items.map(item => `
+        <div class="country-row">
+          <div>
+            <div><strong>${escapeHtml(safe(item.name, "-"))}</strong></div>
+            <div class="muted">${t("riskLevel")}: ${escapeHtml(safe(item.riskLevel, "-"))} | ${t("trend")}: ${escapeHtml(safe(item.trend, "-"))}</div>
+          </div>
+          <div><strong>${safe(item.riskScore, 0)}</strong></div>
+        </div>
+      `).join("");
+    }
+
+    function renderFeed(system){
       const feed = document.getElementById("feed");
-      if (!feed) return;
+      const lines = system?.feed || [];
 
-      const ranked = system.rankedSignals || [];
-      const top = ranked[0] || null;
+      feed.innerHTML = lines.map(line => `
+        <div class="feed-item">${escapeHtml(String(line))}</div>
+      `).join("");
+    }
 
-      const lines = [
-        "• Pressure index updated to " + safe(system.systemPressure, 0),
-        "• UI layer synchronized with ranked signal set",
-        "• Primary signal currently driving dashboard posture",
-        top
-          ? `• Top file: ${safe(getSignalTitle(top))} — ${safe(getSignalDecisionMode(top))}`
-          : "• No dominant signal detected"
-      ];
+    function escapeHtml(text){
+      const div = document.createElement("div");
+      div.textContent = text ?? "";
+      return div.innerHTML;
+    }
 
-      ranked.slice(1, 5).forEach(signal => {
-        lines.push(`• ${safe(getSignalTitle(signal))} — ${safe(getSignalDecisionMode(signal))}`);
-      });
+    function getSystem(){
+      try {
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+          return window.IBSS_ENGINE.getSystemState();
+        }
 
-      feed.innerHTML = lines.map(line => `<div class="feed-item">${escapeHtml(line)}</div>`).join("");
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
+          return window.IBSS_ENGINE.getStaticSystemFallback();
+        }
+
+        return null;
+      } catch (error) {
+        console.error("IBSS dashboard render error:", error);
+        return null;
+      }
     }
 
     function renderDashboard(){
       applyLanguage();
 
       const system = getSystem();
-      const level = setLevelUI(system.systemPressure);
-      setDecisionUI(level);
-      setPrimarySignalUI(system.topSignal);
+      if (!system) return;
+
+      renderMeta(system);
+      const level = renderLevel(system);
+      renderDecision(level);
+      renderPrimarySignal(system.topSignal || system.dominantSignal || null);
       renderRadar(system);
-      setFeed(system);
+      renderScenarios(system);
+      renderCountries(system);
+      renderFeed(system);
     }
 
-    document.getElementById("btn-en").addEventListener("click", function(){
+    document.getElementById("btn-en").addEventListener("click", function () {
       currentLang = "en";
       localStorage.setItem("ibss_lang", "en");
       renderDashboard();
     });
 
-    document.getElementById("btn-ar").addEventListener("click", function(){
+    document.getElementById("btn-ar").addEventListener("click", function () {
       currentLang = "ar";
       localStorage.setItem("ibss_lang", "ar");
       renderDashboard();
     });
 
-    window.addEventListener("load", function(){
+    window.addEventListener("load", function () {
       renderDashboard();
-      setInterval(renderDashboard, 3000);
+      setInterval(renderDashboard, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 3000));
     });
   </script>
 </body>
