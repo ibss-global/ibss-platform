@@ -20,7 +20,6 @@
     }
 
     *{box-sizing:border-box}
-
     html{scroll-behavior:smooth}
 
     body{
@@ -178,12 +177,6 @@
       color:var(--orange);
       border-color:rgba(255,159,26,.35);
       background:rgba(255,159,26,.08);
-    }
-
-    .meta-badge.storage{
-      color:#9fd4ff;
-      border-color:rgba(159,212,255,.28);
-      background:rgba(159,212,255,.08);
     }
 
     .home-alert{
@@ -360,25 +353,16 @@
     }
 
     @media(max-width:1000px){
-      .status-grid{
-        grid-template-columns:repeat(2,1fr);
-      }
+      .status-grid{grid-template-columns:repeat(2,1fr);}
     }
 
     @media(max-width:950px){
-      .grid{
-        grid-template-columns:1fr;
-      }
+      .grid{grid-template-columns:1fr;}
     }
 
     @media(max-width:700px){
-      .topbar{
-        flex-direction:column;
-      }
-
-      .status-grid{
-        grid-template-columns:1fr;
-      }
+      .topbar{flex-direction:column;}
+      .status-grid{grid-template-columns:1fr;}
     }
   </style>
 </head>
@@ -534,7 +518,6 @@
         last_update: "Last Update",
         local_state: "Local State",
         source_engine: "SOURCE — ENGINE",
-        source_storage: "SOURCE — STORAGE",
         source_fallback: "SOURCE — FALLBACK",
         engine_ready: "ENGINE — READY",
         engine_limited: "ENGINE — LIMITED"
@@ -579,7 +562,6 @@
         last_update: "آخر تحديث",
         local_state: "حالة محلية",
         source_engine: "المصدر — المحرك",
-        source_storage: "المصدر — التخزين",
         source_fallback: "المصدر — الاحتياطي",
         engine_ready: "المحرك — جاهز",
         engine_limited: "المحرك — محدود"
@@ -587,7 +569,6 @@
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
-    let lastRenderKey = "";
 
     function t(key){
       return translations[currentLang]?.[key] || key;
@@ -606,14 +587,12 @@
       const weight = Number(metrics.weight) || 0;
       const volatility = Number(metrics.volatility) || 0;
       const impact = Number(metrics.impact) || 0;
-
       return (weight * 0.5) + (volatility * 0.3) + (impact * 0.2);
     }
 
     function getDominantSignalLocal(){
       const signals = getSignalsArray();
       if (!signals.length) return null;
-
       return [...signals].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a))[0] || null;
     }
 
@@ -625,7 +604,7 @@
           ssi: 0,
           level: "LOW",
           decision: "WATCH",
-          dominantSignalId: null,
+          topSignal: null,
           updatedAt: null,
           source: "fallback"
         };
@@ -645,70 +624,30 @@
         decision = "PRD";
       }
 
-      const dominant = getDominantSignalLocal();
-
       return {
         ssi,
         level,
         decision,
-        dominantSignalId: dominant ? dominant.id : null,
+        topSignal: getDominantSignalLocal(),
         updatedAt: new Date().toISOString(),
         source: "fallback"
       };
     }
 
-    function readStorageSystem(){
-      try {
-        const raw = localStorage.getItem("ibss_live_system");
-        if (!raw) return null;
-
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== "object") return null;
-
-        return {
-          ...parsed,
-          source: "storage"
-        };
-      } catch (error) {
-        console.error("Storage read failed:", error);
-        return null;
-      }
-    }
-
     function getEngineSystem(){
       try {
-        if (!window.IBSS_ENGINE) return null;
-
-        if (typeof window.IBSS_ENGINE.getSystemState === "function") {
-          const direct = window.IBSS_ENGINE.getSystemState();
-          if (direct) {
+        if (
+          window.IBSS_ENGINE &&
+          typeof window.IBSS_ENGINE.getCurrentState === "function"
+        ) {
+          const state = window.IBSS_ENGINE.getCurrentState();
+          if (state && typeof state === "object") {
             return {
-              ...direct,
+              ...state,
               source: "engine"
             };
           }
         }
-
-        if (typeof window.IBSS_ENGINE.readSavedSystem === "function") {
-          const saved = window.IBSS_ENGINE.readSavedSystem();
-          if (saved) {
-            return {
-              ...saved,
-              source: "engine"
-            };
-          }
-        }
-
-        if (typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
-          const fallback = window.IBSS_ENGINE.getStaticSystemFallback();
-          if (fallback) {
-            return {
-              ...fallback,
-              source: "engine"
-            };
-          }
-        }
-
         return null;
       } catch (error) {
         console.error("Engine read failed:", error);
@@ -717,7 +656,7 @@
     }
 
     function getSystemState(){
-      return getEngineSystem() || readStorageSystem() || getFallbackSystem();
+      return getEngineSystem() || getFallbackSystem();
     }
 
     function formatDateTime(value){
@@ -737,19 +676,7 @@
 
     function getActiveSignalsCount(){
       const signals = getSignalsArray();
-      return signals.filter(signal => signal?.live === true || signal?.active === true).length || signals.length || 0;
-    }
-
-    function getDominantSignalByState(system){
-      const signals = getSignalsArray();
-      if (!signals.length) return null;
-
-      if (system?.dominantSignalId) {
-        const matched = signals.find(signal => signal?.id === system.dominantSignalId);
-        if (matched) return matched;
-      }
-
-      return getDominantSignalLocal();
+      return signals.filter(signal => signal?.live === true).length || 0;
     }
 
     function applyLanguage(){
@@ -772,9 +699,6 @@
       if (source === "engine") {
         badge.textContent = t("source_engine");
         badge.classList.add("live");
-      } else if (source === "storage") {
-        badge.textContent = t("source_storage");
-        badge.classList.add("storage");
       } else {
         badge.textContent = t("source_fallback");
         badge.classList.add("fallback");
@@ -784,6 +708,73 @@
     function updateHealthBadge(){
       const badge = document.getElementById("systemHealthBadge");
 
-      if (window.IBSS_ENGINE) {
+      if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getCurrentState === "function") {
         badge.textContent = t("engine_ready");
-        badge.className = 
+        badge.className = "meta-badge live";
+      } else {
+        badge.textContent = t("engine_limited");
+        badge.className = "meta-badge fallback";
+      }
+    }
+
+    function renderHome(){
+      const system = getSystemState();
+      const topSignal = system.topSignal || getDominantSignalLocal();
+
+      document.getElementById("topThreat").textContent =
+        safeText(topSignal?.title?.[currentLang] || topSignal?.title?.en, "-");
+
+      const pressureEl = document.getElementById("systemPressure");
+      pressureEl.textContent = Number.isFinite(system.ssi) ? system.ssi : 0;
+      pressureEl.className =
+        "status-value " + (system.level === "HIGH" ? "high" : system.level === "MEDIUM" ? "medium" : "low");
+
+      document.getElementById("decisionMode").textContent =
+        system.level === "HIGH"
+          ? t("decision_act")
+          : system.level === "MEDIUM"
+          ? t("decision_prd")
+          : t("decision_watch");
+
+      document.getElementById("activeSignals").textContent = getActiveSignalsCount();
+
+      document.getElementById("lastUpdateLine").textContent =
+        `${t("last_update")} — ${formatDateTime(system.updatedAt || system.timestamp)}`;
+
+      updateSourceBadge(system.source);
+      updateHealthBadge();
+
+      const alert = document.getElementById("homeAlert");
+      if (system.level === "HIGH") {
+        alert.style.display = "block";
+        alert.textContent = t("high_alert");
+      } else if (system.level === "MEDIUM") {
+        alert.style.display = "block";
+        alert.textContent = t("medium_alert");
+      } else {
+        alert.style.display = "none";
+        alert.textContent = "";
+      }
+    }
+
+    document.getElementById("btn-en").addEventListener("click", () => {
+      currentLang = "en";
+      localStorage.setItem("ibss_lang", "en");
+      applyLanguage();
+      renderHome();
+    });
+
+    document.getElementById("btn-ar").addEventListener("click", () => {
+      currentLang = "ar";
+      localStorage.setItem("ibss_lang", "ar");
+      applyLanguage();
+      renderHome();
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyLanguage();
+      renderHome();
+    });
+  </script>
+</body>
+</html>
