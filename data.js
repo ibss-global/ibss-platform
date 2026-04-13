@@ -1,315 +1,249 @@
-(function () {
-  "use strict";
-
-  const now = new Date().toISOString();
-
-  const signals = [
-    {
-      id: "gaza_structural_pressure",
-      title: {
-        en: "Gaza Structure",
-        ar: "البنية في غزة"
-      },
-      description: {
-        en: "Escalating structural pressure across military, humanitarian, and political layers.",
-        ar: "تصاعد الضغط البنيوي عبر الطبقات العسكرية والإنسانية والسياسية."
-      },
-      signalType: {
-        en: "STRUCTURAL",
-        ar: "بنيوي"
-      },
-      decisionMode: {
-        en: "ACT",
-        ar: "تحرك"
-      },
-      layer: {
-        en: "Regional",
-        ar: "إقليمي"
-      },
-      region: "gaza",
-      category: "structural",
+const IBSS_SIGNALS = [
+  {
+    id: "gaza",
+    title: {
+      en: "Gaza Structure",
+      ar: "بنية غزة"
+    },
+    description: {
+      en: "A compressed structural conflict space where military, governance, humanitarian, and narrative layers intersect.",
+      ar: "حيز صراع بنيوي مضغوط تتقاطع فيه الطبقات العسكرية والحوكمية والإنسانية والسردية."
+    },
+    layer: {
+      en: "Structural",
+      ar: "بنيوي"
+    },
+    decisionMode: {
+      en: "WATCH / PRD",
+      ar: "مراقبة / استعداد"
+    },
+    signalType: {
+      en: "STRUCTURAL",
+      ar: "بنيوي"
+    },
+    influenceBand: {
+      en: "CORE",
+      ar: "محوري"
+    },
+    reportMeta: {
+      code: "SDR-002",
+      type: "SDR",
       priority: "HIGH",
-      active: true,
-      live: true,
-      link: "signal-gaza.html",
-      metrics: {
-        weight: 0.95,
-        volatility: 0.86,
-        impact: 0.91
-      }
-    },
-    {
-      id: "iran_activation_window",
-      title: {
-        en: "Iran Activation Window",
-        ar: "نافذة التفعيل الإيرانية"
-      },
-      description: {
-        en: "Strategic indicators suggest a widening operational window through regional leverage.",
-        ar: "المؤشرات الاستراتيجية توحي باتساع نافذة تشغيل عبر أدوات النفوذ الإقليمي."
-      },
-      signalType: {
-        en: "STRATEGIC",
-        ar: "استراتيجي"
-      },
-      decisionMode: {
-        en: "ACT",
-        ar: "تحرك"
-      },
-      layer: {
-        en: "Strategic",
-        ar: "استراتيجي"
-      },
-      region: "iran",
-      category: "strategic",
-      priority: "HIGH",
-      active: true,
-      live: true,
-      link: "signal-iran.html",
-      metrics: {
-        weight: 0.88,
-        volatility: 0.72,
-        impact: 0.85
-      }
-    },
-    {
-      id: "lebanon_border_instability",
-      title: {
-        en: "Lebanon Border Instability",
-        ar: "هشاشة الحدود اللبنانية"
-      },
-      description: {
-        en: "Border friction and tactical signaling indicate elevated escalation risk.",
-        ar: "الاحتكاك الحدودي والإشارات التكتيكية يدلان على خطر تصعيد متزايد."
-      },
-      signalType: {
-        en: "TACTICAL",
-        ar: "تكتيكي"
-      },
-      decisionMode: {
-        en: "CONTAIN",
-        ar: "احتواء"
-      },
-      layer: {
-        en: "Border Layer",
-        ar: "طبقة الحدود"
-      },
-      region: "lebanon",
-      category: "border",
-      priority: "MEDIUM",
-      active: true,
-      live: true,
-      link: "signal-lebanon.html",
-      metrics: {
-        weight: 0.71,
-        volatility: 0.75,
-        impact: 0.67
-      }
-    },
-    {
-      id: "global_narrative_shift",
-      title: {
-        en: "Global Narrative Shift",
-        ar: "تحول السرد العالمي"
-      },
-      description: {
-        en: "International discourse patterns indicate normalization of escalation language.",
-        ar: "أنماط الخطاب الدولي تشير إلى تطبيع لغة التصعيد."
-      },
-      signalType: {
-        en: "INFORMATION",
-        ar: "معلوماتي"
-      },
-      decisionMode: {
-        en: "WATCH",
-        ar: "مراقبة"
-      },
-      layer: {
-        en: "Information Sphere",
-        ar: "الفضاء المعلوماتي"
-      },
-      region: "global",
-      category: "narrative",
-      priority: "MEDIUM",
-      active: true,
-      live: true,
-      link: "signals.html",
-      metrics: {
-        weight: 0.62,
-        volatility: 0.58,
-        impact: 0.60
-      }
-    },
-    {
-      id: "diplomatic_silent_activity",
-      title: {
-        en: "Diplomatic Silent Activity",
-        ar: "نشاط دبلوماسي صامت"
-      },
-      description: {
-        en: "Quiet diplomatic movements suggest parallel negotiation channels under the surface.",
-        ar: "التحركات الدبلوماسية الهادئة توحي بوجود قنوات تفاوض موازية تحت السطح."
-      },
-      signalType: {
-        en: "DIPLOMATIC",
-        ar: "دبلوماسي"
-      },
-      decisionMode: {
-        en: "WATCH",
-        ar: "مراقبة"
-      },
-      layer: {
-        en: "Diplomatic Layer",
-        ar: "الطبقة الدبلوماسية"
-      },
-      region: "global",
-      category: "diplomatic",
-      priority: "LOW",
-      active: true,
-      live: true,
-      link: "reports.html",
-      metrics: {
-        weight: 0.46,
-        volatility: 0.42,
-        impact: 0.52
-      }
-    },
-    {
-      id: "system_reserve_monitor",
-      title: {
-        en: "System Reserve Monitor",
-        ar: "مراقب الاحتياطي النظامي"
-      },
-      description: {
-        en: "Internal reserve indicator used to preserve continuity during temporary signal thinning.",
-        ar: "مؤشر احتياطي داخلي يستخدم للحفاظ على الاستمرارية عند تراجع كثافة الإشارات مؤقتًا."
-      },
-      signalType: {
-        en: "SYSTEM",
-        ar: "نظام"
-      },
-      decisionMode: {
-        en: "WATCH",
-        ar: "مراقبة"
-      },
-      layer: {
-        en: "Core Engine",
-        ar: "محرك أساسي"
-      },
-      region: "internal",
-      category: "system",
-      priority: "LOW",
-      active: false,
-      live: false,
-      link: "#",
-      metrics: {
-        weight: 0.20,
-        volatility: 0.12,
-        impact: 0.18
-      }
-    }
-  ];
-
-  const reports = [
-    {
-      id: "sdr_001",
-      title: {
-        en: "SDR-001 | Gaza Structural Compression",
-        ar: "SDR-001 | الانضغاط البنيوي في غزة"
-      },
-      date: now,
       status: {
         en: "Active",
         ar: "نشط"
-      },
-      link: "reports.html"
+      }
     },
-    {
-      id: "sdr_002",
-      title: {
-        en: "SDR-002 | Iran Regional Activation Outlook",
-        ar: "SDR-002 | تقدير التفعيل الإقليمي الإيراني"
-      },
-      date: now,
+    report: {
+      en: "Gaza has transitioned from a battlefield into a structured pressure system where military force, governance fragility, humanitarian stress, and narrative competition intersect.",
+      ar: "انتقلت غزة من ساحة قتال إلى نظام ضغط بنيوي تتقاطع فيه القوة العسكرية وهشاشة الحوكمة والضغط الإنساني والتنافس السردي."
+    },
+    region: "Gaza",
+    weight: "HIGH",
+    live: true,
+    link: "signal-gaza.html",
+    metrics: {
+      weight: 0.95,
+      volatility: 0.90,
+      impact: 0.94
+    }
+  },
+  {
+    id: "lebanon",
+    title: {
+      en: "Lebanon Pressure",
+      ar: "الضغط على لبنان"
+    },
+    description: {
+      en: "Northern front pressure remains active with hybrid escalation patterns across military and political channels.",
+      ar: "ضغط الجبهة الشمالية ما يزال نشطًا ضمن أنماط تصعيد هجينة عسكرية وسياسية."
+    },
+    layer: {
+      en: "Military / Hybrid",
+      ar: "عسكري / هجين"
+    },
+    decisionMode: {
+      en: "WATCH / ACT",
+      ar: "مراقبة / تحرك"
+    },
+    signalType: {
+      en: "MILITARY",
+      ar: "عسكري"
+    },
+    influenceBand: {
+      en: "CORE",
+      ar: "محوري"
+    },
+    reportMeta: {
+      code: "SDR-001",
+      type: "SDR",
+      priority: "HIGH",
       status: {
         en: "Active",
         ar: "نشط"
-      },
-      link: "reports.html"
+      }
+    },
+    report: {
+      en: "Northern front escalation is entering a controlled instability phase with prolonged pressure and rapid-response requirements.",
+      ar: "الجبهة الشمالية تدخل مرحلة من عدم الاستقرار المضبوط مع ضغط ممتد وحاجة إلى استجابة سريعة."
+    },
+    region: "Levant",
+    weight: "HIGH",
+    live: true,
+    link: "signal-lebanon.html",
+    metrics: {
+      weight: 0.82,
+      volatility: 0.77,
+      impact: 0.84
     }
-  ];
-
-  const models = [
-    {
-      id: "sigma_9x",
-      name: {
-        en: "Σ-9X",
-        ar: "Σ-9X"
-      },
-      title: {
-        en: "Signal to Decision Engine",
-        ar: "محرك الإشارة إلى القرار"
+  },
+  {
+    id: "iran",
+    title: {
+      en: "Iran Negotiations",
+      ar: "المفاوضات الإيرانية"
+    },
+    description: {
+      en: "Diplomatic engagement continues under pressure with unstable leverage and contested escalation boundaries.",
+      ar: "الانخراط الدبلوماسي مستمر تحت الضغط مع نفوذ متقلب وحدود تصعيد متنازع عليها."
+    },
+    layer: {
+      en: "Diplomatic",
+      ar: "دبلوماسي"
+    },
+    decisionMode: {
+      en: "PRD",
+      ar: "استعداد"
+    },
+    signalType: {
+      en: "DIPLOMATIC",
+      ar: "دبلوماسي"
+    },
+    influenceBand: {
+      en: "SUPPORT",
+      ar: "مساند"
+    },
+    reportMeta: {
+      code: "SDB-001",
+      type: "SDB",
+      priority: "MEDIUM",
+      status: {
+        en: "Final",
+        ar: "نهائي"
       }
     },
-    {
-      id: "waad",
-      name: {
-        en: "WAAD",
-        ar: "WAAD"
-      },
-      title: {
-        en: "War Acceptance Architecture",
-        ar: "هندسة قبول الحرب"
-      }
+    report: {
+      en: "Diplomatic negotiation remains under pressure with unclear enforcement mechanisms and extended bargaining horizons.",
+      ar: "المفاوضات الدبلوماسية ما تزال تحت الضغط مع غموض في آليات التنفيذ وآفاق تفاوض ممتدة."
     },
-    {
-      id: "dlm",
-      name: {
-        en: "DLM",
-        ar: "DLM"
-      },
-      title: {
-        en: "Diplomatic Legitimacy Matrix",
-        ar: "مصفوفة الشرعية الدبلوماسية"
-      }
+    region: "Diplomatic",
+    weight: "MEDIUM",
+    live: true,
+    link: "signal-iran.html",
+    metrics: {
+      weight: 0.56,
+      volatility: 0.52,
+      impact: 0.58
     }
-  ];
+  },
+  {
+    id: "redsea",
+    title: {
+      en: "Red Sea Tension",
+      ar: "توتر البحر الأحمر"
+    },
+    description: {
+      en: "Maritime pressure indicators affecting deterrence credibility, logistics confidence, and regional signaling.",
+      ar: "مؤشرات ضغط بحري تؤثر على الردع والثقة اللوجستية والإشارات الإقليمية."
+    },
+    layer: {
+      en: "Maritime",
+      ar: "بحري"
+    },
+    decisionMode: {
+      en: "Pending",
+      ar: "قيد الإعداد"
+    },
+    signalType: {
+      en: "MARITIME",
+      ar: "بحري"
+    },
+    influenceBand: {
+      en: "WATCH",
+      ar: "مراقبة"
+    },
+    reportMeta: {
+      code: "PP-002",
+      type: "PP",
+      priority: "LOW",
+      status: {
+        en: "Pending",
+        ar: "قيد الإعداد"
+      }
+    },
+    report: {
+      en: "Maritime pressure remains below the threshold of full strategic disruption, but still warrants monitoring.",
+      ar: "الضغط البحري ما يزال دون عتبة التعطيل الاستراتيجي الكامل، لكنه يستحق المراقبة."
+    },
+    region: "Maritime",
+    weight: "LOW",
+    live: false,
+    link: "#",
+    metrics: {
+      weight: 0.34,
+      volatility: 0.29,
+      impact: 0.31
+    }
+  },
+  {
+    id: "westbank",
+    title: {
+      en: "West Bank Escalation",
+      ar: "تصعيد الضفة الغربية"
+    },
+    description: {
+      en: "Localized pressure patterns with the capacity to alter broader conflict calculations and internal control logic.",
+      ar: "أنماط ضغط موضعية قادرة على تعديل الحسابات الأوسع للصراع ومنطق السيطرة الداخلي."
+    },
+    layer: {
+      en: "Internal / Security",
+      ar: "داخلي / أمني"
+    },
+    decisionMode: {
+      en: "Pending",
+      ar: "قيد الإعداد"
+    },
+    signalType: {
+      en: "SECURITY",
+      ar: "أمني"
+    },
+    influenceBand: {
+      en: "WATCH",
+      ar: "مراقبة"
+    },
+    reportMeta: {
+      code: "PP-003",
+      type: "PP",
+      priority: "LOW",
+      status: {
+        en: "Pending",
+        ar: "قيد الإعداد"
+      }
+    },
+    report: {
+      en: "Localized escalation indicators remain fragmented, yet the file deserves monitoring due to broader spillover potential.",
+      ar: "مؤشرات التصعيد الموضعية ما تزال متفرقة، لكن الملف يستحق المراقبة بسبب قدرته على التأثير الأوسع."
+    },
+    region: "West Bank",
+    weight: "LOW",
+    live: false,
+    link: "#",
+    metrics: {
+      weight: 0.29,
+      volatility: 0.24,
+      impact: 0.28
+    }
+  }
+];
 
-  const meta = {
-    systemName: "IBSS",
-    fullName: {
-      en: "International Bureau of Sovereign Studies",
-      ar: "المكتب الدولي للدراسات السيادية"
-    },
-    founder: {
-      en: "Founded by Naeem M. Dahalan",
-      ar: "تأسيس نعيم م. دهلان"
-    },
-    statusLine: {
-      en: "System Active — Monitoring Global Signals",
-      ar: "النظام نشط — يراقب الإشارات العالمية"
-    },
-    sourceStatus: {
-      en: "SOURCE — LIVE",
-      ar: "المصدر — مباشر"
-    },
-    engineStatus: {
-      en: "ENGINE — READY",
-      ar: "المحرك — جاهز"
-    },
-    lastUpdate: now
-  };
-
-  const live = {
-    initializedAt: now,
-    source: "internal_dataset",
-    version: "1.0.0",
-    signalCount: signals.length
-  };
-
-  globalThis.IBSS_SIGNALS = signals;
-  globalThis.IBSS_REPORTS = reports;
-  globalThis.IBSS_MODELS = models;
-  globalThis.IBSS_META = meta;
-  globalThis.IBSS_LIVE = live;
-})();
+globalThis.IBSS_SIGNALS = IBSS_SIGNALS;
