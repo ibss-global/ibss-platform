@@ -1,4 +1,4 @@
-// IBSS ENGINE — CLEAN STABLE VERSION
+// IBSS ENGINE — AUTO BALANCE VERSION
 
 (function () {
   "use strict";
@@ -15,69 +15,94 @@
     return safe(signal?.reportMeta?.priority, signal?.weight || "LOW");
   }
 
-  function scoreSignal(signal) {
-    const metrics = signal?.metrics || {};
+  function getPriorityBoost(priority) {
+    if (priority === "HIGH") return 0.03;
+    if (priority === "MEDIUM") return 0.015;
+    return 0;
+  }
 
+  function getRawScore(signal) {
+    const metrics = signal?.metrics || {};
     const weight = Number(metrics.weight) || 0;
     const volatility = Number(metrics.volatility) || 0;
     const impact = Number(metrics.impact) || 0;
-
-    let priorityBoost = 0;
     const priority = getPriority(signal);
 
-    if (priority === "HIGH") priorityBoost = 0.04;
-    else if (priority === "MEDIUM") priorityBoost = 0.02;
-
-    const rawScore =
+    return (
       (weight * 0.5) +
       (volatility * 0.3) +
       (impact * 0.2) +
-      priorityBoost;
-
-    return Math.min(rawScore, 0.95);
+      getPriorityBoost(priority)
+    );
   }
 
-  function getScore100(signal) {
-    return Math.round(scoreSignal(signal) * 100);
+  function normalizeScores(scoredSignals) {
+    if (!scoredSignals.length) return [];
+
+    const rawScores = scoredSignals.map(s => s.rawScore);
+    const maxScore = Math.max(...rawScores);
+    const minScore = Math.min(...rawScores);
+    const range = maxScore - minScore;
+
+    // لو كل الإشارات متقاربة جدًا، نعطيها spread ثابت
+    if (range < 0.0001) {
+      return scoredSignals.map((signal, index) => {
+        const base = 70 - (index * 6);
+        return {
+          ...signal,
+          balancedScore100: Math.max(35, Math.min(88, Math.round(base))),
+          balancedScore: Math.max(0.35, Math.min(0.88, base / 100))
+        };
+      });
+    }
+
+    return scoredSignals.map(signal => {
+      const normalized = (signal.rawScore - minScore) / range;
+
+      // المجال النهائي الذكي: من 27 إلى 95
+      const balanced100 = Math.round(27 + (normalized * 68));
+
+      return {
+        ...signal,
+        balancedScore100: Math.max(27, Math.min(95, balanced100)),
+        balancedScore: Math.max(0.27, Math.min(0.95, balanced100 / 100))
+      };
+    });
   }
 
   function buildSystem() {
     const signals = getSignals();
 
-    const rankedSignals = [...signals]
-      .map(signal => ({
-        ...signal,
-        score: scoreSignal(signal),
-        score100: getScore100(signal),
-        priority: getPriority(signal)
-      }))
-      .sort((a, b) => b.score - a.score);
+    const scoredSignals = signals.map(signal => ({
+      ...signal,
+      priority: getPriority(signal),
+      rawScore: getRawScore(signal)
+    }));
 
-    const topSignal = rankedSignals[0] || null;
-    const secondSignal = rankedSignals[1] || null;
+    const balancedSignals = normalizeScores(scoredSignals)
+      .sort((a, b) => b.balancedScore100 - a.balancedScore100);
 
-    const avgScore = rankedSignals.length
-      ? rankedSignals.reduce((sum, signal) => sum + signal.score, 0) / rankedSignals.length
+    const topSignal = balancedSignals[0] || null;
+    const secondSignal = balancedSignals[1] || null;
+    const activeSignals = balancedSignals.filter(signal => signal.live === true || signal.active === true);
+    const highSignals = balancedSignals.filter(signal => signal.priority === "HIGH");
+
+    const avgBalanced = balancedSignals.length
+      ? balancedSignals.reduce((sum, signal) => sum + signal.balancedScore100, 0) / balancedSignals.length
       : 0;
 
-    const activeSignals = rankedSignals.filter(signal => signal.live === true || signal.active === true);
-    const highSignals = rankedSignals.filter(signal => signal.priority === "HIGH");
+    let systemPressure = Math.round(avgBalanced);
 
-    let systemPressure = Math.round(avgScore * 100);
+    if (topSignal?.priority === "HIGH") systemPressure += 3;
+    else if (topSignal?.priority === "MEDIUM") systemPressure += 1;
 
-    if (topSignal?.priority === "HIGH") {
-      systemPressure += 4;
-    } else if (topSignal?.priority === "MEDIUM") {
-      systemPressure += 2;
-    }
-
-    systemPressure = Math.min(systemPressure, 95);
+    systemPressure = Math.max(25, Math.min(95, systemPressure));
 
     return {
       systemPressure,
       topSignal,
       secondSignal,
-      rankedSignals,
+      rankedSignals: balancedSignals,
       activeSignals,
       highSignals,
       timestamp: Date.now()
@@ -178,7 +203,6 @@
     radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
 
     const signals = (system.rankedSignals || []).slice(0, 5);
-
     const positions = [
       { x: 50, y: 18 },
       { x: 78, y: 38 },
@@ -190,8 +214,7 @@
     signals.forEach((signal, index) => {
       const dot = document.createElement("div");
       const pos = positions[index] || { x: 50, y: 50 };
-
-      const size = Math.max(10, Math.min(24, Math.round(signal.score * 24)));
+      const size = Math.max(10, Math.min(24, Math.round(signal.balancedScore * 24)));
       const cls = priorityClass(signal.priority);
 
       dot.className = "radar-signal " + cls + (index === 0 ? " dominant" : "");
@@ -203,13 +226,13 @@
       radar.appendChild(dot);
     });
 
-    legend.innerHTML = signals.map((signal, index) => `
+    legend.innerHTML = signals.map(signal => `
       <div class="legend-item">
         <div class="legend-left">
           <span class="legend-dot ${priorityClass(signal.priority)}"></span>
           <span class="legend-name">${safe(signal.title?.en || signal.title)}</span>
         </div>
-        <div class="legend-meta">${signal.score100}</div>
+        <div class="legend-meta">${signal.balancedScore100}</div>
       </div>
     `).join("");
   }
@@ -218,16 +241,14 @@
     const feed = document.getElementById("feed");
     if (!feed) return;
 
-    const signals = system.rankedSignals || [];
-
     const lines = [
       "• Pressure index updated to " + safe(system.systemPressure, 0),
-      "• Decision driven by engine",
+      "• Auto-balance normalization active",
       "• Ranked signal matrix synchronized",
       "• Primary file now drives system posture"
     ];
 
-    signals.slice(0, 5).forEach(signal => {
+    (system.rankedSignals || []).slice(0, 5).forEach(signal => {
       const title = safe(signal.title?.en || signal.title);
       const mode = safe(signal.decisionMode?.en || signal.decisionMode);
       lines.push(`• ${title} — ${mode}`);
