@@ -16,22 +16,22 @@
       --red:#ff4d4f;
       --orange:#ff9f1a;
       --green:#00d084;
+      --blue:#5a8cff;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
-      --blue:#5a8cff;
     }
 
-    *{ box-sizing:border-box; }
+    *{box-sizing:border-box}
 
-    html, body{
+    html,body{
       margin:0;
       padding:0;
+      font-family:Arial,sans-serif;
       background:
-        radial-gradient(circle at top, rgba(212,175,55,.06), transparent 26%),
+        radial-gradient(circle at top, rgba(212,175,55,.07), transparent 30%),
         var(--bg);
       color:var(--text);
-      font-family:Arial, sans-serif;
     }
 
     body{
@@ -39,9 +39,9 @@
     }
 
     .wrap{
-      width:min(1100px, 92%);
+      width:min(1120px,92%);
       margin:auto;
-      padding:20px 0 36px;
+      padding:20px 0 40px;
     }
 
     .topbar{
@@ -49,7 +49,7 @@
       justify-content:space-between;
       align-items:center;
       gap:16px;
-      padding:12px 0 22px;
+      padding:14px 0 22px;
       border-bottom:1px solid rgba(255,255,255,.05);
       flex-wrap:wrap;
     }
@@ -74,6 +74,7 @@
       display:flex;
       gap:10px;
       flex-wrap:wrap;
+      justify-content:center;
     }
 
     .nav a{
@@ -103,7 +104,7 @@
       border:1px solid rgba(255,255,255,.1);
       color:#ccc;
       padding:8px 10px;
-      border-radius:8px;
+      border-radius:10px;
       cursor:pointer;
       transition:.2s ease;
       font-size:13px;
@@ -145,34 +146,7 @@
       border:1px solid rgba(255,77,79,.40);
       color:#ffd1d1;
       font-weight:800;
-      line-height:1.8;
-    }
-
-    .meta-strip{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-      margin-top:22px;
-    }
-
-    .meta-card{
-      background:var(--panel);
-      border:1px solid var(--soft-border);
-      border-radius:16px;
-      padding:16px;
-      text-align:center;
-    }
-
-    .meta-label{
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:8px;
-    }
-
-    .meta-value{
-      color:var(--gold);
-      font-size:24px;
-      font-weight:900;
+      line-height:1.7;
     }
 
     .grid{
@@ -207,9 +181,7 @@
     .signal-box,
     .legend-item,
     .feed-item,
-    .decision-box,
-    .reason-row,
-    .scenario-row{
+    .decision-box{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -233,11 +205,12 @@
       font-size:24px;
       font-weight:900;
       letter-spacing:.3px;
+      line-height:1.2;
     }
 
-    .high{ color:var(--red); }
-    .medium{ color:var(--orange); }
-    .low{ color:var(--green); }
+    .high{color:var(--red)}
+    .medium{color:var(--orange)}
+    .low{color:var(--green)}
 
     .decision-box{
       margin-top:18px;
@@ -248,7 +221,7 @@
     }
 
     .decision{
-      font-size:30px;
+      font-size:32px;
       font-weight:900;
       color:var(--gold);
       margin-bottom:8px;
@@ -268,7 +241,7 @@
 
     .signal-box h3{
       margin:0 0 10px;
-      font-size:30px;
+      font-size:34px;
       color:#fff;
       line-height:1.25;
     }
@@ -276,88 +249,58 @@
     .signal-box p{
       margin:0;
       color:#ddd;
-      line-height:1.8;
-      font-size:14px;
-    }
-
-    .reason-list,
-    .scenario-list,
-    .feed,
-    .legend{
-      display:grid;
-      gap:10px;
-    }
-
-    .reason-row,
-    .scenario-row{
-      padding:12px 14px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-
-    .reason-key,
-    .scenario-key{
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .reason-val,
-    .scenario-val{
-      color:#fff;
-      font-weight:700;
-      text-align:right;
-      line-height:1.7;
+      line-height:1.9;
+      font-size:15px;
     }
 
     .radar-wrap{
       display:flex;
       justify-content:center;
       align-items:center;
-      padding:8px 0 4px;
+      padding:14px 0 8px;
     }
 
     .radar{
       position:relative;
-      width:280px;
-      height:280px;
+      width:300px;
+      height:300px;
       border-radius:50%;
+      filter:drop-shadow(0 0 20px rgba(212,175,55,.08));
     }
 
     .circle{
       position:absolute;
-      border:1px solid rgba(212,175,55,.18);
+      border:1px solid rgba(212,175,55,.16);
       border-radius:50%;
     }
 
-    .c1{ width:90px; height:90px; top:95px; left:95px; }
-    .c2{ width:150px; height:150px; top:65px; left:65px; }
-    .c3{ width:210px; height:210px; top:35px; left:35px; }
-    .c4{ width:280px; height:280px; top:0; left:0; }
+    .c1{width:90px;height:90px;top:105px;left:105px}
+    .c2{width:150px;height:150px;top:75px;left:75px}
+    .c3{width:220px;height:220px;top:40px;left:40px}
+    .c4{width:300px;height:300px;top:0;left:0}
 
     .center-dot{
       position:absolute;
-      width:16px;
-      height:16px;
+      width:18px;
+      height:18px;
       border-radius:50%;
       background:var(--gold);
-      top:132px;
-      left:132px;
-      box-shadow:0 0 18px rgba(212,175,55,.8);
-      z-index:3;
+      top:141px;
+      left:141px;
+      box-shadow:0 0 20px rgba(212,175,55,.8);
+      z-index:5;
     }
 
     .sweep{
       position:absolute;
-      width:220px;
-      height:220px;
-      top:30px;
-      left:30px;
+      width:230px;
+      height:230px;
+      top:35px;
+      left:35px;
       border-radius:50%;
-      background:conic-gradient(rgba(212,175,55,.28), transparent 34%);
+      background:conic-gradient(rgba(212,175,55,.26), rgba(212,175,55,.05), transparent 42%);
       animation:spin 4s linear infinite;
-      opacity:.8;
+      opacity:.9;
     }
 
     .radar-signal{
@@ -365,35 +308,40 @@
       border-radius:50%;
       transform:translate(-50%, -50%);
       transition:.35s ease;
-      z-index:4;
+      z-index:6;
     }
 
     .radar-signal.high{
       background:var(--red);
-      box-shadow:0 0 14px rgba(255,77,79,.75);
+      box-shadow:0 0 16px rgba(255,77,79,.75);
     }
 
     .radar-signal.medium{
       background:var(--orange);
-      box-shadow:0 0 14px rgba(255,159,26,.75);
+      box-shadow:0 0 16px rgba(255,159,26,.75);
     }
 
     .radar-signal.low{
       background:var(--green);
-      box-shadow:0 0 14px rgba(0,208,132,.75);
+      box-shadow:0 0 16px rgba(0,208,132,.7);
     }
 
     .radar-signal.dominant{
-      outline:2px solid rgba(212,175,55,.7);
-      outline-offset:4px;
+      outline:3px solid rgba(212,175,55,.75);
+      outline-offset:5px;
+      box-shadow:
+        0 0 0 6px rgba(212,175,55,.08),
+        0 0 24px rgba(212,175,55,.28);
     }
 
     .legend{
-      margin-top:16px;
+      margin-top:18px;
+      display:grid;
+      gap:12px;
     }
 
     .legend-item{
-      padding:12px 14px;
+      padding:14px 16px;
       display:flex;
       justify-content:space-between;
       align-items:center;
@@ -402,40 +350,90 @@
 
     .legend-left{
       display:flex;
+      gap:12px;
       align-items:center;
-      gap:10px;
       min-width:0;
     }
 
     .legend-dot{
-      width:10px;
-      height:10px;
+      width:11px;
+      height:11px;
       border-radius:50%;
       flex:0 0 auto;
     }
 
-    .legend-dot.high{ background:var(--red); }
-    .legend-dot.medium{ background:var(--orange); }
-    .legend-dot.low{ background:var(--green); }
+    .legend-dot.high{background:var(--red)}
+    .legend-dot.medium{background:var(--orange)}
+    .legend-dot.low{background:var(--green)}
+
+    .legend-texts{
+      min-width:0;
+    }
 
     .legend-name{
       color:#fff;
-      font-size:14px;
+      font-size:15px;
+      font-weight:700;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      max-width:320px;
+      max-width:220px;
     }
 
-    .legend-meta{
+    .legend-sub{
       color:var(--muted);
-      font-size:13px;
-      white-space:nowrap;
+      font-size:12px;
+      margin-top:4px;
+    }
+
+    .legend-right{
+      text-align:right;
+      flex:0 0 auto;
+    }
+
+    .legend-score{
+      color:var(--gold);
+      font-size:20px;
+      font-weight:900;
+      line-height:1;
+    }
+
+    .legend-badge{
+      margin-top:6px;
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .legend-badge.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.3);
+    }
+
+    .legend-badge.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.3);
+    }
+
+    .legend-badge.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
+    .feed{
+      display:grid;
+      gap:10px;
     }
 
     .feed-item{
-      padding:12px 14px;
-      color:#ddd;
+      padding:13px 15px;
+      color:#e3e3e3;
       line-height:1.7;
       font-size:14px;
     }
@@ -450,8 +448,8 @@
     }
 
     @keyframes spin{
-      from{ transform:rotate(0deg); }
-      to{ transform:rotate(360deg); }
+      from{transform:rotate(0deg)}
+      to{transform:rotate(360deg)}
     }
 
     html[dir="rtl"] body{
@@ -461,42 +459,61 @@
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
-    html[dir="rtl"] .reason-row,
-    html[dir="rtl"] .scenario-row,
     html[dir="rtl"] .legend-item{
       direction:rtl;
     }
 
     html[dir="rtl"] .hero,
-    html[dir="rtl"] .alert,
     html[dir="rtl"] .decision-box,
     html[dir="rtl"] .footer,
-    html[dir="rtl"] .meta-card{
+    html[dir="rtl"] .alert{
       text-align:center;
     }
 
-    html[dir="rtl"] .reason-val,
-    html[dir="rtl"] .scenario-val{
+    html[dir="rtl"] .legend-right{
       text-align:left;
     }
 
-    @media (max-width: 900px){
-      .grid{ grid-template-columns:1fr; }
-      .meta-strip{ grid-template-columns:repeat(2,1fr); }
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
     }
 
-    @media (max-width: 640px){
-      .hero h1{ font-size:34px; }
-      .state{ grid-template-columns:1fr 1fr; }
-      .topbar{ flex-direction:column; }
-      .nav{ justify-content:center; }
-      .brand{ text-align:center; }
-      .legend-item{
-        flex-direction:column;
-        align-items:flex-start;
+    @media (max-width:640px){
+      .hero h1{font-size:34px}
+      .topbar{flex-direction:column}
+      .nav{justify-content:center}
+      .brand{text-align:center}
+
+      .radar{
+        width:270px;
+        height:270px;
       }
-      .legend-meta{ white-space:normal; }
-      .meta-strip{ grid-template-columns:1fr; }
+
+      .c1{width:80px;height:80px;top:95px;left:95px}
+      .c2{width:140px;height:140px;top:65px;left:65px}
+      .c3{width:200px;height:200px;top:35px;left:35px}
+      .c4{width:270px;height:270px}
+
+      .center-dot{
+        top:126px;
+        left:126px;
+      }
+
+      .sweep{
+        width:210px;
+        height:210px;
+        top:30px;
+        left:30px;
+      }
+
+      .legend-item{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .legend-right{
+        text-align:left;
+      }
     }
   </style>
 </head>
@@ -524,78 +541,53 @@
     </div>
 
     <div class="hero">
-      <h1 data-i18n="title">IBSS Dashboard</h1>
-      <p data-i18n="sub">Decision Engine Visual System</p>
+      <h1 id="pageTitle">IBSS Dashboard</h1>
+      <p id="pageSub">Decision Engine Visual System</p>
     </div>
 
     <div id="alertBox" class="alert"></div>
 
-    <div class="meta-strip">
-      <div class="meta-card">
-        <div class="meta-label" data-i18n="meta_top_signal">Top Signal</div>
-        <div id="metaTopSignal" class="meta-value">-</div>
-      </div>
-      <div class="meta-card">
-        <div class="meta-label" data-i18n="meta_live_count">Live Signals</div>
-        <div id="metaLiveCount" class="meta-value">0</div>
-      </div>
-      <div class="meta-card">
-        <div class="meta-label" data-i18n="meta_high_count">High Priority</div>
-        <div id="metaHighCount" class="meta-value">0</div>
-      </div>
-      <div class="meta-card">
-        <div class="meta-label" data-i18n="meta_updated">Updated</div>
-        <div id="metaUpdated" class="meta-value" style="font-size:16px;">-</div>
-      </div>
-    </div>
-
     <div class="grid">
       <div class="card">
-        <div class="title" data-i18n="state_title">System State</div>
+        <div class="title" id="stateTitle">System State</div>
 
         <div class="state">
           <div class="state-item">
-            <div class="label" data-i18n="label_level">Level</div>
-            <div id="level" class="value medium">MEDIUM</div>
+            <div class="label" id="levelLabel">Level</div>
+            <div id="level" class="value medium">-</div>
           </div>
 
           <div class="state-item">
-            <div class="label" data-i18n="label_ssi">SSI</div>
+            <div class="label" id="ssiLabel">SSI</div>
             <div id="ssi" class="value medium">0</div>
           </div>
 
           <div class="state-item">
-            <div class="label" data-i18n="label_decision">Decision</div>
-            <div id="decision" class="value">PRD</div>
+            <div class="label" id="decisionLabel">Decision</div>
+            <div id="decision" class="value">-</div>
           </div>
 
           <div class="state-item">
-            <div class="label" data-i18n="label_mode">Mode</div>
-            <div id="mode" class="value">PREPARATION</div>
+            <div class="label" id="modeLabel">Mode</div>
+            <div id="mode" class="value">-</div>
           </div>
         </div>
 
         <div class="decision-box">
-          <div class="decision" id="decisionWord">PRD</div>
-          <div class="decision-note" id="decisionNote">Awaiting live engine state.</div>
+          <div class="decision" id="decisionWord">-</div>
+          <div class="decision-note" id="decisionNote">-</div>
         </div>
-
-        <div class="title" style="margin-top:18px;" data-i18n="explain_title">Decision Explanation</div>
-        <div class="reason-list" id="reasonBox"></div>
-
-        <div class="title" style="margin-top:18px;" data-i18n="scenario_title">Scenario Engine</div>
-        <div class="scenario-list" id="scenarioBox"></div>
       </div>
 
       <div class="card">
-        <div class="title" data-i18n="primary_signal_title">Primary Signal</div>
+        <div class="title" id="signalTitleLabel">Primary Signal</div>
 
         <div class="signal-box">
           <h3 id="signalTitle">-</h3>
           <p id="signalDesc">-</p>
         </div>
 
-        <div class="title" style="margin-top:18px;" data-i18n="radar_title">Radar</div>
+        <div class="title" style="margin-top:18px" id="radarTitle">Radar</div>
 
         <div class="radar-wrap">
           <div class="radar" id="radar">
@@ -612,17 +604,19 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:18px;">
-      <div class="title" data-i18n="feed_title">Live Feed</div>
+    <div class="card" style="margin-top:18px">
+      <div class="title" id="feedTitle">Live Feed</div>
       <div id="feed" class="feed"></div>
     </div>
 
-    <div class="footer" data-i18n="footer_text">© 2026 IBSS — Dashboard Layer</div>
+    <div class="footer">© 2026 IBSS — Dashboard Layer</div>
   </div>
 
   <script src="data.js"></script>
+  <script src="engine.js"></script>
+
   <script>
-    const dashboardTranslations = {
+    const UI = {
       en: {
         nav_home: "Home",
         nav_dashboard: "Dashboard",
@@ -630,82 +624,33 @@
         nav_reports: "Reports",
         nav_models: "Models",
         nav_about: "About",
-
         title: "IBSS Dashboard",
         sub: "Decision Engine Visual System",
-
-        meta_top_signal: "Top Signal",
-        meta_live_count: "Live Signals",
-        meta_high_count: "High Priority",
-        meta_updated: "Updated",
-
-        state_title: "System State",
-        label_level: "Level",
-        label_ssi: "SSI",
-        label_decision: "Decision",
-        label_mode: "Mode",
-
-        explain_title: "Decision Explanation",
-        scenario_title: "Scenario Engine",
-        primary_signal_title: "Primary Signal",
-        radar_title: "Radar",
-        feed_title: "Live Feed",
-
-        footer_text: "© 2026 IBSS — Dashboard Layer",
-
-        level_high: "HIGH",
-        level_medium: "MEDIUM",
-        level_low: "LOW",
-
-        decision_high: "ACT",
-        decision_medium: "PRD",
-        decision_low: "WATCH",
-
-        mode_high: "ACTIVE RESPONSE",
-        mode_medium: "PREPARATION",
-        mode_low: "MONITORING",
-
-        note_high: "High pressure environment detected. Immediate response required.",
-        note_medium: "Structured pressure detected. Maintain preparation readiness.",
-        note_low: "Low pressure. Continue monitoring.",
-
-        alert_high: "⚠ HIGH ESCALATION — ACTIVE RESPONSE",
-        alert_medium: "⚠ STRUCTURED PRESSURE — PREPARATION MODE",
-        alert_low: "✓ LOW PRESSURE — MONITORING STABLE",
-
-        why_label: "Why",
-        primary_label: "Primary Signal",
-        secondary_label: "Secondary Signal",
-        logic_label: "Logic",
-
-        logic_high: "Total system pressure exceeded the high threshold, so the system moved to action mode.",
-        logic_medium: "Pressure remains above the preparation threshold, so the system stays in readiness mode.",
-        logic_low: "Pressure remains below escalation threshold, so the system stays in monitoring mode.",
-
-        scenario_a: "Scenario A",
-        scenario_b: "Scenario B",
-        scenario_c: "Scenario C",
-
-        scenario_a_high: "Escalation persists",
-        scenario_b_high: "Managed pressure",
-        scenario_c_high: "Partial containment",
-
-        scenario_a_medium: "Preparation holds",
-        scenario_b_medium: "Pressure rises slowly",
-        scenario_c_medium: "Return to watch",
-
-        scenario_a_low: "Stable monitoring",
-        scenario_b_low: "Localized disturbance",
-        scenario_c_low: "Reactivation risk",
-
-        feed_pressure: "Pressure index updated to",
-        feed_decision: "Decision derived from ranked signal structure",
-        feed_primary: "Primary file now driving system posture",
-        feed_live: "Live signal set synchronized",
-
-        local_state: "Local State"
+        state: "System State",
+        level: "Level",
+        ssi: "SSI",
+        decision: "Decision",
+        mode: "Mode",
+        signal: "Primary Signal",
+        radar: "Radar",
+        feed: "Live Feed",
+        levelHigh: "HIGH",
+        levelMed: "MEDIUM",
+        levelLow: "LOW",
+        decisionHigh: "ACT",
+        decisionMed: "PRD",
+        decisionLow: "WATCH",
+        modeHigh: "ACTIVE RESPONSE",
+        modeMed: "PREPARATION",
+        modeLow: "MONITORING",
+        noteHigh: "High pressure environment detected. Immediate response required.",
+        noteMedium: "Structured pressure detected. Maintain preparation readiness.",
+        noteLow: "Low pressure. Continue monitoring.",
+        alertHigh: "⚠ HIGH ESCALATION — ACTIVE RESPONSE",
+        alertMed: "⚠ STRUCTURED PRESSURE — PREPARATION MODE",
+        alertLow: "✓ LOW PRESSURE — MONITORING STABLE",
+        unknownType: "Unknown"
       },
-
       ar: {
         nav_home: "الرئيسية",
         nav_dashboard: "لوحة التحكم",
@@ -713,179 +658,103 @@
         nav_reports: "التقارير",
         nav_models: "النماذج",
         nav_about: "حول",
-
         title: "لوحة تحكم IBSS",
         sub: "النظام البصري لمحرك القرار",
-
-        meta_top_signal: "الإشارة الأعلى",
-        meta_live_count: "الإشارات الحية",
-        meta_high_count: "عالية الأولوية",
-        meta_updated: "آخر تحديث",
-
-        state_title: "حالة النظام",
-        label_level: "المستوى",
-        label_ssi: "مؤشر SSI",
-        label_decision: "القرار",
-        label_mode: "الوضع",
-
-        explain_title: "تفسير القرار",
-        scenario_title: "محرك السيناريو",
-        primary_signal_title: "الإشارة الأساسية",
-        radar_title: "الرادار",
-        feed_title: "التغذية الحية",
-
-        footer_text: "© 2026 IBSS — طبقة لوحة التحكم",
-
-        level_high: "مرتفع",
-        level_medium: "متوسط",
-        level_low: "منخفض",
-
-        decision_high: "تحرك",
-        decision_medium: "استعداد",
-        decision_low: "مراقبة",
-
-        mode_high: "استجابة نشطة",
-        mode_medium: "تحضير",
-        mode_low: "مراقبة",
-
-        note_high: "تم رصد بيئة ضغط مرتفعة. الاستجابة الفورية مطلوبة.",
-        note_medium: "تم رصد ضغط بنيوي. حافظ على الجاهزية.",
-        note_low: "الضغط منخفض. واصل المراقبة.",
-
-        alert_high: "⚠ تم رصد تصعيد مرتفع — استجابة نشطة",
-        alert_medium: "⚠ تم رصد ضغط بنيوي — وضعية تحضير",
-        alert_low: "✓ ضغط منخفض — مراقبة مستقرة",
-
-        why_label: "السبب",
-        primary_label: "الإشارة الأساسية",
-        secondary_label: "الإشارة الثانوية",
-        logic_label: "المنطق",
-
-        logic_high: "الضغط الكلي للنظام تجاوز العتبة العليا، لذلك انتقل النظام إلى وضعية التحرك.",
-        logic_medium: "الضغط ما يزال فوق عتبة التحضير، لذلك بقي النظام في حالة استعداد.",
-        logic_low: "الضغط ما يزال دون عتبة التصعيد، لذلك بقي النظام في وضعية المراقبة.",
-
-        scenario_a: "السيناريو أ",
-        scenario_b: "السيناريو ب",
-        scenario_c: "السيناريو ج",
-
-        scenario_a_high: "استمرار التصعيد",
-        scenario_b_high: "ضغط مضبوط",
-        scenario_c_high: "احتواء جزئي",
-
-        scenario_a_medium: "استمرار التحضير",
-        scenario_b_medium: "تصاعد بطيء",
-        scenario_c_medium: "عودة للمراقبة",
-
-        scenario_a_low: "مراقبة مستقرة",
-        scenario_b_low: "اضطراب موضعي",
-        scenario_c_low: "خطر إعادة التنشيط",
-
-        feed_pressure: "تم تحديث مؤشر الضغط إلى",
-        feed_decision: "القرار ناتج عن البنية المرتبة للإشارات",
-        feed_primary: "الملف المهيمن يقود وضعية النظام الآن",
-        feed_live: "تمت مزامنة الإشارات الحية",
-
-        local_state: "حالة محلية"
+        state: "حالة النظام",
+        level: "المستوى",
+        ssi: "مؤشر SSI",
+        decision: "القرار",
+        mode: "الوضع",
+        signal: "الإشارة الأساسية",
+        radar: "الرادار",
+        feed: "التغذية الحية",
+        levelHigh: "مرتفع",
+        levelMed: "متوسط",
+        levelLow: "منخفض",
+        decisionHigh: "تحرك",
+        decisionMed: "استعداد",
+        decisionLow: "مراقبة",
+        modeHigh: "استجابة نشطة",
+        modeMed: "تحضير",
+        modeLow: "مراقبة",
+        noteHigh: "تم رصد بيئة ضغط مرتفعة. الاستجابة الفورية مطلوبة.",
+        noteMedium: "تم رصد ضغط بنيوي. حافظ على الجاهزية.",
+        noteLow: "الضغط منخفض. استمر في المراقبة.",
+        alertHigh: "⚠ تم رصد تصعيد مرتفع — استجابة نشطة",
+        alertMed: "⚠ تم رصد ضغط بنيوي — وضعية تحضير",
+        alertLow: "✓ ضغط منخفض — مراقبة مستقرة",
+        unknownType: "غير معروف"
       }
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
 
     function t(key){
-      return dashboardTranslations[currentLang]?.[key] || key;
+      return UI[currentLang]?.[key] || key;
     }
 
-    function safeText(value, fallback = "-"){
-      return typeof value === "string" && value.trim() ? value.trim() : fallback;
+    function safe(val, fallback = "-"){
+      return val !== undefined && val !== null && val !== "" ? val : fallback;
+    }
+
+    function escapeHtml(text){
+      return String(safe(text, "")).replace(/[&<>"']/g, function(char){
+        const map = {
+          "&":"&amp;",
+          "<":"&lt;",
+          ">":"&gt;",
+          '"':"&quot;",
+          "'":"&#39;"
+        };
+        return map[char];
+      });
+    }
+
+    function priorityClass(priority){
+      if (priority === "HIGH") return "high";
+      if (priority === "MEDIUM") return "medium";
+      return "low";
     }
 
     function getSignalsArray(){
-      return Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
+      return Array.isArray(window.IBSS_SIGNALS) ? window.IBSS_SIGNALS : [];
+    }
+
+    function getLocalScore(signal){
+      const metrics = signal?.metrics || {};
+      const weight = Number(metrics.weight || 0);
+      const volatility = Number(metrics.volatility || 0);
+      const impact = Number(metrics.impact || 0);
+      return (weight * 0.5) + (volatility * 0.3) + (impact * 0.2);
     }
 
     function getPriority(signal){
-      return safeText(signal?.reportMeta?.priority, signal?.weight || "LOW");
+      return safe(signal?.priority, safe(signal?.reportMeta?.priority, safe(signal?.weight, "LOW")));
     }
 
-    function getSignalScore(signal){
-      const metrics = signal?.metrics || {};
-      const weight = Number(metrics.weight) || 0;
-      const volatility = Number(metrics.volatility) || 0;
-      const impact = Number(metrics.impact) || 0;
-
-      let boost = 0;
-      const priority = getPriority(signal);
-      if (priority === "HIGH") boost = 0.08;
-      else if (priority === "MEDIUM") boost = 0.04;
-
-      return Math.min((weight * 0.5) + (volatility * 0.3) + (impact * 0.2) + boost, 1);
+    function getSignalTitle(signal){
+      return safe(signal?.title?.[currentLang], safe(signal?.title?.en, safe(signal?.title, "-")));
     }
 
-    function getRankedSignals(){
-      return [...getSignalsArray()]
-        .map(signal => ({ ...signal, __score: getSignalScore(signal) }))
-        .sort((a, b) => b.__score - a.__score);
+    function getSignalDesc(signal){
+      return safe(
+        signal?.description?.[currentLang],
+        safe(signal?.description?.en, safe(signal?.description, "-"))
+      );
     }
 
-    function buildSystemState(){
-      const rankedSignals = getRankedSignals();
-      const topSignal = rankedSignals[0] || null;
-      const secondSignal = rankedSignals[1] || null;
-      const liveSignals = rankedSignals.filter(signal => signal.live === true);
-      const highSignals = rankedSignals.filter(signal => getPriority(signal) === "HIGH");
-
-      const avgScore = rankedSignals.length
-        ? rankedSignals.reduce((sum, signal) => sum + signal.__score, 0) / rankedSignals.length
-        : 0;
-
-      let ssi = Math.round(avgScore * 100);
-
-      if (topSignal && getPriority(topSignal) === "HIGH") ssi += 8;
-      else if (topSignal && getPriority(topSignal) === "MEDIUM") ssi += 4;
-
-      ssi = Math.max(0, Math.min(100, ssi));
-
-      let level = "LOW";
-      let decision = "WATCH";
-      let mode = "MONITORING";
-
-      if (ssi >= 75) {
-        level = "HIGH";
-        decision = "ACT";
-        mode = "ACTIVE RESPONSE";
-      } else if (ssi >= 50) {
-        level = "MEDIUM";
-        decision = "PRD";
-        mode = "PREPARATION";
-      }
-
-      return {
-        ssi,
-        level,
-        decision,
-        mode,
-        topSignal,
-        secondSignal,
-        rankedSignals,
-        liveSignals,
-        highSignals,
-        updatedAt: new Date().toISOString()
-      };
+    function getSignalType(signal){
+      return safe(
+        signal?.signalType?.[currentLang],
+        safe(signal?.signalType?.en, safe(signal?.signalType, t("unknownType")))
+      );
     }
 
-    function formatDateTime(value){
-      if (!value) return t("local_state");
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return t("local_state");
-
-      return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+    function getSignalDecisionMode(signal){
+      return safe(
+        signal?.decisionMode?.[currentLang],
+        safe(signal?.decisionMode?.en, safe(signal?.decisionMode, "-"))
+      );
     }
 
     function applyLanguage(){
@@ -897,236 +766,283 @@
         el.textContent = t(key);
       });
 
+      document.getElementById("pageTitle").textContent = t("title");
+      document.getElementById("pageSub").textContent = t("sub");
+      document.getElementById("stateTitle").textContent = t("state");
+      document.getElementById("levelLabel").textContent = t("level");
+      document.getElementById("ssiLabel").textContent = t("ssi");
+      document.getElementById("decisionLabel").textContent = t("decision");
+      document.getElementById("modeLabel").textContent = t("mode");
+      document.getElementById("signalTitleLabel").textContent = t("signal");
+      document.getElementById("radarTitle").textContent = t("radar");
+      document.getElementById("feedTitle").textContent = t("feed");
+
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
     }
 
-    function renderMeta(system){
-      document.getElementById("metaTopSignal").textContent =
-        safeText(system.topSignal?.title?.[currentLang] || system.topSignal?.title?.en, "-");
-
-      document.getElementById("metaLiveCount").textContent = system.liveSignals.length;
-      document.getElementById("metaHighCount").textContent = system.highSignals.length;
-      document.getElementById("metaUpdated").textContent = formatDateTime(system.updatedAt);
+    function normalizeRankedSignals(signals){
+      return (signals || []).map(signal => {
+        const localScore100 = Math.round(getLocalScore(signal) * 100);
+        return {
+          ...signal,
+          balancedScore100: Number(
+            signal?.balancedScore100 ??
+            signal?.score100 ??
+            Math.round((signal?.score || 0) * 100) ??
+            localScore100
+          )
+        };
+      });
     }
 
-    function renderLevel(system){
+    function buildLocalSystem(){
+      const rankedSignals = normalizeRankedSignals(
+        [...getSignalsArray()].sort((a, b) => getLocalScore(b) - getLocalScore(a))
+      );
+
+      const topSignal = rankedSignals[0] || null;
+
+      const total = rankedSignals.reduce((sum, signal) => sum + (signal.balancedScore100 || 0), 0);
+      const systemPressure = rankedSignals.length ? Math.round(total / rankedSignals.length) : 0;
+
+      return {
+        systemPressure,
+        rankedSignals,
+        topSignal
+      };
+    }
+
+    function adaptEngineState(raw){
+      if (!raw || typeof raw !== "object") return null;
+
+      const rankedSignals = normalizeRankedSignals(
+        raw.rankedSignals ||
+        raw.liveSignals ||
+        raw.signals ||
+        []
+      );
+
+      const topSignal =
+        raw.topSignal ||
+        raw.dominantSignal ||
+        rankedSignals[0] ||
+        null;
+
+
+    function getSystem(){
+      try {
+        if (window.IBSS_ENGINE) {
+          if (typeof window.IBSS_ENGINE.getCurrentState === "function") {
+            const state = adaptEngineState(window.IBSS_ENGINE.getCurrentState());
+            if (state) return state;
+          }
+
+          if (typeof window.IBSS_ENGINE.computeSystemState === "function") {
+            const state = adaptEngineState(window.IBSS_ENGINE.computeSystemState());
+            if (state) return state;
+          }
+
+          if (typeof window.IBSS_ENGINE.tick === "function") {
+            const state = adaptEngineState(window.IBSS_ENGINE.tick());
+            if (state) return state;
+          }
+
+          if (typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
+            const state = adaptEngineState(window.IBSS_ENGINE.getStaticSystemFallback());
+            if (state) return state;
+          }
+
+          if (typeof window.IBSS_ENGINE.readSavedSystem === "function") {
+            const saved = adaptEngineState(window.IBSS_ENGINE.readSavedSystem());
+            if (saved) return saved;
+          }
+        }
+      } catch (error) {
+        console.error("IBSS engine read error:", error);
+      }
+
+      return buildLocalSystem();
+    }
+
+    function setLevelUI(systemPressure){
       const levelEl = document.getElementById("level");
       const ssiEl = document.getElementById("ssi");
       const alertBox = document.getElementById("alertBox");
 
-      ssiEl.textContent = Number.isFinite(system.ssi) ? system.ssi : 0;
+      const pressure = Number(systemPressure) || 0;
+      let level = "LOW";
 
-      if(system.level === "HIGH"){
-        levelEl.textContent = t("level_high");
+      if (pressure >= 75) level = "HIGH";
+      else if (pressure >= 50) level = "MEDIUM";
+
+      if (level === "HIGH") {
+        levelEl.textContent = t("levelHigh");
         levelEl.className = "value high";
         ssiEl.className = "value high";
         alertBox.style.display = "block";
-        alertBox.textContent = t("alert_high");
-      } else if(system.level === "MEDIUM"){
-        levelEl.textContent = t("level_medium");
+        alertBox.textContent = t("alertHigh");
+      } else if (level === "MEDIUM") {
+        levelEl.textContent = t("levelMed");
         levelEl.className = "value medium";
         ssiEl.className = "value medium";
         alertBox.style.display = "block";
-        alertBox.textContent = t("alert_medium");
+        alertBox.textContent = t("alertMed");
       } else {
-        levelEl.textContent = t("level_low");
+        levelEl.textContent = t("levelLow");
         levelEl.className = "value low";
         ssiEl.className = "value low";
         alertBox.style.display = "block";
-        alertBox.textContent = t("alert_low");
+        alertBox.textContent = t("alertLow");
       }
+
+      ssiEl.textContent = pressure;
+      return level;
     }
 
-    function renderDecision(system){
+    function setDecisionUI(level){
       const decisionEl = document.getElementById("decision");
       const decisionWord = document.getElementById("decisionWord");
       const decisionNote = document.getElementById("decisionNote");
       const modeEl = document.getElementById("mode");
 
-      if(system.level === "HIGH"){
-        decisionEl.textContent = t("decision_high");
-        decisionWord.textContent = t("decision_high");
-        decisionNote.textContent = t("note_high");
-        modeEl.textContent = t("mode_high");
-      } else if(system.level === "MEDIUM"){
-        decisionEl.textContent = t("decision_medium");
-        decisionWord.textContent = t("decision_medium");
-        decisionNote.textContent = t("note_medium");
-        modeEl.textContent = t("mode_medium");
+      if (level === "HIGH") {
+        decisionEl.textContent = t("decisionHigh");
+        decisionWord.textContent = t("decisionHigh");
+        decisionNote.textContent = t("noteHigh");
+        modeEl.textContent = t("modeHigh");
+      } else if (level === "MEDIUM") {
+        decisionEl.textContent = t("decisionMed");
+        decisionWord.textContent = t("decisionMed");
+        decisionNote.textContent = t("noteMedium");
+        modeEl.textContent = t("modeMed");
       } else {
-        decisionEl.textContent = t("decision_low");
-        decisionWord.textContent = t("decision_low");
-        decisionNote.textContent = t("note_low");
-        modeEl.textContent = t("mode_low");
+        decisionEl.textContent = t("decisionLow");
+        decisionWord.textContent = t("decisionLow");
+        decisionNote.textContent = t("noteLow");
+        modeEl.textContent = t("modeLow");
       }
     }
 
-    function renderPrimarySignal(system){
-      document.getElementById("signalTitle").textContent =
-        safeText(system.topSignal?.title?.[currentLang] || system.topSignal?.title?.en, "-");
+    function setPrimarySignalUI(signal){
+      const titleEl = document.getElementById("signalTitle");
+      const descEl = document.getElementById("signalDesc");
 
-      document.getElementById("signalDesc").textContent =
-        safeText(system.topSignal?.description?.[currentLang] || system.topSignal?.description?.en, "-");
-    }
-
-    function renderExplanation(system){
-      const box = document.getElementById("reasonBox");
-      const logicText =
-        system.level === "HIGH"
-          ? t("logic_high")
-          : system.level === "MEDIUM"
-          ? t("logic_medium")
-          : t("logic_low");
-
-      box.innerHTML = `
-        <div class="reason-row">
-          <span class="reason-key">${t("why_label")}</span>
-          <span class="reason-val">${system.ssi}</span>
-        </div>
-        <div class="reason-row">
-          <span class="reason-key">${t("primary_label")}</span>
-          <span class="reason-val">${safeText(system.topSignal?.title?.[currentLang] || system.topSignal?.title?.en, "-")}</span>
-        </div>
-        <div class="reason-row">
-          <span class="reason-key">${t("secondary_label")}</span>
-          <span class="reason-val">${safeText(system.secondSignal?.title?.[currentLang] || system.secondSignal?.title?.en, "-")}</span>
-        </div>
-        <div class="reason-row">
-          <span class="reason-key">${t("logic_label")}</span>
-          <span class="reason-val">${logicText}</span>
-        </div>
-      `;
-    }
-
-    function renderScenarios(system){
-      const box = document.getElementById("scenarioBox");
-
-      let scenarios;
-      if (system.level === "HIGH") {
-        scenarios = [
-          [t("scenario_a"), t("scenario_a_high"), 58],
-          [t("scenario_b"), t("scenario_b_high"), 27],
-          [t("scenario_c"), t("scenario_c_high"), 15]
-        ];
-      } else if (system.level === "MEDIUM") {
-        scenarios = [
-          [t("scenario_a"), t("scenario_a_medium"), 38],
-          [t("scenario_b"), t("scenario_b_medium"), 37],
-          [t("scenario_c"), t("scenario_c_medium"), 25]
-        ];
-      } else {
-        scenarios = [
-          [t("scenario_a"), t("scenario_a_low"), 22],
-          [t("scenario_b"), t("scenario_b_low"), 33],
-          [t("scenario_c"), t("scenario_c_low"), 45]
-        ];
+      if (!signal) {
+        titleEl.textContent = "-";
+        descEl.textContent = "-";
+        return;
       }
 
-      box.innerHTML = scenarios.map(([key, label, probability]) => `
-        <div class="scenario-row">
-          <span class="scenario-key">${key}</span>
-          <span class="scenario-val">${label} — ${probability}%</span>
-        </div>
-      `).join("");
-    }
-
-    function getPriorityClass(signal){
-      const priority = getPriority(signal);
-      if (priority === "HIGH") return "high";
-      if (priority === "MEDIUM") return "medium";
-      return "low";
+      titleEl.textContent = getSignalTitle(signal);
+      descEl.textContent = getSignalDesc(signal);
     }
 
     function renderRadar(system){
       const radar = document.getElementById("radar");
       const legend = document.getElementById("radarLegend");
 
+      if (!radar || !legend) return;
+
       radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
 
-      const signals = system.rankedSignals.slice(0, 5);
-      const positions = [
-        { x: 140, y: 42 },
-        { x: 224, y: 98 },
-        { x: 198, y: 210 },
-        { x: 82, y: 210 },
-        { x: 54, y: 112 }
-      ];
+      const signals = (system.rankedSignals || []).slice(0, 5);
 
-      legend.innerHTML = "";
+      const positions = [
+        { x: 50, y: 18 },
+        { x: 78, y: 38 },
+        { x: 68, y: 72 },
+        { x: 28, y: 68 },
+        { x: 18, y: 45 }
+      ];
 
       signals.forEach((signal, index) => {
-        const pos = positions[index] || { x: 140, y: 140 };
-        const size = Math.max(10, Math.min(24, Math.round(signal.__score * 24)));
-        const cls = getPriorityClass(signal);
-
         const dot = document.createElement("div");
-        dot.className = `radar-signal ${cls} ${signal.id === system.topSignal?.id ? "dominant" : ""}`;
-        dot.style.left = pos.x + "px";
-        dot.style.top = pos.y + "px";
+        const pos = positions[index] || { x: 50, y: 50 };
+        const score = Number(signal.balancedScore100 || 0);
+        const size = Math.max(10, Math.min(26, Math.round(score / 5)));
+        const priority = getPriority(signal);
+
+        dot.className = "radar-signal " + priorityClass(priority) + (index === 0 ? " dominant" : "");
         dot.style.width = size + "px";
         dot.style.height = size + "px";
-        radar.appendChild(dot);
+        dot.style.left = pos.x + "%";
+        dot.style.top = pos.y + "%";
 
-        legend.innerHTML += `
+        radar.appendChild(dot);
+      });
+
+      legend.innerHTML = signals.map(signal => {
+        const score = Number(signal.balancedScore100 || 0);
+        const priority = getPriority(signal);
+
+        return `
           <div class="legend-item">
             <div class="legend-left">
-              <span class="legend-dot ${cls}"></span>
-              <span class="legend-name">${safeText(signal.title?.[currentLang] || signal.title?.en, signal.id)}</span>
+              <span class="legend-dot ${priorityClass(priority)}"></span>
+              <div class="legend-texts">
+                <div class="legend-name">${escapeHtml(getSignalTitle(signal))}</div>
+                <div class="legend-sub">${escapeHtml(getSignalType(signal))}</div>
+              </div>
             </div>
-            <span class="legend-meta">${Math.round(signal.__score * 100)}</span>
+            <div class="legend-right">
+              <div class="legend-score">${score}</div>
+              <span class="legend-badge ${priorityClass(priority)}">${escapeHtml(priority)}</span>
+            </div>
           </div>
         `;
-      });
+      }).join("");
     }
 
-    function renderFeed(system){
+    function setFeed(system){
       const feed = document.getElementById("feed");
+      if (!feed) return;
+
+      const ranked = system.rankedSignals || [];
+      const top = ranked[0] || null;
+
       const lines = [
-        `• ${t("feed_pressure")} ${system.ssi}`,
-        `• ${t("feed_decision")}`,
-        `• ${t("feed_primary")}`,
-        `• ${t("feed_live")}`
+        "• Pressure index updated to " + safe(system.systemPressure, 0),
+        "• UI layer synchronized with ranked signal set",
+        "• Primary signal currently driving dashboard posture",
+        top
+          ? `• Top file: ${safe(getSignalTitle(top))} — ${safe(getSignalDecisionMode(top))}`
+          : "• No dominant signal detected"
       ];
 
-      system.rankedSignals.slice(0, 5).forEach(signal => {
-        const title = safeText(signal.title?.[currentLang] || signal.title?.en, signal.id);
-        const mode = safeText(signal.decisionMode?.[currentLang] || signal.decisionMode?.en, "-");
-        lines.push(`• ${title} — ${mode}`);
+      ranked.slice(1, 5).forEach(signal => {
+        lines.push(`• ${safe(getSignalTitle(signal))} — ${safe(getSignalDecisionMode(signal))}`);
       });
 
-      feed.innerHTML = lines.map(line => `<div class="feed-item">${line}</div>`).join("");
+      feed.innerHTML = lines.map(line => `<div class="feed-item">${escapeHtml(line)}</div>`).join("");
     }
 
     function renderDashboard(){
-      const system = buildSystemState();
-      renderMeta(system);
-      renderLevel(system);
-      renderDecision(system);
-      renderPrimarySignal(system);
-      renderExplanation(system);
-      renderScenarios(system);
+      applyLanguage();
+
+      const system = getSystem();
+      const level = setLevelUI(system.systemPressure);
+      setDecisionUI(level);
+      setPrimarySignalUI(system.topSignal);
       renderRadar(system);
-      renderFeed(system);
+      setFeed(system);
     }
 
-    document.getElementById("btn-en").addEventListener("click", () => {
+    document.getElementById("btn-en").addEventListener("click", function(){
       currentLang = "en";
       localStorage.setItem("ibss_lang", "en");
-      applyLanguage();
       renderDashboard();
     });
 
-    document.getElementById("btn-ar").addEventListener("click", () => {
+    document.getElementById("btn-ar").addEventListener("click", function(){
       currentLang = "ar";
       localStorage.setItem("ibss_lang", "ar");
-      applyLanguage();
       renderDashboard();
     });
 
-    document.addEventListener("DOMContentLoaded", () => {
-      applyLanguage();
+    window.addEventListener("load", function(){
       renderDashboard();
+      setInterval(renderDashboard, 3000);
     });
   </script>
 </body>
