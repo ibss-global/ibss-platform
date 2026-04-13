@@ -1,282 +1,416 @@
-// IBSS ENGINE — AUTO BALANCE VERSION
+// IBSS ENGINE — Unified Core Engine
+// Version: v1.0 Foundation Engine
 
 (function () {
   "use strict";
 
-  function safe(val, fallback = "-") {
-    return val !== undefined && val !== null && val !== "" ? val : fallback;
+  const CONFIG = {
+    storageKey: "ibss_live_system",
+    refreshMs: 3000,
+    thresholds: {
+      high: 75,
+      medium: 50
+    },
+    weights: {
+      signalWeight: 0.5,
+      signalVolatility: 0.3,
+      signalImpact: 0.2
+    },
+    pressure: {
+      topSignalFactor: 0.45,
+      averageSignalFactor: 0.35,
+      countryRiskFactor: 0.20
+    }
+  };
+
+  function safe(value, fallback = "-") {
+    return value !== undefined && value !== null && value !== "" ? value : fallback;
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function getLang() {
+    return localStorage.getItem("ibss_lang") || "en";
+  }
+
+  function getLocalizedText(obj, lang) {
+    if (!obj) return "-";
+    if (typeof obj === "string") return obj;
+    return obj[lang] || obj.en || obj.ar || "-";
   }
 
   function getSignals() {
-    return Array.isArray(window.IBSS_SIGNALS) ? window.IBSS_SIGNALS : [];
+    return Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
   }
 
-  function getPriority(signal) {
-    return safe(signal?.reportMeta?.priority, signal?.weight || "LOW");
+  function getCountries() {
+    return Array.isArray(globalThis.IBSS_COUNTRIES) ? globalThis.IBSS_COUNTRIES : [];
   }
 
-  function getPriorityBoost(priority) {
-    if (priority === "HIGH") return 0.03;
-    if (priority === "MEDIUM") return 0.015;
-    return 0;
+  function getContent() {
+    return Array.isArray(globalThis.IBSS_CONTENT) ? globalThis.IBSS_CONTENT : [];
   }
 
-  function getRawScore(signal) {
+  function scoreSignal(signal) {
     const metrics = signal?.metrics || {};
+
     const weight = Number(metrics.weight) || 0;
     const volatility = Number(metrics.volatility) || 0;
     const impact = Number(metrics.impact) || 0;
-    const priority = getPriority(signal);
 
     return (
-      (weight * 0.5) +
-      (volatility * 0.3) +
-      (impact * 0.2) +
-      getPriorityBoost(priority)
+      weight * CONFIG.weights.signalWeight +
+      volatility * CONFIG.weights.signalVolatility +
+      impact * CONFIG.weights.signalImpact
     );
   }
 
-  function normalizeScores(scoredSignals) {
-    if (!scoredSignals.length) return [];
-
-    const rawScores = scoredSignals.map(s => s.rawScore);
-    const maxScore = Math.max(...rawScores);
-    const minScore = Math.min(...rawScores);
-    const range = maxScore - minScore;
-
-    // لو كل الإشارات متقاربة جدًا، نعطيها spread ثابت
-    if (range < 0.0001) {
-      return scoredSignals.map((signal, index) => {
-        const base = 70 - (index * 6);
-        return {
-          ...signal,
-          balancedScore100: Math.max(35, Math.min(88, Math.round(base))),
-          balancedScore: Math.max(0.35, Math.min(0.88, base / 100))
-        };
-      });
-    }
-
-    return scoredSignals.map(signal => {
-      const normalized = (signal.rawScore - minScore) / range;
-
-      // المجال النهائي الذكي: من 27 إلى 95
-      const balanced100 = Math.round(27 + (normalized * 68));
-
-      return {
-        ...signal,
-        balancedScore100: Math.max(27, Math.min(95, balanced100)),
-        balancedScore: Math.max(0.27, Math.min(0.95, balanced100 / 100))
-      };
-    });
+  function scoreSignal100(signal) {
+    return Math.round(scoreSignal(signal) * 100);
   }
 
-  function buildSystem() {
-    const signals = getSignals();
-
-    const scoredSignals = signals.map(signal => ({
-      ...signal,
-      priority: getPriority(signal),
-      rawScore: getRawScore(signal)
-    }));
-
-    const balancedSignals = normalizeScores(scoredSignals)
-      .sort((a, b) => b.balancedScore100 - a.balancedScore100);
-
-    const topSignal = balancedSignals[0] || null;
-    const secondSignal = balancedSignals[1] || null;
-    const activeSignals = balancedSignals.filter(signal => signal.live === true || signal.active === true);
-    const highSignals = balancedSignals.filter(signal => signal.priority === "HIGH");
-
-    const avgBalanced = balancedSignals.length
-      ? balancedSignals.reduce((sum, signal) => sum + signal.balancedScore100, 0) / balancedSignals.length
-      : 0;
-
-    let systemPressure = Math.round(avgBalanced);
-
-    if (topSignal?.priority === "HIGH") systemPressure += 3;
-    else if (topSignal?.priority === "MEDIUM") systemPressure += 1;
-
-    systemPressure = Math.max(25, Math.min(95, systemPressure));
-
-    return {
-      systemPressure,
-      topSignal,
-      secondSignal,
-      rankedSignals: balancedSignals,
-      activeSignals,
-      highSignals,
-      timestamp: Date.now()
-    };
-  }
-
-  function setLevel(system) {
-    const levelEl = document.getElementById("level");
-    const ssiEl = document.getElementById("ssi");
-    const alertBox = document.getElementById("alertBox");
-
-    if (!levelEl || !ssiEl || !alertBox) return "LOW";
-
-    const pressure = Number(system.systemPressure) || 0;
-
-    let level = "LOW";
-    if (pressure >= 75) level = "HIGH";
-    else if (pressure >= 50) level = "MEDIUM";
-
-    levelEl.textContent = level;
-    ssiEl.textContent = pressure;
-
-    levelEl.className = "value " + level.toLowerCase();
-    ssiEl.className = "value " + level.toLowerCase();
-
-    if (level === "HIGH") {
-      alertBox.style.display = "block";
-      alertBox.textContent = "⚠ HIGH ESCALATION — ACTIVE RESPONSE";
-    } else if (level === "MEDIUM") {
-      alertBox.style.display = "block";
-      alertBox.textContent = "⚠ STRUCTURED PRESSURE — PREPARATION MODE";
-    } else {
-      alertBox.style.display = "block";
-      alertBox.textContent = "✓ LOW PRESSURE — MONITORING STABLE";
-    }
-
-    return level;
-  }
-
-  function setDecision(system, level) {
-    const decisionEl = document.getElementById("decision");
-    const decisionWord = document.getElementById("decisionWord");
-    const decisionNote = document.getElementById("decisionNote");
-    const modeEl = document.getElementById("mode");
-
-    if (!decisionEl || !decisionWord || !decisionNote || !modeEl) return;
-
-    let decision = "WATCH";
-    let note = "Low pressure. Continue monitoring.";
-    let mode = "MONITORING";
-
-    if (level === "HIGH") {
-      decision = "ACT";
-      note = "High pressure environment detected. Immediate response required.";
-      mode = "ACTIVE RESPONSE";
-    } else if (level === "MEDIUM") {
-      decision = "PRD";
-      note = "Structured pressure detected. Maintain preparation readiness.";
-      mode = "PREPARATION";
-    }
-
-    decisionEl.textContent = decision;
-    decisionWord.textContent = decision;
-    decisionNote.textContent = note;
-    modeEl.textContent = mode;
-  }
-
-  function setPrimarySignal(system) {
-    const titleEl = document.getElementById("signalTitle");
-    const descEl = document.getElementById("signalDesc");
-
-    if (!titleEl || !descEl) return;
-
-    const signal = system.topSignal;
-
-    if (!signal) {
-      titleEl.textContent = "-";
-      descEl.textContent = "-";
-      return;
-    }
-
-    titleEl.textContent = safe(signal.title?.en || signal.title);
-    descEl.textContent = safe(signal.description?.en || signal.description);
-  }
-
-  function priorityClass(priority) {
+  function getPriorityClass(priority) {
     if (priority === "HIGH") return "high";
     if (priority === "MEDIUM") return "medium";
     return "low";
   }
 
-  function renderRadar(system) {
-    const radar = document.getElementById("radar");
-    const legend = document.getElementById("radarLegend");
-
-    if (!radar || !legend) return;
-
-    radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
-
-    const signals = (system.rankedSignals || []).slice(0, 5);
-    const positions = [
-      { x: 50, y: 18 },
-      { x: 78, y: 38 },
-      { x: 68, y: 72 },
-      { x: 28, y: 68 },
-      { x: 18, y: 45 }
-    ];
-
-    signals.forEach((signal, index) => {
-      const dot = document.createElement("div");
-      const pos = positions[index] || { x: 50, y: 50 };
-      const size = Math.max(10, Math.min(24, Math.round(signal.balancedScore * 24)));
-      const cls = priorityClass(signal.priority);
-
-      dot.className = "radar-signal " + cls + (index === 0 ? " dominant" : "");
-      dot.style.width = size + "px";
-      dot.style.height = size + "px";
-      dot.style.left = pos.x + "%";
-      dot.style.top = pos.y + "%";
-
-      radar.appendChild(dot);
-    });
-
-    legend.innerHTML = signals.map(signal => `
-      <div class="legend-item">
-        <div class="legend-left">
-          <span class="legend-dot ${priorityClass(signal.priority)}"></span>
-          <span class="legend-name">${safe(signal.title?.en || signal.title)}</span>
-        </div>
-        <div class="legend-meta">${signal.balancedScore100}</div>
-      </div>
-    `).join("");
+  function getRiskClass(level) {
+    if (level === "HIGH") return "high";
+    if (level === "MEDIUM") return "medium";
+    return "low";
   }
 
-  function setFeed(system) {
-    const feed = document.getElementById("feed");
-    if (!feed) return;
+  function getRankedSignals() {
+    return getSignals()
+      .map(signal => {
+        const score = scoreSignal(signal);
+        const score100 = Math.round(score * 100);
+        const priority = signal?.reportMeta?.priority || signal?.weight || "LOW";
 
-    const lines = [
-      "• Pressure index updated to " + safe(system.systemPressure, 0),
-      "• Auto-balance normalization active",
-      "• Ranked signal matrix synchronized",
-      "• Primary file now drives system posture"
+        return {
+          ...signal,
+          score,
+          score100,
+          balancedScore100: score100,
+          priority,
+          priorityClass: getPriorityClass(priority),
+          localizedTitle: getLocalizedText(signal.title, getLang()),
+          localizedDescription: getLocalizedText(signal.description, getLang()),
+          localizedSignalType: getLocalizedText(signal.signalType, getLang()),
+          localizedDecisionMode: getLocalizedText(signal.decisionMode, getLang()),
+          localizedInfluenceBand: getLocalizedText(signal.influenceBand, getLang())
+        };
+      })
+      .sort((a, b) => b.score100 - a.score100);
+  }
+
+  function getLiveSignals() {
+    return getRankedSignals().filter(signal => signal.live === true);
+  }
+
+  function getTopSignal() {
+    const live = getLiveSignals();
+    if (live.length) return live[0];
+
+    const ranked = getRankedSignals();
+    return ranked[0] || null;
+  }
+
+  function getTopCountry() {
+    const countries = getCountries();
+    if (!countries.length) return null;
+
+    return [...countries].sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0))[0] || null;
+  }
+
+  function calculateAverageSignalScore100() {
+    const ranked = getRankedSignals();
+    if (!ranked.length) return 0;
+
+    const total = ranked.reduce((sum, signal) => sum + (signal.score100 || 0), 0);
+    return Math.round(total / ranked.length);
+  }
+
+  function calculateAverageCountryRisk() {
+    const countries = getCountries();
+    if (!countries.length) return 0;
+
+    const total = countries.reduce((sum, country) => sum + (Number(country.riskScore) || 0), 0);
+    return Math.round(total / countries.length);
+  }
+
+  function calculateSystemPressure() {
+    const topSignal = getTopSignal();
+    const avgSignal = calculateAverageSignalScore100();
+    const avgCountryRisk = calculateAverageCountryRisk();
+
+    const topSignalScore = topSignal ? topSignal.score100 : 0;
+
+    const pressure = Math.round(
+      (topSignalScore * CONFIG.pressure.topSignalFactor) +
+      (avgSignal * CONFIG.pressure.averageSignalFactor) +
+      (avgCountryRisk * CONFIG.pressure.countryRiskFactor)
+    );
+
+    return clamp(pressure, 0, 100);
+  }
+
+  function getLevelFromPressure(pressure) {
+    if (pressure >= CONFIG.thresholds.high) return "HIGH";
+    if (pressure >= CONFIG.thresholds.medium) return "MEDIUM";
+    return "LOW";
+  }
+
+  function getDecisionFromLevel(level) {
+    if (level === "HIGH") {
+      return {
+        decision: "ACT",
+        mode: "ACTIVE RESPONSE"
+      };
+    }
+
+    if (level === "MEDIUM") {
+      return {
+        decision: "PRD",
+        mode: "PREPARATION"
+      };
+    }
+
+    return {
+      decision: "WATCH",
+      mode: "MONITORING"
+    };
+  }
+
+  function buildScenarios(level) {
+    if (level === "HIGH") {
+      return [
+        { key: "Scenario A", value: 58 },
+        { key: "Scenario B", value: 27 },
+        { key: "Scenario C", value: 15 }
+      ];
+    }
+
+    if (level === "MEDIUM") {
+      return [
+        { key: "Scenario A", value: 38 },
+        { key: "Scenario B", value: 37 },
+        { key: "Scenario C", value: 25 }
+      ];
+    }
+
+    return [
+      { key: "Scenario A", value: 22 },
+      { key: "Scenario B", value: 33 },
+      { key: "Scenario C", value: 45 }
     ];
+  }
 
-    (system.rankedSignals || []).slice(0, 5).forEach(signal => {
-      const title = safe(signal.title?.en || signal.title);
-      const mode = safe(signal.decisionMode?.en || signal.decisionMode);
+  function buildFeed(system) {
+    const lang = getLang();
+    const lines = [];
+
+    if (lang === "ar") {
+      lines.push(`• تم تحديث مؤشر الضغط إلى ${system.systemPressure}`);
+      lines.push("• تم تفعيل الموازنة التلقائية للإشارات");
+      lines.push("• تمت مزامنة مصفوفة الإشارات");
+    } else {
+      lines.push(`• Pressure index updated to ${system.systemPressure}`);
+      lines.push("• Auto-balance normalization active");
+      lines.push("• Ranked signal matrix synchronized");
+    }
+
+    system.rankedSignals.forEach(signal => {
+      const title = getLocalizedText(signal.title, lang);
+      const mode = getLocalizedText(signal.decisionMode, lang);
+
       lines.push(`• ${title} — ${mode}`);
     });
 
-    feed.innerHTML = lines.map(line => `<div class="feed-item">${line}</div>`).join("");
+    return lines;
   }
 
-  function render() {
+  function buildCountryRiskFeed() {
+    const lang = getLang();
+
+    return getCountries()
+      .map(country => ({
+        id: country.id,
+        name: getLocalizedText(country.name, lang),
+        riskScore: Number(country.riskScore) || 0,
+        riskLevel: safe(country.riskLevel, "LOW"),
+        trend: safe(country.trend, "STABLE"),
+        primaryDrivers: Array.isArray(country.primaryDrivers?.[lang])
+          ? country.primaryDrivers[lang]
+          : (Array.isArray(country.primaryDrivers?.en) ? country.primaryDrivers.en : [])
+      }))
+      .sort((a, b) => b.riskScore - a.riskScore);
+  }
+
+  function buildContentStats() {
+    const content = getContent();
+
+    return {
+      total: content.length,
+      published: content.filter(item => item.status === "published").length,
+      pending: content.filter(item => item.status === "pending").length,
+      reports: content.filter(item => item.type === "report").length,
+      studies: content.filter(item => item.type === "study").length,
+      briefs: content.filter(item => item.type === "brief").length,
+      news: content.filter(item => item.type === "news").length,
+      policyPapers: content.filter(item => item.type === "policy_paper").length
+    };
+  }
+
+  function buildSystemState() {
+    const lang = getLang();
+    const rankedSignals = getRankedSignals();
+    const liveSignals = rankedSignals.filter(signal => signal.live === true);
+    const topSignal = getTopSignal();
+    const topCountry = getTopCountry();
+    const systemPressure = calculateSystemPressure();
+    const level = getLevelFromPressure(systemPressure);
+    const { decision, mode } = getDecisionFromLevel(level);
+    const scenarios = buildScenarios(level);
+    const updatedAt = new Date().toISOString();
+
+    return {
+      source: "engine",
+      timestamp: Date.now(),
+      updatedAt,
+      lang,
+
+      systemPressure,
+      ssi: systemPressure,
+      level,
+      levelClass: getRiskClass(level),
+      decision,
+      mode,
+
+      topSignal,
+      dominantSignal: topSignal,
+      dominantSignalId: topSignal?.id || null,
+
+      topCountry,
+      rankedSignals,
+      liveSignals,
+      liveSignalsCount: liveSignals.length,
+
+      countryRiskFeed: buildCountryRiskFeed(),
+      scenarios,
+      feed: buildFeed({
+        systemPressure,
+        rankedSignals
+      }),
+      contentStats: buildContentStats()
+    };
+  }
+
+  function saveSystemState(system) {
     try {
-      const system = buildSystem();
-      const level = setLevel(system);
-      setDecision(system, level);
-      setPrimarySignal(system);
-      renderRadar(system);
-      setFeed(system);
-    } catch (e) {
-      console.error("Render error:", e);
+      localStorage.setItem(
+        CONFIG.storageKey,
+        JSON.stringify({
+          source: system.source,
+          timestamp: system.timestamp,
+          updatedAt: system.updatedAt,
+          systemPressure: system.systemPressure,
+          ssi: system.ssi,
+          level: system.level,
+          decision: system.decision,
+          mode: system.mode,
+          dominantSignalId: system.dominantSignalId
+        })
+      );
+    } catch (error) {
+      console.error("IBSS saveSystemState error:", error);
     }
   }
 
-  window.IBSS_ENGINE = {
-    getCurrentState: buildSystem,
-    render
-  };
+  function readSavedSystem() {
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      console.error("IBSS readSavedSystem error:", error);
+      return null;
+    }
+  }
 
-  window.addEventListener("load", () => {
-    render();
-    setInterval(render, 3000);
-  });
+  function getStaticSystemFallback() {
+    const rankedSignals = getRankedSignals();
+    const topSignal = rankedSignals[0] || null;
+    const avgSignal = calculateAverageSignalScore100();
+    const pressure = clamp(avgSignal, 0, 100);
+    const level = getLevelFromPressure(pressure);
+    const decisionBundle = getDecisionFromLevel(level);
+
+    return {
+      source: "fallback",
+      timestamp: Date.now(),
+      updatedAt: new Date().toISOString(),
+      systemPressure: pressure,
+      ssi: pressure,
+      level,
+      decision: decisionBundle.decision,
+      mode: decisionBundle.mode,
+      dominantSignalId: topSignal?.id || null,
+      dominantSignal: topSignal,
+      topSignal,
+      rankedSignals,
+      liveSignals: rankedSignals.filter(signal => signal.live),
+      feed: buildFeed({
+        systemPressure: pressure,
+        rankedSignals
+      }),
+      scenarios: buildScenarios(level),
+      countryRiskFeed: buildCountryRiskFeed(),
+      contentStats: buildContentStats()
+    };
+  }
+
+  function tick() {
+    const system = buildSystemState();
+    saveSystemState(system);
+    return system;
+  }
+
+  function getSystemState() {
+    return tick();
+  }
+
+  globalThis.IBSS_ENGINE = {
+    CONFIG,
+    safe,
+    clamp,
+    getLang,
+    getLocalizedText,
+    getSignals,
+    getCountries,
+    getContent,
+    scoreSignal,
+    scoreSignal100,
+    getRankedSignals,
+    getLiveSignals,
+    getTopSignal,
+    getTopCountry,
+    calculateAverageSignalScore100,
+    calculateAverageCountryRisk,
+    calculateSystemPressure,
+    getLevelFromPressure,
+    getDecisionFromLevel,
+    buildScenarios,
+    buildFeed,
+    buildCountryRiskFeed,
+    buildContentStats,
+    buildSystemState,
+    saveSystemState,
+    readSavedSystem,
+    getStaticSystemFallback,
+    getSystemState,
+    tick
+  };
 })();
