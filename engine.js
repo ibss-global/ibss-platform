@@ -3,15 +3,18 @@ window.IBSS_ENGINE = (function () {
 
   const CONFIG = {
     refreshMs: 4000,
-    historyLimit: 120,
-    reportLimit: 30,
-    storageKey: "ibss_engine_state"
+    historyLimit: 150,
+    reportLimit: 60,
+    archiveLimit: 100,
+    storageKey: "ibss_engine_state_v2"
   };
 
   const STATE = {
     history: [],
     reports: [],
-    lastSystem: null
+    archive: [],
+    lastSystem: null,
+    unitsBootstrapped: false
   };
 
   function safeNumber(value, fallback = 0) {
@@ -27,37 +30,59 @@ window.IBSS_ENGINE = (function () {
     return new Date().toISOString();
   }
 
-  function getSignals() {
-    return Array.isArray(window.IBSS_SIGNALS) ? window.IBSS_SIGNALS : [];
+  function asArray(value) {
+    return Array.isArray(value) ? value : [];
   }
-  
-function getContent() {
-  return Array.isArray(window.IBSS_CONTENT) ? window.IBSS_CONTENT : [];
-}
 
-function getPublishedContent() {
-  return getContent().filter(item => item.status === "published");
-}
-
-function getContentStats() {
-  const content = getContent();
-
-  return {
-    total: content.length,
-    published: content.filter(item => item.status === "published").length,
-    pending: content.filter(item => item.status === "pending").length,
-    reports: content.filter(item => item.type === "report").length,
-    studies: content.filter(item => item.type === "study").length,
-    briefs: content.filter(item => item.type === "brief").length,
-    news: content.filter(item => item.type === "news").length,
-    policyPapers: content.filter(item => item.type === "policy_paper").length,
-    analyses: content.filter(item => item.type === "analysis").length
-  };
-                            }
   function getLocalizedText(value, lang = "en") {
     if (!value) return "-";
     if (typeof value === "string") return value;
     return value[lang] || value.en || value.ar || "-";
+  }
+
+  function uniqueById(list) {
+    const map = new Map();
+    asArray(list).forEach(item => {
+      if (!item || !item.id) return;
+      map.set(item.id, item);
+    });
+    return [...map.values()];
+  }
+
+  function getSignals() {
+    return asArray(window.IBSS_SIGNALS);
+  }
+
+  function getContent() {
+    return asArray(window.IBSS_CONTENT);
+  }
+
+  function getNews() {
+    return asArray(window.IBSS_NEWS);
+  }
+
+  function getStrategicReports() {
+    return asArray(window.IBSS_REPORTS);
+  }
+
+  function getPublishedContent() {
+    return getContent().filter(item => item && item.status === "published");
+  }
+
+  function getContentStats() {
+    const content = getContent();
+
+    return {
+      total: content.length,
+      published: content.filter(item => item && item.status === "published").length,
+      pending: content.filter(item => item && item.status === "pending").length,
+      reports: content.filter(item => item && item.type === "report").length,
+      studies: content.filter(item => item && item.type === "study").length,
+      briefs: content.filter(item => item && item.type === "brief").length,
+      news: content.filter(item => item && item.type === "news").length,
+      policyPapers: content.filter(item => item && item.type === "policy_paper").length,
+      analyses: content.filter(item => item && item.type === "analysis").length
+    };
   }
 
   function detectPriority(signal) {
@@ -123,9 +148,127 @@ function getContentStats() {
     };
   }
 
+  function inferSignalTypeFromDomain(domain) {
+    const d = String(domain || "").toLowerCase();
+
+    if (d.includes("military")) return { en: "MILITARY", ar: "عسكري" };
+    if (d.includes("security")) return { en: "SECURITY", ar: "أمني" };
+    if (d.includes("economic")) return { en: "ECONOMIC", ar: "اقتصادي" };
+    if (d.includes("geo")) return { en: "GEOPOLITICAL", ar: "جيوسياسي" };
+    if (d.includes("diplomatic")) return { en: "DIPLOMATIC", ar: "دبلوماسي" };
+    return { en: "STRUCTURAL", ar: "بنيوي" };
+  }
+
+  function ingestNewsUnit() {
+    const news = getNews();
+    if (!news.length) return;
+
+    const existingSignals = getSignals();
+
+    const generated = news.map((item, index) => {
+      const impact = clamp((safeNumber(item.impact, 6) / 10), 0, 1);
+      const confidence = clamp((safeNumber(item.confidence, 6) / 10), 0, 1);
+      const urgency = clamp((safeNumber(item.urgency, 6) / 10), 0, 1);
+
+      const score = clamp(
+        (impact * 0.45) +
+        (confidence * 0.30) +
+        (urgency * 0.25),
+        0,
+        1
+      );
+
+      const score100 = Math.round(score * 100);
+      const priority = riskLevelFromScore(score100);
+
+      return {
+        id: item.id || `NEWS-SIG-${index + 1}`,
+        title: {
+          en: item.title || "News Signal",
+          ar: item.title_ar || item.title || "إشارة خبرية"
+        },
+        description: {
+          en: item.summary || "Generated from the News Intelligence Unit.",
+          ar: item.summary_ar || item.summary || "تم توليدها من وحدة تحليل الأخبار."
+        },
+        layer: {
+          en: "News Intelligence Unit",
+          ar: "وحدة تحليل الأخبار"
+        },
+        decisionMode: {
+          en: priority === "HIGH" ? "ACT" : priority === "MEDIUM" ? "PRD" : "WATCH",
+          ar: priority === "HIGH" ? "تحرك" : priority === "MEDIUM" ? "استعداد" : "مراقبة"
+        },
+        signalType: inferSignalTypeFromDomain(item.domain),
+        influenceBand: {
+          en: priority === "HIGH" ? "CORE" : priority === "MEDIUM" ? "SUPPORT" : "WATCH",
+          ar: priority === "HIGH" ? "محوري" : priority === "MEDIUM" ? "مساند" : "مراقبة"
+        },
+        priority,
+        live: true,
+        sourceUnit: "NIU",
+        metrics: {
+          weight: impact,
+          volatility: urgency,
+          impact: confidence
+        }
+      };
+    });
+
+    window.IBSS_SIGNALS = uniqueById([...existingSignals, ...generated]);
+  }
+
+  function ingestStrategicStudiesUnit() {
+    const reports = getStrategicReports();
+    if (!reports.length) return;
+
+    const existingContent = getContent();
+
+    const generated = reports.map((item, index) => ({
+      id: item.id || `STR-CNT-${index + 1}`,
+      title: {
+        en: item.title || "Strategic Study",
+        ar: item.title_ar || item.title || "دراسة استراتيجية"
+      },
+      summary: {
+        en: item.summary || "Strategic study registered in sovereign archive.",
+        ar: item.summary_ar || item.summary || "تم تسجيل دراسة استراتيجية في الأرشيف السيادي."
+      },
+      body: {
+        en: item.body || item.summary || "",
+        ar: item.body_ar || item.summary_ar || item.summary || ""
+      },
+      type: item.type || "study",
+      domain: item.domain || "geopolitical",
+      countryId: item.countryId || null,
+      signalIds: asArray(item.signalIds),
+      priority: item.priority || "MEDIUM",
+      status: item.status || "published",
+      sourcePlatform: item.sourcePlatform || "internal",
+      sourceUrl: item.sourceUrl || "",
+      publishedAt: item.publishedAt || nowIso(),
+      tags: asArray(item.tags),
+      author: item.author || "IBSS",
+      engagement: item.engagement || {
+        reactions: 0,
+        comments: 0,
+        shares: 0
+      }
+    }));
+
+    window.IBSS_CONTENT = uniqueById([...existingContent, ...generated]);
+  }
+
+  function bootstrapUnits() {
+    if (STATE.unitsBootstrapped) return;
+    ingestNewsUnit();
+    ingestStrategicStudiesUnit();
+    STATE.unitsBootstrapped = true;
+  }
+
   function buildRankedSignals() {
     return getSignals()
-      .map((signal) => {
+      .map(signal => {
         const score = scoreSignalBase(signal);
         const score100 = Math.round(score * 100);
         const priority = detectPriority(signal);
@@ -148,7 +291,7 @@ function getContentStats() {
       ? rankedSignals.reduce((sum, signal) => sum + signal.score, 0) / rankedSignals.length
       : 0;
 
-    const activeSignals = rankedSignals.filter((signal) => signal.live).length;
+    const activeSignals = rankedSignals.filter(signal => signal.live).length;
 
     let pressure = Math.round(
       Math.min(
@@ -192,15 +335,33 @@ function getContentStats() {
   function findPreviousCountryRisk(name) {
     for (let i = STATE.history.length - 1; i >= 0; i -= 1) {
       const row = STATE.history[i];
-      const found = row.countryRiskFeed?.find((item) => item.name === name);
+      const found = row.countryRiskFeed?.find(item => item.name === name);
       if (found) return found.riskScore;
     }
     return null;
   }
 
+  function normalizeCountryName(signal) {
+    const text = String(
+      signal?.region ||
+      signal?.countryName ||
+      signal?.title?.en ||
+      signal?.title ||
+      ""
+    ).toLowerCase();
+
+    if (text.includes("gaza")) return "Gaza";
+    if (text.includes("lebanon")) return "Lebanon";
+    if (text.includes("iran")) return "Iran";
+    if (text.includes("red sea")) return "Red Sea";
+    if (text.includes("west bank")) return "West Bank";
+
+    return getLocalizedText(signal?.title, "en");
+  }
+
   function buildCountryRiskFeed(rankedSignals) {
-    return rankedSignals.slice(0, 5).map((signal) => {
-      const name = getLocalizedText(signal.title, "en");
+    return rankedSignals.slice(0, 5).map(signal => {
+      const name = normalizeCountryName(signal);
       const riskScore = signal.balancedScore100;
       const previous = findPreviousCountryRisk(name);
       const trend = detectTrend(riskScore, previous);
@@ -210,7 +371,12 @@ function getContentStats() {
         name,
         riskScore,
         riskLevel: riskLevelFromScore(riskScore),
-        trend
+        trend,
+        primaryDrivers: [
+          getLocalizedText(signal.title, "en"),
+          getLocalizedText(signal.signalType, "en"),
+          getLocalizedText(signal.decisionMode, "en")
+        ]
       };
     });
   }
@@ -231,6 +397,10 @@ function getContentStats() {
       lines.push(`CRU synchronized with ${system.countryRiskFeed.length} country entries`);
     }
 
+    if (system.contentStats?.published > 0) {
+      lines.push(`Published content items: ${system.contentStats.published}`);
+    }
+
     if (system.level === "HIGH") {
       lines.push("High escalation threshold exceeded");
     } else if (system.level === "MEDIUM") {
@@ -247,11 +417,9 @@ function getContentStats() {
       ? getLocalizedText(system.topSignal.title, lang)
       : (lang === "ar" ? "لا توجد إشارة" : "No Signal");
 
-    if (lang === "ar") {
-      return `تقرير تلقائي — ${topName}`;
-    }
-
-    return `Auto Report — ${topName}`;
+    return lang === "ar"
+      ? `تقرير تلقائي — ${topName}`
+      : `Auto Report — ${topName}`;
   }
 
   function buildReportBody(system, lang = "en") {
@@ -311,11 +479,9 @@ function getContentStats() {
   function shouldGenerateReport(system) {
     const last = STATE.reports[STATE.reports.length - 1];
     if (!last) return true;
-
     if (last.level !== system.level) return true;
     if (last.topSignalId !== (system.topSignal?.id || null)) return true;
     if (Math.abs(last.systemPressure - system.systemPressure) >= 8) return true;
-
     return false;
   }
 
@@ -357,6 +523,22 @@ function getContentStats() {
     return report;
   }
 
+  function archiveSnapshot(system) {
+    STATE.archive = Array.isArray(STATE.archive) ? STATE.archive : [];
+    STATE.archive.push({
+      id: `ARC-${Date.now()}`,
+      createdAt: nowIso(),
+      ssi: system.systemPressure,
+      level: system.level,
+      decision: system.decision,
+      topSignalId: system.topSignal?.id || null
+    });
+
+    if (STATE.archive.length > 100) {
+      STATE.archive.shift();
+    }
+  }
+
   function updateHistory(system) {
     STATE.history.push({
       updatedAt: system.updatedAt,
@@ -379,6 +561,7 @@ function getContentStats() {
         JSON.stringify({
           history: STATE.history,
           reports: STATE.reports,
+          archive: STATE.archive,
           lastSystem: STATE.lastSystem
         })
       );
@@ -395,17 +578,20 @@ function getContentStats() {
 
       STATE.history = Array.isArray(parsed.history) ? parsed.history : [];
       STATE.reports = Array.isArray(parsed.reports) ? parsed.reports : [];
+      STATE.archive = Array.isArray(parsed.archive) ? parsed.archive : [];
       STATE.lastSystem = parsed.lastSystem || null;
     } catch (error) {}
   }
 
   function computeSystemState() {
+    bootstrapUnits?.();
+
     const rankedSignals = buildRankedSignals();
     const topSignal = rankedSignals[0] || null;
     const systemPressure = buildPressure(rankedSignals);
     const level = riskLevelFromScore(systemPressure);
     const { decision, mode } = decisionFromLevel(level);
-    const liveSignals = rankedSignals.filter((signal) => signal.live);
+    const liveSignals = rankedSignals.filter(signal => signal.live);
     const scenarios = buildScenarios(level);
     const countryRiskFeed = buildCountryRiskFeed(rankedSignals);
 
@@ -424,9 +610,9 @@ function getContentStats() {
       liveSignalsCount: liveSignals.length,
       scenarios,
       countryRiskFeed,
-    feed: [],
-contentStats: getContentStats(),
-publishedContent: getPublishedContent()
+      feed: [],
+      contentStats: getContentStats(),
+      publishedContent: getPublishedContent()
     };
 
     system.feed = buildFeed(system);
@@ -437,6 +623,7 @@ publishedContent: getPublishedContent()
     }
 
     updateHistory(system);
+    archiveSnapshot(system);
     STATE.lastSystem = system;
     saveState();
 
@@ -468,12 +655,17 @@ publishedContent: getPublishedContent()
     return [...STATE.history];
   }
 
+  function getArchive() {
+    return [...(STATE.archive || [])];
+  }
+
   function getStaticSystemFallback() {
     const rankedSignals = buildRankedSignals();
     const topSignal = rankedSignals[0] || null;
     const pressure = buildPressure(rankedSignals);
     const level = riskLevelFromScore(pressure);
     const { decision, mode } = decisionFromLevel(level);
+    const countryRiskFeed = buildCountryRiskFeed(rankedSignals);
 
     return {
       source: "fallback",
@@ -486,18 +678,21 @@ publishedContent: getPublishedContent()
       topSignal,
       dominantSignal: topSignal,
       rankedSignals,
-      liveSignals: rankedSignals.filter((signal) => signal.live),
-      liveSignalsCount: rankedSignals.filter((signal) => signal.live).length,
+      liveSignals: rankedSignals.filter(signal => signal.live),
+      liveSignalsCount: rankedSignals.filter(signal => signal.live).length,
       scenarios: buildScenarios(level),
-      countryRiskFeed: buildCountryRiskFeed(rankedSignals),
+      countryRiskFeed,
       feed: buildFeed({
         systemPressure: pressure,
         level,
         decision,
         mode,
         topSignal,
-        countryRiskFeed: buildCountryRiskFeed(rankedSignals)
-      })
+        countryRiskFeed,
+        contentStats: getContentStats()
+      }),
+      contentStats: getContentStats(),
+      publishedContent: getPublishedContent()
     };
   }
 
@@ -511,6 +706,9 @@ publishedContent: getPublishedContent()
     getCountryRiskFeed,
     getReports,
     getLatestReport,
-    getHistory
+    getHistory,
+    getArchive,
+    getContentStats,
+    getPublishedContent
   };
 })();
