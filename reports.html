@@ -1,398 +1,395 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBSS Reports System</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IBSS Reports System</title>
 
-<style>
-:root{
-  --bg:#040404;
-  --panel:#0d0d0d;
-  --panel2:#121212;
-  --gold:#d4af37;
-  --text:#e8e8e8;
-  --muted:#9d9d9d;
-  --green:#00d084;
-  --orange:#ff9f1a;
-  --red:#ff4d4f;
-  --blue:#5a8cff;
-  --border:rgba(212,175,55,.28);
-}
+  <style>
+    :root{
+      --bg:#040404;
+      --panel:#0d0d0d;
+      --panel2:#121212;
+      --gold:#d4af37;
+      --text:#e8e8e8;
+      --muted:#9d9d9d;
+      --green:#00d084;
+      --orange:#ff9f1a;
+      --red:#ff4d4f;
+      --border:rgba(212,175,55,.28);
+      --soft-border:rgba(255,255,255,.08);
+      --soft-border-2:rgba(255,255,255,.06);
+    }
 
-*{box-sizing:border-box}
+    *{box-sizing:border-box}
 
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
-    var(--bg);
-  color:var(--text);
-}
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+        var(--bg);
+      color:var(--text);
+    }
 
-.wrap{
-  width:min(1180px,92%);
-  margin:auto;
-  padding:20px 0 60px;
-}
+    .wrap{
+      width:min(1180px,92%);
+      margin:auto;
+      padding:20px 0 60px;
+    }
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:14px 0 20px;
-  border-bottom:1px solid rgba(255,255,255,.05);
-  flex-wrap:wrap;
-}
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:14px 0 20px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      flex-wrap:wrap;
+    }
 
-.brand{
-  color:var(--gold);
-  font-size:28px;
-  font-weight:800;
-  text-decoration:none;
-  letter-spacing:1px;
-}
+    .brand{
+      color:var(--gold);
+      font-size:28px;
+      font-weight:800;
+      text-decoration:none;
+      letter-spacing:1px;
+    }
 
-.top-actions{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
 
-.nav{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
 
-.nav a{
-  color:var(--muted);
-  text-decoration:none;
-  border:1px solid rgba(255,255,255,.08);
-  padding:10px 14px;
-  border-radius:10px;
-  font-size:14px;
-  transition:.2s ease;
-}
+    .nav a{
+      color:var(--muted);
+      text-decoration:none;
+      border:1px solid rgba(255,255,255,.08);
+      padding:10px 14px;
+      border-radius:10px;
+      font-size:14px;
+      transition:.2s ease;
+    }
 
-.nav a.active,
-.nav a:hover{
-  color:var(--gold);
-  border-color:var(--border);
-}
+    .nav a.active,
+    .nav a:hover{
+      color:var(--gold);
+      border-color:var(--border);
+    }
 
-.lang-switch{
-  display:flex;
-  gap:6px;
-}
+    .lang-switch{
+      display:flex;
+      gap:6px;
+    }
 
-.lang-switch button{
-  background:none;
-  border:1px solid rgba(255,255,255,.1);
-  color:#ccc;
-  padding:8px 10px;
-  border-radius:8px;
-  cursor:pointer;
-  transition:.2s ease;
-  font-size:13px;
-}
+    .lang-switch button{
+      background:none;
+      border:1px solid rgba(255,255,255,.1);
+      color:#ccc;
+      padding:8px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      transition:.2s ease;
+      font-size:13px;
+    }
 
-.lang-switch button:hover,
-.lang-switch button.active{
-  color:var(--gold);
-  border-color:var(--gold);
-}
+    .lang-switch button:hover,
+    .lang-switch button.active{
+      color:var(--gold);
+      border-color:var(--gold);
+    }
 
-.hero{
-  text-align:center;
-  padding:34px 0 20px;
-}
+    .hero{
+      text-align:center;
+      padding:34px 0 20px;
+    }
 
-.eyebrow{
-  color:var(--gold);
-  letter-spacing:2px;
-  text-transform:uppercase;
-  font-size:13px;
-  margin-bottom:10px;
-}
+    .eyebrow{
+      color:var(--gold);
+      letter-spacing:2px;
+      text-transform:uppercase;
+      font-size:13px;
+      margin-bottom:10px;
+    }
 
-h1{
-  margin:0 0 10px;
-  font-size:40px;
-  color:#fff;
-}
+    h1{
+      margin:0 0 10px;
+      font-size:40px;
+      color:#fff;
+    }
 
-.sub{
-  margin:0 auto;
-  max-width:860px;
-  color:var(--muted);
-  line-height:1.8;
-}
+    .sub{
+      margin:0 auto;
+      max-width:860px;
+      color:var(--muted);
+      line-height:1.8;
+    }
 
-.system-strip{
-  margin-top:24px;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-}
+    .system-strip{
+      margin-top:24px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
 
-.system-box{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:16px;
-  text-align:center;
-}
+    .system-box{
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:16px;
+      text-align:center;
+    }
 
-.system-label{
-  color:var(--muted);
-  font-size:12px;
-  margin-bottom:8px;
-}
+    .system-label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:8px;
+    }
 
-.system-value{
-  color:var(--gold);
-  font-size:24px;
-  font-weight:800;
-}
+    .system-value{
+      color:var(--gold);
+      font-size:24px;
+      font-weight:800;
+      word-break:break-word;
+    }
 
-.toolbar{
-  margin-top:22px;
-  display:grid;
-  grid-template-columns:1.4fr 1fr 1fr;
-  gap:12px;
-}
+    .toolbar{
+      margin-top:22px;
+      display:grid;
+      grid-template-columns:1.4fr 1fr 1fr;
+      gap:12px;
+    }
 
-.search,
-.select{
-  width:100%;
-  background:var(--panel2);
-  color:#fff;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;
-  padding:14px;
-  font-size:14px;
-  outline:none;
-}
+    .search,
+    .select{
+      width:100%;
+      background:var(--panel2);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      padding:14px;
+      font-size:14px;
+      outline:none;
+    }
 
-.search::placeholder{
-  color:#777;
-}
+    .search::placeholder{
+      color:#777;
+    }
 
-.grid{
-  margin-top:24px;
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:18px;
-}
+    .grid{
+      margin-top:24px;
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:18px;
+    }
 
-.report-card{
-  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:20px;
-  padding:20px;
-  transition:.2s ease;
-}
+    .report-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      padding:20px;
+      transition:.2s ease;
+    }
 
-.report-card:hover{
-  transform:translateY(-3px);
-  border-color:rgba(212,175,55,.35);
-  box-shadow:0 0 20px rgba(212,175,55,.06);
-}
+    .report-card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(212,175,55,.35);
+      box-shadow:0 0 20px rgba(212,175,55,.06);
+    }
 
-.report-card.disabled{
-  opacity:.62;
-}
+    .card-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:14px;
+    }
 
-.report-card.disabled:hover{
-  transform:none;
-  border-color:rgba(255,255,255,.08);
-  box-shadow:none;
-}
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
 
-.card-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:12px;
-  margin-bottom:14px;
-}
+    .badge{
+      display:inline-block;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.4px;
+    }
 
-.badges{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
+    .type-auto{
+      color:#fff1cc;
+      background:rgba(212,175,55,.14);
+      border:1px solid rgba(212,175,55,.35);
+    }
 
-.badge{
-  display:inline-block;
-  padding:5px 10px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:.4px;
-}
+    .priority-high{
+      color:#ffd9d9;
+      background:rgba(255,77,79,.14);
+      border:1px solid rgba(255,77,79,.35);
+    }
 
-.type-sdr{
-  color:#fff1cc;
-  background:rgba(212,175,55,.14);
-  border:1px solid rgba(212,175,55,.35);
-}
+    .priority-medium{
+      color:#ffe1b3;
+      background:rgba(255,159,26,.14);
+      border:1px solid rgba(255,159,26,.35);
+    }
 
-.type-sdb,
-.type-pp{
-  color:#d5fff0;
-  background:rgba(0,208,132,.14);
-  border:1px solid rgba(0,208,132,.35);
-}
+    .priority-low{
+      color:#d5fff0;
+      background:rgba(0,208,132,.14);
+      border:1px solid rgba(0,208,132,.35);
+    }
 
-.priority-high{
-  color:#ffd9d9;
-  background:rgba(255,77,79,.14);
-  border:1px solid rgba(255,77,79,.35);
-}
+    .card-title{
+      color:#fff;
+      font-size:28px;
+      font-weight:800;
+      margin:0 0 10px;
+      line-height:1.35;
+    }
 
-.priority-medium{
-  color:#ffe1b3;
-  background:rgba(255,159,26,.14);
-  border:1px solid rgba(255,159,26,.35);
-}
+    .card-desc{
+      color:var(--muted);
+      line-height:1.8;
+      font-size:15px;
+      margin:0 0 18px;
+    }
 
-.priority-low{
-  color:#d5fff0;
-  background:rgba(0,208,132,.14);
-  border:1px solid rgba(0,208,132,.35);
-}
+    .meta{
+      display:grid;
+      gap:10px;
+    }
 
-.status-live{
-  color:#d5fff0;
-  background:rgba(0,208,132,.14);
-  border:1px solid rgba(0,208,132,.35);
-}
+    .meta-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:14px;
+    }
 
-.status-pending{
-  color:#ddd;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-}
+    .meta-label{
+      color:var(--muted);
+    }
 
-.card-title{
-  color:#fff;
-  font-size:28px;
-  font-weight:800;
-  margin:0 0 10px;
-}
+    .meta-value{
+      color:#fff;
+      font-weight:700;
+      text-align:right;
+    }
 
-.card-desc{
-  color:var(--muted);
-  line-height:1.8;
-  font-size:15px;
-  margin:0 0 18px;
-}
+    .body-box{
+      margin-top:16px;
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:14px;
+      padding:14px;
+      line-height:1.9;
+      color:#ddd;
+      font-size:14px;
+    }
 
-.meta{
-  display:grid;
-  gap:10px;
-}
+    .recommendation{
+      margin-top:12px;
+      background:rgba(212,175,55,.05);
+      border:1px solid rgba(212,175,55,.18);
+      border-radius:14px;
+      padding:14px;
+      line-height:1.9;
+      color:#f0e3b0;
+      font-size:14px;
+    }
 
-.meta-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  background:var(--panel2);
-  border:1px solid rgba(255,255,255,.05);
-  border-radius:12px;
-  padding:12px 14px;
-  font-size:14px;
-}
+    .empty{
+      display:none;
+      margin-top:20px;
+      text-align:center;
+      color:#888;
+      padding:24px;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;
+      background:var(--panel);
+    }
 
-.meta-label{
-  color:var(--muted);
-}
+    .footer{
+      margin-top:32px;
+      text-align:center;
+      color:#777;
+      border-top:1px solid rgba(255,255,255,.05);
+      padding-top:20px;
+      font-size:14px;
+    }
 
-.meta-value{
-  color:#fff;
-  font-weight:700;
-  text-align:right;
-}
+    html[dir="rtl"] body{
+      text-align:right;
+    }
 
-.empty{
-  display:none;
-  margin-top:20px;
-  text-align:center;
-  color:#888;
-  padding:24px;
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:16px;
-  background:var(--panel);
-}
+    html[dir="rtl"] .topbar,
+    html[dir="rtl"] .top-actions,
+    html[dir="rtl"] .nav,
+    html[dir="rtl"] .toolbar,
+    html[dir="rtl"] .badges,
+    html[dir="rtl"] .meta-row{
+      direction:rtl;
+    }
 
-.footer{
-  margin-top:32px;
-  text-align:center;
-  color:#777;
-  border-top:1px solid rgba(255,255,255,.05);
-  padding-top:20px;
-  font-size:14px;
-}
+    html[dir="rtl"] .hero,
+    html[dir="rtl"] .system-box,
+    html[dir="rtl"] .footer,
+    html[dir="rtl"] .empty{
+      text-align:center;
+    }
 
-html[dir="rtl"] body{
-  text-align:right;
-}
+    html[dir="rtl"] .meta-value{
+      text-align:left;
+    }
 
-html[dir="rtl"] .topbar,
-html[dir="rtl"] .top-actions,
-html[dir="rtl"] .nav,
-html[dir="rtl"] .toolbar,
-html[dir="rtl"] .badges{
-  direction:rtl;
-}
+    @media(max-width:980px){
+      .toolbar{
+        grid-template-columns:1fr;
+      }
 
-html[dir="rtl"] .hero,
-html[dir="rtl"] .system-box,
-html[dir="rtl"] .footer,
-html[dir="rtl"] .empty{
-  text-align:center;
-}
+      .system-strip{
+        grid-template-columns:repeat(2,1fr);
+      }
 
-html[dir="rtl"] .meta-value{
-  text-align:left;
-}
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
 
-@media(max-width:980px){
-  .toolbar{
-    grid-template-columns:1fr;
-  }
+    @media(max-width:700px){
+      .topbar{
+        flex-direction:column;
+      }
 
-  .system-strip{
-    grid-template-columns:repeat(2,1fr);
-  }
+      h1{
+        font-size:32px;
+      }
 
-  .grid{
-    grid-template-columns:1fr;
-  }
-}
-
-@media(max-width:700px){
-  .topbar{
-    flex-direction:column;
-  }
-
-  h1{
-    font-size:32px;
-  }
-
-  .system-strip{
-    grid-template-columns:1fr;
-  }
-}
-</style>
+      .system-strip{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
 </head>
 <body>
 <div class="wrap">
@@ -411,8 +408,8 @@ html[dir="rtl"] .meta-value{
       </div>
 
       <div class="lang-switch">
-        <button id="btn-en" onclick="setLang('en')">EN</button>
-        <button id="btn-ar" onclick="setLang('ar')">AR</button>
+        <button id="btn-en" type="button">EN</button>
+        <button id="btn-ar" type="button">AR</button>
       </div>
     </div>
   </div>
@@ -421,44 +418,44 @@ html[dir="rtl"] .meta-value{
     <div class="eyebrow" data-i18n="eyebrow">Reports System</div>
     <h1 data-i18n="title">IBSS Reports System</h1>
     <p class="sub" data-i18n="sub">
-      Decision-grade outputs generated from the same sovereign signal architecture that drives the platform.
+      Live reports generated from the sovereign signal engine and country risk unit.
     </p>
   </div>
 
   <div class="system-strip">
     <div class="system-box">
-      <div class="system-label" data-i18n="top_report">Top Report</div>
+      <div class="system-label" data-i18n="top_report">Latest Report</div>
       <div id="topReport" class="system-value">-</div>
     </div>
     <div class="system-box">
-      <div class="system-label" data-i18n="published_reports">Published Reports</div>
-      <div id="publishedReports" class="system-value">0</div>
+      <div class="system-label" data-i18n="total_reports">Total Reports</div>
+      <div id="totalReports" class="system-value">0</div>
     </div>
     <div class="system-box">
-      <div class="system-label" data-i18n="high_priority">High Priority</div>
-      <div id="highPriorityReports" class="system-value">0</div>
+      <div class="system-label" data-i18n="current_level">Current Level</div>
+      <div id="currentLevel" class="system-value">-</div>
     </div>
     <div class="system-box">
-      <div class="system-label" data-i18n="report_types">Report Types</div>
-      <div id="reportTypes" class="system-value">0</div>
+      <div class="system-label" data-i18n="current_pressure">System Pressure</div>
+      <div id="currentPressure" class="system-value">0</div>
     </div>
   </div>
 
   <div class="toolbar">
     <input id="searchInput" class="search" type="text" placeholder="Search reports..." data-i18n-placeholder="search_placeholder">
 
-    <select id="typeFilter" class="select">
-      <option value="all" data-i18n="filter_all_types">All Types</option>
-      <option value="SDR">SDR</option>
-      <option value="SDB">SDB</option>
-      <option value="PP">PP</option>
+    <select id="levelFilter" class="select">
+      <option value="all" data-i18n="filter_all_levels">All Levels</option>
+      <option value="HIGH" data-i18n="level_high">HIGH</option>
+      <option value="MEDIUM" data-i18n="level_medium">MEDIUM</option>
+      <option value="LOW" data-i18n="level_low">LOW</option>
     </select>
 
-    <select id="priorityFilter" class="select">
-      <option value="all" data-i18n="filter_all_priority">All Priorities</option>
-      <option value="HIGH" data-i18n="priority_high">HIGH</option>
-      <option value="MEDIUM" data-i18n="priority_medium">MEDIUM</option>
-      <option value="LOW" data-i18n="priority_low">LOW</option>
+    <select id="decisionFilter" class="select">
+      <option value="all" data-i18n="filter_all_decisions">All Decisions</option>
+      <option value="ACT" data-i18n="decision_act">ACT</option>
+      <option value="PRD" data-i18n="decision_prd">PRD</option>
+      <option value="WATCH" data-i18n="decision_watch">WATCH</option>
     </select>
   </div>
 
@@ -469,12 +466,13 @@ html[dir="rtl"] .meta-value{
   </div>
 
   <div class="footer" data-i18n="footer_text">
-    © 2026 IBSS — Reports System | Founded by Naeem M. Dahalan
+    © 2026 IBSS — Reports System | Auto Report Engine Active
   </div>
 
 </div>
 
 <script src="data.js"></script>
+<script src="engine.js"></script>
 <script>
 const translations = {
   en: {
@@ -487,31 +485,35 @@ const translations = {
 
     eyebrow: "Reports System",
     title: "IBSS Reports System",
-    sub: "Decision-grade outputs generated from the same sovereign signal architecture that drives the platform.",
+    sub: "Live reports generated from the sovereign signal engine and country risk unit.",
 
-    top_report: "Top Report",
-    published_reports: "Published Reports",
-    high_priority: "High Priority",
-    report_types: "Report Types",
+    top_report: "Latest Report",
+    total_reports: "Total Reports",
+    current_level: "Current Level",
+    current_pressure: "System Pressure",
 
     search_placeholder: "Search reports...",
-    filter_all_types: "All Types",
-    filter_all_priority: "All Priorities",
+    filter_all_levels: "All Levels",
+    filter_all_decisions: "All Decisions",
 
-    priority_high: "HIGH",
-    priority_medium: "MEDIUM",
-    priority_low: "LOW",
+    level_high: "HIGH",
+    level_medium: "MEDIUM",
+    level_low: "LOW",
 
-    status_live: "Published",
-    status_pending: "Pending",
+    decision_act: "ACT",
+    decision_prd: "PRD",
+    decision_watch: "WATCH",
 
-    meta_source: "Source Signal",
-    meta_type: "Type",
-    meta_priority: "Priority",
-    meta_status: "Status",
+    meta_created: "Created At",
+    meta_level: "Level",
+    meta_decision: "Decision",
+    meta_signal: "Top Signal",
+    meta_summary: "Summary",
+    meta_body: "Body",
+    meta_recommendation: "Recommendation",
 
     empty_state: "No reports match the current filters.",
-    footer_text: "© 2026 IBSS — Reports System | Founded by Naeem M. Dahalan"
+    footer_text: "© 2026 IBSS — Reports System | Auto Report Engine Active"
   },
 
   ar: {
@@ -524,31 +526,35 @@ const translations = {
 
     eyebrow: "نظام التقارير",
     title: "نظام تقارير IBSS",
-    sub: "مخرجات بدرجة قرار مولّدة من نفس البنية السيادية للإشارات التي تقود المنصة.",
+    sub: "تقارير حيّة يولدها محرك الإشارات السيادية ووحدة تتبع مخاطر الدول.",
 
-    top_report: "التقرير الأعلى",
-    published_reports: "التقارير المنشورة",
-    high_priority: "عالية الأولوية",
-    report_types: "أنواع التقارير",
+    top_report: "آخر تقرير",
+    total_reports: "إجمالي التقارير",
+    current_level: "المستوى الحالي",
+    current_pressure: "ضغط النظام",
 
     search_placeholder: "ابحث داخل التقارير...",
-    filter_all_types: "كل الأنواع",
-    filter_all_priority: "كل الأولويات",
+    filter_all_levels: "كل المستويات",
+    filter_all_decisions: "كل القرارات",
 
-    priority_high: "مرتفع",
-    priority_medium: "متوسط",
-    priority_low: "منخفض",
+    level_high: "مرتفع",
+    level_medium: "متوسط",
+    level_low: "منخفض",
 
-    status_live: "منشور",
-    status_pending: "قيد الإعداد",
+    decision_act: "تحرك",
+    decision_prd: "استعداد",
+    decision_watch: "مراقبة",
 
-    meta_source: "الإشارة المصدر",
-    meta_type: "النوع",
-    meta_priority: "الأولوية",
-    meta_status: "الحالة",
+    meta_created: "وقت الإنشاء",
+    meta_level: "المستوى",
+    meta_decision: "القرار",
+    meta_signal: "الإشارة العليا",
+    meta_summary: "الملخص",
+    meta_body: "المتن",
+    meta_recommendation: "التوصية",
 
     empty_state: "لا توجد تقارير تطابق الفلاتر الحالية.",
-    footer_text: "© 2026 IBSS — نظام التقارير | تأسس بواسطة نعيم م. دحلان"
+    footer_text: "© 2026 IBSS — نظام التقارير | محرك التقارير التلقائية مفعل"
   }
 };
 
@@ -560,6 +566,12 @@ function t(key){
 
 function safeText(value, fallback = "-"){
   return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function getLocalizedText(value){
+  if (!value) return "-";
+  if (typeof value === "string") return value;
+  return value[currentLang] || value.en || value.ar || "-";
 }
 
 function setLang(lang){
@@ -593,73 +605,75 @@ function escapeHtml(text){
   return div.innerHTML;
 }
 
-function priorityClass(priority){
-  if(priority === "HIGH") return "priority-high";
-  if(priority === "MEDIUM") return "priority-medium";
+function priorityClass(level){
+  if(level === "HIGH") return "priority-high";
+  if(level === "MEDIUM") return "priority-medium";
   return "priority-low";
 }
 
-function priorityLabel(priority){
-  if(priority === "HIGH") return t("priority_high");
-  if(priority === "MEDIUM") return t("priority_medium");
-  return t("priority_low");
+function getReports(){
+  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getReports === "function") {
+    return window.IBSS_ENGINE.getReports();
+  }
+  return [];
 }
 
-function getSignalScoreLocal(signal){
-  if (!signal || !signal.metrics) return 0;
-  return (
-    (signal.metrics.weight || 0) * 0.5 +
-    (signal.metrics.volatility || 0) * 0.3 +
-    (signal.metrics.impact || 0) * 0.2
-  );
+function getSystem(){
+  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getLastSystemState === "function") {
+    return window.IBSS_ENGINE.getLastSystemState() || window.IBSS_ENGINE.getSystemState();
+  }
+  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+    return window.IBSS_ENGINE.getSystemState();
+  }
+  return null;
 }
 
-function getRankedSignalsLocal(){
-  const source = Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
-  return [...source].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a));
-}
+function formatDateTime(value){
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
 
-function getReportItems(){
-  return getRankedSignalsLocal()
-    .filter(signal => signal && signal.reportMeta && signal.report)
-    .map(signal => ({
-      id: signal.id,
-      title: `${safeText(signal.reportMeta?.code, "REP")} — ${safeText(signal.title?.[currentLang] || signal.title?.en)}`,
-      description: safeText(signal.report?.[currentLang] || signal.report?.en),
-      type: safeText(signal.reportMeta?.type, "PP"),
-      priority: safeText(signal.reportMeta?.priority, "LOW"),
-      status: signal.live ? "live" : "pending",
-      sourceTitle: safeText(signal.title?.[currentLang] || signal.title?.en),
-      live: !!signal.live
-    }));
+  return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 }
 
 function renderTopStrip(allItems){
   const top = allItems[0] || null;
-  document.getElementById("topReport").textContent = top ? top.title : "-";
-  document.getElementById("publishedReports").textContent = allItems.filter(i => i.live).length;
-  document.getElementById("highPriorityReports").textContent = allItems.filter(i => i.priority === "HIGH").length;
-  document.getElementById("reportTypes").textContent = new Set(allItems.map(i => i.type)).size;
+  const system = getSystem();
+
+  document.getElementById("topReport").textContent = top ? getLocalizedText(top.title) : "-";
+  document.getElementById("totalReports").textContent = allItems.length;
+  document.getElementById("currentLevel").textContent = system ? (
+    system.level === "HIGH" ? t("level_high") :
+    system.level === "MEDIUM" ? t("level_medium") :
+    t("level_low")
+  ) : "-";
+  document.getElementById("currentPressure").textContent = system ? (system.systemPressure || 0) : 0;
 }
 
 function renderReports(){
   const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
-  const typeValue = document.getElementById("typeFilter").value;
-  const priorityValue = document.getElementById("priorityFilter").value;
+  const levelValue = document.getElementById("levelFilter").value;
+  const decisionValue = document.getElementById("decisionFilter").value;
 
-  const allItems = getReportItems();
+  const allItems = getReports();
   renderTopStrip(allItems);
 
   const items = allItems.filter(report => {
-    const title = (report.title || "").toLowerCase();
-    const desc = (report.description || "").toLowerCase();
-    const source = (report.sourceTitle || "").toLowerCase();
+    const title = getLocalizedText(report.title).toLowerCase();
+    const summary = getLocalizedText(report.summary).toLowerCase();
+    const body = getLocalizedText(report.body).toLowerCase();
 
-    const searchMatch = !searchValue || title.includes(searchValue) || desc.includes(searchValue) || source.includes(searchValue);
-    const typeMatch = typeValue === "all" || report.type === typeValue;
-    const priorityMatch = priorityValue === "all" || report.priority === priorityValue;
+    const searchMatch = !searchValue || title.includes(searchValue) || summary.includes(searchValue) || body.includes(searchValue);
+    const levelMatch = levelValue === "all" || report.level === levelValue;
+    const decisionMatch = decisionValue === "all" || report.decision === decisionValue;
 
-    return searchMatch && typeMatch && priorityMatch;
+    return searchMatch && levelMatch && decisionMatch;
   });
 
   const grid = document.getElementById("reportsGrid");
@@ -674,46 +688,80 @@ function renderReports(){
   empty.style.display = "none";
 
   grid.innerHTML = items.map(report => `
-    <div class="report-card${report.live ? "" : " disabled"}">
+    <div class="report-card">
       <div class="card-top">
         <div class="badges">
-          <span class="badge type-${String(report.type).toLowerCase()}">${escapeHtml(report.type)}</span>
-          <span class="badge ${priorityClass(report.priority)}">${escapeHtml(priorityLabel(report.priority))}</span>
-          <span class="badge ${report.live ? "status-live" : "status-pending"}">${escapeHtml(report.live ? t("status_live") : t("status_pending"))}</span>
+          <span class="badge type-auto">AUTO</span>
+          <span class="badge ${priorityClass(report.level)}">${
+            report.level === "HIGH" ? t("level_high") :
+            report.level === "MEDIUM" ? t("level_medium") :
+            t("level_low")
+          }</span>
+          <span class="badge ${priorityClass(report.level)}">${
+            report.decision === "ACT" ? t("decision_act") :
+            report.decision === "PRD" ? t("decision_prd") :
+            t("decision_watch")
+          }</span>
         </div>
       </div>
 
-      <h2 class="card-title">${escapeHtml(report.title)}</h2>
-      <p class="card-desc">${escapeHtml(report.description)}</p>
+      <h2 class="card-title">${escapeHtml(getLocalizedText(report.title))}</h2>
+      <p class="card-desc">${escapeHtml(getLocalizedText(report.summary))}</p>
 
       <div class="meta">
         <div class="meta-row">
-          <span class="meta-label">${escapeHtml(t("meta_source"))}</span>
-          <span class="meta-value">${escapeHtml(report.sourceTitle)}</span>
+          <span class="meta-label">${escapeHtml(t("meta_created"))}</span>
+          <span class="meta-value">${escapeHtml(formatDateTime(report.createdAt))}</span>
         </div>
         <div class="meta-row">
-          <span class="meta-label">${escapeHtml(t("meta_type"))}</span>
-          <span class="meta-value">${escapeHtml(report.type)}</span>
+          <span class="meta-label">${escapeHtml(t("meta_level"))}</span>
+          <span class="meta-value">${
+            report.level === "HIGH" ? t("level_high") :
+            report.level === "MEDIUM" ? t("level_medium") :
+            t("level_low")
+          }</span>
         </div>
         <div class="meta-row">
-          <span class="meta-label">${escapeHtml(t("meta_priority"))}</span>
-          <span class="meta-value">${escapeHtml(priorityLabel(report.priority))}</span>
+          <span class="meta-label">${escapeHtml(t("meta_decision"))}</span>
+          <span class="meta-value">${
+            report.decision === "ACT" ? t("decision_act") :
+            report.decision === "PRD" ? t("decision_prd") :
+            t("decision_watch")
+          }</span>
         </div>
         <div class="meta-row">
-          <span class="meta-label">${escapeHtml(t("meta_status"))}</span>
-          <span class="meta-value">${escapeHtml(report.live ? t("status_live") : t("status_pending"))}</span>
+          <span class="meta-label">${escapeHtml(t("meta_signal"))}</span>
+          <span class="meta-value">${escapeHtml(report.topSignalId || "-")}</span>
         </div>
+      </div>
+
+      <div class="body-box">
+        <strong>${escapeHtml(t("meta_body"))}</strong><br><br>
+        ${escapeHtml(getLocalizedText(report.body))}
+      </div>
+
+      <div class="recommendation">
+        <strong>${escapeHtml(t("meta_recommendation"))}</strong><br><br>
+        ${escapeHtml(getLocalizedText(report.recommendation))}
       </div>
     </div>
   `).join("");
 }
 
 document.getElementById("searchInput").addEventListener("input", renderReports);
-document.getElementById("typeFilter").addEventListener("change", renderReports);
-document.getElementById("priorityFilter").addEventListener("change", renderReports);
+document.getElementById("levelFilter").addEventListener("change", renderReports);
+document.getElementById("decisionFilter").addEventListener("change", renderReports);
+document.getElementById("btn-en").addEventListener("click", () => setLang("en"));
+document.getElementById("btn-ar").addEventListener("click", () => setLang("ar"));
 
-applyTranslations();
-renderReports();
+window.addEventListener("load", () => {
+  applyTranslations();
+  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+    window.IBSS_ENGINE.getSystemState();
+  }
+  renderReports();
+  setInterval(renderReports, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
+});
 </script>
 </body>
-  </html>
+</html>
