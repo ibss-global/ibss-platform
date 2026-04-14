@@ -30,7 +30,30 @@ window.IBSS_ENGINE = (function () {
   function getSignals() {
     return Array.isArray(window.IBSS_SIGNALS) ? window.IBSS_SIGNALS : [];
   }
+  
+function getContent() {
+  return Array.isArray(window.IBSS_CONTENT) ? window.IBSS_CONTENT : [];
+}
 
+function getPublishedContent() {
+  return getContent().filter(item => item.status === "published");
+}
+
+function getContentStats() {
+  const content = getContent();
+
+  return {
+    total: content.length,
+    published: content.filter(item => item.status === "published").length,
+    pending: content.filter(item => item.status === "pending").length,
+    reports: content.filter(item => item.type === "report").length,
+    studies: content.filter(item => item.type === "study").length,
+    briefs: content.filter(item => item.type === "brief").length,
+    news: content.filter(item => item.type === "news").length,
+    policyPapers: content.filter(item => item.type === "policy_paper").length,
+    analyses: content.filter(item => item.type === "analysis").length
+  };
+                            }
   function getLocalizedText(value, lang = "en") {
     if (!value) return "-";
     if (typeof value === "string") return value;
