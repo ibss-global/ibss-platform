@@ -15,8 +15,8 @@
         ar: "قراءة سيادية تعتبر غزة نظام ضغط بنيوي تتقاطع فيه القوة العسكرية والهشاشة الحوكمية والضغط الإنساني والتنافس السردي.",
         en: "A sovereign reading that frames Gaza as a structural pressure system where military force, governance fragility, humanitarian stress, and narrative competition intersect."
       },
-      type: "report", // report | study | brief | news | policy_paper
-      domain: "geo-security", // economic | security | military | geopolitical | geo-security | geo-military
+      type: "report",
+      domain: "geo-security",
       country: "gaza",
       region: "levant",
       priority: "HIGH",
@@ -406,7 +406,7 @@
       region: "Palestine",
       riskScore: 91,
       riskLevel: "HIGH",
-      trend: "RISING", // RISING | STABLE | FALLING
+      trend: "RISING",
       primaryDrivers: {
         ar: [
           "الضغط العسكري",
@@ -590,5 +590,88 @@
     contentById: buildIndex(IBSS_CONTENT),
     signalsById: buildIndex(IBSS_SIGNALS),
     countriesById: buildIndex(IBSS_COUNTRIES)
+  };
+
+  globalThis.IBSS_UTILS = {
+    getPublishedContent() {
+      return IBSS_CONTENT.filter(item => item.status === "published");
+    },
+
+    getLatestPublishedContent() {
+      return [...IBSS_CONTENT]
+        .filter(item => item.status === "published")
+        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+    },
+
+    getLatestStudy() {
+      return [...IBSS_CONTENT]
+        .filter(item =>
+          item.type === "study" ||
+          item.type === "policy_paper" ||
+          item.type === "report"
+        )
+        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))[0] || null;
+    },
+
+    getLatestNews(limit = 3) {
+      return [...IBSS_CONTENT]
+        .filter(item =>
+          item.type === "news" ||
+          item.type === "brief" ||
+          item.type === "report"
+        )
+        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+        .slice(0, limit);
+    },
+
+    getLiveSignals() {
+      return IBSS_SIGNALS.filter(signal => signal.live === true);
+    },
+
+    getTopSignal() {
+      return [...IBSS_SIGNALS]
+        .sort((a, b) => (b.metrics?.impact || 0) - (a.metrics?.impact || 0))[0] || null;
+    },
+
+    getTopCountry() {
+      return [...IBSS_COUNTRIES]
+        .sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0))[0] || null;
+    },
+
+    getHighRiskCountries(limit = 5) {
+      return [...IBSS_COUNTRIES]
+        .sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0))
+        .slice(0, limit);
+    },
+
+    getContentByType(type, limit = null) {
+      const results = IBSS_CONTENT.filter(item => item.type === type)
+        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+
+      return limit ? results.slice(0, limit) : results;
+    },
+
+    getSignalsByWeight(weight) {
+      return IBSS_SIGNALS.filter(signal => signal.weight === weight);
+    },
+
+    getSignalsByCountry(countryId) {
+      return IBSS_SIGNALS.filter(signal => signal.countryId === countryId);
+    },
+
+    getCountryBySlug(slug) {
+      return IBSS_COUNTRIES.find(country => country.slug === slug) || null;
+    },
+
+    getHomeSnapshot() {
+      return {
+        topSignal: this.getTopSignal(),
+        topCountry: this.getTopCountry(),
+        latestStudy: this.getLatestStudy(),
+        latestNews: this.getLatestNews(3),
+        liveSignalsCount: this.getLiveSignals().length,
+        highRiskCountries: this.getHighRiskCountries(5)
+      };
+    }
   };
 })();
