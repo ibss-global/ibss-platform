@@ -1,170 +1,85 @@
-// IBSS ENGINE — Unified Core Engine
-// Version: v1.0 Foundation Engine
-
-(function () {
+window.IBSS_ENGINE = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_live_system",
-    refreshMs: 3000,
-    thresholds: {
-      high: 75,
-      medium: 50
-    },
-    weights: {
-      signalWeight: 0.5,
-      signalVolatility: 0.3,
-      signalImpact: 0.2
-    },
-    pressure: {
-      topSignalFactor: 0.45,
-      averageSignalFactor: 0.35,
-      countryRiskFactor: 0.20
-    }
+    refreshMs: 4000,
+    historyLimit: 120,
+    reportLimit: 30,
+    storageKey: "ibss_engine_state"
   };
 
-  function safe(value, fallback = "-") {
-    return value !== undefined && value !== null && value !== "" ? value : fallback;
+  const STATE = {
+    history: [],
+    reports: [],
+    lastSystem: null
+  };
+
+  function safeNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
   }
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
 
-  function getLang() {
-    return localStorage.getItem("ibss_lang") || "en";
-  }
-
-  function getLocalizedText(obj, lang) {
-    if (!obj) return "-";
-    if (typeof obj === "string") return obj;
-    return obj[lang] || obj.en || obj.ar || "-";
+  function nowIso() {
+    return new Date().toISOString();
   }
 
   function getSignals() {
-    return Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
+    return Array.isArray(window.IBSS_SIGNALS) ? window.IBSS_SIGNALS : [];
   }
 
-  function getCountries() {
-    return Array.isArray(globalThis.IBSS_COUNTRIES) ? globalThis.IBSS_COUNTRIES : [];
+  function getLocalizedText(value, lang = "en") {
+    if (!value) return "-";
+    if (typeof value === "string") return value;
+    return value[lang] || value.en || value.ar || "-";
   }
 
-  function getContent() {
-    return Array.isArray(globalThis.IBSS_CONTENT) ? globalThis.IBSS_CONTENT : [];
+  function detectPriority(signal) {
+    if (signal?.priority) return signal.priority;
+    if (signal?.reportMeta?.priority) return signal.reportMeta.priority;
+    if (signal?.weight) return signal.weight;
+    return "LOW";
   }
 
-  function scoreSignal(signal) {
+  function scoreSignalBase(signal) {
     const metrics = signal?.metrics || {};
+    const weight = safeNumber(metrics.weight, 0);
+    const volatility = safeNumber(metrics.volatility, 0);
+    const impact = safeNumber(metrics.impact, 0);
 
-    const weight = Number(metrics.weight) || 0;
-    const volatility = Number(metrics.volatility) || 0;
-    const impact = Number(metrics.impact) || 0;
+    let priorityBoost = 0;
+    const priority = detectPriority(signal);
+    if (priority === "HIGH") priorityBoost = 0.08;
+    else if (priority === "MEDIUM") priorityBoost = 0.04;
 
-    return (
-      weight * CONFIG.weights.signalWeight +
-      volatility * CONFIG.weights.signalVolatility +
-      impact * CONFIG.weights.signalImpact
+    return clamp(
+      (weight * 0.5) + (volatility * 0.25) + (impact * 0.25) + priorityBoost,
+      0,
+      1
     );
   }
 
   function scoreSignal100(signal) {
-    return Math.round(scoreSignal(signal) * 100);
+    return Math.round(scoreSignalBase(signal) * 100);
   }
 
-  function getPriorityClass(priority) {
-    if (priority === "HIGH") return "high";
-    if (priority === "MEDIUM") return "medium";
-    return "low";
+  function detectTrend(current, previous) {
+    if (previous == null) return "STABLE";
+    if (current > previous + 2) return "RISING";
+    if (current < previous - 2) return "FALLING";
+    return "STABLE";
   }
 
-  function getRiskClass(level) {
-    if (level === "HIGH") return "high";
-    if (level === "MEDIUM") return "medium";
-    return "low";
-  }
-
-  function getRankedSignals() {
-    return getSignals()
-      .map(signal => {
-        const score = scoreSignal(signal);
-        const score100 = Math.round(score * 100);
-        const priority = signal?.reportMeta?.priority || signal?.weight || "LOW";
-
-        return {
-          ...signal,
-          score,
-          score100,
-          balancedScore100: score100,
-          priority,
-          priorityClass: getPriorityClass(priority),
-          localizedTitle: getLocalizedText(signal.title, getLang()),
-          localizedDescription: getLocalizedText(signal.description, getLang()),
-          localizedSignalType: getLocalizedText(signal.signalType, getLang()),
-          localizedDecisionMode: getLocalizedText(signal.decisionMode, getLang()),
-          localizedInfluenceBand: getLocalizedText(signal.influenceBand, getLang())
-        };
-      })
-      .sort((a, b) => b.score100 - a.score100);
-  }
-
-  function getLiveSignals() {
-    return getRankedSignals().filter(signal => signal.live === true);
-  }
-
-  function getTopSignal() {
-    const live = getLiveSignals();
-    if (live.length) return live[0];
-
-    const ranked = getRankedSignals();
-    return ranked[0] || null;
-  }
-
-  function getTopCountry() {
-    const countries = getCountries();
-    if (!countries.length) return null;
-
-    return [...countries].sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0))[0] || null;
-  }
-
-  function calculateAverageSignalScore100() {
-    const ranked = getRankedSignals();
-    if (!ranked.length) return 0;
-
-    const total = ranked.reduce((sum, signal) => sum + (signal.score100 || 0), 0);
-    return Math.round(total / ranked.length);
-  }
-
-  function calculateAverageCountryRisk() {
-    const countries = getCountries();
-    if (!countries.length) return 0;
-
-    const total = countries.reduce((sum, country) => sum + (Number(country.riskScore) || 0), 0);
-    return Math.round(total / countries.length);
-  }
-
-  function calculateSystemPressure() {
-    const topSignal = getTopSignal();
-    const avgSignal = calculateAverageSignalScore100();
-    const avgCountryRisk = calculateAverageCountryRisk();
-
-    const topSignalScore = topSignal ? topSignal.score100 : 0;
-
-    const pressure = Math.round(
-      (topSignalScore * CONFIG.pressure.topSignalFactor) +
-      (avgSignal * CONFIG.pressure.averageSignalFactor) +
-      (avgCountryRisk * CONFIG.pressure.countryRiskFactor)
-    );
-
-    return clamp(pressure, 0, 100);
-  }
-
-  function getLevelFromPressure(pressure) {
-    if (pressure >= CONFIG.thresholds.high) return "HIGH";
-    if (pressure >= CONFIG.thresholds.medium) return "MEDIUM";
+  function riskLevelFromScore(score) {
+    if (score >= 75) return "HIGH";
+    if (score >= 50) return "MEDIUM";
     return "LOW";
   }
 
-  function getDecisionFromLevel(level) {
+  function decisionFromLevel(level) {
     if (level === "HIGH") {
       return {
         decision: "ACT",
@@ -185,232 +100,392 @@
     };
   }
 
+  function buildRankedSignals() {
+    return getSignals()
+      .map((signal) => {
+        const score = scoreSignalBase(signal);
+        const score100 = Math.round(score * 100);
+        const priority = detectPriority(signal);
+
+        return {
+          ...signal,
+          priority,
+          score,
+          score100,
+          balancedScore100: score100,
+          live: !!(signal.live || signal.active)
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+  }
+
+  function buildPressure(rankedSignals) {
+    const topSignal = rankedSignals[0] || null;
+    const average = rankedSignals.length
+      ? rankedSignals.reduce((sum, signal) => sum + signal.score, 0) / rankedSignals.length
+      : 0;
+
+    const activeSignals = rankedSignals.filter((signal) => signal.live).length;
+
+    let pressure = Math.round(
+      Math.min(
+        (average * 55) +
+        ((topSignal?.score || 0) * 25) +
+        Math.min(activeSignals, 10),
+        100
+      )
+    );
+
+    if (topSignal?.priority === "HIGH") pressure += 8;
+    else if (topSignal?.priority === "MEDIUM") pressure += 4;
+
+    return clamp(pressure, 0, 100);
+  }
+
   function buildScenarios(level) {
     if (level === "HIGH") {
       return [
-        { key: "Scenario A", value: 58 },
-        { key: "Scenario B", value: 27 },
-        { key: "Scenario C", value: 15 }
+        { key: "A", value: 58 },
+        { key: "B", value: 27 },
+        { key: "C", value: 15 }
       ];
     }
 
     if (level === "MEDIUM") {
       return [
-        { key: "Scenario A", value: 38 },
-        { key: "Scenario B", value: 37 },
-        { key: "Scenario C", value: 25 }
+        { key: "A", value: 38 },
+        { key: "B", value: 37 },
+        { key: "C", value: 25 }
       ];
     }
 
     return [
-      { key: "Scenario A", value: 22 },
-      { key: "Scenario B", value: 33 },
-      { key: "Scenario C", value: 45 }
+      { key: "A", value: 22 },
+      { key: "B", value: 33 },
+      { key: "C", value: 45 }
     ];
   }
 
-  function buildFeed(system) {
-    const lang = getLang();
-    const lines = [];
+  function findPreviousCountryRisk(name) {
+    for (let i = STATE.history.length - 1; i >= 0; i -= 1) {
+      const row = STATE.history[i];
+      const found = row.countryRiskFeed?.find((item) => item.name === name);
+      if (found) return found.riskScore;
+    }
+    return null;
+  }
 
-    if (lang === "ar") {
-      lines.push(`• تم تحديث مؤشر الضغط إلى ${system.systemPressure}`);
-      lines.push("• تم تفعيل الموازنة التلقائية للإشارات");
-      lines.push("• تمت مزامنة مصفوفة الإشارات");
-    } else {
-      lines.push(`• Pressure index updated to ${system.systemPressure}`);
-      lines.push("• Auto-balance normalization active");
-      lines.push("• Ranked signal matrix synchronized");
+  function buildCountryRiskFeed(rankedSignals) {
+    return rankedSignals.slice(0, 5).map((signal) => {
+      const name = getLocalizedText(signal.title, "en");
+      const riskScore = signal.balancedScore100;
+      const previous = findPreviousCountryRisk(name);
+      const trend = detectTrend(riskScore, previous);
+
+      return {
+        id: signal.id || name.toLowerCase().replace(/\s+/g, "-"),
+        name,
+        riskScore,
+        riskLevel: riskLevelFromScore(riskScore),
+        trend
+      };
+    });
+  }
+
+  function buildFeed(system) {
+    const top = system.topSignal;
+    const lines = [
+      `Pressure index updated to ${system.systemPressure}`,
+      `System level: ${system.level}`,
+      `Decision mode: ${system.mode}`
+    ];
+
+    if (top) {
+      lines.push(`Top signal: ${getLocalizedText(top.title, "en")}`);
     }
 
-    system.rankedSignals.forEach(signal => {
-      const title = getLocalizedText(signal.title, lang);
-      const mode = getLocalizedText(signal.decisionMode, lang);
+    if (system.countryRiskFeed.length) {
+      lines.push(`CRU synchronized with ${system.countryRiskFeed.length} country entries`);
+    }
 
-      lines.push(`• ${title} — ${mode}`);
-    });
+    if (system.level === "HIGH") {
+      lines.push("High escalation threshold exceeded");
+    } else if (system.level === "MEDIUM") {
+      lines.push("Structured pressure remains above preparation threshold");
+    } else {
+      lines.push("Low pressure monitoring remains stable");
+    }
 
     return lines;
   }
 
-  function buildCountryRiskFeed() {
-    const lang = getLang();
+  function buildReportTitle(system, lang = "en") {
+    const topName = system.topSignal
+      ? getLocalizedText(system.topSignal.title, lang)
+      : (lang === "ar" ? "لا توجد إشارة" : "No Signal");
 
-    return getCountries()
-      .map(country => ({
-        id: country.id,
-        name: getLocalizedText(country.name, lang),
-        riskScore: Number(country.riskScore) || 0,
-        riskLevel: safe(country.riskLevel, "LOW"),
-        trend: safe(country.trend, "STABLE"),
-        primaryDrivers: Array.isArray(country.primaryDrivers?.[lang])
-          ? country.primaryDrivers[lang]
-          : (Array.isArray(country.primaryDrivers?.en) ? country.primaryDrivers.en : [])
-      }))
-      .sort((a, b) => b.riskScore - a.riskScore);
+    if (lang === "ar") {
+      return `تقرير تلقائي — ${topName}`;
+    }
+
+    return `Auto Report — ${topName}`;
   }
 
-  function buildContentStats() {
-    const content = getContent();
+  function buildReportBody(system, lang = "en") {
+    const topName = system.topSignal
+      ? getLocalizedText(system.topSignal.title, lang)
+      : (lang === "ar" ? "غير محدد" : "Undefined");
+
+    const topDesc = system.topSignal
+      ? getLocalizedText(system.topSignal.description, lang)
+      : (lang === "ar" ? "لا يوجد وصف." : "No description.");
+
+    const level = lang === "ar"
+      ? (system.level === "HIGH" ? "مرتفع" : system.level === "MEDIUM" ? "متوسط" : "منخفض")
+      : system.level;
+
+    const decision = lang === "ar"
+      ? (system.decision === "ACT" ? "تحرك" : system.decision === "PRD" ? "استعداد" : "مراقبة")
+      : system.decision;
+
+    if (lang === "ar") {
+      return {
+        summary: `رصد المحرك ضغطًا بقيمة ${system.systemPressure} ضمن مستوى ${level} مع قرار ${decision}.`,
+        body:
+          `الإشارة المهيمنة الحالية هي ${topName}. ` +
+          `${topDesc} ` +
+          `محرك السيناريو يوزّع الاحتمالات على النحو التالي: ` +
+          `أ ${system.scenarios[0]?.value || 0}%، ` +
+          `ب ${system.scenarios[1]?.value || 0}%، ` +
+          `ج ${system.scenarios[2]?.value || 0}%.`,
+        recommendation:
+          system.level === "HIGH"
+            ? "يوصى برفع الجاهزية التشغيلية ومتابعة التحديثات بشكل لصيق."
+            : system.level === "MEDIUM"
+              ? "يوصى بالحفاظ على وضعية التحضير وتكثيف المراقبة."
+              : "يوصى باستمرار المراقبة دون تصعيد إضافي."
+      };
+    }
 
     return {
-      total: content.length,
-      published: content.filter(item => item.status === "published").length,
-      pending: content.filter(item => item.status === "pending").length,
-      reports: content.filter(item => item.type === "report").length,
-      studies: content.filter(item => item.type === "study").length,
-      briefs: content.filter(item => item.type === "brief").length,
-      news: content.filter(item => item.type === "news").length,
-      policyPapers: content.filter(item => item.type === "policy_paper").length
+      summary: `The engine detected pressure at ${system.systemPressure} under ${level} conditions with decision mode ${decision}.`,
+      body:
+        `The dominant signal is ${topName}. ` +
+        `${topDesc} ` +
+        `Scenario distribution currently stands at ` +
+        `A ${system.scenarios[0]?.value || 0}%, ` +
+        `B ${system.scenarios[1]?.value || 0}%, ` +
+        `C ${system.scenarios[2]?.value || 0}%.`,
+      recommendation:
+        system.level === "HIGH"
+          ? "Raise operational readiness and sustain close monitoring."
+          : system.level === "MEDIUM"
+            ? "Maintain preparation posture and intensify observation."
+            : "Continue monitoring without further escalation."
     };
   }
 
-  function buildSystemState() {
-    const lang = getLang();
-    const rankedSignals = getRankedSignals();
-    const liveSignals = rankedSignals.filter(signal => signal.live === true);
-    const topSignal = getTopSignal();
-    const topCountry = getTopCountry();
-    const systemPressure = calculateSystemPressure();
-    const level = getLevelFromPressure(systemPressure);
-    const { decision, mode } = getDecisionFromLevel(level);
-    const scenarios = buildScenarios(level);
-    const updatedAt = new Date().toISOString();
+  function shouldGenerateReport(system) {
+    const last = STATE.reports[STATE.reports.length - 1];
+    if (!last) return true;
 
-    return {
-      source: "engine",
-      timestamp: Date.now(),
-      updatedAt,
-      lang,
+    if (last.level !== system.level) return true;
+    if (last.topSignalId !== (system.topSignal?.id || null)) return true;
+    if (Math.abs(last.systemPressure - system.systemPressure) >= 8) return true;
 
-      systemPressure,
-      ssi: systemPressure,
-      level,
-      levelClass: getRiskClass(level),
-      decision,
-      mode,
-
-      topSignal,
-      dominantSignal: topSignal,
-      dominantSignalId: topSignal?.id || null,
-
-      topCountry,
-      rankedSignals,
-      liveSignals,
-      liveSignalsCount: liveSignals.length,
-
-      countryRiskFeed: buildCountryRiskFeed(),
-      scenarios,
-      feed: buildFeed({
-        systemPressure,
-        rankedSignals
-      }),
-      contentStats: buildContentStats()
-    };
+    return false;
   }
 
-  function saveSystemState(system) {
+  function generateAutoReport(system) {
+    const en = buildReportBody(system, "en");
+    const ar = buildReportBody(system, "ar");
+
+    const report = {
+      id: `AUTO-${Date.now()}`,
+      createdAt: nowIso(),
+      systemPressure: system.systemPressure,
+      level: system.level,
+      decision: system.decision,
+      topSignalId: system.topSignal?.id || null,
+      title: {
+        en: buildReportTitle(system, "en"),
+        ar: buildReportTitle(system, "ar")
+      },
+      summary: {
+        en: en.summary,
+        ar: ar.summary
+      },
+      body: {
+        en: en.body,
+        ar: ar.body
+      },
+      recommendation: {
+        en: en.recommendation,
+        ar: ar.recommendation
+      }
+    };
+
+    STATE.reports.push(report);
+
+    if (STATE.reports.length > CONFIG.reportLimit) {
+      STATE.reports.shift();
+    }
+
+    return report;
+  }
+
+  function updateHistory(system) {
+    STATE.history.push({
+      updatedAt: system.updatedAt,
+      systemPressure: system.systemPressure,
+      level: system.level,
+      decision: system.decision,
+      topSignalId: system.topSignal?.id || null,
+      countryRiskFeed: system.countryRiskFeed
+    });
+
+    if (STATE.history.length > CONFIG.historyLimit) {
+      STATE.history.shift();
+    }
+  }
+
+  function saveState() {
     try {
       localStorage.setItem(
         CONFIG.storageKey,
         JSON.stringify({
-          source: system.source,
-          timestamp: system.timestamp,
-          updatedAt: system.updatedAt,
-          systemPressure: system.systemPressure,
-          ssi: system.ssi,
-          level: system.level,
-          decision: system.decision,
-          mode: system.mode,
-          dominantSignalId: system.dominantSignalId
+          history: STATE.history,
+          reports: STATE.reports,
+          lastSystem: STATE.lastSystem
         })
       );
-    } catch (error) {
-      console.error("IBSS saveSystemState error:", error);
-    }
+    } catch (error) {}
   }
 
-  function readSavedSystem() {
+  function loadState() {
     try {
       const raw = localStorage.getItem(CONFIG.storageKey);
-      return raw ? JSON.parse(raw) : null;
-    } catch (error) {
-      console.error("IBSS readSavedSystem error:", error);
-      return null;
-    }
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return;
+
+      STATE.history = Array.isArray(parsed.history) ? parsed.history : [];
+      STATE.reports = Array.isArray(parsed.reports) ? parsed.reports : [];
+      STATE.lastSystem = parsed.lastSystem || null;
+    } catch (error) {}
   }
 
-  function getStaticSystemFallback() {
-    const rankedSignals = getRankedSignals();
+  function computeSystemState() {
+    const rankedSignals = buildRankedSignals();
     const topSignal = rankedSignals[0] || null;
-    const avgSignal = calculateAverageSignalScore100();
-    const pressure = clamp(avgSignal, 0, 100);
-    const level = getLevelFromPressure(pressure);
-    const decisionBundle = getDecisionFromLevel(level);
+    const systemPressure = buildPressure(rankedSignals);
+    const level = riskLevelFromScore(systemPressure);
+    const { decision, mode } = decisionFromLevel(level);
+    const liveSignals = rankedSignals.filter((signal) => signal.live);
+    const scenarios = buildScenarios(level);
+    const countryRiskFeed = buildCountryRiskFeed(rankedSignals);
 
-    return {
-      source: "fallback",
-      timestamp: Date.now(),
-      updatedAt: new Date().toISOString(),
-      systemPressure: pressure,
-      ssi: pressure,
+    const system = {
+      source: "engine",
+      updatedAt: nowIso(),
+      ssi: systemPressure,
+      systemPressure,
       level,
-      decision: decisionBundle.decision,
-      mode: decisionBundle.mode,
-      dominantSignalId: topSignal?.id || null,
-      dominantSignal: topSignal,
+      decision,
+      mode,
       topSignal,
+      dominantSignal: topSignal,
       rankedSignals,
-      liveSignals: rankedSignals.filter(signal => signal.live),
-      feed: buildFeed({
-        systemPressure: pressure,
-        rankedSignals
-      }),
-      scenarios: buildScenarios(level),
-      countryRiskFeed: buildCountryRiskFeed(),
-      contentStats: buildContentStats()
+      liveSignals,
+      liveSignalsCount: liveSignals.length,
+      scenarios,
+      countryRiskFeed,
+      feed: []
     };
-  }
 
-  function tick() {
-    const system = buildSystemState();
-    saveSystemState(system);
+    system.feed = buildFeed(system);
+
+    if (shouldGenerateReport(system)) {
+      const report = generateAutoReport(system);
+      system.feed.unshift(`Auto report generated: ${report.title.en}`);
+    }
+
+    updateHistory(system);
+    STATE.lastSystem = system;
+    saveState();
+
     return system;
   }
 
   function getSystemState() {
-    return tick();
+    return computeSystemState();
   }
 
-  globalThis.IBSS_ENGINE = {
+  function getLastSystemState() {
+    return STATE.lastSystem;
+  }
+
+  function getCountryRiskFeed() {
+    const system = STATE.lastSystem || computeSystemState();
+    return system.countryRiskFeed;
+  }
+
+  function getReports() {
+    return [...STATE.reports].reverse();
+  }
+
+  function getLatestReport() {
+    return STATE.reports[STATE.reports.length - 1] || null;
+  }
+
+  function getHistory() {
+    return [...STATE.history];
+  }
+
+  function getStaticSystemFallback() {
+    const rankedSignals = buildRankedSignals();
+    const topSignal = rankedSignals[0] || null;
+    const pressure = buildPressure(rankedSignals);
+    const level = riskLevelFromScore(pressure);
+    const { decision, mode } = decisionFromLevel(level);
+
+    return {
+      source: "fallback",
+      updatedAt: nowIso(),
+      ssi: pressure,
+      systemPressure: pressure,
+      level,
+      decision,
+      mode,
+      topSignal,
+      dominantSignal: topSignal,
+      rankedSignals,
+      liveSignals: rankedSignals.filter((signal) => signal.live),
+      liveSignalsCount: rankedSignals.filter((signal) => signal.live).length,
+      scenarios: buildScenarios(level),
+      countryRiskFeed: buildCountryRiskFeed(rankedSignals),
+      feed: buildFeed({
+        systemPressure: pressure,
+        level,
+        decision,
+        mode,
+        topSignal,
+        countryRiskFeed: buildCountryRiskFeed(rankedSignals)
+      })
+    };
+  }
+
+  loadState();
+
+  return {
     CONFIG,
-    safe,
-    clamp,
-    getLang,
-    getLocalizedText,
-    getSignals,
-    getCountries,
-    getContent,
-    scoreSignal,
-    scoreSignal100,
-    getRankedSignals,
-    getLiveSignals,
-    getTopSignal,
-    getTopCountry,
-    calculateAverageSignalScore100,
-    calculateAverageCountryRisk,
-    calculateSystemPressure,
-    getLevelFromPressure,
-    getDecisionFromLevel,
-    buildScenarios,
-    buildFeed,
-    buildCountryRiskFeed,
-    buildContentStats,
-    buildSystemState,
-    saveSystemState,
-    readSavedSystem,
-    getStaticSystemFallback,
     getSystemState,
-    tick
+    getLastSystemState,
+    getStaticSystemFallback,
+    getCountryRiskFeed,
+    getReports,
+    getLatestReport,
+    getHistory
   };
 })();
