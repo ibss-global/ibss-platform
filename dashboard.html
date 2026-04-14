@@ -1021,5 +1021,26 @@
       setInterval(renderDashboard, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 3000));
     });
   </script>
+  <script>
+window.addEventListener("load", function () {
+
+  if (!window.IBSS_ENGINE) {
+    alert("ENGINE NOT LOADED");
+    return;
+  }
+
+  if (typeof window.IBSS_ENGINE.getSystemState !== "function") {
+    alert("getSystemState NOT FOUND");
+    return;
+  }
+
+  const system = window.IBSS_ENGINE.getSystemState();
+
+  console.log("IBSS SYSTEM:", system);
+
+  alert("ENGINE OK | SSI: " + (system.systemPressure || 0));
+
+});
+  </script>
 </body>
 </html>
