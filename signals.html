@@ -1,407 +1,409 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>IBSS Signals System</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IBSS Signals System</title>
 
-<style>
-:root{
-  --bg:#040404;
-  --panel:#0d0d0d;
-  --panel2:#121212;
-  --gold:#d4af37;
-  --text:#e8e8e8;
-  --muted:#9d9d9d;
-  --green:#00d084;
-  --orange:#ff9f1a;
-  --red:#ff4d4f;
-  --blue:#5a8cff;
-  --border:rgba(212,175,55,.28);
-}
+  <style>
+    :root{
+      --bg:#040404;
+      --panel:#0d0d0d;
+      --panel2:#121212;
+      --gold:#d4af37;
+      --text:#e8e8e8;
+      --muted:#9d9d9d;
+      --green:#00d084;
+      --orange:#ff9f1a;
+      --red:#ff4d4f;
+      --blue:#5a8cff;
+      --border:rgba(212,175,55,.28);
+    }
 
-*{box-sizing:border-box}
+    *{box-sizing:border-box}
 
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
-    var(--bg);
-  color:var(--text);
-}
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+        var(--bg);
+      color:var(--text);
+    }
 
-.wrap{
-  width:min(1180px,92%);
-  margin:auto;
-  padding:20px 0 60px;
-}
+    .wrap{
+      width:min(1180px,92%);
+      margin:auto;
+      padding:20px 0 60px;
+    }
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:14px 0 20px;
-  border-bottom:1px solid rgba(255,255,255,.05);
-  flex-wrap:wrap;
-}
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:14px 0 20px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      flex-wrap:wrap;
+    }
 
-.brand{
-  color:var(--gold);
-  font-size:28px;
-  font-weight:800;
-  text-decoration:none;
-  letter-spacing:1px;
-}
+    .brand{
+      color:var(--gold);
+      font-size:28px;
+      font-weight:800;
+      text-decoration:none;
+      letter-spacing:1px;
+    }
 
-.top-actions{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
 
-.nav{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
 
-.nav a{
-  color:var(--muted);
-  text-decoration:none;
-  border:1px solid rgba(255,255,255,.08);
-  padding:10px 14px;
-  border-radius:10px;
-  font-size:14px;
-  transition:.2s ease;
-}
+    .nav a{
+      color:var(--muted);
+      text-decoration:none;
+      border:1px solid rgba(255,255,255,.08);
+      padding:10px 14px;
+      border-radius:10px;
+      font-size:14px;
+      transition:.2s ease;
+    }
 
-.nav a.active,
-.nav a:hover{
-  color:var(--gold);
-  border-color:var(--border);
-}
+    .nav a.active,
+    .nav a:hover{
+      color:var(--gold);
+      border-color:var(--border);
+    }
 
-.lang-switch{
-  display:flex;
-  gap:6px;
-}
+    .lang-switch{
+      display:flex;
+      gap:6px;
+    }
 
-.lang-switch button{
-  background:none;
-  border:1px solid rgba(255,255,255,.1);
-  color:#ccc;
-  padding:8px 10px;
-  border-radius:8px;
-  cursor:pointer;
-  transition:.2s ease;
-  font-size:13px;
-}
+    .lang-switch button{
+      background:none;
+      border:1px solid rgba(255,255,255,.1);
+      color:#ccc;
+      padding:8px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      transition:.2s ease;
+      font-size:13px;
+    }
 
-.lang-switch button:hover,
-.lang-switch button.active{
-  color:var(--gold);
-  border-color:var(--gold);
-}
+    .lang-switch button:hover,
+    .lang-switch button.active{
+      color:var(--gold);
+      border-color:var(--gold);
+    }
 
-.hero{
-  text-align:center;
-  padding:34px 0 20px;
-}
+    .hero{
+      text-align:center;
+      padding:34px 0 20px;
+    }
 
-.eyebrow{
-  color:var(--gold);
-  letter-spacing:2px;
-  text-transform:uppercase;
-  font-size:13px;
-  margin-bottom:10px;
-}
+    .eyebrow{
+      color:var(--gold);
+      letter-spacing:2px;
+      text-transform:uppercase;
+      font-size:13px;
+      margin-bottom:10px;
+    }
 
-h1{
-  margin:0 0 10px;
-  font-size:40px;
-  color:#fff;
-}
+    h1{
+      margin:0 0 10px;
+      font-size:40px;
+      color:#fff;
+    }
 
-.sub{
-  margin:0 auto;
-  max-width:850px;
-  color:var(--muted);
-  line-height:1.8;
-}
+    .sub{
+      margin:0 auto;
+      max-width:850px;
+      color:var(--muted);
+      line-height:1.8;
+    }
 
-.system-strip{
-  margin-top:24px;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-}
+    .system-strip{
+      margin-top:24px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
 
-.system-box{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:16px;
-  text-align:center;
-}
+    .system-box{
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:16px;
+      text-align:center;
+    }
 
-.system-label{
-  color:var(--muted);
-  font-size:12px;
-  margin-bottom:8px;
-}
+    .system-label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:8px;
+    }
 
-.system-value{
-  color:var(--gold);
-  font-size:24px;
-  font-weight:800;
-}
+    .system-value{
+      color:var(--gold);
+      font-size:24px;
+      font-weight:800;
+      word-break:break-word;
+    }
 
-.toolbar{
-  margin-top:22px;
-  display:grid;
-  grid-template-columns:1.4fr 1fr 1fr 1fr;
-  gap:12px;
-}
+    .toolbar{
+      margin-top:22px;
+      display:grid;
+      grid-template-columns:1.4fr 1fr 1fr 1fr;
+      gap:12px;
+    }
 
-.search,
-.select{
-  width:100%;
-  background:var(--panel2);
-  color:#fff;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;
-  padding:14px;
-  font-size:14px;
-  outline:none;
-}
+    .search,
+    .select{
+      width:100%;
+      background:var(--panel2);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      padding:14px;
+      font-size:14px;
+      outline:none;
+    }
 
-.search::placeholder{
-  color:#777;
-}
+    .search::placeholder{
+      color:#777;
+    }
 
-.grid{
-  margin-top:24px;
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:18px;
-}
+    .grid{
+      margin-top:24px;
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:18px;
+    }
 
-.signal-card{
-  display:block;
-  text-decoration:none;
-  color:inherit;
-  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:20px;
-  padding:20px;
-  transition:.2s ease;
-}
+    .signal-card{
+      display:block;
+      text-decoration:none;
+      color:inherit;
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      padding:20px;
+      transition:.2s ease;
+    }
 
-.signal-card:hover{
-  transform:translateY(-3px);
-  border-color:rgba(212,175,55,.35);
-  box-shadow:0 0 20px rgba(212,175,55,.06);
-}
+    .signal-card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(212,175,55,.35);
+      box-shadow:0 0 20px rgba(212,175,55,.06);
+    }
 
-.signal-card.disabled{
-  opacity:.62;
-  cursor:default;
-}
+    .signal-card.disabled{
+      opacity:.62;
+      cursor:default;
+    }
 
-.signal-card.disabled:hover{
-  transform:none;
-  border-color:rgba(255,255,255,.08);
-  box-shadow:none;
-}
+    .signal-card.disabled:hover{
+      transform:none;
+      border-color:rgba(255,255,255,.08);
+      box-shadow:none;
+    }
 
-.card-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:12px;
-  margin-bottom:14px;
-}
+    .card-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:14px;
+    }
 
-.badges{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
 
-.badge{
-  display:inline-block;
-  padding:5px 10px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:.4px;
-}
+    .badge{
+      display:inline-block;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.4px;
+    }
 
-.high{
-  color:#ffd9d9;
-  background:rgba(255,77,79,.14);
-  border:1px solid rgba(255,77,79,.35);
-}
+    .high{
+      color:#ffd9d9;
+      background:rgba(255,77,79,.14);
+      border:1px solid rgba(255,77,79,.35);
+    }
 
-.medium{
-  color:#ffe1b3;
-  background:rgba(255,159,26,.14);
-  border:1px solid rgba(255,159,26,.35);
-}
+    .medium{
+      color:#ffe1b3;
+      background:rgba(255,159,26,.14);
+      border:1px solid rgba(255,159,26,.35);
+    }
 
-.low{
-  color:#d5fff0;
-  background:rgba(0,208,132,.14);
-  border:1px solid rgba(0,208,132,.35);
-}
+    .low{
+      color:#d5fff0;
+      background:rgba(0,208,132,.14);
+      border:1px solid rgba(0,208,132,.35);
+    }
 
-.live{
-  color:#d5fff0;
-  background:rgba(0,208,132,.14);
-  border:1px solid rgba(0,208,132,.35);
-}
+    .live{
+      color:#d5fff0;
+      background:rgba(0,208,132,.14);
+      border:1px solid rgba(0,208,132,.35);
+    }
 
-.pending{
-  color:#ddd;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-}
+    .pending{
+      color:#ddd;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+    }
 
-.type{
-  color:var(--gold);
-  background:rgba(212,175,55,.12);
-  border:1px solid rgba(212,175,55,.25);
-}
+    .type{
+      color:var(--gold);
+      background:rgba(212,175,55,.12);
+      border:1px solid rgba(212,175,55,.25);
+    }
 
-.band{
-  color:#d7e8ff;
-  background:rgba(90,140,255,.14);
-  border:1px solid rgba(90,140,255,.35);
-}
+    .band{
+      color:#d7e8ff;
+      background:rgba(90,140,255,.14);
+      border:1px solid rgba(90,140,255,.35);
+    }
 
-.card-title{
-  color:#fff;
-  font-size:30px;
-  font-weight:800;
-  margin:0 0 10px;
-}
+    .card-title{
+      color:#fff;
+      font-size:30px;
+      font-weight:800;
+      margin:0 0 10px;
+      line-height:1.35;
+    }
 
-.card-desc{
-  color:var(--muted);
-  line-height:1.8;
-  font-size:15px;
-  margin:0 0 18px;
-}
+    .card-desc{
+      color:var(--muted);
+      line-height:1.8;
+      font-size:15px;
+      margin:0 0 18px;
+    }
 
-.meta{
-  display:grid;
-  gap:10px;
-}
+    .meta{
+      display:grid;
+      gap:10px;
+    }
 
-.meta-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  background:var(--panel2);
-  border:1px solid rgba(255,255,255,.05);
-  border-radius:12px;
-  padding:12px 14px;
-  font-size:14px;
-}
+    .meta-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:14px;
+    }
 
-.meta-label{
-  color:var(--muted);
-}
+    .meta-label{
+      color:var(--muted);
+    }
 
-.meta-value{
-  color:#fff;
-  font-weight:700;
-  text-align:right;
-}
+    .meta-value{
+      color:#fff;
+      font-weight:700;
+      text-align:right;
+    }
 
-.coming{
-  margin-top:14px;
-  color:#888;
-  font-size:13px;
-}
+    .coming{
+      margin-top:14px;
+      color:#888;
+      font-size:13px;
+    }
 
-.empty{
-  display:none;
-  margin-top:20px;
-  text-align:center;
-  color:#888;
-  padding:24px;
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:16px;
-  background:var(--panel);
-}
+    .empty{
+      display:none;
+      margin-top:20px;
+      text-align:center;
+      color:#888;
+      padding:24px;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;
+      background:var(--panel);
+    }
 
-.footer{
-  margin-top:32px;
-  text-align:center;
-  color:#777;
-  border-top:1px solid rgba(255,255,255,.05);
-  padding-top:20px;
-  font-size:14px;
-}
+    .footer{
+      margin-top:32px;
+      text-align:center;
+      color:#777;
+      border-top:1px solid rgba(255,255,255,.05);
+      padding-top:20px;
+      font-size:14px;
+    }
 
-html[dir="rtl"] body{
-  text-align:right;
-}
+    html[dir="rtl"] body{
+      text-align:right;
+    }
 
-html[dir="rtl"] .topbar,
-html[dir="rtl"] .top-actions,
-html[dir="rtl"] .nav,
-html[dir="rtl"] .toolbar,
-html[dir="rtl"] .badges{
-  direction:rtl;
-}
+    html[dir="rtl"] .topbar,
+    html[dir="rtl"] .top-actions,
+    html[dir="rtl"] .nav,
+    html[dir="rtl"] .toolbar,
+    html[dir="rtl"] .badges{
+      direction:rtl;
+    }
 
-html[dir="rtl"] .hero,
-html[dir="rtl"] .system-box,
-html[dir="rtl"] .footer,
-html[dir="rtl"] .empty{
-  text-align:center;
-}
+    html[dir="rtl"] .hero,
+    html[dir="rtl"] .system-box,
+    html[dir="rtl"] .footer,
+    html[dir="rtl"] .empty{
+      text-align:center;
+    }
 
-html[dir="rtl"] .meta-value{
-  text-align:left;
-}
+    html[dir="rtl"] .meta-value{
+      text-align:left;
+    }
 
-@media(max-width:980px){
-  .toolbar{
-    grid-template-columns:1fr;
-  }
+    @media(max-width:980px){
+      .toolbar{
+        grid-template-columns:1fr;
+      }
 
-  .system-strip{
-    grid-template-columns:repeat(2,1fr);
-  }
+      .system-strip{
+        grid-template-columns:repeat(2,1fr);
+      }
 
-  .grid{
-    grid-template-columns:1fr;
-  }
-}
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
 
-@media(max-width:700px){
-  .topbar{
-    flex-direction:column;
-  }
+    @media(max-width:700px){
+      .topbar{
+        flex-direction:column;
+      }
 
-  h1{
-    font-size:32px;
-  }
+      h1{
+        font-size:32px;
+      }
 
-  .system-strip{
-    grid-template-columns:1fr;
-  }
-}
-</style>
+      .system-strip{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
 </head>
 <body>
 <div class="wrap">
@@ -420,8 +422,8 @@ html[dir="rtl"] .meta-value{
       </div>
 
       <div class="lang-switch">
-        <button id="btn-en" onclick="setLang('en')">EN</button>
-        <button id="btn-ar" onclick="setLang('ar')">AR</button>
+        <button id="btn-en" type="button">EN</button>
+        <button id="btn-ar" type="button">AR</button>
       </div>
     </div>
   </div>
@@ -430,7 +432,7 @@ html[dir="rtl"] .meta-value{
     <div class="eyebrow" data-i18n="eyebrow">Signals System</div>
     <h1 data-i18n="title">IBSS Signals System</h1>
     <p class="sub" data-i18n="sub">
-      A ranked sovereign signal architecture based on pressure, influence, publication status, and decision relevance.
+      Ranked sovereign signals generated from the unified engine layer.
     </p>
   </div>
 
@@ -456,25 +458,20 @@ html[dir="rtl"] .meta-value{
   <div class="toolbar">
     <input id="searchInput" class="search" type="text" placeholder="Search signals..." data-i18n-placeholder="search_placeholder">
 
-    <select id="weightFilter" class="select">
-      <option value="all" data-i18n="filter_all_weights">All Weights</option>
-      <option value="HIGH" data-i18n="weight_high">HIGH</option>
-      <option value="MEDIUM" data-i18n="weight_medium">MEDIUM</option>
-      <option value="LOW" data-i18n="weight_low">LOW</option>
+    <select id="priorityFilter" class="select">
+      <option value="all" data-i18n="filter_all_priority">All Priorities</option>
+      <option value="HIGH" data-i18n="priority_high">HIGH</option>
+      <option value="MEDIUM" data-i18n="priority_medium">MEDIUM</option>
+      <option value="LOW" data-i18n="priority_low">LOW</option>
     </select>
 
     <select id="typeFilter" class="select">
       <option value="all" data-i18n="filter_all_types">All Types</option>
-      <option value="STRUCTURAL" data-i18n="type_structural">STRUCTURAL</option>
-      <option value="MILITARY" data-i18n="type_military">MILITARY</option>
-      <option value="DIPLOMATIC" data-i18n="type_diplomatic">DIPLOMATIC</option>
-      <option value="MARITIME" data-i18n="type_maritime">MARITIME</option>
-      <option value="SECURITY" data-i18n="type_security">SECURITY</option>
     </select>
 
     <select id="statusFilter" class="select">
       <option value="all" data-i18n="filter_all_status">All Status</option>
-      <option value="live" data-i18n="status_live">Published</option>
+      <option value="live" data-i18n="status_live">Live</option>
       <option value="pending" data-i18n="status_pending">Pending</option>
     </select>
   </div>
@@ -486,12 +483,13 @@ html[dir="rtl"] .meta-value{
   </div>
 
   <div class="footer" data-i18n="footer_text">
-    © 2026 IBSS — Signals System | Founded by Naeem M. Dahalan
+    © 2026 IBSS — Signals System | Unified Engine Layer
   </div>
 
 </div>
 
 <script src="data.js"></script>
+<script src="engine.js"></script>
 <script>
 const translations = {
   en: {
@@ -504,7 +502,7 @@ const translations = {
 
     eyebrow: "Signals System",
     title: "IBSS Signals System",
-    sub: "A ranked sovereign signal architecture based on pressure, influence, publication status, and decision relevance.",
+    sub: "Ranked sovereign signals generated from the unified engine layer.",
 
     top_signal: "Top Signal",
     live_count: "Live Signals",
@@ -513,35 +511,25 @@ const translations = {
 
     search_placeholder: "Search signals...",
 
-    filter_all_weights: "All Weights",
+    filter_all_priority: "All Priorities",
     filter_all_types: "All Types",
     filter_all_status: "All Status",
 
-    weight_high: "HIGH",
-    weight_medium: "MEDIUM",
-    weight_low: "LOW",
+    priority_high: "HIGH",
+    priority_medium: "MEDIUM",
+    priority_low: "LOW",
 
-    type_structural: "STRUCTURAL",
-    type_military: "MILITARY",
-    type_diplomatic: "DIPLOMATIC",
-    type_maritime: "MARITIME",
-    type_security: "SECURITY",
-
-    status_live: "Published",
+    status_live: "Live",
     status_pending: "Pending",
 
     meta_layer: "Layer",
     meta_mode: "Decision Mode",
-    meta_score: "Influence Score",
+    meta_score: "Signal Score",
     meta_band: "Influence Band",
-
-    band_core: "CORE",
-    band_support: "SUPPORT",
-    band_watch: "WATCH",
 
     coming_soon: "Signal page not yet published.",
     empty_state: "No signals match the current filters.",
-    footer_text: "© 2026 IBSS — Signals System | Founded by Naeem M. Dahalan"
+    footer_text: "© 2026 IBSS — Signals System | Unified Engine Layer"
   },
 
   ar: {
@@ -554,7 +542,7 @@ const translations = {
 
     eyebrow: "نظام الإشارات",
     title: "نظام إشارات IBSS",
-    sub: "بنية إشارات سيادية مرتبة حسب الضغط والتأثير وحالة النشر وأهمية القرار.",
+    sub: "إشارات سيادية مرتبة يولدها المحرك الموحد للنظام.",
 
     top_signal: "الإشارة الأعلى",
     live_count: "الإشارات الحية",
@@ -563,35 +551,25 @@ const translations = {
 
     search_placeholder: "ابحث داخل الإشارات...",
 
-    filter_all_weights: "كل الأوزان",
+    filter_all_priority: "كل الأولويات",
     filter_all_types: "كل الأنواع",
     filter_all_status: "كل الحالات",
 
-    weight_high: "مرتفع",
-    weight_medium: "متوسط",
-    weight_low: "منخفض",
+    priority_high: "مرتفع",
+    priority_medium: "متوسط",
+    priority_low: "منخفض",
 
-    type_structural: "بنيوي",
-    type_military: "عسكري",
-    type_diplomatic: "دبلوماسي",
-    type_maritime: "بحري",
-    type_security: "أمني",
-
-    status_live: "منشور",
+    status_live: "نشط",
     status_pending: "قيد الإعداد",
 
     meta_layer: "الطبقة",
     meta_mode: "وضع القرار",
-    meta_score: "درجة التأثير",
+    meta_score: "درجة الإشارة",
     meta_band: "حزام التأثير",
-
-    band_core: "محوري",
-    band_support: "مساند",
-    band_watch: "مراقبة",
 
     coming_soon: "صفحة الإشارة لم تُنشر بعد.",
     empty_state: "لا توجد إشارات تطابق الفلاتر الحالية.",
-    footer_text: "© 2026 IBSS — نظام الإشارات | تأسس بواسطة نعيم م. دحلان"
+    footer_text: "© 2026 IBSS — نظام الإشارات | طبقة المحرك الموحد"
   }
 };
 
@@ -605,10 +583,17 @@ function safeText(value, fallback = "-"){
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
+function getLocalizedText(value){
+  if (!value) return "-";
+  if (typeof value === "string") return value;
+  return value[currentLang] || value.en || value.ar || "-";
+}
+
 function setLang(lang){
   localStorage.setItem("ibss_lang", lang);
   currentLang = lang;
   applyTranslations();
+  populateTypeFilter();
   renderSignals();
 }
 
@@ -636,81 +621,79 @@ function escapeHtml(text){
   return div.innerHTML;
 }
 
-function getSignalScoreLocal(signal){
-  if (!signal || !signal.metrics) return 0;
-  return (
-    (signal.metrics.weight || 0) * 0.5 +
-    (signal.metrics.volatility || 0) * 0.3 +
-    (signal.metrics.impact || 0) * 0.2
-  );
-}
-
-function getRankedSignalsLocal(){
-  const source = Array.isArray(globalThis.IBSS_SIGNALS) ? globalThis.IBSS_SIGNALS : [];
-  return [...source].sort((a, b) => getSignalScoreLocal(b) - getSignalScoreLocal(a));
-}
-
-function getSignalScore100Local(signal){
-  return Math.round(getSignalScoreLocal(signal) * 100);
-}
-
-function weightClass(weight){
-  if(weight === "HIGH") return "high";
-  if(weight === "MEDIUM") return "medium";
+function priorityClass(priority){
+  if(priority === "HIGH") return "high";
+  if(priority === "MEDIUM") return "medium";
   return "low";
 }
 
-function weightLabel(weight){
-  if(weight === "HIGH") return t("weight_high");
-  if(weight === "MEDIUM") return t("weight_medium");
-  return t("weight_low");
+function getSystem(){
+  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getLastSystemState === "function") {
+    return window.IBSS_ENGINE.getLastSystemState() || window.IBSS_ENGINE.getSystemState();
+  }
+  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+    return window.IBSS_ENGINE.getSystemState();
+  }
+  return null;
 }
 
-function typeLabel(signal){
-  const type = safeText(signal.signalType?.en, "");
-  const key = "type_" + type.toLowerCase();
-  return t(key);
+function getSignals(){
+  const system = getSystem();
+  return Array.isArray(system?.rankedSignals) ? system.rankedSignals : [];
 }
 
-function bandLabel(signal){
-  const band = safeText(signal.influenceBand?.en, "");
-  const key = "band_" + band.toLowerCase();
-  return t(key);
-}
+function populateTypeFilter(){
+  const typeFilter = document.getElementById("typeFilter");
+  const signals = getSignals();
 
-function getSignalItems(){
-  return getRankedSignalsLocal().map(signal => ({
-    ...signal,
-    score100: getSignalScore100Local(signal),
-    status: signal.live ? "live" : "pending"
-  }));
+  const types = [...new Set(
+    signals
+      .map(signal => getLocalizedText(signal.signalType))
+      .filter(Boolean)
+  )];
+
+  const currentValue = typeFilter.value || "all";
+
+  typeFilter.innerHTML = `
+    <option value="all">${escapeHtml(t("filter_all_types"))}</option>
+    ${types.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join("")}
+  `;
+
+  if ([...typeFilter.options].some(option => option.value === currentValue)) {
+    typeFilter.value = currentValue;
+  }
 }
 
 function renderTopStrip(allItems){
   const top = allItems[0] || null;
-  document.getElementById("topSignal").textContent = top ? safeText(top.title?.[currentLang] || top.title?.en) : "-";
-  document.getElementById("liveCount").textContent = allItems.filter(i => i.live).length;
-  document.getElementById("highCount").textContent = allItems.filter(i => i.weight === "HIGH").length;
-  document.getElementById("dominantType").textContent = top ? typeLabel(top) : "-";
+  document.getElementById("topSignal").textContent = top ? getLocalizedText(top.title) : "-";
+  document.getElementById("liveCount").textContent = allItems.filter(i => i.live === true).length;
+  document.getElementById("highCount").textContent = allItems.filter(i => i.priority === "HIGH").length;
+  document.getElementById("dominantType").textContent = top ? getLocalizedText(top.signalType) : "-";
 }
 
 function renderSignals(){
   const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
-  const weightValue = document.getElementById("weightFilter").value;
+  const priorityValue = document.getElementById("priorityFilter").value;
   const typeValue = document.getElementById("typeFilter").value;
   const statusValue = document.getElementById("statusFilter").value;
 
-  const allItems = getSignalItems();
+  const allItems = getSignals();
   renderTopStrip(allItems);
 
   const items = allItems.filter(signal => {
-    const title = safeText(signal.title?.[currentLang] || signal.title?.en, "").toLowerCase();
-    const desc = safeText(signal.description?.[currentLang] || signal.description?.en, "").toLowerCase();
-    const typeMatch = typeValue === "all" || signal.signalType?.en === typeValue;
-    const weightMatch = weightValue === "all" || signal.weight === weightValue;
-    const statusMatch = statusValue === "all" || signal.status === statusValue;
+    const title = getLocalizedText(signal.title).toLowerCase();
+    const desc = getLocalizedText(signal.description).toLowerCase();
+    const signalType = getLocalizedText(signal.signalType);
+    const priorityMatch = priorityValue === "all" || signal.priority === priorityValue;
+    const typeMatch = typeValue === "all" || signalType === typeValue;
+    const statusMatch =
+      statusValue === "all" ||
+      (statusValue === "live" && signal.live === true) ||
+      (statusValue === "pending" && signal.live !== true);
     const searchMatch = !searchValue || title.includes(searchValue) || desc.includes(searchValue);
-    return typeMatch && weightMatch && statusMatch && searchMatch;
+
+    return priorityMatch && typeMatch && statusMatch && searchMatch;
   });
 
   const grid = document.getElementById("signalsGrid");
@@ -727,35 +710,47 @@ function renderSignals(){
   grid.innerHTML = items.map(signal => {
     const disabledClass = signal.live ? "" : " disabled";
     const statusText = signal.live ? t("status_live") : t("status_pending");
+    const signalTitle = getLocalizedText(signal.title);
+    const signalDesc = getLocalizedText(signal.description);
+    const signalLayer = getLocalizedText(signal.layer);
+    const signalMode = getLocalizedText(signal.decisionMode);
+    const signalBand = getLocalizedText(signal.influenceBand);
+    const signalType = getLocalizedText(signal.signalType);
+    const score = Number(signal.balancedScore100 ?? signal.score100 ?? 0);
+
     const content = `
       <div class="card-top">
         <div class="badges">
-          <span class="badge ${weightClass(signal.weight)}">${escapeHtml(weightLabel(signal.weight))}</span>
-          <span class="badge type">${escapeHtml(typeLabel(signal))}</span>
-          <span class="badge band">${escapeHtml(bandLabel(signal))}</span>
+          <span class="badge ${priorityClass(signal.priority)}">${escapeHtml(
+            signal.priority === "HIGH" ? t("priority_high") :
+            signal.priority === "MEDIUM" ? t("priority_medium") :
+            t("priority_low")
+          )}</span>
+          <span class="badge type">${escapeHtml(signalType)}</span>
+          <span class="badge band">${escapeHtml(signalBand)}</span>
           <span class="badge ${signal.live ? "live" : "pending"}">${escapeHtml(statusText)}</span>
         </div>
       </div>
 
-      <h2 class="card-title">${escapeHtml(safeText(signal.title?.[currentLang] || signal.title?.en))}</h2>
-      <p class="card-desc">${escapeHtml(safeText(signal.description?.[currentLang] || signal.description?.en))}</p>
+      <h2 class="card-title">${escapeHtml(signalTitle)}</h2>
+      <p class="card-desc">${escapeHtml(signalDesc)}</p>
 
       <div class="meta">
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_layer"))}</span>
-          <span class="meta-value">${escapeHtml(safeText(signal.layer?.[currentLang] || signal.layer?.en))}</span>
+          <span class="meta-value">${escapeHtml(signalLayer)}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_mode"))}</span>
-          <span class="meta-value">${escapeHtml(safeText(signal.decisionMode?.[currentLang] || signal.decisionMode?.en))}</span>
+          <span class="meta-value">${escapeHtml(signalMode)}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_score"))}</span>
-          <span class="meta-value">${signal.score100}</span>
+          <span class="meta-value">${score}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">${escapeHtml(t("meta_band"))}</span>
-          <span class="meta-value">${escapeHtml(bandLabel(signal))}</span>
+          <span class="meta-value">${escapeHtml(signalBand)}</span>
         </div>
       </div>
 
@@ -771,12 +766,24 @@ function renderSignals(){
 }
 
 document.getElementById("searchInput").addEventListener("input", renderSignals);
-document.getElementById("weightFilter").addEventListener("change", renderSignals);
+document.getElementById("priorityFilter").addEventListener("change", renderSignals);
 document.getElementById("typeFilter").addEventListener("change", renderSignals);
 document.getElementById("statusFilter").addEventListener("change", renderSignals);
+document.getElementById("btn-en").addEventListener("click", () => setLang("en"));
+document.getElementById("btn-ar").addEventListener("click", () => setLang("ar"));
 
-applyTranslations();
-renderSignals();
+window.addEventListener("load", () => {
+  applyTranslations();
+  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+    window.IBSS_ENGINE.getSystemState();
+  }
+  populateTypeFilter();
+  renderSignals();
+  setInterval(() => {
+    populateTypeFilter();
+    renderSignals();
+  }, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
+});
 </script>
 </body>
-  </html>
+</html>
