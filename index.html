@@ -22,7 +22,6 @@
     }
 
     *{box-sizing:border-box}
-
     html{scroll-behavior:smooth}
 
     body{
@@ -180,12 +179,6 @@
       color:var(--orange);
       border-color:rgba(255,159,26,.35);
       background:rgba(255,159,26,.08);
-    }
-
-    .meta-badge.storage{
-      color:#9fd4ff;
-      border-color:rgba(159,212,255,.28);
-      background:rgba(159,212,255,.08);
     }
 
     .home-alert{
@@ -416,30 +409,17 @@
     }
 
     @media(max-width:1000px){
-      .status-grid{
-        grid-template-columns:repeat(2,1fr);
-      }
+      .status-grid{ grid-template-columns:repeat(2,1fr); }
     }
 
     @media(max-width:950px){
-      .grid{
-        grid-template-columns:1fr;
-      }
+      .grid{ grid-template-columns:1fr; }
     }
 
     @media(max-width:700px){
-      .topbar{
-        flex-direction:column;
-      }
-
-      .status-grid{
-        grid-template-columns:1fr;
-      }
-
-      .country-item{
-        flex-direction:column;
-        align-items:flex-start;
-      }
+      .topbar{ flex-direction:column; }
+      .status-grid{ grid-template-columns:1fr; }
+      .country-item{ flex-direction:column; align-items:flex-start; }
     }
   </style>
 </head>
@@ -455,6 +435,7 @@
           <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
           <a href="signals.html" data-i18n="nav_signals">Signals</a>
           <a href="reports.html" data-i18n="nav_reports">Reports</a>
+          <a href="countries.html" data-i18n="nav_countries">Countries</a>
           <a href="models.html" data-i18n="nav_models">Models</a>
           <a href="about.html" data-i18n="nav_about">About</a>
         </div>
@@ -469,15 +450,15 @@
     <div class="hero">
       <h1>IBSS</h1>
 
-      <div class="official" id="officialLine" data-i18n="hero_official">
+      <div class="official" data-i18n="hero_official">
         International Bureau of Sovereign Studies
       </div>
 
-      <p class="desc" id="heroDesc" data-i18n="hero_desc">
+      <p class="desc" data-i18n="hero_desc">
         A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.
       </p>
 
-      <p class="system-line" id="systemLine" data-i18n="system_line">
+      <p class="system-line" data-i18n="system_line">
         System Active — Monitoring Global Signals
       </p>
 
@@ -486,8 +467,8 @@
       </p>
 
       <div class="system-meta">
-        <span id="systemSourceBadge" class="meta-badge fallback">SOURCE — ENGINE</span>
-        <span id="systemHealthBadge" class="meta-badge live">ENGINE — READY</span>
+        <span id="systemSourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
+        <span id="systemHealthBadge" class="meta-badge">ENGINE — READY</span>
       </div>
 
       <div id="homeAlert" class="home-alert"></div>
@@ -562,8 +543,8 @@
   </div>
 
   <script src="data.js"></script>
-<script src="content.js"></script>
-<script src="engine.js"></script>
+  <script src="content.js"></script>
+  <script src="engine.js"></script>
 
   <script>
     const translations = {
@@ -572,6 +553,7 @@
         nav_dashboard: "Dashboard",
         nav_signals: "Signals",
         nav_reports: "Reports",
+        nav_countries: "Countries",
         nav_models: "Models",
         nav_about: "About",
 
@@ -598,17 +580,12 @@
         founder_line: "Founded by Naeem M. Dahalan",
         footer_text: "© 2026 IBSS — Founded by Naeem M. Dahalan",
 
-        decision_act: "ACT",
-        decision_prd: "PRD",
-        decision_watch: "WATCH",
-
         high_alert: "⚠ HIGH ESCALATION — SYSTEM IN ACTIVE RESPONSE MODE",
         medium_alert: "⚠ STRUCTURED PRESSURE — SYSTEM IN PREPARATION MODE",
         low_alert: "✓ LOW PRESSURE — SYSTEM IN MONITORING MODE",
 
         last_update: "Last Update",
         source_engine: "SOURCE — ENGINE",
-        source_storage: "SOURCE — STORAGE",
         source_fallback: "SOURCE — FALLBACK",
         engine_ready: "ENGINE — READY",
         engine_limited: "ENGINE — LIMITED",
@@ -621,6 +598,7 @@
         nav_dashboard: "لوحة التحكم",
         nav_signals: "الإشارات",
         nav_reports: "التقارير",
+        nav_countries: "الدول",
         nav_models: "النماذج",
         nav_about: "حول",
 
@@ -647,17 +625,12 @@
         founder_line: "تأسس بواسطة نعيم م. دحلان",
         footer_text: "© 2026 IBSS — تأسس بواسطة نعيم م. دحلان",
 
-        decision_act: "تحرك",
-        decision_prd: "استعداد",
-        decision_watch: "مراقبة",
-
         high_alert: "⚠ تم رصد تصعيد مرتفع — النظام في وضعية استجابة نشطة",
         medium_alert: "⚠ تم رصد ضغط بنيوي — النظام في وضعية تحضير",
         low_alert: "✓ ضغط منخفض — النظام في وضعية مراقبة",
 
         last_update: "آخر تحديث",
         source_engine: "المصدر — المحرك",
-        source_storage: "المصدر — التخزين",
         source_fallback: "المصدر — الاحتياطي",
         engine_ready: "المحرك — جاهز",
         engine_limited: "المحرك — محدود",
@@ -734,9 +707,6 @@
       if (source === "engine") {
         badge.textContent = t("source_engine");
         badge.classList.add("live");
-      } else if (source === "storage") {
-        badge.textContent = t("source_storage");
-        badge.classList.add("storage");
       } else {
         badge.textContent = t("source_fallback");
         badge.classList.add("fallback");
@@ -757,15 +727,13 @@
 
     function updateAlert(level){
       const alert = document.getElementById("homeAlert");
+      alert.style.display = "block";
 
       if (level === "HIGH") {
-        alert.style.display = "block";
         alert.textContent = t("high_alert");
       } else if (level === "MEDIUM") {
-        alert.style.display = "block";
         alert.textContent = t("medium_alert");
       } else {
-        alert.style.display = "block";
         alert.textContent = t("low_alert");
       }
     }
@@ -783,5 +751,104 @@
 
       topThreat.textContent = signal ? getLocalizedText(signal.title) : "-";
       systemPressure.textContent = pressure;
-      decisionMode.textContent =
-        decision === "A
+      decisionMode.textContent = decision;
+      activeSignals.textContent = liveCount;
+
+      systemPressure.className =
+        "status-value " +
+        (system?.level === "HIGH"
+          ? "high"
+          : system?.level === "MEDIUM"
+            ? "medium"
+            : "low");
+    }
+
+    function renderCountryBox(system){
+      const box = document.getElementById("countryBox");
+      const countries = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed : [];
+
+      if (!countries.length) {
+        box.innerHTML = `
+          <div class="country-item">
+            <div class="country-left">
+              <div class="country-name">-</div>
+              <div class="country-meta">No country risk entries available.</div>
+            </div>
+            <div class="country-score">0</div>
+          </div>
+        `;
+        return;
+      }
+
+      box.innerHTML = countries.map(country => `
+        <div class="country-item">
+          <div class="country-left">
+            <div class="country-name">${safeText(country.name, "-")}</div>
+            <div class="country-meta">
+              ${t("risk_level")}: ${safeText(country.riskLevel, "-")} |
+              ${t("trend")}: ${safeText(country.trend, "-")}
+            </div>
+          </div>
+          <div class="country-score">${Number(country.riskScore || 0)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderFeedBox(system){
+      const box = document.getElementById("feedBox");
+      const lines = Array.isArray(system?.feed) ? system.feed : [];
+
+      if (!lines.length) {
+        box.innerHTML = `<div class="feed-item">No live feed available.</div>`;
+        return;
+      }
+
+      box.innerHTML = lines.map(line => {
+        if (typeof line === "string") {
+          return `<div class="feed-item">${line}</div>`;
+        }
+
+        if (line && typeof line === "object" && line.text) {
+          return `<div class="feed-item">${getLocalizedText(line.text)}</div>`;
+        }
+
+        return `<div class="feed-item">-</div>`;
+      }).join("");
+    }
+
+    function renderIndex(){
+      applyLanguage();
+
+      const system = getSystemState();
+      if (!system) return;
+
+      updateSourceBadge(system.source);
+      updateHealthBadge(system);
+      updateAlert(system.level);
+      updateStatusCards(system);
+      renderCountryBox(system);
+      renderFeedBox(system);
+
+      document.getElementById("lastUpdateLine").textContent =
+        `${t("last_update")} — ${formatDateTime(system.updatedAt)}`;
+    }
+
+    document.getElementById("btn-en").addEventListener("click", function () {
+      currentLang = "en";
+      localStorage.setItem("ibss_lang", "en");
+      renderIndex();
+    });
+
+    document.getElementById("btn-ar").addEventListener("click", function () {
+      currentLang = "ar";
+      localStorage.setItem("ibss_lang", "ar");
+      renderIndex();
+    });
+
+    window.addEventListener("load", function () {
+      renderIndex();
+      setInterval(renderIndex, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
+    });
+  </script>
+</body>
+</html>
