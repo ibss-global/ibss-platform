@@ -424,7 +424,9 @@ function getContentStats() {
       liveSignalsCount: liveSignals.length,
       scenarios,
       countryRiskFeed,
-      feed: []
+    feed: [],
+contentStats: getContentStats(),
+publishedContent: getPublishedContent()
     };
 
     system.feed = buildFeed(system);
