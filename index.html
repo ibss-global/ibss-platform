@@ -16,6 +16,7 @@
       --green:#00d084;
       --orange:#ff9f1a;
       --red:#ff4d4f;
+      --blue:#3b82f6;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
@@ -289,6 +290,15 @@
       margin-bottom:24px;
     }
 
+    .section-intro{
+      text-align:center;
+      max-width:760px;
+      margin: -10px auto 22px;
+      color:var(--muted);
+      line-height:1.9;
+      font-size:15px;
+    }
+
     .grid{
       display:grid;
       grid-template-columns:repeat(3,1fr);
@@ -385,6 +395,272 @@
       text-align:center;
     }
 
+    /* L3 */
+    .ticker-wrap{
+      overflow:hidden;
+      border:1px solid rgba(212,175,55,.18);
+      border-radius:18px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.01)),
+        #070707;
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+    }
+
+    .ticker{
+      overflow:hidden;
+      white-space:nowrap;
+      position:relative;
+    }
+
+    .ticker-track{
+      display:inline-flex;
+      gap:18px;
+      padding:14px 18px;
+      min-width:max-content;
+      animation: tickerMove 32s linear infinite;
+    }
+
+    .ticker:hover .ticker-track{
+      animation-play-state:paused;
+    }
+
+    @keyframes tickerMove{
+      from{transform:translateX(0)}
+      to{transform:translateX(-50%)}
+    }
+
+    .ticker-item{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 16px;
+      border-radius:999px;
+      font-size:14px;
+      color:#f0f0f0;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.04);
+    }
+
+    .ticker-item::before{
+      content:"";
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      flex:0 0 8px;
+    }
+
+    .ticker-item.alert::before{
+      background:var(--red);
+      box-shadow:0 0 12px rgba(255,77,79,.6);
+    }
+
+    .ticker-item.warning::before{
+      background:var(--gold);
+      box-shadow:0 0 12px rgba(212,175,55,.5);
+    }
+
+    .ticker-item.info::before{
+      background:var(--green);
+      box-shadow:0 0 12px rgba(0,208,132,.45);
+    }
+
+    /* L4 */
+    .modules-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .module-card{
+      border-radius:24px;
+      padding:22px;
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 35%),
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.01)),
+        #070707;
+      border:1px solid rgba(212,175,55,.14);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.015) inset,
+        0 10px 30px rgba(0,0,0,.28);
+      text-align:start;
+    }
+
+    .module-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:16px;
+      gap:10px;
+    }
+
+    .module-tag{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:54px;
+      height:32px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(212,175,55,.1);
+      border:1px solid rgba(212,175,55,.18);
+      color:var(--gold);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .module-status{
+      font-size:13px;
+      padding:7px 12px;
+      border-radius:999px;
+      border:1px solid transparent;
+      white-space:nowrap;
+    }
+
+    .module-status.active{
+      color:var(--green);
+      background:rgba(0,208,132,.09);
+      border-color:rgba(0,208,132,.18);
+    }
+
+    .module-status.watch{
+      color:var(--gold);
+      background:rgba(212,175,55,.09);
+      border-color:rgba(212,175,55,.18);
+    }
+
+    .module-card h3{
+      margin:0 0 12px;
+      color:#f4f4f4;
+      font-size:24px;
+      line-height:1.5;
+    }
+
+    .module-desc{
+      margin:0 0 18px;
+      color:#ababab;
+      line-height:1.9;
+      font-size:14px;
+    }
+
+    .module-highlight{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.02);
+      border:1px solid rgba(255,255,255,.04);
+      margin-bottom:16px;
+    }
+
+    .module-highlight .label{
+      display:block;
+      color:#8f8f8f;
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .module-highlight strong{
+      color:var(--gold);
+      font-size:16px;
+      line-height:1.7;
+      display:block;
+    }
+
+    .module-metrics{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .module-metrics div,
+    .pattern-row{
+      padding:14px 16px;
+      border-radius:16px;
+      background:rgba(255,255,255,.02);
+      border:1px solid rgba(255,255,255,.04);
+    }
+
+    .module-metrics span,
+    .pattern-row span{
+      display:block;
+      color:#8e8e8e;
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .module-metrics strong,
+    .pattern-row strong{
+      color:#f0f0f0;
+      font-size:16px;
+    }
+
+    .module-btn{
+      width:100%;
+      height:50px;
+      border-radius:18px;
+      border:1px solid rgba(212,175,55,.22);
+      background:rgba(212,175,55,.1);
+      color:var(--gold);
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.25s ease;
+    }
+
+    .module-btn:hover{
+      background:rgba(212,175,55,.16);
+      transform:translateY(-1px);
+    }
+
+    .news-list{
+      list-style:none;
+      margin:0 0 18px;
+      padding:0;
+      display:grid;
+      gap:12px;
+    }
+
+    .news-list li{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.02);
+      border:1px solid rgba(255,255,255,.04);
+    }
+
+    .news-list strong{
+      display:block;
+      color:#f1f1f1;
+      font-size:14px;
+      line-height:1.7;
+      margin-bottom:4px;
+    }
+
+    .news-list small{
+      color:#999;
+      line-height:1.5;
+    }
+
+    .dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      margin-top:7px;
+      flex:0 0 10px;
+    }
+
+    .dot.high{ background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.5); }
+    .dot.medium{ background:var(--gold); box-shadow:0 0 10px rgba(212,175,55,.45); }
+    .dot.low{ background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.45); }
+
+    .pattern-block{
+      display:grid;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
     html[dir="rtl"] body{
       text-align:right;
     }
@@ -394,17 +670,18 @@
     html[dir="rtl"] .nav,
     html[dir="rtl"] .hero-buttons,
     html[dir="rtl"] .system-meta,
-    html[dir="rtl"] .country-item{
+    html[dir="rtl"] .country-item,
+    html[dir="rtl"] .module-top{
       direction:rtl;
     }
 
     html[dir="rtl"] .hero,
     html[dir="rtl"] .status-card,
     html[dir="rtl"] .section h2,
-    html[dir="rtl"] .card,
     html[dir="rtl"] .founder,
     html[dir="rtl"] .footer,
-    html[dir="rtl"] .home-alert{
+    html[dir="rtl"] .home-alert,
+    html[dir="rtl"] .section-intro{
       text-align:center;
     }
 
@@ -413,7 +690,10 @@
     }
 
     @media(max-width:950px){
-      .grid{ grid-template-columns:1fr; }
+      .grid,
+      .modules-grid{
+        grid-template-columns:1fr;
+      }
     }
 
     @media(max-width:700px){
@@ -502,6 +782,97 @@
       </div>
     </div>
 
+    <!-- L3 -->
+    <div class="section">
+      <h2 data-i18n="live_intelligence">Live Intelligence</h2>
+      <p class="section-intro" data-i18n="live_intelligence_desc">
+        A continuous sovereign strip that displays high-priority signals before entering deeper operational layers.
+      </p>
+
+      <div class="ticker-wrap">
+        <div class="ticker">
+          <div class="ticker-track" id="tickerTrack">
+            <span class="ticker-item alert" data-i18n="ticker_1">Gaza pressure remains above the preparation threshold</span>
+            <span class="ticker-item warning" data-i18n="ticker_2">Lebanon pressure is approaching an escalation boundary</span>
+            <span class="ticker-item info" data-i18n="ticker_3">Iran negotiations remain stable under structured tension</span>
+            <span class="ticker-item info" data-i18n="ticker_4">Red Sea tension remains low but reversible</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- L4 -->
+    <div class="section">
+      <h2 data-i18n="sovereign_units">Sovereign Units</h2>
+      <p class="section-intro" data-i18n="sovereign_units_desc">
+        The institutional intelligence layer that links sovereign studies, news tracking, and country-pattern analysis.
+      </p>
+
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="module-top">
+            <span class="module-tag">SSU</span>
+            <span class="module-status active" data-i18n="active_label">Active</span>
+          </div>
+          <h3 data-i18n="ssu_title">Sovereign Strategic Studies Unit</h3>
+          <p class="module-desc" data-i18n="ssu_desc">
+            The knowledge arm of the system, producing sovereign assessments, structured studies, and strategic interpretation files.
+          </p>
+
+          <div class="module-highlight">
+            <span class="label" data-i18n="latest_study">Latest Study</span>
+            <strong data-i18n="latest_study_title">Gaza between disarmament deadline and the prospect of renewed war</strong>
+          </div>
+
+          <div class="module-metrics">
+            <div>
+              <span data-i18n="published_studies">Published Studies</span>
+              <strong>3</strong>
+            </div>
+            <div>
+              <span data-i18n="module_status">Status</span>
+              <strong data-i18n="ready_label">Ready</strong>
+            </div>
+          </div>
+
+          <button class="module-btn" data-i18n="browse_studies">Browse Studies</button>
+        </div>
+
+        <div class="module-card">
+          <div class="module-top">
+            <span class="module-tag">NIU</span>
+            <span class="module-status active" data-i18n="active_label">Active</span>
+span>
+          </div>
+          <h3 data-i18n="pau_title">Country Pattern & Risk Analysis Unit</h3>
+          <p class="module-desc" data-i18n="pau_desc">
+            Tracks pressure accumulation, pattern emergence, and structural transition probabilities across states and theaters.
+          </p>
+
+          <div class="pattern-block">
+            <div class="pattern-row">
+              <span data-i18n="pattern_escalation">Escalation Pattern</span>
+              <strong data-i18n="pattern_active">Active</strong>
+            </div>
+            <div class="pattern-row">
+              <span data-i18n="pattern_accumulation">Pressure Accumulation</span>
+              <strong data-i18n="pattern_high">High</strong>
+            </div>
+            <div class="pattern-row">
+              <span data-i18n="pattern_window">Stability Window</span>
+              <strong data-i18n="pattern_narrow">Narrow</strong>
+            </div>
+            <div class="pattern-row">
+              <span data-i18n="pattern_dominant">Dominant Track</span>
+              <strong data-i18n="pattern_gaza">Gaza Structure</strong>
+            </div>
+          </div>
+
+          <button class="module-btn" data-i18n="browse_patterns">Browse Patterns</button>
+        </div>
+      </div>
+    </div>
+
     <div class="section">
       <h2 data-i18n="core_systems">Core Systems</h2>
 
@@ -570,6 +941,49 @@
         decision_mode: "Decision Mode",
         active_signals: "Active Signals",
 
+        live_intelligence: "Live Intelligence",
+        live_intelligence_desc: "A continuous sovereign strip that displays high-priority signals before entering deeper operational layers.",
+        ticker_1: "Gaza pressure remains above the preparation threshold",
+        ticker_2: "Lebanon pressure is approaching an escalation boundary",
+        ticker_3: "Iran negotiations remain stable under structured tension",
+        ticker_4: "Red Sea tension remains low but reversible",
+
+        sovereign_units: "Sovereign Units",
+        sovereign_units_desc: "The institutional intelligence layer that links sovereign studies, news tracking, and country-pattern analysis.",
+        active_label: "Active",
+        watch_label: "Watch",
+
+        ssu_title: "Sovereign Strategic Studies Unit",
+        ssu_desc: "The knowledge arm of the system, producing sovereign assessments, structured studies, and strategic interpretation files.",
+        latest_study: "Latest Study",
+        latest_study_title: "Gaza between disarmament deadline and the prospect of renewed war",
+        published_studies: "Published Studies",
+        module_status: "Status",
+        ready_label: "Ready",
+        browse_studies: "Browse Studies",
+
+        niu_title: "News Tracking & Analysis Unit",
+        niu_desc: "Extracts signals from headlines, statements, and media flow, then compresses them into sortable sovereign inputs.",
+        news_item_1_title: "Channel 12: Mossad mission will not end until the Iranian regime falls",
+        news_item_1_meta: "Political / Intelligence — High impact",
+        news_item_2_title: "Northern front pressure remains active under a controlled ceiling",
+        news_item_2_meta: "Military — Medium to high impact",
+        news_item_3_title: "Fragile stability continues in the Iranian negotiation track",
+        news_item_3_meta: "Diplomatic — Medium impact",
+        open_news_unit: "Open News Unit",
+
+        pau_title: "Country Pattern & Risk Analysis Unit",
+        pau_desc: "Tracks pressure accumulation, pattern emergence, and structural transition probabilities across states and theaters.",
+        pattern_escalation: "Escalation Pattern",
+        pattern_active: "Active",
+        pattern_accumulation: "Pressure Accumulation",
+        pattern_high: "High",
+        pattern_window: "Stability Window",
+        pattern_narrow: "Narrow",
+        pattern_dominant: "Dominant Track",
+        pattern_gaza: "Gaza Structure",
+        browse_patterns: "Browse Patterns",
+
         core_systems: "Core Systems",
         card_sigma: "Signal to Decision Engine",
         card_waad: "War Acceptance Architecture",
@@ -590,7 +1004,9 @@
         engine_ready: "ENGINE — READY",
         engine_limited: "ENGINE — LIMITED",
         risk_level: "Risk Level",
-        trend: "Trend"
+        trend: "Trend",
+        no_country_entries: "No country risk entries available.",
+        no_live_feed: "No live feed available."
       },
 
       ar: {
@@ -615,6 +1031,49 @@
         decision_mode: "وضع القرار",
         active_signals: "الإشارات النشطة",
 
+        live_intelligence: "الشريط الاستخباري الحي",
+        live_intelligence_desc: "طبقة سيادية مستمرة تعرض الإشارات ذات الأولوية قبل الدخول إلى الطبقات التشغيلية الأعمق.",
+        ticker_1: "غزة: الضغط البنيوي ما يزال فوق عتبة الاستعداد",
+        ticker_2: "لبنان: الضغط يقترب من حدّ تصعيدي أعلى",
+        ticker_3: "إيران: المسار التفاوضي مستقر ظاهريًا تحت ضغط منظم",
+        ticker_4: "البحر الأحمر: التوتر منخفض حاليًا لكنه قابل للارتداد",
+
+        sovereign_units: "الوحدات السيادية",
+        sovereign_units_desc: "الطبقة المؤسسية التي تربط الدراسات السيادية، تتبع الأخبار، وتحليل أنماط ومخاطر الدول.",
+        active_label: "نشط",
+        watch_label: "مراقبة",
+
+        ssu_title: "وحدة الدراسات الاستراتيجية السيادية",
+        ssu_desc: "الذراع المعرفية للنظام، وتنتج تقديرات موقف، دراسات سيادية، وملفات تفسير استراتيجية.",
+        latest_study: "أحدث دراسة",
+        latest_study_title: "غزة بين مهلة نزع السلاح واحتمال عودة الحرب",
+        published_studies: "الدراسات المنشورة",
+        module_status: "الوضع",
+        ready_label: "جاهز",
+        browse_studies: "استعراض الدراسات",
+
+        niu_title: "وحدة تتبع وتحليل الأخبار",
+        niu_desc: "تلتقط الإشارات من الأخبار والتصريحات والتدفق الإعلامي، ثم تعيد ضغطها إلى مدخلات سيادية قابلة للفرز.",
+        news_item_1_title: "القناة 12: مهمة الموساد لن تنتهي إلا بإسقاط النظام الإيراني",
+        news_item_1_meta: "سياسي / استخباراتي — تأثير مرتفع",
+        news_item_2_title: "الضغط على الجبهة الشمالية ما يزال نشطًا تحت سقف مضبوط",
+        news_item_2_meta: "عسكري — تأثير متوسط إلى مرتفع",
+        news_item_3_title: "استقرار هش مستمر في مسار المفاوضات الإيرانية",
+        news_item_3_meta: "دبلوماسي — تأثير متوسط",
+        open_news_unit: "فتح وحدة الأخبار",
+
+        pau_title: "وحدة تتبع وتحليل أنماط ومخاطر الدول",
+        pau_desc: "تراقب تراكم الضغط، تشكل الأنماط، واحتمالات التحول البنيوي داخل الدول والساحات.",
+        pattern_escalation: "نمط التصعيد",
+        pattern_active: "نشط",
+        pattern_accumulation: "تراكم الضغط",
+        pattern_high: "مرتفع",
+        pattern_window: "نافذة الاستقرار",
+        pattern_narrow: "ضيقة",
+        pattern_dominant: "المسار الغالب",
+        pattern_gaza: "بنية غزة",
+        browse_patterns: "استعراض الأنماط",
+
         core_systems: "الأنظمة الأساسية",
         card_sigma: "محرك من الإشارة إلى القرار",
         card_waad: "هندسة قبول الحرب",
@@ -635,7 +1094,9 @@
         engine_ready: "المحرك — جاهز",
         engine_limited: "المحرك — محدود",
         risk_level: "مستوى الخطر",
-        trend: "الاتجاه"
+        trend: "الاتجاه",
+        no_country_entries: "لا توجد مدخلات حالية لمخاطر الدول.",
+        no_live_feed: "لا توجد تغذية حية حالية."
       }
     };
 
@@ -772,7 +1233,7 @@
           <div class="country-item">
             <div class="country-left">
               <div class="country-name">-</div>
-              <div class="country-meta">No country risk entries available.</div>
+              <div class="country-meta">${t("no_country_entries")}</div>
             </div>
             <div class="country-score">0</div>
           </div>
@@ -799,7 +1260,7 @@
       const lines = Array.isArray(system?.feed) ? system.feed : [];
 
       if (!lines.length) {
-        box.innerHTML = `<div class="feed-item">No live feed available.</div>`;
+        box.innerHTML = `<div class="feed-item">${t("no_live_feed")}</div>`;
         return;
       }
 
@@ -814,6 +1275,13 @@
 
         return `<div class="feed-item">-</div>`;
       }).join("");
+    }
+
+    function initTicker(){
+      const track = document.getElementById("tickerTrack");
+      if (!track || track.dataset.cloned === "true") return;
+      track.innerHTML += track.innerHTML;
+      track.dataset.cloned = "true";
     }
 
     function renderIndex(){
@@ -846,6 +1314,7 @@
     });
 
     window.addEventListener("load", function () {
+      initTicker();
       renderIndex();
       setInterval(renderIndex, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
     });
