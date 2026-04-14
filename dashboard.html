@@ -647,8 +647,7 @@
   </div>
 
   <script src="data.js"></script>
-<script src="content.js"></script>
-<script src="engine.js"></script>
+  <script src="engine.js"></script>
 
   <script>
     const UI = {
@@ -657,6 +656,7 @@
         nav_dashboard: "Dashboard",
         nav_signals: "Signals",
         nav_reports: "Reports",
+        nav_countries: "Countries",
         nav_models: "Models",
         nav_about: "About",
         title: "IBSS Dashboard",
@@ -693,13 +693,15 @@
         riskLevel: "Risk Level",
         trend: "Trend",
         sourceEngine: "Engine source",
-        updatedAt: "Updated"
+        updatedAt: "Updated",
+        noData: "No data available."
       },
       ar: {
         nav_home: "الرئيسية",
         nav_dashboard: "لوحة التحكم",
         nav_signals: "الإشارات",
         nav_reports: "التقارير",
+        nav_countries: "الدول",
         nav_models: "النماذج",
         nav_about: "حول",
         title: "لوحة تحكم IBSS",
@@ -736,7 +738,8 @@
         riskLevel: "مستوى الخطر",
         trend: "الاتجاه",
         sourceEngine: "مصدر المحرك",
-        updatedAt: "آخر تحديث"
+        updatedAt: "آخر تحديث",
+        noData: "لا توجد بيانات."
       }
     };
 
@@ -754,6 +757,12 @@
       if (!value) return "-";
       if (typeof value === "string") return value;
       return value[currentLang] || value.en || value.ar || "-";
+    }
+
+    function escapeHtml(text){
+      const div = document.createElement("div");
+      div.textContent = text ?? "";
+      return div.innerHTML;
     }
 
     function applyLanguage(){
@@ -780,6 +789,23 @@
 
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+    }
+
+    function getSystem(){
+      try {
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+          return window.IBSS_ENGINE.getSystemState();
+        }
+
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
+          return window.IBSS_ENGINE.getStaticSystemFallback();
+        }
+
+        return null;
+      } catch (error) {
+        console.error("IBSS dashboard render error:", error);
+        return null;
+      }
     }
 
     function renderMeta(system){
@@ -854,7 +880,7 @@
 
       if (!signal) {
         titleEl.textContent = "-";
-        descEl.textContent = "-";
+        descEl.textContent = t("noData");
         return;
       }
 
@@ -871,7 +897,6 @@
       radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
 
       const signals = (system?.rankedSignals || []).slice(0, 5);
-
       const positions = [
         { x: 50, y: 18 },
         { x: 78, y: 38 },
@@ -899,6 +924,19 @@
 
         radar.appendChild(dot);
       });
+
+      if (!signals.length) {
+        legend.innerHTML = `
+          <div class="legend-item">
+            <div class="legend-left">
+              <div class="legend-texts">
+                <div class="legend-name">${t("noData")}</div>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
 
       legend.innerHTML = signals.map((signal, index) => {
         const score = Number(signal?.balancedScore100 ?? signal?.score100 ?? 0);
@@ -928,8 +966,12 @@
     function renderScenarios(system){
       const box = document.getElementById("scenarioBox");
       const scenarios = system?.scenarios || [];
-
       const labels = [t("scenarioA"), t("scenarioB"), t("scenarioC")];
+
+      if (!scenarios.length) {
+        box.innerHTML = `<div class="scenario-row"><span class="muted">${t("noData")}</span><strong>0%</strong></div>`;
+        return;
+      }
 
       box.innerHTML = scenarios.map((item, index) => {
         const value = typeof item === "object" ? item.value : item;
@@ -946,6 +988,11 @@
       const box = document.getElementById("countryBox");
       const items = (system?.countryRiskFeed || []).slice(0, 5);
 
+      if (!items.length) {
+        box.innerHTML = `<div class="country-row"><span class="muted">${t("noData")}</span><strong>0</strong></div>`;
+        return;
+      }
+
       box.innerHTML = items.map(item => `
         <div class="country-row">
           <div>
@@ -961,32 +1008,14 @@
       const feed = document.getElementById("feed");
       const lines = system?.feed || [];
 
+      if (!lines.length) {
+        feed.innerHTML = `<div class="feed-item">${t("noData")}</div>`;
+        return;
+      }
+
       feed.innerHTML = lines.map(line => `
         <div class="feed-item">${escapeHtml(String(line))}</div>
       `).join("");
-    }
-
-    function escapeHtml(text){
-      const div = document.createElement("div");
-      div.textContent = text ?? "";
-      return div.innerHTML;
-    }
-
-    function getSystem(){
-      try {
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
-          return window.IBSS_ENGINE.getSystemState();
-        }
-
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
-          return window.IBSS_ENGINE.getStaticSystemFallback();
-        }
-
-        return null;
-      } catch (error) {
-        console.error("IBSS dashboard render error:", error);
-        return null;
-      }
     }
 
     function renderDashboard(){
@@ -1019,29 +1048,8 @@
 
     window.addEventListener("load", function () {
       renderDashboard();
-      setInterval(renderDashboard, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 3000));
+      setInterval(renderDashboard, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
     });
-  </script>
-  <script>
-window.addEventListener("load", function () {
-
-  if (!window.IBSS_ENGINE) {
-    alert("ENGINE NOT LOADED");
-    return;
-  }
-
-  if (typeof window.IBSS_ENGINE.getSystemState !== "function") {
-    alert("getSystemState NOT FOUND");
-    return;
-  }
-
-  const system = window.IBSS_ENGINE.getSystemState();
-
-  console.log("IBSS SYSTEM:", system);
-
-  alert("ENGINE OK | SSI: " + (system.systemPressure || 0));
-
-});
   </script>
 </body>
 </html>
