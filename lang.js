@@ -4,6 +4,7 @@ const translations = {
     nav_dashboard: "Dashboard",
     nav_signals: "Signals",
     nav_reports: "Reports",
+    nav_countries: "Countries",
     nav_models: "Models",
     nav_about: "About",
 
