@@ -676,6 +676,43 @@
       <div id="feed" class="feed"></div>
     </div>
 
+    <div class="card" style="margin-top:18px">
+  <div class="title">Publishing Console</div>
+
+  <div class="scenario-box">
+    <div class="scenario-row">
+      <span class="muted">Latest Draft Type</span>
+      <strong id="pubDraftType">-</strong>
+    </div>
+
+    <div class="scenario-row">
+      <span class="muted">Created At</span>
+      <strong id="pubDraftTime">-</strong>
+    </div>
+  </div>
+
+  <div style="margin-top:14px">
+    <textarea
+      id="pubDraftText"
+      style="width:100%;min-height:200px;background:#121212;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;font-family:Arial,sans-serif;font-size:14px;line-height:1.8;resize:vertical;"
+      readonly
+    ></textarea>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+    <button id="btnGenerateSignalPost" type="button" style="padding:12px 16px;border-radius:12px;border:none;background:#d4af37;color:#000;font-weight:700;cursor:pointer;">
+      Generate Top Signal Post
+    </button>
+
+    <button id="btnGenerateBriefPost" type="button" style="padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#ddd;font-weight:700;cursor:pointer;">
+      Generate Strategic Brief
+    </button>
+
+    <button id="btnCopyDraftPost" type="button" style="padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#ddd;font-weight:700;cursor:pointer;">
+      Copy Draft
+    </button>
+  </div>
+</div>
     <div class="footer">© 2026 IBSS — Dashboard Layer</div>
   </div>
 
