@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IBSS Dashboard</title>
-  
+
   <style>
     :root{
       --gold:#d4af37;
@@ -490,6 +490,54 @@
       border-color:rgba(0,208,132,.28);
     }
 
+    .publisher-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .publisher-actions button{
+      padding:12px 16px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:14px;
+      transition:.2s ease;
+    }
+
+    .btn-primary{
+      border:none;
+      background:#d4af37;
+      color:#000;
+    }
+
+    .btn-secondary{
+      border:1px solid rgba(255,255,255,.1);
+      background:transparent;
+      color:#ddd;
+    }
+
+    .btn-primary:hover,
+    .btn-secondary:hover{
+      transform:translateY(-1px);
+    }
+
+    .publisher-textarea{
+      width:100%;
+      min-height:200px;
+      background:#121212;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:14px;
+      font-family:Arial,sans-serif;
+      font-size:14px;
+      line-height:1.8;
+      resize:vertical;
+      margin-top:14px;
+    }
+
     .footer{
       margin-top:26px;
       text-align:center;
@@ -567,6 +615,10 @@
 
       .legend-right{
         text-align:left;
+      }
+
+      .publisher-actions{
+        flex-direction:column;
       }
     }
   </style>
@@ -677,50 +729,45 @@
     </div>
 
     <div class="card" style="margin-top:18px">
-  <div class="title">Publishing Console</div>
+      <div class="title">Publishing Console</div>
 
-  <div class="scenario-box">
-    <div class="scenario-row">
-      <span class="muted">Latest Draft Type</span>
-      <strong id="pubDraftType">-</strong>
+      <div class="scenario-box">
+        <div class="scenario-row">
+          <span class="muted">Latest Draft Type</span>
+          <strong id="pubDraftType">-</strong>
+        </div>
+
+        <div class="scenario-row">
+          <span class="muted">Created At</span>
+          <strong id="pubDraftTime">-</strong>
+        </div>
+      </div>
+
+      <textarea id="pubDraftText" class="publisher-textarea" readonly></textarea>
+
+      <div class="publisher-actions">
+        <button id="btnGenerateSignalPost" type="button" class="btn-primary">
+          Generate Top Signal Post
+        </button>
+
+        <button id="btnGenerateBriefPost" type="button" class="btn-secondary">
+          Generate Strategic Brief
+        </button>
+
+        <button id="btnCopyDraftPost" type="button" class="btn-secondary">
+          Copy Draft
+        </button>
+      </div>
     </div>
 
-    <div class="scenario-row">
-      <span class="muted">Created At</span>
-      <strong id="pubDraftTime">-</strong>
-    </div>
-  </div>
-
-  <div style="margin-top:14px">
-    <textarea
-      id="pubDraftText"
-      style="width:100%;min-height:200px;background:#121212;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;font-family:Arial,sans-serif;font-size:14px;line-height:1.8;resize:vertical;"
-      readonly
-    ></textarea>
-  </div>
-
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
-    <button id="btnGenerateSignalPost" type="button" style="padding:12px 16px;border-radius:12px;border:none;background:#d4af37;color:#000;font-weight:700;cursor:pointer;">
-      Generate Top Signal Post
-    </button>
-
-    <button id="btnGenerateBriefPost" type="button" style="padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#ddd;font-weight:700;cursor:pointer;">
-      Generate Strategic Brief
-    </button>
-
-    <button id="btnCopyDraftPost" type="button" style="padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#ddd;font-weight:700;cursor:pointer;">
-      Copy Draft
-    </button>
-  </div>
-</div>
     <div class="footer">© 2026 IBSS — Dashboard Layer</div>
   </div>
 
   <script src="data.js"></script>
   <script src="news.js"></script>
   <script src="engine.js"></script>
-<script src="publisher.js"></script>
-  
+  <script src="publisher.js"></script>
+
   <script>
     const UI = {
       en: {
@@ -889,7 +936,9 @@
         : "-";
 
       line.textContent = `${t("sourceEngine")}: ${safe(system?.source, "-")} | ${t("updatedAt")}: ${dateText}`;
-    }function renderLevel(system){
+    }
+
+    function renderLevel(system){
       const levelEl = document.getElementById("level");
       const ssiEl = document.getElementById("ssi");
       const alertBox = document.getElementById("alertBox");
@@ -1108,6 +1157,29 @@
       `).join("");
     }
 
+    function renderPublisherConsole(){
+      if (!window.IBSS_PUBLISHER || typeof window.IBSS_PUBLISHER.getLatestDraft !== "function") return;
+
+      const draft = window.IBSS_PUBLISHER.getLatestDraft();
+      if (!draft) return;
+
+      const typeEl = document.getElementById("pubDraftType");
+      const timeEl = document.getElementById("pubDraftTime");
+      const textEl = document.getElementById("pubDraftText");
+
+      if (!typeEl || !timeEl || !textEl) return;
+
+      typeEl.textContent = draft.type || "-";
+      timeEl.textContent = draft.createdAt
+        ? new Date(draft.createdAt).toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US")
+        : "-";
+
+      textEl.value =
+        currentLang === "ar"
+          ? (draft?.payload?.text_ar || draft?.payload?.text_en || "")
+          : (draft?.payload?.text_en || draft?.payload?.text_ar || "");
+    }
+
     function renderDashboard(){
       applyLanguage();
 
@@ -1122,6 +1194,7 @@
       renderScenarios(system);
       renderCountries(system);
       renderFeed(system);
+      renderPublisherConsole();
     }
 
     document.getElementById("btn-en").addEventListener("click", function () {
