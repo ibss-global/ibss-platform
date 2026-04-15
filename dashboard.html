@@ -462,7 +462,7 @@
       display:inline-flex;
       align-items:center;
       gap:8px;
-      margin-top:6px;
+      margin-top:10px;
       padding:6px 10px;
       border-radius:999px;
       font-size:11px;
@@ -525,7 +525,7 @@
 
     .publisher-textarea{
       width:100%;
-      min-height:200px;
+      min-height:220px;
       background:#121212;
       color:#fff;
       border:1px solid rgba(255,255,255,.08);
@@ -763,13 +763,13 @@
     <div class="footer">© 2026 IBSS — Dashboard Layer</div>
   </div>
 
-<script src="data.js"></script>
-<script src="sources.js"></script>
-<script src="ingestion.js"></script>
-<script src="news.js"></script>
-<script src="analysis.js"></script>
-<script src="engine.js"></script>
-<script src="publisher.js"></script>
+  <script src="data.js"></script>
+  <script src="sources.js"></script>
+  <script src="ingestion.js"></script>
+  <script src="news.js"></script>
+  <script src="analysis.js"></script>
+  <script src="engine.js"></script>
+  <script src="publisher.js"></script>
 
   <script>
     const UI = {
@@ -879,8 +879,26 @@
 
     function getLocalizedText(value){
       if (!value) return "-";
-      if (typeof value === "string") return value;
-      return value[currentLang] || value.en || value.ar || "-";
+      if (typeof value === "string" || typeof value === "number") return String(value);
+
+      const localized =
+        value[currentLang] ??
+        value.en ??
+        value.ar ??
+        value.title ??
+        value.name ??
+        value.label ??
+        value.text;
+
+      if (typeof localized === "string" || typeof localized === "number") {
+        return String(localized);
+      }
+
+      if (localized && typeof localized === "object") {
+        return getLocalizedText(localized);
+      }
+
+      return "-";
     }
 
     function escapeHtml(text){
@@ -1052,8 +1070,7 @@
         const pos = positions[index] || { x: 50, y: 50 };
         const score = Number(signal?.balancedScore100 ?? signal?.score100 ?? 0);
         const size = Math.max(10, Math.min(26, Math.round(score / 5)));
-
-        const priority = signal?.priority || signal?.weight || "LOW";
+        const priority = signal?.priority || "LOW";
         const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
 
         dot.className = "radar-signal " + cls;
@@ -1082,7 +1099,7 @@
 
       legend.innerHTML = signals.map((signal, index) => {
         const score = Number(signal?.balancedScore100 ?? signal?.score100 ?? 0);
-        const priority = signal?.priority || signal?.weight || "LOW";
+        const priority = signal?.priority || "LOW";
         const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
         const title = getLocalizedText(signal.title);
         const sub = getLocalizedText(signal.signalType);
@@ -1138,7 +1155,7 @@
       box.innerHTML = items.map(item => `
         <div class="country-row">
           <div>
-            <div><strong>${escapeHtml(safe(item.name, "-"))}</strong></div>
+            <div><strong>${escapeHtml(getLocalizedText(item.nameLocalized || item.name))}</strong></div>
             <div class="muted">${t("riskLevel")}: ${escapeHtml(safe(item.riskLevel, "-"))} | ${t("trend")}: ${escapeHtml(safe(item.trend, "-"))}</div>
           </div>
           <div><strong>${safe(item.riskScore, 0)}</strong></div>
@@ -1155,22 +1172,38 @@
         return;
       }
 
-      feed.innerHTML = lines.map(line => `
-        <div class="feed-item">${escapeHtml(String(line))}</div>
-      `).join("");
+      feed.innerHTML = lines.map(line => {
+        if (typeof line === "string") {
+          return `<div class="feed-item">${escapeHtml(line)}</div>`;
+        }
+
+        if (line && typeof line === "object") {
+          const text = getLocalizedText(line.text);
+          return `<div class="feed-item">${escapeHtml(text)}</div>`;
+        }
+
+        return `<div class="feed-item">-</div>`;
+      }).join("");
     }
 
     function renderPublisherConsole(){
-      if (!window.IBSS_PUBLISHER || typeof window.IBSS_PUBLISHER.getLatestDraft !== "function") return;
+      if (!window.IBSS_PUBLISHER || typeof window.IBSS_PUBLISHER.getLatestDraft !== "function") {
+        return;
+      }
 
       const draft = window.IBSS_PUBLISHER.getLatestDraft();
-      if (!draft) return;
-
       const typeEl = document.getElementById("pubDraftType");
       const timeEl = document.getElementById("pubDraftTime");
       const textEl = document.getElementById("pubDraftText");
 
       if (!typeEl || !timeEl || !textEl) return;
+
+      if (!draft) {
+        typeEl.textContent = "-";
+        timeEl.textContent = "-";
+        textEl.value = "";
+        return;
+      }
 
       typeEl.textContent = draft.type || "-";
       timeEl.textContent = draft.createdAt
@@ -1181,6 +1214,45 @@
         currentLang === "ar"
           ? (draft?.payload?.text_ar || draft?.payload?.text_en || "")
           : (draft?.payload?.text_en || draft?.payload?.text_ar || "");
+    }
+
+    function bindPublisher(){
+      const signalBtn = document.getElementById("btnGenerateSignalPost");
+      const briefBtn = document.getElementById("btnGenerateBriefPost");
+      const copyBtn = document.getElementById("btnCopyDraftPost");
+
+      signalBtn?.addEventListener("click", function () {
+        try {
+          if (window.IBSS_PUBLISHER?.queueTopSignalFromEngine) {
+            window.IBSS_PUBLISHER.queueTopSignalFromEngine();
+            renderPublisherConsole();
+          }
+        } catch (error) {
+          console.error("Publisher signal draft error:", error);
+        }
+      });
+
+      briefBtn?.addEventListener("click", function () {
+        try {
+          if (window.IBSS_PUBLISHER?.queueStrategicBriefFromEngine) {
+            window.IBSS_PUBLISHER.queueStrategicBriefFromEngine();
+            renderPublisherConsole();
+          }
+        } catch (error) {
+          console.error("Publisher brief draft error:", error);
+        }
+      });
+
+      copyBtn?.addEventListener("click", async function () {
+        try {
+          const text = document.getElementById("pubDraftText")?.value || "";
+          if (!text) return;
+          await navigator.clipboard.writeText(text);
+          alert(currentLang === "ar" ? "تم النسخ" : "Copied");
+        } catch (error) {
+          console.error("Publisher copy error:", error);
+        }
+      });
     }
 
     function renderDashboard(){
@@ -1213,6 +1285,7 @@
     });
 
     window.addEventListener("load", function () {
+      bindPublisher();
       renderDashboard();
       setInterval(renderDashboard, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
     });
