@@ -1478,8 +1478,369 @@
   </script>
 </body>
 </html>
+<div class="founder" data-i18n="founder_line">
+      Founded by Naeem M. Dahalan
+    </div>
+
     <div class="footer" data-i18n="footer_text">
       © 2026 IBSS — Founded by Naeem M. Dahalan
     </div>
   </div>
-  
+
+  <script src="data.js"></script>
+  <script src="news.js"></script>
+  <script src="engine.js"></script>
+
+  <script>
+    const translations = {
+      ...
+    };
+
+    let currentLang = localStorage.getItem("ibss_lang") || "en";
+
+    function t(key){
+      return translations[currentLang]?.[key] || key;
+    }
+
+    function safeText(value, fallback = "-"){
+      return typeof value === "string" && value.trim() ? value.trim() : fallback;
+    }
+
+    function getLocalizedText(value){
+      if (!value) return "-";
+      if (typeof value === "string") return value;
+      return value[currentLang] || value.en || value.ar || "-";
+    }
+
+    function formatDateTime(value){
+      if (!value) return "-";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "-";
+
+      return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function applyLanguage(){
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = t(key);
+      });
+
+      document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
+      document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+    }
+
+    function getSystemState(){
+      try {
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+          return window.IBSS_ENGINE.getSystemState();
+        }
+
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
+          return window.IBSS_ENGINE.getStaticSystemFallback();
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Index render error:", error);
+        return null;
+      }
+    }
+
+    function updateSourceBadge(source){
+      const badge = document.getElementById("systemSourceBadge");
+      badge.className = "meta-badge";
+
+      if (source === "engine") {
+        badge.textContent = t("source_engine");
+        badge.classList.add("live");
+      } else {
+        badge.textContent = t("source_fallback");
+        badge.classList.add("fallback");
+      }
+    }
+
+    function updateHealthBadge(system){
+      const badge = document.getElementById("systemHealthBadge");
+
+      if (system?.source === "engine") {
+        badge.textContent = t("engine_ready");
+        badge.className = "meta-badge live";
+      } else {
+        badge.textContent = t("engine_limited");
+        badge.className = "meta-badge fallback";
+      }
+    }
+
+    function updateAlert(level){
+      const alert = document.getElementById("homeAlert");
+      alert.style.display = "block";
+
+      if (level === "HIGH") {
+        alert.textContent = t("high_alert");
+      } else if (level === "MEDIUM") {
+        alert.textContent = t("medium_alert");
+      } else {
+        alert.textContent = t("low_alert");
+      }
+    }
+
+    function updateStatusCards(system){
+      const topThreat = document.getElementById("topThreat");
+      const systemPressure = document.getElementById("systemPressure");
+      const decisionMode = document.getElementById("decisionMode");
+      const activeSignals = document.getElementById("activeSignals");
+
+      const signal = system?.topSignal || system?.dominantSignal || null;
+      const pressure = Number(system?.systemPressure || system?.ssi || 0);
+      const decision = typeof (system?.mode || system?.decision) === "string" ? (system.mode || system.decision) : "-";
+      const liveCount = Number(system?.liveSignalsCount || system?.liveSignals?.length || 0);
+
+      topThreat.textContent = signal ? getLocalizedText(signal.title) : "-";
+      systemPressure.textContent = pressure;
+      decisionMode.textContent = decision;
+      activeSignals.textContent = liveCount;
+
+      systemPressure.className =
+        "status-value " +
+        (system?.level === "HIGH"
+          ? "high"
+          : system?.level === "MEDIUM"
+            ? "medium"
+            : "low");
+    }
+
+    function renderTicker(system){
+      const track = document.getElementById("tickerTrack");
+      if (!track) return;
+
+      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(8) || [];
+      const items = [];
+
+      tickerNews.forEach(item => {
+        const severity = String(item.severity || "LOW").toLowerCase();
+        items.push({
+          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
+          text: getLocalizedText(item.title)
+        });
+      });
+
+      if (!items.length) {
+        const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 5) : [];
+        feed.forEach(line => {
+          items.push({
+            level: system?.level === "HIGH" ? "high" : system?.level === "MEDIUM" ? "medium" : "low",
+            text: typeof line === "string" ? line : getLocalizedText(line?.text)
+          });
+        });
+      }
+
+      if (!items.length) {
+        track.innerHTML = `<div class="ticker-item"><span class="ticker-dot low"></span>${t("no_feed")}</div>`;
+        return;
+      }
+
+      track.innerHTML = items.map(item => `
+        <div class="ticker-item">
+          <span class="ticker-dot ${item.level}"></span>
+          <span>${item.text}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderSnapshot(){
+      const snapshot = window.IBSS_NEWS_UTILS?.getHomeSnapshot?.();
+      if (!snapshot) return;
+
+      const topSignal = snapshot.topSignal;
+      const topCountry = snapshot.topCountry;
+      const latestStudy = snapshot.latestStudy;
+
+      document.getElementById("snapshotTopSignal").textContent =
+        topSignal ? getLocalizedText(topSignal.title) : "-";
+      document.getElementById("snapshotTopSignalMeta").textContent =
+        topSignal ? getLocalizedText(topSignal.description) : t("no_data");
+
+      document.getElementById("snapshotTopCountry").textContent =
+        topCountry ? getLocalizedText(topCountry.name) : "-";
+      document.getElementById("snapshotTopCountryMeta").textContent =
+        topCountry ? `${topCountry.riskLevel || "-"} — ${topCountry.trend || "-"}` : t("no_data");
+
+      document.getElementById("snapshotLatestStudy").textContent =
+        latestStudy ? getLocalizedText(latestStudy.title) : "-";
+      document.getElementById("snapshotLatestStudyMeta").textContent =
+        latestStudy ? getLocalizedText(latestStudy.summary) : t("no_data");
+    }
+
+    function renderUnitStudies(system){
+      const snapshot = window.IBSS_NEWS_UTILS?.getHomeSnapshot?.();
+      const latestStudy = snapshot?.latestStudy || null;
+      const contentStats = system?.contentStats || {};
+
+      document.getElementById("latestStudyTitle").textContent =
+        latestStudy ? getLocalizedText(latestStudy.title) : "-";
+
+      document.getElementById("metricPublishedContent").textContent =
+        Number(contentStats.published || 0);
+
+      document.getElementById("metricReportsCount").textContent =
+        Number(contentStats.reports || 0);
+    }
+
+    function renderUnitNews(){
+      const list = document.getElementById("latestNewsList");
+      const newsItems = window.IBSS_NEWS_UTILS?.getLatestNews?.(3) || [];
+
+      if (!newsItems.length) {
+        list.innerHTML = `
+          <div class="unit-list-item">
+            <span class="unit-dot low"></span>
+            <div>
+              <strong>${t("no_news")}</strong>
+              <small>${t("no_data")}</small>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = newsItems.map(item => {
+        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
+        const dotClass = severity === "high" ? "high" : severity === "medium" ? "medium" : "low";
+
+        return `
+          <div class="unit-list-item">
+            <span class="unit-dot ${dotClass}"></span>
+            <div>
+              <strong>${getLocalizedText(item.title)}</strong>
+              <small>${getLocalizedText(item.summary)}</small>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderUnitPatterns(system){
+      const snapshot = window.IBSS_NEWS_UTILS?.getHomeSnapshot?.();
+      const topCountry = snapshot?.topCountry || null;
+
+      document.getElementById("unitTopCountry").textContent =
+        topCountry ? getLocalizedText(topCountry.name) : "-";
+
+      document.getElementById("unitTopCountryScore").textContent =
+        topCountry ? Number(topCountry.riskScore || 0) : 0;
+
+      document.getElementById("unitTopCountryTrend").textContent =
+        topCountry && typeof topCountry.trend === "string" ? topCountry.trend : "-";
+
+      document.getElementById("unitLiveSignals").textContent =
+        Number(system?.liveSignalsCount || 0);
+    }
+
+    function renderCountryBox(system){
+      const box = document.getElementById("countryBox");
+      const countries = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed : [];
+
+      if (!countries.length) {
+        box.innerHTML = `
+          <div class="country-item">
+            <div class="country-left">
+              <div class="country-name">-</div>
+              <div class="country-meta">${t("no_data")}</div>
+            </div>
+            <div class="country-score">0</div>
+          </div>
+        `;
+        return;
+      }
+
+      box.innerHTML = countries.map(country => `
+        <div class="country-item">
+          <div class="country-left">
+            <div class="country-name">${country?.name || "-"}</div>
+            <div class="country-meta">
+              ${t("risk_level")}: ${country?.riskLevel || "-"} |
+              ${t("trend")}: ${country?.trend || "-"}
+            </div>
+          </div>
+          <div class="country-score">${Number(country?.riskScore || 0)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderFeedBox(system){
+      const box = document.getElementById("feedBox");
+      const lines = Array.isArray(system?.feed) ? system.feed : [];
+
+      if (!lines.length) {
+        box.innerHTML = `<div class="feed-item">${t("no_feed")}</div>`;
+        return;
+      }
+
+      box.innerHTML = lines.map(line => {
+        if (typeof line === "string") {
+          return `<div class="feed-item">${line}</div>`;
+        }
+
+        if (line && typeof line === "object" && line.text) {
+          return `<div class="feed-item">${getLocalizedText(line.text)}</div>`;
+        }
+
+        return `<div class="feed-item">-</div>`;
+      }).join("");
+    }
+
+    function renderIndex(){
+      applyLanguage();
+
+      if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
+        window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
+      }
+
+      const system = getSystemState();
+      if (!system) return;
+
+      updateSourceBadge(system.source);
+      updateHealthBadge(system);
+      updateAlert(system.level);
+      updateStatusCards(system);
+      renderTicker(system);
+      renderSnapshot();
+      renderUnitStudies(system);
+      renderUnitNews();
+      renderUnitPatterns(system);
+      renderCountryBox(system);
+      renderFeedBox(system);
+
+      document.getElementById("lastUpdateLine").textContent =
+        `${t("last_update")} — ${formatDateTime(system.updatedAt)}`;
+    }
+
+    document.getElementById("btn-en").addEventListener("click", function () {
+      currentLang = "en";
+      localStorage.setItem("ibss_lang", "en");
+      renderIndex();
+    });
+
+    document.getElementById("btn-ar").addEventListener("click", function () {
+      currentLang = "ar";
+      localStorage.setItem("ibss_lang", "ar");
+      renderIndex();
+    });
+
+    window.addEventListener("load", function () {
+      renderIndex();
+      setInterval(renderIndex, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
+    });
+  </script>
+</body>
+    </html>
