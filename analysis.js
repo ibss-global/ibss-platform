@@ -2,10 +2,11 @@ window.IBSS_ANALYSIS = (function () {
   "use strict";
 
   const CONFIG = {
-    signalThreshold: 45,
-    structuralThreshold: 70,
+    signalThreshold: 40,
+    structuralThreshold: 72,
     patternThreshold: 3,
-    maxSignals: 200
+    maxSignals: 240,
+    maxGroups: 80
   };
 
   const STATE = {
@@ -26,6 +27,11 @@ window.IBSS_ANALYSIS = (function () {
     return typeof value === "string" && value.trim() ? value.trim() : fallback;
   }
 
+  function safeNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
   function normalizeText(value) {
     return safeText(String(value || ""))
       .toLowerCase()
@@ -38,113 +44,32 @@ window.IBSS_ANALYSIS = (function () {
   }
 
   function generateId(prefix = "SIG") {
-    return prefix + "-" + Math.random().toString(36).slice(2, 10);
-  }
-
-  function titleCase(text) {
-    return safeText(text)
-      .split(" ")
-      .filter(Boolean)
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
+    return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
   }
 
   function localizeText(enText, arText) {
     return {
-      en: enText,
-      ar: arText || enText
+      en: safeText(enText, "-"),
+      ar: safeText(arText, safeText(enText, "-"))
     };
   }
 
-  function getLocalizedNewsField(item, field) {
+  function getLocalizedField(item, field, lang = "en") {
     if (!item || !item[field]) return "";
     const value = item[field];
-    if (typeof value === "string") return value;
-    return value.en || value.ar || "";
-  }
 
-  function getSourceWeight(item) {
-    const sourceProfile = item?.sourceProfile || null;
-    if (!sourceProfile) return 0.4;
-
-    const reliabilityScore = Number(sourceProfile.reliabilityScore || 40);
-    return clamp(reliabilityScore / 100, 0.2, 1);
-  }
-
-  function detectDomain(item) {
-    const domains = asArray(item?.domains);
-    if (domains.length) return domains[0];
-
-    const text = (
-      getLocalizedNewsField(item, "title") +
-      " " +
-      getLocalizedNewsField(item, "summary")
-    ).toLowerCase();
-
-    if (text.includes("military") || text.includes("strike") || text.includes("army")) return "military";
-    if (text.includes("diplomatic") || text.includes("talk") || text.includes("negotiation")) return "diplomatic";
-    if (text.includes("economic") || text.includes("market") || text.includes("oil")) return "economic";
-    if (text.includes("maritime") || text.includes("shipping") || text.includes("sea")) return "maritime";
-    return "geopolitical";
-  }
-
-  function detectSignalType(item) {
-    const domain = detectDomain(item);
-    const severity = Number(item?.severity || 0);
-
-    if (domain === "military") return localizeText("Military", "عسكري");
-    if (domain === "diplomatic") return localizeText("Diplomatic", "دبلوماسي");
-    if (domain === "economic") return localizeText("Economic", "اقتصادي");
-    if (domain === "maritime") return localizeText("Maritime", "بحري");
-    if (severity >= CONFIG.structuralThreshold) return localizeText("Structural", "بنيوي");
-
-    return localizeText("Geopolitical", "جيوسياسي");
-  }
-
-  function detectInfluenceBand(item) {
-    const severity = Number(item?.severity || 0);
-    const confidence = Number(item?.confidence || 0);
-
-    if (severity >= 80 && confidence >= 75) {
-      return localizeText("Strategic Core", "النطاق الاستراتيجي");
+    if (typeof value === "string" || typeof value === "number") {
+      return String(value);
     }
 
-    if (severity >= 60 && confidence >= 60) {
-      return localizeText("Active Pressure", "نطاق الضغط النشط");
-    }
-
-    if (severity >= 45) {
-      return localizeText("Observation Band", "نطاق المراقبة");
-    }
-
-    return localizeText("Peripheral", "نطاق هامشي");
+    return value[lang] || value.en || value.ar || "";
   }
 
-  function detectDecisionMode(item) {
-    const severity = Number(item?.severity || 0);
-    const confidence = Number(item?.confidence || 0);
-
-    if (severity >= 85 && confidence >= 70) {
-      return localizeText("ACTIVE RESPONSE", "استجابة نشطة");
-    }
-
-    if (severity >= 60) {
-      return localizeText("PREPARATION", "تحضير");
-    }
-
-    return localizeText("MONITORING", "مراقبة");
-  }
-
-  function detectLayer(item) {
-    const severity = Number(item?.severity || 0);
-    const domain = detectDomain(item);
-
-    if (severity >= 80) return localizeText("Structural Layer", "الطبقة البنيوية");
-    if (domain === "military") return localizeText("Military Layer", "الطبقة العسكرية");
-    if (domain === "diplomatic") return localizeText("Diplomatic Layer", "الطبقة الدبلوماسية");
-    if (domain === "economic") return localizeText("Economic Layer", "الطبقة الاقتصادية");
-
-    return localizeText("Signal Layer", "طبقة الإشارة");
+  function normalizePriority(value) {
+    const p = String(value || "").toUpperCase().trim();
+    if (p === "HIGH") return "HIGH";
+    if (p === "MEDIUM") return "MEDIUM";
+    return "LOW";
   }
 
   function detectPriority(score) {
@@ -153,8 +78,82 @@ window.IBSS_ANALYSIS = (function () {
     return "LOW";
   }
 
+  function detectSourceWeight(item) {
+    const sourceProfile = item?.sourceProfile || null;
+
+    if (sourceProfile) {
+      const reliabilityScore = safeNumber(sourceProfile.reliabilityScore, 50);
+      return clamp(reliabilityScore / 100, 0.25, 1);
+    }
+
+    const source = normalizeText(item?.source);
+    if (source.includes("reuters") || source.includes("ap") || source.includes("bloomberg")) return 0.82;
+    if (source.includes("al jazeera")) return 0.74;
+    if (source.includes("monitor") || source.includes("watch")) return 0.62;
+    if (source.includes("local")) return 0.54;
+
+    return 0.58;
+  }
+
+  function detectDomain(item) {
+    const directDomain = normalizeText(item?.domain || item?.category || item?.topic);
+    if (directDomain) return directDomain;
+
+    const text = [
+      getLocalizedField(item, "title", "en"),
+      getLocalizedField(item, "summary", "en"),
+      safeText(item?.region),
+      safeText(item?.country)
+    ].join(" ").toLowerCase();
+
+    if (text.includes("military") || text.includes("strike") || text.includes("front") || text.includes("army")) return "military";
+    if (text.includes("security") || text.includes("raid") || text.includes("attack")) return "security";
+    if (text.includes("diplomatic") || text.includes("talk") || text.includes("negotiation")) return "diplomatic";
+    if (text.includes("economic") || text.includes("market") || text.includes("oil") || text.includes("trade")) return "economic";
+    if (text.includes("maritime") || text.includes("shipping") || text.includes("sea") || text.includes("red sea")) return "maritime";
+    if (text.includes("energy") || text.includes("gas")) return "energy";
+    if (text.includes("logistics") || text.includes("supply")) return "logistics";
+
+    return "geopolitical";
+  }
+
+  function detectSignalType(domain, score) {
+    if (domain === "military") return localizeText("MILITARY", "عسكري");
+    if (domain === "security") return localizeText("SECURITY", "أمني");
+    if (domain === "diplomatic") return localizeText("DIPLOMATIC", "دبلوماسي");
+    if (domain === "economic") return localizeText("ECONOMIC", "اقتصادي");
+    if (domain === "maritime") return localizeText("MARITIME", "بحري");
+    if (domain === "energy") return localizeText("ENERGY", "طاقي");
+    if (domain === "logistics") return localizeText("LOGISTICS", "لوجستي");
+    if (score >= CONFIG.structuralThreshold) return localizeText("STRUCTURAL", "بنيوي");
+    return localizeText("GEOPOLITICAL", "جيوسياسي");
+  }
+
+  function detectInfluenceBand(score) {
+    if (score >= 82) return localizeText("CORE", "محوري");
+    if (score >= 62) return localizeText("ACTIVE PRESSURE", "ضغط نشط");
+    if (score >= 45) return localizeText("SUPPORT", "مساند");
+    return localizeText("WATCH", "مراقبة");
+  }
+
+  function detectDecisionMode(score) {
+    if (score >= 82) return localizeText("ACTIVE RESPONSE", "استجابة نشطة");
+    if (score >= 60) return localizeText("PREPARATION", "تحضير");
+    return localizeText("MONITORING", "مراقبة");
+  }
+
+  function detectLayer(domain, score) {
+    if (score >= 82) return localizeText("Structural Layer", "الطبقة البنيوية");
+    if (domain === "military") return localizeText("Military Layer", "الطبقة العسكرية");
+    if (domain === "security") return localizeText("Security Layer", "الطبقة الأمنية");
+    if (domain === "diplomatic") return localizeText("Diplomatic Layer", "الطبقة الدبلوماسية");
+    if (domain === "economic") return localizeText("Economic Layer", "الطبقة الاقتصادية");
+    if (domain === "maritime") return localizeText("Maritime Layer", "الطبقة البحرية");
+    return localizeText("Signal Layer", "طبقة الإشارة");
+  }
+
   function detectRegion(item) {
-    return safeText(item?.region, "global");
+    return safeText(item?.region, safeText(item?.country, "global"));
   }
 
   function detectCountry(item) {
@@ -170,71 +169,135 @@ window.IBSS_ANALYSIS = (function () {
     return safeText(item?.region, "global");
   }
 
-  function buildTitle(item, score) {
-    const title = getLocalizedNewsField(item, "title");
-    if (title) {
+  function buildTitle(item, domain) {
+    const titleEn = getLocalizedField(item, "title", "en");
+    const titleAr = getLocalizedField(item, "title", "ar");
+
+    if (titleEn || titleAr) {
       return {
-        en: title,
-        ar: item?.title?.ar || title
+        en: titleEn || titleAr || "Signal",
+        ar: titleAr || titleEn || "إشارة"
       };
     }
 
     const country = detectCountry(item);
-    const domain = detectDomain(item);
-    const label = titleCase(country + " " + domain + " signal");
-
     return {
-      en: label,
-      ar: label
+      en: `${country} ${domain} signal`,
+      ar: `${country} ${domain} signal`
     };
   }
 
-  function buildDescription(item, score) {
-    const summary = getLocalizedNewsField(item, "summary");
-    if (summary) {
+  function buildDescription(item, score, mode) {
+    const summaryEn = getLocalizedField(item, "summary", "en");
+    const summaryAr = getLocalizedField(item, "summary", "ar");
+
+    if (summaryEn || summaryAr) {
       return {
-        en: item?.summary?.en || summary,
-        ar: item?.summary?.ar || summary
+        en: summaryEn || summaryAr || `Analytical signal score ${score}.`,
+        ar: summaryAr || summaryEn || `إشارة تحليلية بدرجة ${score}.`
       };
     }
 
-    const mode = detectDecisionMode(item);
     return {
       en: `Analytical signal generated with score ${score} under ${mode.en}.`,
       ar: `تم توليد إشارة تحليلية بدرجة ${score} ضمن وضع ${mode.ar}.`
     };
   }
 
-  function scoreAnalyzedItem(item) {
-    const severity = Number(item?.severity || 0) / 100;
-    const confidence = Number(item?.confidence || 0) / 100;
-    const sourceWeight = getSourceWeight(item);
+  function buildMetrics(item) {
+    const impact = clamp(safeNumber(item?.impact, 4) / 10, 0, 1);
+    const confidence = clamp(safeNumber(item?.confidence, 4) / 10, 0, 1);
+    const urgency = clamp(safeNumber(item?.urgency, 4) / 10, 0, 1);
 
-    const score =
-      (severity * 0.50) +
-      (confidence * 0.25) +
-      (sourceWeight * 0.25);
-
-    return Math.round(clamp(score * 100, 0, 100));
+    return {
+      weight: impact,
+      volatility: urgency,
+      impact: confidence
+    };
   }
 
-  function analyzeNewsItem(item) {
-    const score = scoreAnalyzedItem(item);
+  function scoreAnalyzedItem(item) {
+    const impact = safeNumber(item?.impact, 4) / 10;
+    const confidence = safeNumber(item?.confidence, 4) / 10;
+    const urgency = safeNumber(item?.urgency, 4) / 10;
+    const persistence = safeNumber(item?.persistence, 5) / 10;
+    const spread = safeNumber(item?.spread, 5) / 10;
+    const sourceWeight = detectSourceWeight(item);
+
+    let weightedComposite = 0.0;
+
+    if (window.IBSS_WEIGHTS && typeof window.IBSS_WEIGHTS.applyWeights === "function") {
+      const weighted = window.IBSS_WEIGHTS.applyWeights({
+        domain: detectDomain(item),
+        impact: safeNumber(item?.impact, 4),
+        confidence: safeNumber(item?.confidence, 4),
+        urgency: safeNumber(item?.urgency, 4),
+        persistence: safeNumber(item?.persistence, 5),
+        spread: safeNumber(item?.spread, 5)
+      });
+
+      weightedComposite = clamp(safeNumber(weighted?.composite, 4) / 10, 0, 1);
+    } else {
+      weightedComposite =
+        (impact * 0.30) +
+        (confidence * 0.20) +
+        (urgency * 0.22) +
+        (persistence * 0.15) +
+        (spread * 0.13);
+    }
+
+    const finalScore =
+      (weightedComposite * 0.78) +
+      (sourceWeight * 0.22);
+
+    return Math.round(clamp(finalScore * 100, 0, 100));
+  }
+
+  function normalizeNewsInput(item, index = 0) {
+    return {
+      id: item?.id || `RAW-${index + 1}`,
+      source: safeText(item?.source, "UNKNOWN"),
+      title: {
+        en: getLocalizedField(item, "title", "en"),
+        ar: getLocalizedField(item, "title", "ar")
+      },
+      summary: {
+        en: getLocalizedField(item, "summary", "en"),
+        ar: getLocalizedField(item, "summary", "ar")
+      },
+      domain: detectDomain(item),
+      region: detectRegion(item),
+      country: detectCountry(item),
+      priority: normalizePriority(item?.priority || item?.severity),
+      severity: safeNumber(item?.severity, normalizePriority(item?.priority) === "HIGH" ? 80 : normalizePriority(item?.priority) === "MEDIUM" ? 60 : 35),
+      confidence: safeNumber(item?.confidence, 5),
+      impact: safeNumber(item?.impact, 4),
+      urgency: safeNumber(item?.urgency, 4),
+      persistence: safeNumber(item?.persistence, 5),
+      spread: safeNumber(item?.spread, 5),
+      tags: asArray(item?.tags),
+      actors: asArray(item?.actors),
+      timestamp: item?.timestamp || item?.publishedAt || now(),
+      url: safeText(item?.url, "#"),
+      raw: item
+    };
+  }
+
+  function analyzeNewsItem(item, index = 0) {
+    const normalized = normalizeNewsInput(item, index);
+    const score = scoreAnalyzedItem(normalized);
     const priority = detectPriority(score);
-    const signalType = detectSignalType(item);
-    const influenceBand = detectInfluenceBand(item);
-    const decisionMode = detectDecisionMode(item);
-    const layer = detectLayer(item);
-    const region = detectRegion(item);
-    const country = detectCountry(item);
-    const title = buildTitle(item, score);
-    const description = buildDescription(item, score);
+    const signalType = detectSignalType(normalized.domain, score);
+    const influenceBand = detectInfluenceBand(score);
+    const decisionMode = detectDecisionMode(score);
+    const layer = detectLayer(normalized.domain, score);
+    const title = buildTitle(normalized, normalized.domain);
+    const description = buildDescription(normalized, score, decisionMode);
 
     return {
       id: generateId(),
-      sourceNewsId: item.id || null,
-      source: item.source || "UNKNOWN",
-      sourceProfile: item.sourceProfile || null,
+      sourceNewsId: normalized.id || null,
+      source: normalized.source,
       title,
       description,
       signalType,
@@ -244,17 +307,25 @@ window.IBSS_ANALYSIS = (function () {
       priority,
       score100: score,
       balancedScore100: score,
-      severity: Number(item?.severity || 0),
-      confidence: Number(item?.confidence || 0),
-      region,
-      country,
-      domains: asArray(item?.domains),
-      actors: asArray(item?.actors),
-      tags: asArray(item?.tags),
+      severity: normalized.severity,
+      confidence: normalized.confidence,
+      impact: normalized.impact,
+      urgency: normalized.urgency,
+      persistence: normalized.persistence,
+      spread: normalized.spread,
+      region: normalized.region,
+      country: normalized.country,
+      domain: normalized.domain,
+      domains: [normalized.domain],
+      actors: normalized.actors,
+      tags: normalized.tags,
       live: score >= CONFIG.signalThreshold,
       structural: score >= CONFIG.structuralThreshold,
-      timestamp: item.timestamp || now(),
-      raw: item
+      timestamp: normalized.timestamp || now(),
+      link: normalized.url || "#",
+      active: true,
+      metrics: buildMetrics(normalized),
+      raw: normalized.raw
     };
   }
 
@@ -262,7 +333,7 @@ window.IBSS_ANALYSIS = (function () {
     return [
       normalizeText(signal.country),
       normalizeText(signal.region),
-      normalizeText(signal.signalType?.en || signal.signalType)
+      normalizeText(signal.domain || signal.signalType?.en || signal.signalType)
     ].join("|");
   }
 
@@ -271,28 +342,31 @@ window.IBSS_ANALYSIS = (function () {
 
     signals.forEach(signal => {
       const key = buildGroupKey(signal);
+
       if (!map.has(key)) {
         map.set(key, {
           key,
           country: signal.country,
           region: signal.region,
+          domain: signal.domain,
           signalType: signal.signalType,
           items: [],
           count: 0,
           maxScore: 0,
           avgScore: 0,
-          priority: "LOW"
+          priority: "LOW",
+          patternDetected: false
         });
       }
 
       const group = map.get(key);
       group.items.push(signal);
       group.count += 1;
-      group.maxScore = Math.max(group.maxScore, Number(signal.balancedScore100 || 0));
+      group.maxScore = Math.max(group.maxScore, safeNumber(signal.balancedScore100, 0));
     });
 
     const grouped = [...map.values()].map(group => {
-      const total = group.items.reduce((sum, item) => sum + Number(item.balancedScore100 || 0), 0);
+      const total = group.items.reduce((sum, item) => sum + safeNumber(item.balancedScore100, 0), 0);
       const avg = group.items.length ? Math.round(total / group.items.length) : 0;
 
       return {
@@ -303,18 +377,30 @@ window.IBSS_ANALYSIS = (function () {
       };
     });
 
-    return grouped.sort((a, b) => b.maxScore - a.maxScore);
+    return grouped
+      .sort((a, b) => b.maxScore - a.maxScore)
+      .slice(0, CONFIG.maxGroups);
+  }
+
+  function readNewsFromPipeline() {
+    if (window.IBSS_NEWS_UTILS && typeof window.IBSS_NEWS_UTILS.getAllNews === "function") {
+      return asArray(window.IBSS_NEWS_UTILS.getAllNews());
+    }
+
+    if (window.IBSS_INGESTION && typeof window.IBSS_INGESTION.getAllNormalized === "function") {
+      return asArray(window.IBSS_INGESTION.getAllNormalized());
+    }
+
+    return asArray(window.IBSS_NEWS);
   }
 
   function ingestFromNormalization() {
-    if (!window.IBSS_INGESTION || typeof window.IBSS_INGESTION.getAllNormalized !== "function") {
-      return [];
-    }
+    const items = readNewsFromPipeline();
 
-    const items = window.IBSS_INGESTION.getAllNormalized();
     const analyzed = items
-      .map(analyzeNewsItem)
-      .filter(item => Number(item.balancedScore100 || 0) >= CONFIG.signalThreshold)
+      .map((item, index) => analyzeNewsItem(item, index))
+      .filter(item => safeNumber(item.balancedScore100, 0) >= CONFIG.signalThreshold)
+      .sort((a, b) => safeNumber(b.balancedScore100, 0) - safeNumber(a.balancedScore100, 0))
       .slice(0, CONFIG.maxSignals);
 
     STATE.analyzed = analyzed;
@@ -325,16 +411,21 @@ window.IBSS_ANALYSIS = (function () {
   }
 
   function analyzeBatch(newsItems) {
-    if (!window.IBSS_INGESTION || typeof window.IBSS_INGESTION.ingestBatch !== "function") {
-      return [];
-    }
+    const analyzed = asArray(newsItems)
+      .map((item, index) => analyzeNewsItem(item, index))
+      .filter(item => safeNumber(item.balancedScore100, 0) >= CONFIG.signalThreshold)
+      .sort((a, b) => safeNumber(b.balancedScore100, 0) - safeNumber(a.balancedScore100, 0))
+      .slice(0, CONFIG.maxSignals);
 
-    window.IBSS_INGESTION.ingestBatch(newsItems);
-    return ingestFromNormalization();
+    STATE.analyzed = analyzed;
+    STATE.grouped = groupSignals(analyzed);
+    STATE.lastUpdate = now();
+
+    return analyzed;
   }
 
   function getSignals() {
-    return [...STATE.analyzed].sort((a, b) => b.balancedScore100 - a.balancedScore100);
+    return [...STATE.analyzed].sort((a, b) => safeNumber(b.balancedScore100, 0) - safeNumber(a.balancedScore100, 0));
   }
 
   function getGroupedSignals() {
