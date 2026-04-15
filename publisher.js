@@ -320,3 +320,8 @@ Dominant Signal: ${topTitle}
     buildSystemBrief
   };
 })();
+
+window.addEventListener("load", () => {
+  bindPublisher();
+  renderPublisherPanel();
+});
