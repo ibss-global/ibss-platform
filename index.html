@@ -298,7 +298,7 @@
       text-align:center;
       color:var(--muted);
       max-width:880px;
-      margin: -6px auto 22px;
+      margin:-6px auto 22px;
       line-height:1.8;
       font-size:15px;
     }
@@ -957,13 +957,8 @@
     <div class="founder" data-i18n="founder_line">
       Founded by Naeem M. Dahalan
     </div>
-
-    <div class="footer" data-i18n="footer_text">
-      © 2026 IBSS — Founded by Naeem M. Dahalan
-    </div>
-  </div>
-
-  <script src="data.js"></script>
+<script src="data.js"></script>
+  <script src="news.js"></script>
   <script src="engine.js"></script>
 
   <script>
@@ -1262,33 +1257,28 @@
 
     function renderTicker(system){
       const track = document.getElementById("tickerTrack");
+      if (!track) return;
+
+      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(8) || [];
       const items = [];
 
-      if (system?.topSignal) {
+      tickerNews.forEach(item => {
+        const severity = String(item.severity || "LOW").toLowerCase();
         items.push({
-          level: system.level === "HIGH" ? "high" : system.level === "MEDIUM" ? "medium" : "low",
-          text: currentLang === "ar"
-            ? `الإشارة الأعلى: ${getLocalizedText(system.topSignal.title)}`
-            : `Top Signal: ${getLocalizedText(system.topSignal.title)}`
-        });
-      }
-
-      if (system?.systemPressure != null) {
-        items.push({
-          level: system.level === "HIGH" ? "high" : system.level === "MEDIUM" ? "medium" : "low",
-          text: currentLang === "ar"
-            ? `ضغط النظام: ${system.systemPressure}`
-            : `System Pressure: ${system.systemPressure}`
-        });
-      }
-
-      const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 5) : [];
-      feed.forEach(line => {
-        items.push({
-          level: system.level === "HIGH" ? "high" : system.level === "MEDIUM" ? "medium" : "low",
-          text: typeof line === "string" ? line : getLocalizedText(line?.text)
+          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
+          text: getLocalizedText(item.title)
         });
       });
+
+      if (!items.length) {
+        const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 5) : [];
+        feed.forEach(line => {
+          items.push({
+            level: system?.level === "HIGH" ? "high" : system?.level === "MEDIUM" ? "medium" : "low",
+            text: typeof line === "string" ? line : getLocalizedText(line?.text)
+          });
+        });
+      }
 
       if (!items.length) {
         track.innerHTML = `<div class="ticker-item"><span class="ticker-dot low"></span>${t("no_feed")}</div>`;
@@ -1346,8 +1336,7 @@
 
     function renderUnitNews(){
       const list = document.getElementById("latestNewsList");
-      const snapshot = window.IBSS_UTILS?.getHomeSnapshot?.();
-      const newsItems = Array.isArray(snapshot?.latestNews) ? snapshot.latestNews : [];
+      const newsItems = window.IBSS_NEWS_UTILS?.getLatestNews?.(3) || [];
 
       if (!newsItems.length) {
         list.innerHTML = `
@@ -1363,8 +1352,8 @@
       }
 
       list.innerHTML = newsItems.map(item => {
-        const priority = String(item.priority || "LOW").toLowerCase();
-        const dotClass = priority === "high" ? "high" : priority === "medium" ? "medium" : "low";
+        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
+        const dotClass = severity === "high" ? "high" : severity === "medium" ? "medium" : "low";
 
         return `
           <div class="unit-list-item">
@@ -1489,3 +1478,8 @@
   </script>
 </body>
 </html>
+    <div class="footer" data-i18n="footer_text">
+      © 2026 IBSS — Founded by Naeem M. Dahalan
+    </div>
+  </div>
+  
