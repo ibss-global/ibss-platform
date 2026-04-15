@@ -491,7 +491,9 @@
 
 <script src="data.js"></script>
 <script src="content.js"></script>
+<script src="news.js"></script>
 <script src="engine.js"></script>
+
 <script>
 const translations = {
   en: {
@@ -499,6 +501,7 @@ const translations = {
     nav_dashboard: "Dashboard",
     nav_signals: "Signals",
     nav_reports: "Reports",
+    nav_countries: "Countries",
     nav_models: "Models",
     nav_about: "About",
 
@@ -539,6 +542,7 @@ const translations = {
     nav_dashboard: "لوحة التحكم",
     nav_signals: "الإشارات",
     nav_reports: "التقارير",
+    nav_countries: "الدول",
     nav_models: "النماذج",
     nav_about: "حول",
 
@@ -575,14 +579,14 @@ const translations = {
   }
 };
 
-let currentLang = localStorage.getItem("ibss_lang") || "en";
+let currentLang = localStorage.getItem("ibss_lang") || "ar";
 
 function t(key){
-  return translations[currentLang][key] || key;
+  return translations[currentLang]?.[key] || key;
 }
 
 function safeText(value, fallback = "-"){
-  return typeof value === "string" && value.trim() ? value : fallback;
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
 function getLocalizedText(value){
@@ -630,11 +634,15 @@ function priorityClass(priority){
 }
 
 function getSystem(){
-  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getLastSystemState === "function") {
-    return window.IBSS_ENGINE.getLastSystemState() || window.IBSS_ENGINE.getSystemState();
-  }
-  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
-    return window.IBSS_ENGINE.getSystemState();
+  try {
+    if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getLastSystemState === "function") {
+      return window.IBSS_ENGINE.getLastSystemState() || window.IBSS_ENGINE.getSystemState();
+    }
+    if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+      return window.IBSS_ENGINE.getSystemState();
+    }
+  } catch (error) {
+    console.error("Signals getSystem error:", error);
   }
   return null;
 }
@@ -652,6 +660,7 @@ function populateTypeFilter(){
     signals
       .map(signal => getLocalizedText(signal.signalType))
       .filter(Boolean)
+      .filter(type => type !== "-")
   )];
 
   const currentValue = typeFilter.value || "all";
@@ -663,6 +672,8 @@ function populateTypeFilter(){
 
   if ([...typeFilter.options].some(option => option.value === currentValue)) {
     typeFilter.value = currentValue;
+  } else {
+    typeFilter.value = "all";
   }
 }
 
@@ -687,6 +698,7 @@ function renderSignals(){
     const title = getLocalizedText(signal.title).toLowerCase();
     const desc = getLocalizedText(signal.description).toLowerCase();
     const signalType = getLocalizedText(signal.signalType);
+
     const priorityMatch = priorityValue === "all" || signal.priority === priorityValue;
     const typeMatch = typeValue === "all" || signalType === typeValue;
     const statusMatch =
@@ -760,7 +772,7 @@ function renderSignals(){
     `;
 
     if(signal.live && signal.link && signal.link !== "#"){
-      return `<a class="signal-card${disabledClass}" href="${signal.link}">${content}</a>`;
+      return `<a class="signal-card${disabledClass}" href="${escapeHtml(signal.link)}">${content}</a>`;
     }
 
     return `<div class="signal-card${disabledClass}">${content}</div>`;
@@ -776,11 +788,14 @@ document.getElementById("btn-ar").addEventListener("click", () => setLang("ar"))
 
 window.addEventListener("load", () => {
   applyTranslations();
+
   if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
     window.IBSS_ENGINE.getSystemState();
   }
+
   populateTypeFilter();
   renderSignals();
+
   setInterval(() => {
     populateTypeFilter();
     renderSignals();
