@@ -39,8 +39,16 @@ window.IBSS_ENGINE = (function () {
     return value[lang] || value.en || value.ar || "-";
   }
 
-  function normalizeText(value) {
-    return String(value || "").trim().toLowerCase();
+  function uniqueById(list) {
+    const map = new Map();
+
+    asArray(list).forEach(item => {
+      if (!item) return;
+      const id = item.id || `${item.title?.en || item.title || Math.random()}`;
+      map.set(id, item);
+    });
+
+    return [...map.values()];
   }
 
   function getSignals() {
@@ -55,23 +63,16 @@ window.IBSS_ENGINE = (function () {
     return asArray(window.IBSS_COUNTRIES);
   }
 
-  function getLatestNews(limit = 6) {
-    return window.IBSS_NEWS_UTILS?.getLatestNews?.(limit) || [];
-  }
-
-  function getTickerNews(limit = 8) {
-    return window.IBSS_NEWS_UTILS?.getTickerNews?.(limit) || [];
-  }
-
-  function autoRefreshNews() {
-    if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
-      return window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
-    }
-    return [];
+  function getNews() {
+    return asArray(window.IBSS_NEWS);
   }
 
   function getPublishedContent() {
     return getContent().filter(item => item && item.status === "published");
+  }
+
+  function getPublishedNewsContent() {
+    return getContent().filter(item => item && item.type === "news" && item.status === "published");
   }
 
   function getContentStats() {
@@ -97,6 +98,109 @@ window.IBSS_ENGINE = (function () {
     return "LOW";
   }
 
+  function normalizePriority(value) {
+    const p = String(value || "LOW").toUpperCase();
+    if (p === "HIGH") return "HIGH";
+    if (p === "MEDIUM") return "MEDIUM";
+    return "LOW";
+  }
+
+  function inferPriorityFromScore(score100) {
+    if (score100 >= 75) return "HIGH";
+    if (score100 >= 50) return "MEDIUM";
+    return "LOW";
+  }
+
+  function inferSignalTypeFromDomain(domain) {
+    const d = String(domain || "").toLowerCase();
+
+    if (d.includes("military")) return { en: "MILITARY", ar: "عسكري" };
+    if (d.includes("security")) return { en: "SECURITY", ar: "أمني" };
+    if (d.includes("economic")) return { en: "ECONOMIC", ar: "اقتصادي" };
+    if (d.includes("diplomatic")) return { en: "DIPLOMATIC", ar: "دبلوماسي" };
+    if (d.includes("maritime")) return { en: "MARITIME", ar: "بحري" };
+    if (d.includes("geo")) return { en: "GEOPOLITICAL", ar: "جيوسياسي" };
+
+    return { en: "STRUCTURAL", ar: "بنيوي" };
+  }
+
+  function inferInfluenceBand(priority) {
+    if (priority === "HIGH") return { en: "CORE", ar: "محوري" };
+    if (priority === "MEDIUM") return { en: "SUPPORT", ar: "مساند" };
+    return { en: "WATCH", ar: "مراقبة" };
+  }
+
+  function inferDecisionMode(priority) {
+    if (priority === "HIGH") return { en: "WATCH / ACT", ar: "مراقبة / تحرك" };
+    if (priority === "MEDIUM") return { en: "PRD", ar: "استعداد" };
+    return { en: "WATCH", ar: "مراقبة" };
+  }
+
+  function buildNewsDerivedSignals() {
+    const news = getNews();
+
+    if (!news.length) return [];
+
+    return news.map((item, index) => {
+      const impact = clamp(safeNumber(item.impact, 6) / 10, 0, 1);
+      const confidence = clamp(safeNumber(item.confidence, 6) / 10, 0, 1);
+      const urgency = clamp(safeNumber(item.urgency, 6) / 10, 0, 1);
+
+      const baseScore = clamp(
+        (impact * 0.45) +
+        (confidence * 0.30) +
+        (urgency * 0.25),
+        0,
+        1
+      );
+
+      const score100 = Math.round(baseScore * 100);
+      const priority = normalizePriority(item.priority || inferPriorityFromScore(score100));
+
+      return {
+        id: item.id ? `NEWS-SIG-${item.id}` : `NEWS-SIG-${index + 1}`,
+        title: {
+          en: item.title || "News Signal",
+          ar: item.title_ar || item.title || "إشارة خبرية"
+        },
+        description: {
+          en: item.summary || "Live news-derived signal.",
+          ar: item.summary_ar || item.summary || "إشارة مولدة من الأخبار الحية."
+        },
+        layer: {
+          en: "News Intelligence Unit",
+          ar: "وحدة تحليل الأخبار"
+        },
+        signalType: inferSignalTypeFromDomain(item.domain || item.category || "geopolitical"),
+        decisionMode: inferDecisionMode(priority),
+        influenceBand: inferInfluenceBand(priority),
+        priority,
+        weight: priority,
+        live: true,
+        active: true,
+        sourceUnit: "NIU",
+        sourceNewsId: item.id || null,
+        region: item.region || item.country || "Live Stream",
+        link: item.url || "#",
+        metrics: {
+          weight: impact,
+          volatility: urgency,
+          impact: confidence
+        },
+        newsMeta: {
+          source: item.source || item.sourceName || "External",
+          publishedAt: item.publishedAt || item.timestamp || nowIso()
+        }
+      };
+    });
+  }
+
+  function buildUnifiedSignals() {
+    const baseSignals = getSignals();
+    const newsSignals = buildNewsDerivedSignals();
+    return uniqueById([...baseSignals, ...newsSignals]);
+  }
+
   function scoreSignalBase(signal) {
     const metrics = signal?.metrics || {};
     const weight = safeNumber(metrics.weight, 0);
@@ -104,7 +208,7 @@ window.IBSS_ENGINE = (function () {
     const impact = safeNumber(metrics.impact, 0);
 
     let priorityBoost = 0;
-    const priority = detectPriority(signal);
+    const priority = normalizePriority(detectPriority(signal));
 
     if (priority === "HIGH") priorityBoost = 0.08;
     else if (priority === "MEDIUM") priorityBoost = 0.04;
@@ -157,54 +261,12 @@ window.IBSS_ENGINE = (function () {
     };
   }
 
-  function scoreNewsSeverity(item) {
-    const sev = normalizeText(item?.severity || item?.priority);
-    if (sev === "high") return 8;
-    if (sev === "medium") return 4;
-    return 1;
-  }
-
-  function buildNewsPressure(latestNews) {
-    const activeNews = asArray(latestNews);
-    if (!activeNews.length) {
-      return {
-        score: 0,
-        count: 0,
-        highCount: 0,
-        mediumCount: 0,
-        lowCount: 0
-      };
-    }
-
-    let score = 0;
-    let highCount = 0;
-    let mediumCount = 0;
-    let lowCount = 0;
-
-    activeNews.forEach(item => {
-      const sev = normalizeText(item?.severity || item?.priority);
-      if (sev === "high") highCount += 1;
-      else if (sev === "medium") mediumCount += 1;
-      else lowCount += 1;
-
-      score += scoreNewsSeverity(item);
-    });
-
-    return {
-      score: clamp(score, 0, 20),
-      count: activeNews.length,
-      highCount,
-      mediumCount,
-      lowCount
-    };
-  }
-
   function buildRankedSignals() {
-    return getSignals()
+    return buildUnifiedSignals()
       .map(signal => {
         const score = scoreSignalBase(signal);
         const score100 = Math.round(score * 100);
-        const priority = detectPriority(signal);
+        const priority = normalizePriority(detectPriority(signal));
 
         return {
           ...signal,
@@ -218,7 +280,7 @@ window.IBSS_ENGINE = (function () {
       .sort((a, b) => b.score - a.score);
   }
 
-  function buildPressure(rankedSignals, newsPressure) {
+  function buildPressure(rankedSignals) {
     const topSignal = rankedSignals[0] || null;
     const average = rankedSignals.length
       ? rankedSignals.reduce((sum, signal) => sum + signal.score, 0) / rankedSignals.length
@@ -238,27 +300,23 @@ window.IBSS_ENGINE = (function () {
     if (topSignal?.priority === "HIGH") pressure += 8;
     else if (topSignal?.priority === "MEDIUM") pressure += 4;
 
-    pressure += safeNumber(newsPressure?.score, 0);
-
     return clamp(pressure, 0, 100);
   }
 
-  function buildScenarios(level, newsPressure) {
-    const highNews = safeNumber(newsPressure?.highCount, 0);
-
+  function buildScenarios(level) {
     if (level === "HIGH") {
       return [
-        { key: "A", value: clamp(58 + highNews, 0, 100) },
-        { key: "B", value: clamp(27 - Math.min(highNews, 4), 0, 100) },
-        { key: "C", value: clamp(15 - Math.min(highNews, 2), 0, 100) }
+        { key: "A", value: 58 },
+        { key: "B", value: 27 },
+        { key: "C", value: 15 }
       ];
     }
 
     if (level === "MEDIUM") {
       return [
-        { key: "A", value: clamp(38 + Math.min(highNews, 3), 0, 100) },
+        { key: "A", value: 38 },
         { key: "B", value: 37 },
-        { key: "C", value: clamp(25 - Math.min(highNews, 3), 0, 100) }
+        { key: "C", value: 25 }
       ];
     }
 
@@ -288,10 +346,11 @@ window.IBSS_ENGINE = (function () {
         .map(country => ({
           id: country.id,
           name: getLocalizedText(country.name, "en"),
+          nameLocalized: country.name,
           riskScore: safeNumber(country.riskScore),
           riskLevel: country.riskLevel || riskLevelFromScore(safeNumber(country.riskScore)),
           trend: country.trend || "STABLE",
-          primaryDrivers: asArray(country.primaryDrivers?.en || [])
+          primaryDrivers: asArray(country.primaryDrivers?.en || country.primaryDrivers || [])
         }));
     }
 
@@ -316,47 +375,111 @@ window.IBSS_ENGINE = (function () {
     });
   }
 
-  function buildNewsFeedLines(latestNews) {
-    return asArray(latestNews).slice(0, 4).map(item => {
-      const title = getLocalizedText(item.title, "en");
-      const source = item?.source || "Source";
-      return `News: ${title} | ${source}`;
-    });
-  }
-
   function buildFeed(system) {
-    const lines = [
-      `Pressure index updated to ${system.systemPressure}`,
-      `System level: ${system.level}`,
-      `Decision mode: ${system.mode}`
-    ];
+    const lines = [];
+    const news = getNews().slice(0, 5);
+
+    news.forEach(item => {
+      const text = {
+        en: item.summary || item.title || "Live external news item.",
+        ar: item.summary_ar || item.title_ar || item.title || "عنصر خبري حي."
+      };
+
+      lines.push({
+        type: "news",
+        priority: normalizePriority(item.priority),
+        source: item.source || item.sourceName || "External",
+        text
+      });
+    });
+
+    lines.push({
+      type: "system",
+      priority: system.level,
+      text: {
+        en: `Pressure index updated to ${system.systemPressure}`,
+        ar: `تم تحديث مؤشر الضغط إلى ${system.systemPressure}`
+      }
+    });
+
+    lines.push({
+      type: "system",
+      priority: system.level,
+      text: {
+        en: `System level: ${system.level}`,
+        ar: `مستوى النظام: ${system.level === "HIGH" ? "مرتفع" : system.level === "MEDIUM" ? "متوسط" : "منخفض"}`
+      }
+    });
+
+    lines.push({
+      type: "system",
+      priority: system.level,
+      text: {
+        en: `Decision mode: ${system.mode}`,
+        ar: `وضع القرار: ${system.mode === "ACTIVE RESPONSE" ? "استجابة نشطة" : system.mode === "PREPARATION" ? "تحضير" : "مراقبة"}`
+      }
+    });
 
     if (system.topSignal) {
-      lines.push(`Top signal: ${getLocalizedText(system.topSignal.title, "en")}`);
+      lines.push({
+        type: "signal",
+        priority: system.topSignal.priority || system.level,
+        text: {
+          en: `Top signal: ${getLocalizedText(system.topSignal.title, "en")}`,
+          ar: `الإشارة الأعلى: ${getLocalizedText(system.topSignal.title, "ar")}`
+        }
+      });
     }
 
     if (system.countryRiskFeed.length) {
-      lines.push(`CRU synchronized with ${system.countryRiskFeed.length} country entries`);
+      lines.push({
+        type: "country",
+        priority: system.level,
+        text: {
+          en: `CRU synchronized with ${system.countryRiskFeed.length} country entries`,
+          ar: `تمت مزامنة وحدة المخاطر مع ${system.countryRiskFeed.length} مدخلات دول`
+        }
+      });
     }
 
     if (system.contentStats?.published > 0) {
-      lines.push(`Published content items: ${system.contentStats.published}`);
+      lines.push({
+        type: "content",
+        priority: system.level,
+        text: {
+          en: `Published content items: ${system.contentStats.published}`,
+          ar: `عدد المواد المنشورة: ${system.contentStats.published}`
+        }
+      });
     }
-
-    if (system.newsPressure?.count > 0) {
-      lines.push(
-        `Live news intake: ${system.newsPressure.count} items | HIGH ${system.newsPressure.highCount} | MEDIUM ${system.newsPressure.mediumCount}`
-      );
-    }
-
-    buildNewsFeedLines(system.latestNews).forEach(line => lines.push(line));
 
     if (system.level === "HIGH") {
-      lines.push("High escalation threshold exceeded");
+      lines.push({
+        type: "threshold",
+        priority: "HIGH",
+        text: {
+          en: "High escalation threshold exceeded",
+          ar: "تم تجاوز عتبة التصعيد المرتفع"
+        }
+      });
     } else if (system.level === "MEDIUM") {
-      lines.push("Structured pressure remains above preparation threshold");
+      lines.push({
+        type: "threshold",
+        priority: "MEDIUM",
+        text: {
+          en: "Structured pressure remains above preparation threshold",
+          ar: "الضغط البنيوي ما زال فوق عتبة التحضير"
+        }
+      });
     } else {
-      lines.push("Low pressure monitoring remains stable");
+      lines.push({
+        type: "threshold",
+        priority: "LOW",
+        text: {
+          en: "Low pressure monitoring remains stable",
+          ar: "المراقبة في مستوى ضغط منخفض ما تزال مستقرة"
+        }
+      });
     }
 
     return lines;
@@ -389,17 +512,12 @@ window.IBSS_ENGINE = (function () {
       ? (system.decision === "ACT" ? "تحرك" : system.decision === "PRD" ? "استعداد" : "مراقبة")
       : system.decision;
 
-    const newsLine = lang === "ar"
-      ? `رُصدت ${system.newsPressure?.count || 0} مادة خبرية حية ضمن الدورة الحالية.`
-      : `${system.newsPressure?.count || 0} live news items were processed in the current cycle.`;
-
     if (lang === "ar") {
       return {
         summary: `رصد المحرك ضغطًا بقيمة ${system.systemPressure} ضمن مستوى ${level} مع قرار ${decision}.`,
         body:
           `الإشارة المهيمنة الحالية هي ${topName}. ` +
           `${topDesc} ` +
-          `${newsLine} ` +
           `محرك السيناريو يوزّع الاحتمالات على النحو التالي: ` +
           `أ ${system.scenarios[0]?.value || 0}%، ` +
           `ب ${system.scenarios[1]?.value || 0}%، ` +
@@ -418,7 +536,6 @@ window.IBSS_ENGINE = (function () {
       body:
         `The dominant signal is ${topName}. ` +
         `${topDesc} ` +
-        `${newsLine} ` +
         `Scenario distribution currently stands at ` +
         `A ${system.scenarios[0]?.value || 0}%, ` +
         `B ${system.scenarios[1]?.value || 0}%, ` +
@@ -452,7 +569,6 @@ window.IBSS_ENGINE = (function () {
       level: system.level,
       decision: system.decision,
       topSignalId: system.topSignal?.id || null,
-      newsCount: system.newsPressure?.count || 0,
       title: {
         en: buildReportTitle(system, "en"),
         ar: buildReportTitle(system, "ar")
@@ -487,8 +603,7 @@ window.IBSS_ENGINE = (function () {
       ssi: system.systemPressure,
       level: system.level,
       decision: system.decision,
-      topSignalId: system.topSignal?.id || null,
-      newsCount: system.newsPressure?.count || 0
+      topSignalId: system.topSignal?.id || null
     });
 
     if (STATE.archive.length > CONFIG.archiveLimit) {
@@ -503,8 +618,7 @@ window.IBSS_ENGINE = (function () {
       level: system.level,
       decision: system.decision,
       topSignalId: system.topSignal?.id || null,
-      countryRiskFeed: system.countryRiskFeed,
-      newsCount: system.newsPressure?.count || 0
+      countryRiskFeed: system.countryRiskFeed
     });
 
     if (STATE.history.length > CONFIG.historyLimit) {
@@ -545,18 +659,46 @@ window.IBSS_ENGINE = (function () {
     }
   }
 
-  function computeSystemState() {
-    autoRefreshNews();
+  function getLatestStudy() {
+    const published = getPublishedContent()
+      .filter(item =>
+        item &&
+        (
+          item.type === "study" ||
+          item.type === "report" ||
+          item.type === "analysis" ||
+          item.type === "brief"
+        )
+      )
+      .sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
 
+    return published[0] || null;
+  }
+
+  function getHomeSnapshot(system) {
+    const topCountry = asArray(system?.countryRiskFeed)[0] || null;
+    const latestStudy = getLatestStudy();
+    const latestNews = getNews()
+      .slice()
+      .sort((a, b) => new Date(b.publishedAt || b.timestamp || 0) - new Date(a.publishedAt || a.timestamp || 0))
+      .slice(0, 3);
+
+    return {
+      topSignal: system?.topSignal || null,
+      topCountry,
+      latestStudy,
+      latestNews
+    };
+  }
+
+  function computeSystemState() {
     const rankedSignals = buildRankedSignals();
     const topSignal = rankedSignals[0] || null;
-    const latestNews = getLatestNews(6);
-    const newsPressure = buildNewsPressure(latestNews);
-    const systemPressure = buildPressure(rankedSignals, newsPressure);
+    const systemPressure = buildPressure(rankedSignals);
     const level = riskLevelFromScore(systemPressure);
     const { decision, mode } = decisionFromLevel(level);
     const liveSignals = rankedSignals.filter(signal => signal.live);
-    const scenarios = buildScenarios(level, newsPressure);
+    const scenarios = buildScenarios(level);
     const countryRiskFeed = buildCountryRiskFeed(rankedSignals);
 
     const system = {
@@ -574,19 +716,25 @@ window.IBSS_ENGINE = (function () {
       liveSignalsCount: liveSignals.length,
       scenarios,
       countryRiskFeed,
-      latestNews,
-      tickerNews: getTickerNews(8),
-      newsPressure,
       feed: [],
       contentStats: getContentStats(),
-      publishedContent: getPublishedContent()
+      publishedContent: getPublishedContent(),
+      publishedNewsContent: getPublishedNewsContent(),
+      liveNews: getNews()
     };
 
     system.feed = buildFeed(system);
 
     if (shouldGenerateReport(system)) {
       const report = generateAutoReport(system);
-      system.feed.unshift(`Auto report generated: ${report.title.en}`);
+      system.feed.unshift({
+        type: "report",
+        priority: system.level,
+        text: {
+          en: `Auto report generated: ${report.title.en}`,
+          ar: `تم توليد تقرير تلقائي: ${report.title.ar}`
+        }
+      });
     }
 
     updateHistory(system);
@@ -629,9 +777,7 @@ window.IBSS_ENGINE = (function () {
   function getStaticSystemFallback() {
     const rankedSignals = buildRankedSignals();
     const topSignal = rankedSignals[0] || null;
-    const latestNews = getLatestNews(6);
-    const newsPressure = buildNewsPressure(latestNews);
-    const pressure = buildPressure(rankedSignals, newsPressure);
+    const pressure = buildPressure(rankedSignals);
     const level = riskLevelFromScore(pressure);
     const { decision, mode } = decisionFromLevel(level);
     const countryRiskFeed = buildCountryRiskFeed(rankedSignals);
@@ -649,30 +795,27 @@ window.IBSS_ENGINE = (function () {
       rankedSignals,
       liveSignals: rankedSignals.filter(signal => signal.live),
       liveSignalsCount: rankedSignals.filter(signal => signal.live).length,
-      scenarios: buildScenarios(level, newsPressure),
+      scenarios: buildScenarios(level),
       countryRiskFeed,
-      latestNews,
-      tickerNews: getTickerNews(8),
-      newsPressure,
       feed: buildFeed({
         systemPressure: pressure,
         level,
         decision,
         mode,
         topSignal,
-        latestNews,
-        newsPressure,
         countryRiskFeed,
         contentStats: getContentStats()
       }),
       contentStats: getContentStats(),
-      publishedContent: getPublishedContent()
+      publishedContent: getPublishedContent(),
+      publishedNewsContent: getPublishedNewsContent(),
+      liveNews: getNews()
     };
   }
 
   loadState();
 
-  return {
+  const api = {
     CONFIG,
     getSystemState,
     getLastSystemState,
@@ -684,7 +827,18 @@ window.IBSS_ENGINE = (function () {
     getArchive,
     getContentStats,
     getPublishedContent,
+    getPublishedNewsContent,
+    getHomeSnapshot: function () {
+      const system = STATE.lastSystem || computeSystemState();
+      return getHomeSnapshot(system);
+    },
     scoreSignal100,
     riskLevelFromScore
   };
+
+  window.IBSS_UTILS = {
+    getHomeSnapshot: api.getHomeSnapshot
+  };
+
+  return api;
 })();
