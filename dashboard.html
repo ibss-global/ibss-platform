@@ -458,6 +458,38 @@
       color:var(--muted);
     }
 
+    .news-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-top:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
+    }
+
+    .news-chip.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.28);
+    }
+
+    .news-chip.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.28);
+    }
+
+    .news-chip.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
     .footer{
       margin-top:26px;
       text-align:center;
@@ -609,6 +641,7 @@
         <div class="signal-box">
           <h3 id="signalTitle">-</h3>
           <p id="signalDesc">-</p>
+          <div id="signalNewsChipWrap"></div>
         </div>
 
         <div class="title" style="margin-top:18px" id="radarTitle">Radar</div>
@@ -647,6 +680,7 @@
   </div>
 
   <script src="data.js"></script>
+  <script src="news.js"></script>
   <script src="engine.js"></script>
 
   <script>
@@ -694,7 +728,8 @@
         trend: "Trend",
         sourceEngine: "Engine source",
         updatedAt: "Updated",
-        noData: "No data available."
+        noData: "No data available.",
+        newsIntake: "Live News Intake"
       },
       ar: {
         nav_home: "الرئيسية",
@@ -739,7 +774,8 @@
         trend: "الاتجاه",
         sourceEngine: "مصدر المحرك",
         updatedAt: "آخر تحديث",
-        noData: "لا توجد بيانات."
+        noData: "لا توجد بيانات.",
+        newsIntake: "التغذية الخبرية الحية"
       }
     };
 
@@ -815,9 +851,7 @@
         : "-";
 
       line.textContent = `${t("sourceEngine")}: ${safe(system?.source, "-")} | ${t("updatedAt")}: ${dateText}`;
-    }
-
-    function renderLevel(system){
+    }function renderLevel(system){
       const levelEl = document.getElementById("level");
       const ssiEl = document.getElementById("ssi");
       const alertBox = document.getElementById("alertBox");
@@ -874,18 +908,36 @@
       }
     }
 
-    function renderPrimarySignal(signal){
+    function renderPrimarySignal(signal, system){
       const titleEl = document.getElementById("signalTitle");
       const descEl = document.getElementById("signalDesc");
+      const chipWrap = document.getElementById("signalNewsChipWrap");
 
       if (!signal) {
         titleEl.textContent = "-";
         descEl.textContent = t("noData");
+        chipWrap.innerHTML = "";
         return;
       }
 
       titleEl.textContent = getLocalizedText(signal.title);
       descEl.textContent = getLocalizedText(signal.description);
+
+      const newsPressure = system?.newsPressure || null;
+      if (!newsPressure || !newsPressure.count) {
+        chipWrap.innerHTML = "";
+        return;
+      }
+
+      const chipClass =
+        newsPressure.highCount > 0 ? "high" :
+        newsPressure.mediumCount > 0 ? "medium" : "low";
+
+      chipWrap.innerHTML = `
+        <span class="news-chip ${chipClass}">
+          ${escapeHtml(t("newsIntake"))}: ${newsPressure.count}
+        </span>
+      `;
     }
 
     function renderRadar(system){
@@ -1027,7 +1079,7 @@
       renderMeta(system);
       const level = renderLevel(system);
       renderDecision(level);
-      renderPrimarySignal(system.topSignal || system.dominantSignal || null);
+      renderPrimarySignal(system.topSignal || system.dominantSignal || null, system);
       renderRadar(system);
       renderScenarios(system);
       renderCountries(system);
