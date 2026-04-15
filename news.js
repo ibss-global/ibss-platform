@@ -1,11 +1,16 @@
 // IBSS NEWS CORE — Multi-Source Live News Layer
-// Version: v2.0 Production Foundation
+// Version: v3.0 Professional Runtime
 
 (function () {
   "use strict";
 
-  const NEWS_REFRESH_MS = 5 * 60 * 1000;
-  const STORAGE_KEY = "ibss_news_state_v1";
+  const CONFIG = {
+    refreshMs: 5 * 60 * 1000,
+    storageKey: "ibss_news_state_v3",
+    maxItems: 120,
+    tickerItems: 10,
+    homeItems: 3
+  };
 
   const DEFAULT_NEWS = [
     {
@@ -142,17 +147,17 @@
     return typeof value === "string" && value.trim() ? value.trim() : fallback;
   }
 
-  function getLocalizedText(value, lang = "en") {
-    if (!value) return "";
-    if (typeof value === "string") return value;
-    return value[lang] || value.en || value.ar || "";
-  }
-
   function normalizeText(value) {
     return safeText(String(value || ""))
       .toLowerCase()
       .replace(/\s+/g, " ")
       .trim();
+  }
+
+  function getLocalizedText(value, lang = "en") {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    return value[lang] || value.en || value.ar || "";
   }
 
   function normalizePriority(value) {
@@ -169,8 +174,17 @@
     return "LOW";
   }
 
+  function normalizeDate(value) {
+    const date = new Date(value || nowIso());
+    if (Number.isNaN(date.getTime())) return nowIso();
+    return date.toISOString();
+  }
+
+  function uniqueTags(tags) {
+    return [...new Set(asArray(tags).map(tag => safeText(tag)).filter(Boolean))];
+  }
+
   function normalizeNewsItem(item, index = 0) {
-    const publishedAt = item?.publishedAt || nowIso();
     const titleEn =
       getLocalizedText(item?.title, "en") ||
       item?.title_en ||
@@ -194,7 +208,7 @@
       summaryEn;
 
     return {
-      id: safeText(item?.id, `NEWS-AUTO-${index + 1}`),
+      id: safeText(item?.id, `NEWS-AUTO-${Date.now()}-${index + 1}`),
       source: safeText(item?.source, "Unknown Source"),
       sourceType: safeText(item?.sourceType, "unknown"),
       priority: normalizePriority(item?.priority),
@@ -210,9 +224,9 @@
         en: summaryEn,
         ar: summaryAr
       },
-      publishedAt,
+      publishedAt: normalizeDate(item?.publishedAt),
       url: safeText(item?.url, ""),
-      tags: asArray(item?.tags).map(tag => safeText(tag)).filter(Boolean),
+      tags: uniqueTags(item?.tags),
       active: item?.active !== false
     };
   }
@@ -221,11 +235,16 @@
     return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
   }
 
+  function trimItems(items) {
+    return items.slice(0, CONFIG.maxItems);
+  }
+
   function dedupeNews(items) {
     const map = new Map();
 
-    items.forEach((item, index) => {
+    asArray(items).forEach((item, index) => {
       const normalized = normalizeNewsItem(item, index);
+
       const key = [
         normalizeText(getLocalizedText(normalized.title, "en")),
         normalizeText(normalized.source),
@@ -242,33 +261,18 @@
       const existingTime = new Date(existing.publishedAt).getTime();
       const nextTime = new Date(normalized.publishedAt).getTime();
 
-      if (nextTime > existingTime) {
+      if (nextTime >= existingTime) {
         map.set(key, normalized);
       }
     });
 
-    return [...map.values()].sort(compareByDateDesc);
-  }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return;
-
-      STATE.items = asArray(parsed.items).map((item, index) => normalizeNewsItem(item, index));
-      STATE.lastUpdated = parsed.lastUpdated || null;
-    } catch (error) {
-      console.error("IBSS_NEWS loadState error:", error);
-    }
+    return trimItems([...map.values()].sort(compareByDateDesc));
   }
 
   function saveState() {
     try {
       localStorage.setItem(
-        STORAGE_KEY,
+        CONFIG.storageKey,
         JSON.stringify({
           items: STATE.items,
           lastUpdated: STATE.lastUpdated
@@ -276,6 +280,21 @@
       );
     } catch (error) {
       console.error("IBSS_NEWS saveState error:", error);
+    }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return;
+
+      STATE.items = dedupeNews(asArray(parsed.items));
+      STATE.lastUpdated = parsed.lastUpdated || null;
+    } catch (error) {
+      console.error("IBSS_NEWS loadState error:", error);
     }
   }
 
@@ -293,58 +312,76 @@
     STATE.initialized = true;
   }
 
+  function setGlobalNews() {
+    globalThis.IBSS_NEWS = getAllNews();
+  }
+
   function getAllNews() {
     ensureInitialized();
     return clone(STATE.items).sort(compareByDateDesc);
   }
 
   function getActiveNews() {
-    ensureInitialized();
     return getAllNews().filter(item => item.active !== false);
   }
 
-  function getLatestNews(limit = 5) {
-    return getActiveNews().slice(0, Math.max(1, Number(limit) || 5));
+  function getLatestNews(limit = CONFIG.homeItems) {
+    const max = Math.max(1, Number(limit) || CONFIG.homeItems);
+    return getActiveNews().slice(0, max);
   }
 
-  function getTickerNews(limit = 8) {
-    return getActiveNews()
-      .filter(item => item.priority === "HIGH" || item.priority === "MEDIUM")
-      .slice(0, Math.max(1, Number(limit) || 8));
+  function getTickerNews(limit = CONFIG.tickerItems) {
+    const max = Math.max(1, Number(limit) || CONFIG.tickerItems);
+
+    const preferred = getActiveNews().filter(item =>
+      item.priority === "HIGH" || item.priority === "MEDIUM"
+    );
+
+    return (preferred.length ? preferred : getActiveNews()).slice(0, max);
   }
 
   function getNewsByCountry(country) {
-    ensureInitialized();
     const target = normalizeText(country);
     return getActiveNews().filter(item => normalizeText(item.country) === target);
   }
 
   function getNewsByDomain(domain) {
-    ensureInitialized();
     const target = normalizeText(domain);
     return getActiveNews().filter(item => normalizeText(item.domain) === target);
   }
 
   function getLatestStrategicStudyFromContent() {
     const content = asArray(globalThis.IBSS_CONTENT);
+
     const eligible = content
       .filter(item => {
         const type = normalizeText(item?.type);
         const status = normalizeText(item?.status);
-        return (
-          status === "published" &&
-          (type === "study" || type === "report" || type === "policy_paper" || type === "analysis" || type === "brief")
+
+        return status === "published" && (
+          type === "study" ||
+          type === "report" ||
+          type === "policy_paper" ||
+          type === "analysis" ||
+          type === "brief"
         );
       })
-      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+      .sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime());
 
     return eligible[0] || null;
   }
 
   function getTopCountryFromSystem() {
+    if (globalThis.IBSS_ENGINE && typeof globalThis.IBSS_ENGINE.getLastSystemState === "function") {
+      const last = globalThis.IBSS_ENGINE.getLastSystemState();
+      const feed = asArray(last?.countryRiskFeed);
+      if (feed.length) return feed[0];
+    }
+
     if (globalThis.IBSS_ENGINE && typeof globalThis.IBSS_ENGINE.getStaticSystemFallback === "function") {
       const system = globalThis.IBSS_ENGINE.getStaticSystemFallback();
-      return asArray(system?.countryRiskFeed)[0] || null;
+      const feed = asArray(system?.countryRiskFeed);
+      if (feed.length) return feed[0];
     }
 
     const countries = asArray(globalThis.IBSS_COUNTRIES)
@@ -355,26 +392,25 @@
   }
 
   function getTopSignalFromSystem() {
+    if (globalThis.IBSS_ENGINE && typeof globalThis.IBSS_ENGINE.getLastSystemState === "function") {
+      const last = globalThis.IBSS_ENGINE.getLastSystemState();
+      if (last?.topSignal || last?.dominantSignal) {
+        return last.topSignal || last.dominantSignal;
+      }
+    }
+
     if (globalThis.IBSS_ENGINE && typeof globalThis.IBSS_ENGINE.getStaticSystemFallback === "function") {
       const system = globalThis.IBSS_ENGINE.getStaticSystemFallback();
-      return system?.topSignal || system?.dominantSignal || null;
+      if (system?.topSignal || system?.dominantSignal) {
+        return system.topSignal || system.dominantSignal;
+      }
     }
 
     const signals = asArray(globalThis.IBSS_SIGNALS)
       .slice()
       .sort((a, b) => {
-        const aScore =
-          Number(a?.balancedScore100 || a?.score100 || 0) ||
-          Math.round(((Number(a?.metrics?.weight || 0) * 0.5) +
-            (Number(a?.metrics?.volatility || 0) * 0.25) +
-            (Number(a?.metrics?.impact || 0) * 0.25)) * 100);
-
-        const bScore =
-          Number(b?.balancedScore100 || b?.score100 || 0) ||
-          Math.round(((Number(b?.metrics?.weight || 0) * 0.5) +
-            (Number(b?.metrics?.volatility || 0) * 0.25) +
-            (Number(b?.metrics?.impact || 0) * 0.25)) * 100);
-
+        const aScore = Number(a?.balancedScore100 || a?.score100 || 0);
+        const bScore = Number(b?.balancedScore100 || b?.score100 || 0);
         return bScore - aScore;
       });
 
@@ -392,16 +428,19 @@
     };
   }
 
+  function replaceStateItems(items) {
+    STATE.items = dedupeNews(items);
+    STATE.lastUpdated = nowIso();
+    saveState();
+    setGlobalNews();
+    return getAllNews();
+  }
+
   function addNewsItems(items) {
     ensureInitialized();
     const incoming = asArray(items);
     if (!incoming.length) return getAllNews();
-
-    STATE.items = dedupeNews([...incoming, ...STATE.items]);
-    STATE.lastUpdated = nowIso();
-    saveState();
-
-    return getAllNews();
+    return replaceStateItems([...incoming, ...STATE.items]);
   }
 
   function addNewsItem(item) {
@@ -410,43 +449,43 @@
 
   function replaceNews(items) {
     ensureInitialized();
-    STATE.items = dedupeNews(asArray(items));
-    STATE.lastUpdated = nowIso();
-    saveState();
-    return getAllNews();
+    return replaceStateItems(asArray(items));
   }
 
   function markInactive(id) {
     ensureInitialized();
+
     STATE.items = STATE.items.map(item =>
       item.id === id ? { ...item, active: false } : item
     );
+
     STATE.lastUpdated = nowIso();
     saveState();
+    setGlobalNews();
+
     return getAllNews();
   }
 
-  function refreshMockNews() {
-    ensureInitialized();
-
+  function buildMockRotatingNews() {
     const now = new Date();
-    const seedMinute = now.getUTCMinutes();
+    const minute = now.getUTCMinutes();
+    const isEven = minute % 2 === 0;
 
-    const rotating = [
+    return [
       {
-        id: `LIVE-GAZA-${seedMinute}`,
+        id: `LIVE-GAZA-${minute}`,
         source: "Live Monitor",
         sourceType: "live",
-        priority: seedMinute % 2 === 0 ? "HIGH" : "MEDIUM",
-        severity: seedMinute % 2 === 0 ? "HIGH" : "MEDIUM",
+        priority: isEven ? "HIGH" : "MEDIUM",
+        severity: isEven ? "HIGH" : "MEDIUM",
         domain: "geo-security",
         region: "gaza",
         country: "gaza",
         title: {
-          en: seedMinute % 2 === 0
+          en: isEven
             ? "Live monitoring detects renewed structural pressure around Gaza."
             : "Operational monitoring keeps Gaza as the dominant active file.",
-          ar: seedMinute % 2 === 0
+          ar: isEven
             ? "الرصد الحي يلتقط تجدد الضغط البنيوي حول غزة."
             : "المراقبة التشغيلية تُبقي غزة الملف النشط المهيمن."
         },
@@ -460,7 +499,7 @@
         active: true
       },
       {
-        id: `LIVE-REGIONAL-${seedMinute}`,
+        id: `LIVE-REGIONAL-${minute}`,
         source: "Regional Watch",
         sourceType: "live",
         priority: "MEDIUM",
@@ -480,17 +519,47 @@
         url: "",
         tags: ["regional", "diplomatic", "uncertainty"],
         active: true
+      },
+      {
+        id: `LIVE-LEVANT-${minute}`,
+        source: "Field Watch",
+        sourceType: "live",
+        priority: minute % 3 === 0 ? "HIGH" : "LOW",
+        severity: minute % 3 === 0 ? "HIGH" : "LOW",
+        domain: "security",
+        region: "levant",
+        country: "lebanon",
+        title: {
+          en: minute % 3 === 0
+            ? "Hybrid pressure indicators remain visible on the northern front."
+            : "Northern front activity remains under structured observation.",
+          ar: minute % 3 === 0
+            ? "مؤشرات الضغط الهجين ما تزال ظاهرة على الجبهة الشمالية."
+            : "نشاط الجبهة الشمالية ما يزال تحت المراقبة المنظمة."
+        },
+        summary: {
+          en: "The northern file remains relevant inside the sovereign tracking layer.",
+          ar: "الملف الشمالي ما يزال حاضرًا داخل طبقة التتبع السيادي."
+        },
+        publishedAt: nowIso(),
+        url: "",
+        tags: ["levant", "lebanon", "front"],
+        active: true
       }
     ];
+  }
 
-    return addNewsItems(rotating);
+  function refreshMockNews() {
+    ensureInitialized();
+    return addNewsItems(buildMockRotatingNews());
   }
 
   function needsRefresh() {
     ensureInitialized();
     if (!STATE.lastUpdated) return true;
+
     const last = new Date(STATE.lastUpdated).getTime();
-    return (Date.now() - last) >= NEWS_REFRESH_MS;
+    return (Date.now() - last) >= CONFIG.refreshMs;
   }
 
   function autoRefreshIfNeeded() {
@@ -499,12 +568,18 @@
     return refreshMockNews();
   }
 
-  loadState();
-  seedDefaultNews();
+  function forceRefresh() {
+    ensureInitialized();
+    return refreshMockNews();
+  }
 
-  globalThis.IBSS_NEWS = getAllNews();
+  ensureInitialized();
+  setGlobalNews();
+  autoRefreshIfNeeded();
+  setGlobalNews();
 
   globalThis.IBSS_NEWS_UTILS = {
+    CONFIG,
     getAllNews,
     getActiveNews,
     getLatestNews,
@@ -518,9 +593,7 @@
     markInactive,
     refreshMockNews,
     autoRefreshIfNeeded,
+    forceRefresh,
     needsRefresh
   };
-
-  autoRefreshIfNeeded();
-  globalThis.IBSS_NEWS = getAllNews();
 })();
