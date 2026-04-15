@@ -1,284 +1,526 @@
-// IBSS NEWS FEED LAYER — Live Sovereign News Registry
-// Version: v1.0 Operational News Intake
+// IBSS NEWS CORE — Multi-Source Live News Layer
+// Version: v2.0 Production Foundation
 
 (function () {
   "use strict";
 
-  const IBSS_NEWS = [
+  const NEWS_REFRESH_MS = 5 * 60 * 1000;
+  const STORAGE_KEY = "ibss_news_state_v1";
+
+  const DEFAULT_NEWS = [
     {
       id: "NEWS-001",
+      source: "Reuters",
+      sourceType: "wire",
+      priority: "HIGH",
+      severity: "HIGH",
+      domain: "geo-security",
+      region: "gaza",
+      country: "gaza",
       title: {
-        ar: "غزة: الضغط البنيوي ما يزال فوق عتبة الاستعداد",
-        en: "Gaza: Structural pressure remains above readiness threshold"
+        en: "Military pressure remains concentrated around Gaza structure.",
+        ar: "الضغط العسكري ما يزال متركزًا حول بنية غزة."
       },
       summary: {
-        ar: "المؤشرات التشغيلية المرتبطة بغزة ما تزال تعكس تمركز الضغط في المستوى البنيوي مع استمرار حساسية المشهد.",
-        en: "Operational indicators tied to Gaza continue to reflect concentrated structural pressure with sustained scene sensitivity."
+        en: "Ongoing military pressure continues to shape Gaza as the dominant structural file in the current system picture.",
+        ar: "الضغط العسكري المستمر يواصل تشكيل غزة باعتبارها الملف البنيوي المهيمن في صورة النظام الحالية."
       },
-      countryId: "CTR-GAZA",
-      signalId: "SIG-GAZA-001",
-      category: "structural",
-      severity: "HIGH",
-      status: "live",
-      source: "IBSS Live Feed",
-      sourceType: "internal",
-      publishedAt: "2026-04-14T08:00:00Z",
-      tags: ["غزة", "ضغط بنيوي", "استعداد"],
-      metrics: {
-        impact: 9,
-        confidence: 8,
-        urgency: 8
-      }
+      publishedAt: "2026-04-15T08:00:00Z",
+      url: "",
+      tags: ["gaza", "military", "pressure"],
+      active: true
     },
     {
       id: "NEWS-002",
+      source: "Al Jazeera",
+      sourceType: "network",
+      priority: "HIGH",
+      severity: "HIGH",
+      domain: "military",
+      region: "levant",
+      country: "lebanon",
       title: {
-        ar: "لبنان: الضغط على الجبهة الشمالية يظل نشطًا ضمن سقف مضبوط",
-        en: "Lebanon: Northern front pressure remains active under a controlled ceiling"
+        en: "Northern front pressure remains active with hybrid escalation indicators.",
+        ar: "ضغط الجبهة الشمالية ما يزال نشطًا مع مؤشرات تصعيد هجينة."
       },
       summary: {
-        ar: "الساحة اللبنانية ما تزال تحت ضغط عسكري-سياسي هجين دون انتقال واضح إلى تفجر كامل.",
-        en: "The Lebanese theater remains under hybrid military-political pressure without a clear shift into full rupture."
+        en: "The Lebanon file remains under elevated pressure with military and political overlap.",
+        ar: "ملف لبنان ما يزال تحت ضغط مرتفع مع تداخل عسكري وسياسي."
       },
-      countryId: "CTR-LEB",
-      signalId: "SIG-LEB-001",
-      category: "military",
-      severity: "HIGH",
-      status: "live",
-      source: "IBSS Live Feed",
-      sourceType: "internal",
-      publishedAt: "2026-04-14T08:20:00Z",
-      tags: ["لبنان", "الجبهة الشمالية", "ضغط"],
-      metrics: {
-        impact: 8,
-        confidence: 8,
-        urgency: 7
-      }
+      publishedAt: "2026-04-15T08:20:00Z",
+      url: "",
+      tags: ["lebanon", "front", "hybrid"],
+      active: true
     },
     {
       id: "NEWS-003",
+      source: "AP",
+      sourceType: "wire",
+      priority: "MEDIUM",
+      severity: "MEDIUM",
+      domain: "geopolitical",
+      region: "regional",
+      country: "iran",
       title: {
-        ar: "إيران: المسار التفاوضي مستقر ظاهريًا تحت ضغط متزايد",
-        en: "Iran: The negotiation track appears stable under rising pressure"
+        en: "Diplomatic engagement around Iran remains under structured pressure.",
+        ar: "الانخراط الدبلوماسي حول إيران ما يزال تحت ضغط منظم."
       },
       summary: {
-        ar: "الملف الإيراني لا يزال ضمن بيئة تفاوضية غير مستقرة، مع حساسية متزايدة تجاه الإشارات السياسية والأمنية.",
-        en: "The Iranian file remains inside an unstable negotiation environment, with rising sensitivity to political and security signaling."
+        en: "Negotiation dynamics remain active, but enforcement pathways are still unclear.",
+        ar: "ديناميات التفاوض ما تزال نشطة، لكن مسارات التنفيذ لا تزال غير واضحة."
       },
-      countryId: "CTR-IRN",
-      signalId: "SIG-IRN-001",
-      category: "diplomatic",
-      severity: "MEDIUM",
-      status: "live",
-      source: "IBSS Live Feed",
-      sourceType: "internal",
-      publishedAt: "2026-04-14T08:40:00Z",
-      tags: ["إيران", "مفاوضات", "ضغط"],
-      metrics: {
-        impact: 6,
-        confidence: 7,
-        urgency: 6
-      }
+      publishedAt: "2026-04-15T08:45:00Z",
+      url: "",
+      tags: ["iran", "negotiation", "diplomatic"],
+      active: true
     },
     {
       id: "NEWS-004",
+      source: "Bloomberg",
+      sourceType: "financial",
+      priority: "LOW",
+      severity: "LOW",
+      domain: "geo-military",
+      region: "maritime",
+      country: "redsea",
       title: {
-        ar: "البحر الأحمر: التوتر دون مستوى التعطيل الكامل لكنه يستحق المراقبة",
-        en: "Red Sea: Tension remains below full disruption but warrants monitoring"
+        en: "Red Sea tension remains below full disruption threshold.",
+        ar: "توتر البحر الأحمر ما يزال دون عتبة التعطيل الكامل."
       },
       summary: {
-        ar: "التوتر البحري ما يزال محدودًا نسبيًا، لكنه يحمل دلالة لوجستية وردعية تستحق التتبع.",
-        en: "Maritime tension remains relatively limited, but still carries logistical and deterrence relevance worth tracking."
+        en: "Maritime risk indicators remain relevant, though not yet at strategic disruption level.",
+        ar: "مؤشرات المخاطر البحرية ما تزال ذات صلة، لكنها لم تصل بعد إلى مستوى التعطيل الاستراتيجي."
       },
-      countryId: "CTR-RS",
-      signalId: "SIG-RS-001",
-      category: "maritime",
-      severity: "LOW",
-      status: "live",
-      source: "IBSS Live Feed",
-      sourceType: "internal",
-      publishedAt: "2026-04-14T09:00:00Z",
-      tags: ["البحر الأحمر", "بحري", "مراقبة"],
-      metrics: {
-        impact: 4,
-        confidence: 6,
-        urgency: 4
-      }
+      publishedAt: "2026-04-15T09:10:00Z",
+      url: "",
+      tags: ["red sea", "maritime", "logistics"],
+      active: true
     },
     {
       id: "NEWS-005",
+      source: "Local Monitor",
+      sourceType: "regional",
+      priority: "LOW",
+      severity: "LOW",
+      domain: "security",
+      region: "palestine",
+      country: "westbank",
       title: {
-        ar: "الضفة الغربية: تصعيد موضعي قابل للتوسع ضمن بيئة ضغط متقطعة",
-        en: "West Bank: Localized escalation remains expandable within an intermittent pressure environment"
+        en: "Localized security tension in the West Bank remains under watch.",
+        ar: "التوتر الأمني الموضعي في الضفة الغربية ما يزال تحت المراقبة."
       },
       summary: {
-        ar: "مؤشرات الضفة الغربية لم تتحول بعد إلى ملف تفجر واسع، لكنها تبقى قابلة للاتساع تحت ظروف ضغط مناسبة.",
-        en: "West Bank indicators have not yet shifted into a broad rupture file, but remain expandable under favorable pressure conditions."
+        en: "The West Bank file remains in observation mode with expansion potential still limited.",
+        ar: "ملف الضفة الغربية ما يزال في وضع المراقبة مع بقاء قابلية التوسع محدودة."
       },
-      countryId: "CTR-WB",
-      signalId: "SIG-WB-001",
-      category: "security",
-      severity: "LOW",
-      status: "watch",
-      source: "IBSS Live Feed",
-      sourceType: "internal",
-      publishedAt: "2026-04-14T09:20:00Z",
-      tags: ["الضفة الغربية", "تصعيد", "مراقبة"],
-      metrics: {
-        impact: 4,
-        confidence: 5,
-        urgency: 4
-      }
+      publishedAt: "2026-04-15T09:30:00Z",
+      url: "",
+      tags: ["west bank", "security", "watch"],
+      active: true
     }
   ];
+
+  const STATE = {
+    items: [],
+    lastUpdated: null,
+    initialized: false
+  };
+
+  function nowIso() {
+    return new Date().toISOString();
+  }
 
   function asArray(value) {
     return Array.isArray(value) ? value : [];
   }
 
-  function safeNumber(value, fallback = 0) {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : fallback;
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function safeText(value, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
   }
 
   function getLocalizedText(value, lang = "en") {
-    if (!value) return "-";
+    if (!value) return "";
     if (typeof value === "string") return value;
-    return value[lang] || value.en || value.ar || "-";
+    return value[lang] || value.en || value.ar || "";
   }
 
-  function buildIndex(list) {
-    return list.reduce((acc, item) => {
-      if (item?.id) acc[item.id] = item;
-      return acc;
-    }, {});
+  function normalizeText(value) {
+    return safeText(String(value || ""))
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
-  function sortByPublishedDesc(list) {
-    return [...asArray(list)].sort((a, b) => {
-      return new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0);
-    });
+  function normalizePriority(value) {
+    const v = normalizeText(value).toUpperCase();
+    if (v === "HIGH") return "HIGH";
+    if (v === "MEDIUM") return "MEDIUM";
+    return "LOW";
   }
 
-  function severityWeight(severity) {
-    if (severity === "HIGH") return 3;
-    if (severity === "MEDIUM") return 2;
-    return 1;
+  function normalizeSeverity(value) {
+    const v = normalizeText(value).toUpperCase();
+    if (v === "HIGH") return "HIGH";
+    if (v === "MEDIUM") return "MEDIUM";
+    return "LOW";
   }
 
-  function getAllNews() {
-    return sortByPublishedDesc(IBSS_NEWS);
-  }
+  function normalizeNewsItem(item, index = 0) {
+    const publishedAt = item?.publishedAt || nowIso();
+    const titleEn =
+      getLocalizedText(item?.title, "en") ||
+      item?.title_en ||
+      item?.headline ||
+      `News Item ${index + 1}`;
 
-  function getLiveNews() {
-    return sortByPublishedDesc(
-      IBSS_NEWS.filter(item => item && (item.status === "live" || item.status === "watch"))
-    );
-  }
+    const titleAr =
+      getLocalizedText(item?.title, "ar") ||
+      item?.title_ar ||
+      titleEn;
 
-  function getHighPriorityNews(limit = 5) {
-    return sortByPublishedDesc(
-      IBSS_NEWS
-        .filter(item => item && item.severity === "HIGH")
-        .slice(0, limit)
-    );
-  }
+    const summaryEn =
+      getLocalizedText(item?.summary, "en") ||
+      item?.summary_en ||
+      item?.description ||
+      titleEn;
 
-  function getTickerNews(limit = 8) {
-    return sortByPublishedDesc(
-      IBSS_NEWS
-        .filter(item => item && (item.status === "live" || item.status === "watch"))
-        .sort((a, b) => {
-          const severityDelta = severityWeight(b.severity) - severityWeight(a.severity);
-          if (severityDelta !== 0) return severityDelta;
-          return new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0);
-        })
-        .slice(0, limit)
-    );
-  }
-
-  function getLatestNews(limit = 5) {
-    return sortByPublishedDesc(IBSS_NEWS).slice(0, limit);
-  }
-
-  function getNewsByCountry(countryId, limit = null) {
-    const results = sortByPublishedDesc(
-      IBSS_NEWS.filter(item => item && item.countryId === countryId)
-    );
-    return limit ? results.slice(0, limit) : results;
-  }
-
-  function getLatestNewsByCountry(countryId) {
-    return getNewsByCountry(countryId, 1)[0] || null;
-  }
-
-  function getNewsBySignal(signalId, limit = null) {
-    const results = sortByPublishedDesc(
-      IBSS_NEWS.filter(item => item && item.signalId === signalId)
-    );
-    return limit ? results.slice(0, limit) : results;
-  }
-
-  function getNewsBySeverity(severity, limit = null) {
-    const results = sortByPublishedDesc(
-      IBSS_NEWS.filter(item => item && item.severity === severity)
-    );
-    return limit ? results.slice(0, limit) : results;
-  }
-
-  function scoreNewsItem(item) {
-    const impact = safeNumber(item?.metrics?.impact, 0);
-    const confidence = safeNumber(item?.metrics?.confidence, 0);
-    const urgency = safeNumber(item?.metrics?.urgency, 0);
-
-    return Math.round(
-      (impact * 0.45) +
-      (confidence * 0.30) +
-      (urgency * 0.25)
-    );
-  }
-
-  function getScoredNews(limit = 10) {
-    return sortByPublishedDesc(
-      IBSS_NEWS.map(item => ({
-        ...item,
-        score: scoreNewsItem(item)
-      }))
-    ).slice(0, limit);
-  }
-
-  function getNewsSnapshot() {
-    const live = getLiveNews();
-    const latest = getLatestNews(5);
-    const ticker = getTickerNews(8);
-    const highPriority = getHighPriorityNews(5);
+    const summaryAr =
+      getLocalizedText(item?.summary, "ar") ||
+      item?.summary_ar ||
+      summaryEn;
 
     return {
-      total: IBSS_NEWS.length,
-      liveCount: live.filter(item => item.status === "live").length,
-      watchCount: live.filter(item => item.status === "watch").length,
-      topNews: ticker[0] || null,
-      latest,
-      ticker,
-      highPriority
+      id: safeText(item?.id, `NEWS-AUTO-${index + 1}`),
+      source: safeText(item?.source, "Unknown Source"),
+      sourceType: safeText(item?.sourceType, "unknown"),
+      priority: normalizePriority(item?.priority),
+      severity: normalizeSeverity(item?.severity || item?.priority),
+      domain: safeText(item?.domain, "geopolitical"),
+      region: safeText(item?.region, "regional"),
+      country: safeText(item?.country, ""),
+      title: {
+        en: titleEn,
+        ar: titleAr
+      },
+      summary: {
+        en: summaryEn,
+        ar: summaryAr
+      },
+      publishedAt,
+      url: safeText(item?.url, ""),
+      tags: asArray(item?.tags).map(tag => safeText(tag)).filter(Boolean),
+      active: item?.active !== false
     };
   }
 
-  globalThis.IBSS_NEWS = IBSS_NEWS;
-  globalThis.IBSS_NEWS_INDEX = buildIndex(IBSS_NEWS);
+  function compareByDateDesc(a, b) {
+    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  }
+
+  function dedupeNews(items) {
+    const map = new Map();
+
+    items.forEach((item, index) => {
+      const normalized = normalizeNewsItem(item, index);
+      const key = [
+        normalizeText(getLocalizedText(normalized.title, "en")),
+        normalizeText(normalized.source),
+        normalizeText(normalized.country || normalized.region)
+      ].join("|");
+
+      const existing = map.get(key);
+
+      if (!existing) {
+        map.set(key, normalized);
+        return;
+      }
+
+      const existingTime = new Date(existing.publishedAt).getTime();
+      const nextTime = new Date(normalized.publishedAt).getTime();
+
+      if (nextTime > existingTime) {
+        map.set(key, normalized);
+      }
+    });
+
+    return [...map.values()].sort(compareByDateDesc);
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return;
+
+      STATE.items = asArray(parsed.items).map((item, index) => normalizeNewsItem(item, index));
+      STATE.lastUpdated = parsed.lastUpdated || null;
+    } catch (error) {
+      console.error("IBSS_NEWS loadState error:", error);
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          items: STATE.items,
+          lastUpdated: STATE.lastUpdated
+        })
+      );
+    } catch (error) {
+      console.error("IBSS_NEWS saveState error:", error);
+    }
+  }
+
+  function seedDefaultNews() {
+    if (STATE.items.length) return;
+    STATE.items = dedupeNews(DEFAULT_NEWS);
+    STATE.lastUpdated = nowIso();
+    saveState();
+  }
+
+  function ensureInitialized() {
+    if (STATE.initialized) return;
+    loadState();
+    seedDefaultNews();
+    STATE.initialized = true;
+  }
+
+  function getAllNews() {
+    ensureInitialized();
+    return clone(STATE.items).sort(compareByDateDesc);
+  }
+
+  function getActiveNews() {
+    ensureInitialized();
+    return getAllNews().filter(item => item.active !== false);
+  }
+
+  function getLatestNews(limit = 5) {
+    return getActiveNews().slice(0, Math.max(1, Number(limit) || 5));
+  }
+
+  function getTickerNews(limit = 8) {
+    return getActiveNews()
+      .filter(item => item.priority === "HIGH" || item.priority === "MEDIUM")
+      .slice(0, Math.max(1, Number(limit) || 8));
+  }
+
+  function getNewsByCountry(country) {
+    ensureInitialized();
+    const target = normalizeText(country);
+    return getActiveNews().filter(item => normalizeText(item.country) === target);
+  }
+
+  function getNewsByDomain(domain) {
+    ensureInitialized();
+    const target = normalizeText(domain);
+    return getActiveNews().filter(item => normalizeText(item.domain) === target);
+  }
+
+  function getLatestStrategicStudyFromContent() {
+    const content = asArray(globalThis.IBSS_CONTENT);
+    const eligible = content
+      .filter(item => {
+        const type = normalizeText(item?.type);
+        const status = normalizeText(item?.status);
+        return (
+          status === "published" &&
+          (type === "study" || type === "report" || type === "policy_paper" || type === "analysis" || type === "brief")
+        );
+      })
+      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
+    return eligible[0] || null;
+  }
+
+  function getTopCountryFromSystem() {
+    if (globalThis.IBSS_ENGINE && typeof globalThis.IBSS_ENGINE.getStaticSystemFallback === "function") {
+      const system = globalThis.IBSS_ENGINE.getStaticSystemFallback();
+      return asArray(system?.countryRiskFeed)[0] || null;
+    }
+
+    const countries = asArray(globalThis.IBSS_COUNTRIES)
+      .slice()
+      .sort((a, b) => Number(b.riskScore || 0) - Number(a.riskScore || 0));
+
+    return countries[0] || null;
+  }
+
+  function getTopSignalFromSystem() {
+    if (globalThis.IBSS_ENGINE && typeof globalThis.IBSS_ENGINE.getStaticSystemFallback === "function") {
+      const system = globalThis.IBSS_ENGINE.getStaticSystemFallback();
+      return system?.topSignal || system?.dominantSignal || null;
+    }
+
+    const signals = asArray(globalThis.IBSS_SIGNALS)
+      .slice()
+      .sort((a, b) => {
+        const aScore =
+          Number(a?.balancedScore100 || a?.score100 || 0) ||
+          Math.round(((Number(a?.metrics?.weight || 0) * 0.5) +
+            (Number(a?.metrics?.volatility || 0) * 0.25) +
+            (Number(a?.metrics?.impact || 0) * 0.25)) * 100);
+
+        const bScore =
+          Number(b?.balancedScore100 || b?.score100 || 0) ||
+          Math.round(((Number(b?.metrics?.weight || 0) * 0.5) +
+            (Number(b?.metrics?.volatility || 0) * 0.25) +
+            (Number(b?.metrics?.impact || 0) * 0.25)) * 100);
+
+        return bScore - aScore;
+      });
+
+    return signals[0] || null;
+  }
+
+  function getHomeSnapshot() {
+    ensureInitialized();
+
+    return {
+      topSignal: getTopSignalFromSystem(),
+      topCountry: getTopCountryFromSystem(),
+      latestStudy: getLatestStrategicStudyFromContent(),
+      latestNews: getLatestNews(3)
+    };
+  }
+
+  function addNewsItems(items) {
+    ensureInitialized();
+    const incoming = asArray(items);
+    if (!incoming.length) return getAllNews();
+
+    STATE.items = dedupeNews([...incoming, ...STATE.items]);
+    STATE.lastUpdated = nowIso();
+    saveState();
+
+    return getAllNews();
+  }
+
+  function addNewsItem(item) {
+    return addNewsItems([item]);
+  }
+
+  function replaceNews(items) {
+    ensureInitialized();
+    STATE.items = dedupeNews(asArray(items));
+    STATE.lastUpdated = nowIso();
+    saveState();
+    return getAllNews();
+  }
+
+  function markInactive(id) {
+    ensureInitialized();
+    STATE.items = STATE.items.map(item =>
+      item.id === id ? { ...item, active: false } : item
+    );
+    STATE.lastUpdated = nowIso();
+    saveState();
+    return getAllNews();
+  }
+
+  function refreshMockNews() {
+    ensureInitialized();
+
+    const now = new Date();
+    const seedMinute = now.getUTCMinutes();
+
+    const rotating = [
+      {
+        id: `LIVE-GAZA-${seedMinute}`,
+        source: "Live Monitor",
+        sourceType: "live",
+        priority: seedMinute % 2 === 0 ? "HIGH" : "MEDIUM",
+        severity: seedMinute % 2 === 0 ? "HIGH" : "MEDIUM",
+        domain: "geo-security",
+        region: "gaza",
+        country: "gaza",
+        title: {
+          en: seedMinute % 2 === 0
+            ? "Live monitoring detects renewed structural pressure around Gaza."
+            : "Operational monitoring keeps Gaza as the dominant active file.",
+          ar: seedMinute % 2 === 0
+            ? "الرصد الحي يلتقط تجدد الضغط البنيوي حول غزة."
+            : "المراقبة التشغيلية تُبقي غزة الملف النشط المهيمن."
+        },
+        summary: {
+          en: "The Gaza file remains central in the live pressure structure.",
+          ar: "ملف غزة ما يزال مركزيًا في بنية الضغط الحية."
+        },
+        publishedAt: nowIso(),
+        url: "",
+        tags: ["gaza", "live", "pressure"],
+        active: true
+      },
+      {
+        id: `LIVE-REGIONAL-${seedMinute}`,
+        source: "Regional Watch",
+        sourceType: "live",
+        priority: "MEDIUM",
+        severity: "MEDIUM",
+        domain: "geopolitical",
+        region: "regional",
+        country: "iran",
+        title: {
+          en: "Regional diplomatic pressure remains active in parallel with security uncertainty.",
+          ar: "الضغط الدبلوماسي الإقليمي ما يزال نشطًا بالتوازي مع عدم اليقين الأمني."
+        },
+        summary: {
+          en: "The regional file remains active without crossing into full escalation.",
+          ar: "الملف الإقليمي ما يزال نشطًا دون عبور إلى التصعيد الكامل."
+        },
+        publishedAt: nowIso(),
+        url: "",
+        tags: ["regional", "diplomatic", "uncertainty"],
+        active: true
+      }
+    ];
+
+    return addNewsItems(rotating);
+  }
+
+  function needsRefresh() {
+    ensureInitialized();
+    if (!STATE.lastUpdated) return true;
+    const last = new Date(STATE.lastUpdated).getTime();
+    return (Date.now() - last) >= NEWS_REFRESH_MS;
+  }
+
+  function autoRefreshIfNeeded() {
+    ensureInitialized();
+    if (!needsRefresh()) return getAllNews();
+    return refreshMockNews();
+  }
+
+  loadState();
+  seedDefaultNews();
+
+  globalThis.IBSS_NEWS = getAllNews();
 
   globalThis.IBSS_NEWS_UTILS = {
     getAllNews,
-    getLiveNews,
-    getHighPriorityNews,
-    getTickerNews,
+    getActiveNews,
     getLatestNews,
+    getTickerNews,
     getNewsByCountry,
-    getLatestNewsByCountry,
-    getNewsBySignal,
-    getNewsBySeverity,
-    getScoredNews,
-    getNewsSnapshot,
-    getLocalizedText
+    getNewsByDomain,
+    getHomeSnapshot,
+    addNewsItem,
+    addNewsItems,
+    replaceNews,
+    markInactive,
+    refreshMockNews,
+    autoRefreshIfNeeded,
+    needsRefresh
   };
+
+  autoRefreshIfNeeded();
+  globalThis.IBSS_NEWS = getAllNews();
 })();
