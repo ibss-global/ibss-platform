@@ -11,14 +11,17 @@
       --bg:#040404;
       --panel:#0d0d0d;
       --panel2:#121212;
+      --panel3:#171717;
       --text:#ffffff;
       --muted:#9d9d9d;
       --red:#ff4d4f;
       --orange:#ff9f1a;
       --green:#00d084;
+      --blue:#5a8cff;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
+      --glow:0 0 18px rgba(212,175,55,.08);
     }
 
     *{box-sizing:border-box}
@@ -36,7 +39,7 @@
     body{min-height:100vh}
 
     .wrap{
-      width:min(1120px,92%);
+      width:min(1180px,92%);
       margin:auto;
       padding:20px 0 40px;
     }
@@ -186,7 +189,9 @@
     .feed-item,
     .decision-box,
     .scenario-row,
-    .country-row{
+    .country-row,
+    .layer-row,
+    .cluster-row{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -211,11 +216,14 @@
       font-weight:900;
       letter-spacing:.3px;
       line-height:1.2;
+      word-break:break-word;
     }
 
     .high{color:var(--red)}
     .medium{color:var(--orange)}
     .low{color:var(--green)}
+    .gold{color:var(--gold)}
+    .blue{color:var(--blue)}
 
     .decision-box{
       margin-top:18px;
@@ -246,9 +254,9 @@
 
     .signal-box h3{
       margin:0 0 10px;
-      font-size:34px;
+      font-size:30px;
       color:#fff;
-      line-height:1.25;
+      line-height:1.35;
     }
 
     .signal-box p{
@@ -256,6 +264,82 @@
       color:#ddd;
       line-height:1.9;
       font-size:15px;
+    }
+
+    .news-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-top:10px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
+    }
+
+    .news-chip.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.28);
+    }
+
+    .news-chip.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.28);
+    }
+
+    .news-chip.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
+    .layer-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .layer-row,
+    .cluster-row,
+    .scenario-row,
+    .country-row{
+      padding:14px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .row-left{
+      min-width:0;
+    }
+
+    .row-title{
+      color:#fff;
+      font-size:15px;
+      font-weight:800;
+      line-height:1.6;
+    }
+
+    .row-sub{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+      margin-top:4px;
+    }
+
+    .row-value{
+      color:var(--gold);
+      font-size:22px;
+      font-weight:900;
+      flex:0 0 auto;
+      text-align:right;
     }
 
     .radar-wrap{
@@ -342,7 +426,8 @@
     .legend,
     .feed,
     .scenario-box,
-    .country-box{
+    .country-box,
+    .cluster-box{
       display:grid;
       gap:12px;
     }
@@ -437,57 +522,15 @@
       border-color:rgba(0,208,132,.28);
     }
 
-    .feed-item,
-    .scenario-row,
-    .country-row{
+    .feed-item{
       padding:13px 15px;
       color:#e3e3e3;
       line-height:1.7;
       font-size:14px;
     }
 
-    .scenario-row,
-    .country-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-
     .muted{
       color:var(--muted);
-    }
-
-    .news-chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      margin-top:10px;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      color:#ddd;
-    }
-
-    .news-chip.high{
-      color:#ffd7d7;
-      background:rgba(255,77,79,.12);
-      border-color:rgba(255,77,79,.28);
-    }
-
-    .news-chip.medium{
-      color:#ffe2b8;
-      background:rgba(255,159,26,.12);
-      border-color:rgba(255,159,26,.28);
-    }
-
-    .news-chip.low{
-      color:#d6fff1;
-      background:rgba(0,208,132,.12);
-      border-color:rgba(0,208,132,.28);
     }
 
     .publisher-actions{
@@ -561,7 +604,9 @@
     html[dir="rtl"] .nav,
     html[dir="rtl"] .legend-item,
     html[dir="rtl"] .scenario-row,
-    html[dir="rtl"] .country-row{
+    html[dir="rtl"] .country-row,
+    html[dir="rtl"] .cluster-row,
+    html[dir="rtl"] .layer-row{
       direction:rtl;
     }
 
@@ -572,12 +617,14 @@
       text-align:center;
     }
 
-    html[dir="rtl"] .legend-right{
+    html[dir="rtl"] .legend-right,
+    html[dir="rtl"] .row-value{
       text-align:left;
     }
 
-    @media (max-width:900px){
+    @media (max-width:980px){
       .grid{grid-template-columns:1fr}
+      .layer-grid{grid-template-columns:1fr}
     }
 
     @media (max-width:640px){
@@ -631,14 +678,13 @@
 
       <div class="top-actions">
         <div class="nav">
-<script src="data.js"></script>
-<script src="sources.js"></script>
-<script src="ingestion.js"></script>
-<script src="news.js"></script>
-<script src="analysis.js"></script>
-<script src="cluster-engine.js"></script>
-<script src="engine.js"></script>
-<script src="publisher.js"></script>
+          <a href="index.html" data-i18n="nav_home">Home</a>
+          <a href="dashboard.html" class="active" data-i18n="nav_dashboard">Dashboard</a>
+          <a href="signals.html" data-i18n="nav_signals">Signals</a>
+          <a href="reports.html" data-i18n="nav_reports">Reports</a>
+          <a href="countries.html" data-i18n="nav_countries">Countries</a>
+          <a href="models.html" data-i18n="nav_models">Models</a>
+          <a href="about.html" data-i18n="nav_about">About</a>
         </div>
 
         <div class="lang-switch">
@@ -650,7 +696,7 @@
 
     <div class="hero">
       <h1 id="pageTitle">IBSS Dashboard</h1>
-      <p id="pageSub">Decision Engine Visual System</p>
+      <p id="pageSub">Sovereign Theater Decision System</p>
       <div id="metaLine" class="meta-line">Engine source: -</div>
     </div>
 
@@ -673,18 +719,52 @@
 
           <div class="state-item">
             <div class="label" id="decisionLabel">Decision</div>
-            <div id="decision" class="value">-</div>
+            <div id="decision" class="value gold">-</div>
           </div>
 
           <div class="state-item">
             <div class="label" id="modeLabel">Mode</div>
-            <div id="mode" class="value">-</div>
+            <div id="mode" class="value gold">-</div>
           </div>
         </div>
 
         <div class="decision-box">
           <div class="decision" id="decisionWord">-</div>
           <div class="decision-note" id="decisionNote">-</div>
+        </div>
+
+        <div class="layer-grid">
+          <div class="layer-row">
+            <div class="row-left">
+              <div class="row-title" id="signalPressureTitle">Signal Pressure</div>
+              <div class="row-sub" id="signalPressureSub">Raw signal layer pressure</div>
+            </div>
+            <div id="signalPressureValue" class="row-value">0</div>
+          </div>
+
+          <div class="layer-row">
+            <div class="row-left">
+              <div class="row-title" id="clusterPressureTitle">Strategic File Pressure</div>
+              <div class="row-sub" id="clusterPressureSub">Cluster pressure layer</div>
+            </div>
+            <div id="clusterPressureValue" class="row-value">0</div>
+          </div>
+
+          <div class="layer-row">
+            <div class="row-left">
+              <div class="row-title" id="theaterPressureTitle">Theater Pressure</div>
+              <div class="row-sub" id="theaterPressureSub">Core theater compression</div>
+            </div>
+            <div id="theaterPressureValue" class="row-value">0</div>
+          </div>
+
+          <div class="layer-row">
+            <div class="row-left">
+              <div class="row-title" id="confidenceTitle">Confidence Score</div>
+              <div class="row-sub" id="confidenceSub">Analytical confidence</div>
+            </div>
+            <div id="confidenceValue" class="row-value">0</div>
+          </div>
         </div>
       </div>
 
@@ -715,6 +795,27 @@
     </div>
 
     <div class="card" style="margin-top:18px">
+      <div class="title" id="theaterTitle">Top Theater Layer</div>
+      <div class="cluster-box">
+        <div class="cluster-row">
+          <div class="row-left">
+            <div id="topTheaterName" class="row-title">-</div>
+            <div id="topTheaterMeta" class="row-sub">-</div>
+          </div>
+          <div id="topTheaterRisk" class="row-value">0</div>
+        </div>
+
+        <div class="cluster-row">
+          <div class="row-left">
+            <div id="topClusterName" class="row-title">-</div>
+            <div id="topClusterMeta" class="row-sub">-</div>
+          </div>
+          <div id="topClusterRisk" class="row-value">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
       <div class="title" id="scenarioTitle">Scenario Engine</div>
       <div id="scenarioBox" class="scenario-box"></div>
     </div>
@@ -730,16 +831,16 @@
     </div>
 
     <div class="card" style="margin-top:18px">
-      <div class="title">Publishing Console</div>
+      <div class="title" id="publisherTitle">Publishing Console</div>
 
       <div class="scenario-box">
         <div class="scenario-row">
-          <span class="muted">Latest Draft Type</span>
+          <span class="muted" id="pubDraftTypeLabel">Latest Draft Type</span>
           <strong id="pubDraftType">-</strong>
         </div>
 
         <div class="scenario-row">
-          <span class="muted">Created At</span>
+          <span class="muted" id="pubDraftTimeLabel">Created At</span>
           <strong id="pubDraftTime">-</strong>
         </div>
       </div>
@@ -761,7 +862,7 @@
       </div>
     </div>
 
-    <div class="footer">© 2026 IBSS — Dashboard Layer</div>
+    <div class="footer" id="footerText">© 2026 IBSS — Dashboard Sovereign Layer</div>
   </div>
 
   <script src="data.js"></script>
@@ -769,6 +870,7 @@
   <script src="ingestion.js"></script>
   <script src="news.js"></script>
   <script src="analysis.js"></script>
+  <script src="cluster-engine.js"></script>
   <script src="engine.js"></script>
   <script src="publisher.js"></script>
 
@@ -782,8 +884,9 @@
         nav_countries: "Countries",
         nav_models: "Models",
         nav_about: "About",
+
         title: "IBSS Dashboard",
-        sub: "Decision Engine Visual System",
+        sub: "Sovereign Theater Decision System",
         state: "System State",
         level: "Level",
         ssi: "SSI",
@@ -794,32 +897,60 @@
         feed: "Live Feed",
         scenario: "Scenario Engine",
         country: "Country Risk Unit",
+        theater: "Top Theater Layer",
+        publisher: "Publishing Console",
+
+        signal_pressure: "Signal Pressure",
+        signal_pressure_sub: "Raw signal layer pressure",
+        cluster_pressure: "Strategic File Pressure",
+        cluster_pressure_sub: "Cluster pressure layer",
+        theater_pressure: "Theater Pressure",
+        theater_pressure_sub: "Core theater compression",
+        confidence: "Confidence Score",
+        confidence_sub: "Analytical confidence",
+
+        pub_type: "Latest Draft Type",
+        pub_time: "Created At",
+
         levelHigh: "HIGH",
         levelMed: "MEDIUM",
         levelLow: "LOW",
+
         decisionHigh: "ACT",
         decisionMed: "PRD",
+        decisionWatchPlus: "WATCH+",
         decisionLow: "WATCH",
+
         modeHigh: "ACTIVE RESPONSE",
         modeMed: "PREPARATION",
+        modeWatchPlus: "HEIGHTENED MONITORING",
         modeLow: "MONITORING",
-        noteHigh: "High pressure environment detected. Immediate response required.",
-        noteMedium: "Structured pressure detected. Maintain preparation readiness.",
-        noteLow: "Low pressure. Continue monitoring.",
-        alertHigh: "⚠ HIGH ESCALATION — ACTIVE RESPONSE",
-        alertMed: "⚠ STRUCTURED PRESSURE — PREPARATION MODE",
+
+        noteHigh: "Composite pressure crossed the sovereign high threshold. Theater and strategic-file escalation require active readiness.",
+        noteMedium: "Structured pressure remains elevated. Maintain preparation across leading strategic files.",
+        noteLow: "Pressure remains contained. Continue monitoring and update sovereign assessment.",
+
+        alertHigh: "⚠ HIGH ESCALATION — SOVEREIGN ACTIVE RESPONSE WINDOW",
+        alertMed: "⚠ STRUCTURED PRESSURE — THEATER PREPARATION MODE",
         alertLow: "✓ LOW PRESSURE — MONITORING STABLE",
+
         scenarioA: "Scenario A",
         scenarioB: "Scenario B",
         scenarioC: "Scenario C",
+
         riskScore: "Risk Score",
         riskLevel: "Risk Level",
         trend: "Trend",
         sourceEngine: "Engine source",
         updatedAt: "Updated",
         noData: "No data available.",
-        newsIntake: "Live News Intake"
+        newsIntake: "Live News Intake",
+        fileLabel: "Strategic File",
+        theaterLabel: "Theater",
+        footer: "© 2026 IBSS — Dashboard Sovereign Layer",
+        copied: "Copied"
       },
+
       ar: {
         nav_home: "الرئيسية",
         nav_dashboard: "لوحة التحكم",
@@ -828,8 +959,9 @@
         nav_countries: "الدول",
         nav_models: "النماذج",
         nav_about: "حول",
+
         title: "لوحة تحكم IBSS",
-        sub: "النظام البصري لمحرك القرار",
+        sub: "نظام القرار السيادي للمسرح",
         state: "حالة النظام",
         level: "المستوى",
         ssi: "مؤشر SSI",
@@ -840,31 +972,58 @@
         feed: "التغذية الحية",
         scenario: "محرك السيناريو",
         country: "وحدة تتبع مخاطر الدول",
+        theater: "طبقة المسرح الأعلى",
+        publisher: "وحدة النشر",
+
+        signal_pressure: "ضغط الإشارات",
+        signal_pressure_sub: "ضغط طبقة الإشارات الخام",
+        cluster_pressure: "ضغط الملفات الاستراتيجية",
+        cluster_pressure_sub: "ضغط طبقة الملفات",
+        theater_pressure: "ضغط المسرح",
+        theater_pressure_sub: "ضغط المسرح السيادي",
+        confidence: "درجة الثقة",
+        confidence_sub: "الثقة التحليلية",
+
+        pub_type: "نوع المسودة الأخيرة",
+        pub_time: "وقت الإنشاء",
+
         levelHigh: "مرتفع",
         levelMed: "متوسط",
         levelLow: "منخفض",
+
         decisionHigh: "تحرك",
         decisionMed: "استعداد",
+        decisionWatchPlus: "مراقبة معززة",
         decisionLow: "مراقبة",
+
         modeHigh: "استجابة نشطة",
         modeMed: "تحضير",
+        modeWatchPlus: "مراقبة معززة",
         modeLow: "مراقبة",
-        noteHigh: "تم رصد بيئة ضغط مرتفعة. الاستجابة الفورية مطلوبة.",
-        noteMedium: "تم رصد ضغط بنيوي. حافظ على الجاهزية.",
-        noteLow: "الضغط منخفض. استمر في المراقبة.",
-        alertHigh: "⚠ تم رصد تصعيد مرتفع — استجابة نشطة",
-        alertMed: "⚠ تم رصد ضغط بنيوي — وضعية تحضير",
-        alertLow: "✓ ضغط منخفض — مراقبة مستقرة",
+
+        noteHigh: "الضغط المركب تجاوز العتبة العليا السيادية. تصعيد المسرح والملفات الاستراتيجية يتطلب جاهزية نشطة.",
+        noteMedium: "الضغط البنيوي ما يزال مرتفعًا. حافظ على وضعية التحضير عبر الملفات الاستراتيجية الأعلى.",
+        noteLow: "الضغط ما يزال مضبوطًا. استمر في المراقبة وتحديث التقدير السيادي.",
+
+        alertHigh: "⚠ تصعيد مرتفع — نافذة استجابة سيادية نشطة",
+        alertMed: "⚠ ضغط بنيوي — وضعية تحضير على مستوى المسرح",
+        alertLow: "✓ ضغط منخفض — المراقبة مستقرة",
+
         scenarioA: "السيناريو أ",
         scenarioB: "السيناريو ب",
         scenarioC: "السيناريو ج",
+
         riskScore: "درجة الخطر",
         riskLevel: "مستوى الخطر",
         trend: "الاتجاه",
         sourceEngine: "مصدر المحرك",
         updatedAt: "آخر تحديث",
         noData: "لا توجد بيانات.",
-        newsIntake: "التغذية الخبرية الحية"
+        newsIntake: "التغذية الخبرية الحية",
+        fileLabel: "الملف الاستراتيجي",
+        theaterLabel: "المسرح",
+        footer: "© 2026 IBSS — الطبقة السيادية للوحة التحكم",
+        copied: "تم النسخ"
       }
     };
 
@@ -881,25 +1040,7 @@
     function getLocalizedText(value){
       if (!value) return "-";
       if (typeof value === "string" || typeof value === "number") return String(value);
-
-      const localized =
-        value[currentLang] ??
-        value.en ??
-        value.ar ??
-        value.title ??
-        value.name ??
-        value.label ??
-        value.text;
-
-      if (typeof localized === "string" || typeof localized === "number") {
-        return String(localized);
-      }
-
-      if (localized && typeof localized === "object") {
-        return getLocalizedText(localized);
-      }
-
-      return "-";
+      return value[currentLang] || value.en || value.ar || value.name || value.title || "-";
     }
 
     function escapeHtml(text){
@@ -929,6 +1070,19 @@
       document.getElementById("feedTitle").textContent = t("feed");
       document.getElementById("scenarioTitle").textContent = t("scenario");
       document.getElementById("countryTitle").textContent = t("country");
+      document.getElementById("theaterTitle").textContent = t("theater");
+      document.getElementById("publisherTitle").textContent = t("publisher");
+      document.getElementById("signalPressureTitle").textContent = t("signal_pressure");
+      document.getElementById("signalPressureSub").textContent = t("signal_pressure_sub");
+      document.getElementById("clusterPressureTitle").textContent = t("cluster_pressure");
+      document.getElementById("clusterPressureSub").textContent = t("cluster_pressure_sub");
+      document.getElementById("theaterPressureTitle").textContent = t("theater_pressure");
+      document.getElementById("theaterPressureSub").textContent = t("theater_pressure_sub");
+      document.getElementById("confidenceTitle").textContent = t("confidence");
+      document.getElementById("confidenceSub").textContent = t("confidence_sub");
+      document.getElementById("pubDraftTypeLabel").textContent = t("pub_type");
+      document.getElementById("pubDraftTimeLabel").textContent = t("pub_time");
+      document.getElementById("footerText").textContent = t("footer");
 
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
@@ -993,28 +1147,60 @@
       return level;
     }
 
-    function renderDecision(level){
+    function renderDecision(level, system){
       const decisionEl = document.getElementById("decision");
       const decisionWord = document.getElementById("decisionWord");
       const decisionNote = document.getElementById("decisionNote");
       const modeEl = document.getElementById("mode");
 
-      if (level === "HIGH") {
+      const decisionValue = safe(system?.decision, "WATCH");
+      const modeValue = safe(system?.mode, "MONITORING");
+
+      if (decisionValue === "ACT") {
         decisionEl.textContent = t("decisionHigh");
         decisionWord.textContent = t("decisionHigh");
-        decisionNote.textContent = t("noteHigh");
-        modeEl.textContent = t("modeHigh");
-      } else if (level === "MEDIUM") {
+      } else if (decisionValue === "PRD") {
         decisionEl.textContent = t("decisionMed");
         decisionWord.textContent = t("decisionMed");
-        decisionNote.textContent = t("noteMedium");
-        modeEl.textContent = t("modeMed");
+      } else if (decisionValue === "WATCH+") {
+        decisionEl.textContent = t("decisionWatchPlus");
+        decisionWord.textContent = t("decisionWatchPlus");
       } else {
         decisionEl.textContent = t("decisionLow");
         decisionWord.textContent = t("decisionLow");
-        decisionNote.textContent = t("noteLow");
+      }
+
+      if (modeValue === "ACTIVE RESPONSE") {
+        modeEl.textContent = t("modeHigh");
+      } else if (modeValue === "PREPARATION") {
+        modeEl.textContent = t("modeMed");
+      } else if (modeValue === "HEIGHTENED MONITORING") {
+        modeEl.textContent = t("modeWatchPlus");
+      } else {
         modeEl.textContent = t("modeLow");
       }
+
+      if (level === "HIGH") {
+        decisionNote.textContent = t("noteHigh");
+      } else if (level === "MEDIUM") {
+        decisionNote.textContent = t("noteMedium");
+      } else {
+        decisionNote.textContent = t("noteLow");
+      }
+    }
+
+    function renderLayerMetrics(system){
+      document.getElementById("signalPressureValue").textContent =
+        Number(system?.signalPressure || 0);
+
+      document.getElementById("clusterPressureValue").textContent =
+        Number(system?.clusterPressure?.pressure || 0);
+
+      document.getElementById("theaterPressureValue").textContent =
+        Number(system?.theaterPressure?.pressure || 0);
+
+      document.getElementById("confidenceValue").textContent =
+        Number(system?.confidenceScore || 0);
     }
 
     function renderPrimarySignal(signal, system){
@@ -1071,7 +1257,8 @@
         const pos = positions[index] || { x: 50, y: 50 };
         const score = Number(signal?.balancedScore100 ?? signal?.score100 ?? 0);
         const size = Math.max(10, Math.min(26, Math.round(score / 5)));
-        const priority = signal?.priority || "LOW";
+
+        const priority = signal?.priority || signal?.weight || "LOW";
         const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
 
         dot.className = "radar-signal " + cls;
@@ -1100,7 +1287,7 @@
 
       legend.innerHTML = signals.map((signal, index) => {
         const score = Number(signal?.balancedScore100 ?? signal?.score100 ?? 0);
-        const priority = signal?.priority || "LOW";
+        const priority = signal?.priority || signal?.weight || "LOW";
         const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
         const title = getLocalizedText(signal.title);
         const sub = getLocalizedText(signal.signalType);
@@ -1121,6 +1308,33 @@
           </div>
         `;
       }).join("");
+    }
+
+    function renderTheaterLayer(system){
+      const theater = system?.topTheater || null;
+      const cluster = system?.topCluster || null;
+
+      document.getElementById("topTheaterName").textContent =
+        theater ? getLocalizedText(theater.name) : "-";
+
+      document.getElementById("topTheaterMeta").textContent =
+        theater
+          ? `${t("riskLevel")}: ${safe(theater.escalationLevel, "-")} | ${t("trend")}: ${safe(theater.trend, "-")}`
+          : t("noData");
+
+      document.getElementById("topTheaterRisk").textContent =
+        theater ? Number(theater.avgRisk || 0) : 0;
+
+      document.getElementById("topClusterName").textContent =
+        cluster ? getLocalizedText(cluster.name) : "-";
+
+      document.getElementById("topClusterMeta").textContent =
+        cluster
+          ? `${t("fileLabel")}: ${safe(cluster.code, "-")} | ${t("trend")}: ${safe(cluster.trend, "-")}`
+          : t("noData");
+
+      document.getElementById("topClusterRisk").textContent =
+        cluster ? Number(cluster.maxRisk || 0) : 0;
     }
 
     function renderScenarios(system){
@@ -1178,9 +1392,8 @@
           return `<div class="feed-item">${escapeHtml(line)}</div>`;
         }
 
-        if (line && typeof line === "object") {
-          const text = getLocalizedText(line.text);
-          return `<div class="feed-item">${escapeHtml(text)}</div>`;
+        if (line && typeof line === "object" && line.text) {
+          return `<div class="feed-item">${escapeHtml(getLocalizedText(line.text))}</div>`;
         }
 
         return `<div class="feed-item">-</div>`;
@@ -1188,9 +1401,7 @@
     }
 
     function renderPublisherConsole(){
-      if (!window.IBSS_PUBLISHER || typeof window.IBSS_PUBLISHER.getLatestDraft !== "function") {
-        return;
-      }
+      if (!window.IBSS_PUBLISHER || typeof window.IBSS_PUBLISHER.getLatestDraft !== "function") return;
 
       const draft = window.IBSS_PUBLISHER.getLatestDraft();
       const typeEl = document.getElementById("pubDraftType");
@@ -1218,40 +1429,29 @@
     }
 
     function bindPublisher(){
-      const signalBtn = document.getElementById("btnGenerateSignalPost");
-      const briefBtn = document.getElementById("btnGenerateBriefPost");
-      const copyBtn = document.getElementById("btnCopyDraftPost");
-
-      signalBtn?.addEventListener("click", function () {
-        try {
-          if (window.IBSS_PUBLISHER?.queueTopSignalFromEngine) {
-            window.IBSS_PUBLISHER.queueTopSignalFromEngine();
-            renderPublisherConsole();
-          }
-        } catch (error) {
-          console.error("Publisher signal draft error:", error);
+      document.getElementById("btnGenerateSignalPost")?.addEventListener("click", () => {
+        if (window.IBSS_PUBLISHER?.queueTopSignalFromEngine) {
+          window.IBSS_PUBLISHER.queueTopSignalFromEngine();
+          renderPublisherConsole();
         }
       });
 
-      briefBtn?.addEventListener("click", function () {
-        try {
-          if (window.IBSS_PUBLISHER?.queueStrategicBriefFromEngine) {
-            window.IBSS_PUBLISHER.queueStrategicBriefFromEngine();
-            renderPublisherConsole();
-          }
-        } catch (error) {
-          console.error("Publisher brief draft error:", error);
+      document.getElementById("btnGenerateBriefPost")?.addEventListener("click", () => {
+        if (window.IBSS_PUBLISHER?.queueStrategicBriefFromEngine) {
+          window.IBSS_PUBLISHER.queueStrategicBriefFromEngine();
+          renderPublisherConsole();
         }
       });
 
-      copyBtn?.addEventListener("click", async function () {
+      document.getElementById("btnCopyDraftPost")?.addEventListener("click", async () => {
+        const text = document.getElementById("pubDraftText").value;
+        if (!text) return;
+
         try {
-          const text = document.getElementById("pubDraftText")?.value || "";
-          if (!text) return;
           await navigator.clipboard.writeText(text);
-          alert(currentLang === "ar" ? "تم النسخ" : "Copied");
+          alert(t("copied"));
         } catch (error) {
-          console.error("Publisher copy error:", error);
+          console.error("Copy failed:", error);
         }
       });
     }
@@ -1259,14 +1459,20 @@
     function renderDashboard(){
       applyLanguage();
 
+      if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
+        window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
+      }
+
       const system = getSystem();
       if (!system) return;
 
       renderMeta(system);
       const level = renderLevel(system);
-      renderDecision(level);
+      renderDecision(level, system);
+      renderLayerMetrics(system);
       renderPrimarySignal(system.topSignal || system.dominantSignal || null, system);
       renderRadar(system);
+      renderTheaterLayer(system);
       renderScenarios(system);
       renderCountries(system);
       renderFeed(system);
