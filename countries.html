@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS Country Risk Unit</title>
+  <title>IBSS Countries</title>
 
   <style>
     :root{
       --bg:#040404;
       --panel:#0d0d0d;
       --panel2:#121212;
+      --panel3:#171717;
       --gold:#d4af37;
       --text:#e8e8e8;
       --muted:#9d9d9d;
@@ -18,15 +19,19 @@
       --red:#ff4d4f;
       --blue:#5a8cff;
       --border:rgba(212,175,55,.28);
+      --soft-border:rgba(255,255,255,.08);
+      --soft-border-2:rgba(255,255,255,.06);
     }
 
     *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
 
     body{
       margin:0;
       font-family:Arial,sans-serif;
       background:
         radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+        linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,0)),
         var(--bg);
       color:var(--text);
     }
@@ -49,8 +54,8 @@
 
     .brand{
       color:var(--gold);
-      font-size:28px;
-      font-weight:800;
+      font-size:30px;
+      font-weight:900;
       text-decoration:none;
       letter-spacing:1px;
     }
@@ -73,9 +78,9 @@
     .nav a{
       color:var(--muted);
       text-decoration:none;
-      border:1px solid rgba(255,255,255,.08);
       padding:10px 14px;
-      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
       font-size:14px;
       transition:.2s ease;
     }
@@ -84,6 +89,7 @@
     .nav a:hover{
       color:var(--gold);
       border-color:var(--border);
+      box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
     }
 
     .lang-switch{
@@ -96,7 +102,7 @@
       border:1px solid rgba(255,255,255,.1);
       color:#ccc;
       padding:8px 10px;
-      border-radius:8px;
+      border-radius:10px;
       cursor:pointer;
       transition:.2s ease;
       font-size:13px;
@@ -113,266 +119,325 @@
       padding:34px 0 20px;
     }
 
-    .eyebrow{
+    .hero-kicker{
       color:var(--gold);
-      letter-spacing:2px;
-      text-transform:uppercase;
+      font-size:16px;
+      margin-bottom:12px;
+    }
+
+    .hero h1{
+      font-size:clamp(36px,5vw,58px);
+      line-height:1.12;
+      margin:0 0 14px;
+      color:#fff;
+      font-weight:900;
+    }
+
+    .hero p{
+      max-width:860px;
+      margin:0 auto;
+      color:var(--muted);
+      line-height:1.9;
+      font-size:17px;
+    }
+
+    .meta-line{
+      margin-top:16px;
+      color:#8a8a8a;
+      font-size:13px;
+    }
+
+    .alert{
+      display:none;
+      margin:22px auto 0;
+      max-width:760px;
+      text-align:center;
+      padding:14px 16px;
+      border-radius:14px;
+      background:rgba(255,77,79,.14);
+      border:1px solid rgba(255,77,79,.40);
+      color:#ffd1d1;
+      font-weight:800;
+      line-height:1.7;
+    }
+
+    .stats-grid{
+      margin-top:28px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+    }
+
+    .stat-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      padding:22px;
+      text-align:center;
+    }
+
+    .stat-label{
+      color:var(--muted);
       font-size:13px;
       margin-bottom:10px;
     }
 
-    h1{
-      margin:0 0 10px;
-      font-size:40px;
+    .stat-value{
+      font-size:30px;
+      font-weight:900;
       color:#fff;
-    }
-
-    .sub{
-      margin:0 auto;
-      max-width:860px;
-      color:var(--muted);
-      line-height:1.8;
-    }
-
-    .system-strip{
-      margin-top:24px;
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-    }
-
-    .system-box{
-      background:var(--panel);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;
-      padding:16px;
-      text-align:center;
-    }
-
-    .system-label{
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:8px;
-    }
-
-    .system-value{
-      color:var(--gold);
-      font-size:24px;
-      font-weight:800;
+      line-height:1.2;
       word-break:break-word;
     }
 
-    .toolbar{
-      margin-top:22px;
+    .stat-value.high{color:var(--red)}
+    .stat-value.medium{color:var(--orange)}
+    .stat-value.low{color:var(--green)}
+    .stat-value.gold{color:var(--gold)}
+    .stat-value.blue{color:var(--blue)}
+
+    .section{
+      margin-top:34px;
+    }
+
+    .section h2{
+      color:var(--gold);
+      text-align:center;
+      font-size:clamp(28px,4vw,40px);
+      margin:0 0 14px;
+    }
+
+    .section-subtitle{
+      text-align:center;
+      color:var(--muted);
+      max-width:880px;
+      margin:0 auto 22px;
+      line-height:1.8;
+      font-size:15px;
+    }
+
+    .grid-2{
       display:grid;
-      grid-template-columns:1.4fr 1fr 1fr;
-      gap:12px;
-    }
-
-    .search,
-    .select{
-      width:100%;
-      background:var(--panel2);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:12px;
-      padding:14px;
-      font-size:14px;
-      outline:none;
-    }
-
-    .search::placeholder{
-      color:#777;
-    }
-
-    .grid{
-      margin-top:24px;
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
+      grid-template-columns:1.12fr .88fr;
       gap:18px;
     }
 
-    .country-card{
-      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;
-      padding:20px;
-      transition:.2s ease;
-    }
-
-    .country-card:hover{
-      transform:translateY(-3px);
-      border-color:rgba(212,175,55,.35);
-      box-shadow:0 0 20px rgba(212,175,55,.06);
-    }
-
-    .card-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .badges{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .badge{
-      display:inline-block;
-      padding:5px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      letter-spacing:.4px;
-    }
-
-    .high{
-      color:#ffd9d9;
-      background:rgba(255,77,79,.14);
-      border:1px solid rgba(255,77,79,.35);
-    }
-
-    .medium{
-      color:#ffe1b3;
-      background:rgba(255,159,26,.14);
-      border:1px solid rgba(255,159,26,.35);
-    }
-
-    .low{
-      color:#d5fff0;
-      background:rgba(0,208,132,.14);
-      border:1px solid rgba(0,208,132,.35);
-    }
-
-    .trend-up{
-      color:#ffd9d9;
-      background:rgba(255,77,79,.14);
-      border:1px solid rgba(255,77,79,.35);
-    }
-
-    .trend-flat{
-      color:#ffe1b3;
-      background:rgba(255,159,26,.14);
-      border:1px solid rgba(255,159,26,.35);
-    }
-
-    .trend-down{
-      color:#d5fff0;
-      background:rgba(0,208,132,.14);
-      border:1px solid rgba(0,208,132,.35);
-    }
-
-    .card-title{
-      color:#fff;
-      font-size:30px;
-      font-weight:800;
-      margin:0 0 10px;
-      line-height:1.35;
-    }
-
-    .card-desc{
-      color:var(--muted);
-      line-height:1.8;
-      font-size:15px;
-      margin:0 0 18px;
-    }
-
-    .score-box{
-      margin:0 0 18px;
-      background:var(--panel2);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:16px;
-      padding:18px;
-      text-align:center;
-    }
-
-    .score-label{
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:8px;
-    }
-
-    .score-value{
-      color:var(--gold);
-      font-size:40px;
-      font-weight:900;
-      line-height:1;
-    }
-
-    .meta{
+    .grid-3{
       display:grid;
-      gap:10px;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
     }
 
-    .meta-row{
+    .card{
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .title{
+      color:var(--gold);
+      font-size:24px;
+      font-weight:900;
+      margin-bottom:16px;
+    }
+
+    .focus-shell{
+      border:1px solid rgba(212,175,55,.18);
+      border-radius:20px;
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.04), transparent 35%),
+        rgba(255,255,255,.015);
+      padding:18px;
+    }
+
+    .focus-meta{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:12px;
-      background:var(--panel2);
-      border:1px solid rgba(255,255,255,.05);
-      border-radius:12px;
-      padding:12px 14px;
-      font-size:14px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
     }
 
-    .meta-label{
-      color:var(--muted);
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 12px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
     }
 
-    .meta-value{
+    .badge.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.25);
+    }
+
+    .badge.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.25);
+    }
+
+    .badge.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.22);
+    }
+
+    .focus-title{
+      font-size:30px;
+      line-height:1.35;
+      font-weight:900;
       color:#fff;
-      font-weight:700;
-      text-align:right;
+      margin:0 0 12px;
     }
 
-    .drivers{
+    .focus-text{
+      color:#ddd;
+      line-height:1.9;
+      font-size:15px;
+      margin:0 0 14px;
+    }
+
+    .info-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
       margin-top:16px;
+    }
+
+    .info-box{
       background:var(--panel2);
-      border:1px solid rgba(255,255,255,.05);
-      border-radius:14px;
+      border:1px solid var(--soft-border-2);
+      border-radius:16px;
       padding:14px;
     }
 
-    .drivers-title{
-      color:var(--gold);
-      font-size:14px;
-      font-weight:800;
+    .info-box span{
+      display:block;
+      font-size:12px;
+      color:#8f8f8f;
+      margin-bottom:8px;
+    }
+
+    .info-box strong{
+      display:block;
+      font-size:17px;
+      color:#fff;
+      line-height:1.6;
+      word-break:break-word;
+    }
+
+    .context-list,
+    .country-list,
+    .feed-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .context-item,
+    .country-item,
+    .feed-item{
+      background:var(--panel2);
+      border:1px solid var(--soft-border-2);
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .context-top,
+    .country-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
       margin-bottom:10px;
     }
 
-    .drivers-list{
-      display:grid;
+    .context-title,
+    .country-title{
+      color:#fff;
+      font-size:18px;
+      font-weight:800;
+      line-height:1.5;
+      margin:0;
+    }
+
+    .context-sub,
+    .country-sub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+      margin-top:6px;
+    }
+
+    .context-value,
+    .country-score{
+      color:var(--gold);
+      font-size:28px;
+      font-weight:900;
+      flex:0 0 auto;
+      line-height:1;
+    }
+
+    .country-text{
+      color:#ddd;
+      font-size:14px;
+      line-height:1.8;
+      margin:0 0 12px;
+    }
+
+    .meta-row{
+      display:flex;
+      flex-wrap:wrap;
       gap:8px;
     }
 
-    .driver-item{
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
       color:#ddd;
-      font-size:14px;
-      line-height:1.7;
     }
 
-    .empty{
-      display:none;
-      margin-top:20px;
-      text-align:center;
-      color:#888;
-      padding:24px;
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:16px;
-      background:var(--panel);
+    .chip.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.22);
+    }
+
+    .chip.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.22);
+    }
+
+    .chip.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.22);
     }
 
     .footer{
-      margin-top:32px;
+      margin-top:40px;
       text-align:center;
       color:#777;
-      border-top:1px solid rgba(255,255,255,.05);
-      padding-top:20px;
       font-size:14px;
+      border-top:1px solid rgba(255,255,255,.05);
+      padding-top:22px;
     }
 
     html[dir="rtl"] body{
@@ -382,410 +447,600 @@
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
-    html[dir="rtl"] .toolbar,
-    html[dir="rtl"] .badges,
-    html[dir="rtl"] .meta-row{
+    html[dir="rtl"] .focus-meta,
+    html[dir="rtl"] .context-top,
+    html[dir="rtl"] .country-top{
       direction:rtl;
     }
 
     html[dir="rtl"] .hero,
-    html[dir="rtl"] .system-box,
-    html[dir="rtl"] .footer,
-    html[dir="rtl"] .empty,
-    html[dir="rtl"] .score-box{
+    html[dir="rtl"] .section h2,
+    html[dir="rtl"] .section-subtitle,
+    html[dir="rtl"] .alert,
+    html[dir="rtl"] .stat-card,
+    html[dir="rtl"] .footer{
       text-align:center;
     }
 
-    html[dir="rtl"] .meta-value{
-      text-align:left;
-    }
-
-    @media(max-width:980px){
-      .toolbar{
-        grid-template-columns:1fr;
-      }
-
-      .system-strip{
-        grid-template-columns:repeat(2,1fr);
-      }
-
-      .grid{
-        grid-template-columns:1fr;
-      }
+    @media(max-width:1100px){
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .grid-2{grid-template-columns:1fr}
+      .grid-3{grid-template-columns:1fr}
     }
 
     @media(max-width:700px){
-      .topbar{
+      .topbar{flex-direction:column}
+      .stats-grid{grid-template-columns:1fr}
+      .info-grid{grid-template-columns:1fr}
+      .focus-meta,
+      .context-top,
+      .country-top{
         flex-direction:column;
-      }
-
-      h1{
-        font-size:32px;
-      }
-
-      .system-strip{
-        grid-template-columns:1fr;
+        align-items:flex-start;
       }
     }
   </style>
 </head>
 <body>
-<div class="wrap">
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="index.html">IBSS</a>
 
-  <div class="topbar">
-    <a class="brand" href="index.html">IBSS</a>
-
-    <div class="top-actions">
-      <div class="nav">
-        <a href="index.html" data-i18n="nav_home">Home</a>
-        <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
-        <a href="signals.html" data-i18n="nav_signals">Signals</a>
-        <a href="reports.html" data-i18n="nav_reports">Reports</a>
-        <a href="countries.html" class="active" data-i18n="nav_countries">Countries</a>
-        <a href="models.html" data-i18n="nav_models">Models</a>
-        <a href="about.html" data-i18n="nav_about">About</a>
-      </div>
-
-      <div class="lang-switch">
-        <button id="btn-en" type="button">EN</button>
-        <button id="btn-ar" type="button">AR</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="hero">
-    <div class="eyebrow" data-i18n="eyebrow">Country Risk Unit</div>
-    <h1 data-i18n="title">IBSS Country Risk Unit</h1>
-    <p class="sub" data-i18n="sub">
-      Live country risk monitoring generated from the unified sovereign engine.
-    </p>
-  </div>
-
-  <div class="system-strip">
-    <div class="system-box">
-      <div class="system-label" data-i18n="top_country">Top Country</div>
-      <div id="topCountry" class="system-value">-</div>
-    </div>
-    <div class="system-box">
-      <div class="system-label" data-i18n="total_entries">Total Entries</div>
-      <div id="totalEntries" class="system-value">0</div>
-    </div>
-    <div class="system-box">
-      <div class="system-label" data-i18n="high_risk">High Risk</div>
-      <div id="highRiskCount" class="system-value">0</div>
-    </div>
-    <div class="system-box">
-      <div class="system-label" data-i18n="avg_risk">Average Risk</div>
-      <div id="avgRisk" class="system-value">0</div>
-    </div>
-  </div>
-
-  <div class="toolbar">
-    <input id="searchInput" class="search" type="text" placeholder="Search countries..." data-i18n-placeholder="search_placeholder">
-
-    <select id="riskFilter" class="select">
-      <option value="all" data-i18n="filter_all_risk">All Risk Levels</option>
-      <option value="HIGH" data-i18n="risk_high">HIGH</option>
-      <option value="MEDIUM" data-i18n="risk_medium">MEDIUM</option>
-      <option value="LOW" data-i18n="risk_low">LOW</option>
-    </select>
-
-    <select id="trendFilter" class="select">
-      <option value="all" data-i18n="filter_all_trends">All Trends</option>
-      <option value="RISING" data-i18n="trend_rising">RISING</option>
-      <option value="STABLE" data-i18n="trend_stable">STABLE</option>
-      <option value="FALLING" data-i18n="trend_falling">FALLING</option>
-    </select>
-  </div>
-
-  <div id="countriesGrid" class="grid"></div>
-
-  <div id="emptyState" class="empty" data-i18n="empty_state">
-    No country entries match the current filters.
-  </div>
-
-  <div class="footer" data-i18n="footer_text">
-    © 2026 IBSS — Country Risk Unit | Unified Engine Layer
-  </div>
-
-</div>
-
-<script src="data.js"></script>
-<script src="engine.js"></script>
-<script>
-const translations = {
-  en: {
-    nav_home: "Home",
-    nav_dashboard: "Dashboard",
-    nav_signals: "Signals",
-    nav_reports: "Reports",
-    nav_countries: "Countries",
-    nav_models: "Models",
-    nav_about: "About",
-
-    eyebrow: "Country Risk Unit",
-    title: "IBSS Country Risk Unit",
-    sub: "Live country risk monitoring generated from the unified sovereign engine.",
-
-    top_country: "Top Country",
-    total_entries: "Total Entries",
-    high_risk: "High Risk",
-    avg_risk: "Average Risk",
-
-    search_placeholder: "Search countries...",
-    filter_all_risk: "All Risk Levels",
-    filter_all_trends: "All Trends",
-
-    risk_high: "HIGH",
-    risk_medium: "MEDIUM",
-    risk_low: "LOW",
-
-    trend_rising: "RISING",
-    trend_stable: "STABLE",
-    trend_falling: "FALLING",
-
-    meta_risk: "Risk Level",
-    meta_trend: "Trend",
-    meta_score: "Risk Score",
-    meta_id: "Entry ID",
-
-    drivers_title: "Primary Drivers",
-    empty_state: "No country entries match the current filters.",
-    footer_text: "© 2026 IBSS — Country Risk Unit | Unified Engine Layer"
-  },
-
-  ar: {
-    nav_home: "الرئيسية",
-    nav_dashboard: "لوحة التحكم",
-    nav_signals: "الإشارات",
-    nav_reports: "التقارير",
-    nav_countries: "الدول",
-    nav_models: "النماذج",
-    nav_about: "حول",
-
-    eyebrow: "وحدة تتبع مخاطر الدول",
-    title: "وحدة تتبع مخاطر الدول IBSS",
-    sub: "مراقبة حيّة لمخاطر الدول يولدها المحرك السيادي الموحد.",
-
-    top_country: "الدولة الأعلى",
-    total_entries: "إجمالي الملفات",
-    high_risk: "عالية الخطر",
-    avg_risk: "متوسط الخطر",
-
-    search_placeholder: "ابحث داخل الدول...",
-    filter_all_risk: "كل مستويات الخطر",
-    filter_all_trends: "كل الاتجاهات",
-
-    risk_high: "مرتفع",
-    risk_medium: "متوسط",
-    risk_low: "منخفض",
-
-    trend_rising: "صاعد",
-    trend_stable: "مستقر",
-    trend_falling: "هابط",
-
-    meta_risk: "مستوى الخطر",
-    meta_trend: "الاتجاه",
-    meta_score: "درجة الخطر",
-    meta_id: "معرف الملف",
-
-    drivers_title: "المحرّكات الرئيسية",
-    empty_state: "لا توجد ملفات دول تطابق الفلاتر الحالية.",
-    footer_text: "© 2026 IBSS — وحدة تتبع مخاطر الدول | طبقة المحرك الموحد"
-  }
-};
-
-let currentLang = localStorage.getItem("ibss_lang") || "en";
-
-function t(key){
-  return translations[currentLang][key] || key;
-}
-
-function safeText(value, fallback = "-"){
-  return typeof value === "string" && value.trim() ? value : fallback;
-}
-
-function setLang(lang){
-  localStorage.setItem("ibss_lang", lang);
-  currentLang = lang;
-  applyTranslations();
-  renderCountries();
-}
-
-function applyTranslations(){
-  document.documentElement.lang = currentLang;
-  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
-
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.getAttribute("data-i18n");
-    el.textContent = t(key);
-  });
-
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    el.placeholder = t(key);
-  });
-
-  document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
-  document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
-}
-
-function escapeHtml(text){
-  const div = document.createElement("div");
-  div.textContent = text ?? "";
-  return div.innerHTML;
-}
-
-function riskClass(level){
-  if(level === "HIGH") return "high";
-  if(level === "MEDIUM") return "medium";
-  return "low";
-}
-
-function trendClass(trend){
-  if(trend === "RISING") return "trend-up";
-  if(trend === "FALLING") return "trend-down";
-  return "trend-flat";
-}
-
-function riskLabel(level){
-  if(level === "HIGH") return t("risk_high");
-  if(level === "MEDIUM") return t("risk_medium");
-  return t("risk_low");
-}
-
-function trendLabel(trend){
-  if(trend === "RISING") return t("trend_rising");
-  if(trend === "FALLING") return t("trend_falling");
-  return t("trend_stable");
-}
-
-function getSystem(){
-  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getLastSystemState === "function") {
-    return window.IBSS_ENGINE.getLastSystemState() || window.IBSS_ENGINE.getSystemState();
-  }
-  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
-    return window.IBSS_ENGINE.getSystemState();
-  }
-  return null;
-}
-
-function getCountryItems(){
-  const system = getSystem();
-  const feed = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed : [];
-
-  return feed.map(item => ({
-    ...item,
-    drivers: Array.isArray(item.primaryDrivers) ? item.primaryDrivers : []
-  }));
-}
-
-function renderTopStrip(allItems){
-  const top = allItems[0] || null;
-  const total = allItems.length;
-  const high = allItems.filter(item => item.riskLevel === "HIGH").length;
-  const avg = total
-    ? Math.round(allItems.reduce((sum, item) => sum + Number(item.riskScore || 0), 0) / total)
-    : 0;
-
-  document.getElementById("topCountry").textContent = top ? safeText(top.name) : "-";
-  document.getElementById("totalEntries").textContent = total;
-  document.getElementById("highRiskCount").textContent = high;
-  document.getElementById("avgRisk").textContent = avg;
-}
-
-function renderCountries(){
-  const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
-  const riskValue = document.getElementById("riskFilter").value;
-  const trendValue = document.getElementById("trendFilter").value;
-
-  const allItems = getCountryItems();
-  renderTopStrip(allItems);
-
-  const items = allItems.filter(item => {
-    const name = safeText(item.name, "").toLowerCase();
-    const riskMatch = riskValue === "all" || item.riskLevel === riskValue;
-    const trendMatch = trendValue === "all" || item.trend === trendValue;
-    const searchMatch = !searchValue || name.includes(searchValue);
-
-    return riskMatch && trendMatch && searchMatch;
-  });
-
-  const grid = document.getElementById("countriesGrid");
-  const empty = document.getElementById("emptyState");
-
-  if(items.length === 0){
-    grid.innerHTML = "";
-    empty.style.display = "block";
-    return;
-  }
-
-  empty.style.display = "none";
-
-  grid.innerHTML = items.map(item => `
-    <div class="country-card">
-      <div class="card-top">
-        <div class="badges">
-          <span class="badge ${riskClass(item.riskLevel)}">${escapeHtml(riskLabel(item.riskLevel))}</span>
-          <span class="badge ${trendClass(item.trend)}">${escapeHtml(trendLabel(item.trend))}</span>
+      <div class="top-actions">
+        <div class="nav">
+          <a href="index.html" data-i18n="nav_home">Home</a>
+          <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
+          <a href="signals.html" data-i18n="nav_signals">Signals</a>
+          <a href="reports.html" data-i18n="nav_reports">Reports</a>
+          <a href="countries.html" class="active" data-i18n="nav_countries">Countries</a>
+          <a href="models.html" data-i18n="nav_models">Models</a>
+          <a href="about.html" data-i18n="nav_about">About</a>
         </div>
-      </div>
 
-      <h2 class="card-title">${escapeHtml(safeText(item.name))}</h2>
-      <p class="card-desc">${escapeHtml(
-        currentLang === "ar"
-          ? "ملف مخاطر حي مولد من محرك السيادة ويعكس آخر مستوى ضغط واتجاه."
-          : "A live country risk entry generated by the sovereign engine, reflecting the latest pressure and trend."
-      )}</p>
-
-      <div class="score-box">
-        <div class="score-label">${escapeHtml(t("meta_score"))}</div>
-        <div class="score-value">${Number(item.riskScore || 0)}</div>
-      </div>
-
-      <div class="meta">
-        <div class="meta-row">
-          <span class="meta-label">${escapeHtml(t("meta_risk"))}</span>
-          <span class="meta-value">${escapeHtml(riskLabel(item.riskLevel))}</span>
-        </div>
-        <div class="meta-row">
-          <span class="meta-label">${escapeHtml(t("meta_trend"))}</span>
-          <span class="meta-value">${escapeHtml(trendLabel(item.trend))}</span>
-        </div>
-        <div class="meta-row">
-          <span class="meta-label">${escapeHtml(t("meta_id"))}</span>
-          <span class="meta-value">${escapeHtml(safeText(item.id || "-"))}</span>
-        </div>
-      </div>
-
-      <div class="drivers">
-        <div class="drivers-title">${escapeHtml(t("drivers_title"))}</div>
-        <div class="drivers-list">
-          ${
-            Array.isArray(item.drivers) && item.drivers.length
-              ? item.drivers.map(driver => `<div class="driver-item">• ${escapeHtml(driver)}</div>`).join("")
-              : `<div class="driver-item">• ${escapeHtml(currentLang === "ar" ? "لا توجد بيانات إضافية." : "No additional data.")}</div>`
-          }
+        <div class="lang-switch">
+          <button id="btn-en" type="button">EN</button>
+          <button id="btn-ar" type="button">AR</button>
         </div>
       </div>
     </div>
-  `).join("");
-}
 
-document.getElementById("searchInput").addEventListener("input", renderCountries);
-document.getElementById("riskFilter").addEventListener("change", renderCountries);
-document.getElementById("trendFilter").addEventListener("change", renderCountries);
-document.getElementById("btn-en").addEventListener("click", () => setLang("en"));
-document.getElementById("btn-ar").addEventListener("click", () => setLang("ar"));
+    <div class="hero">
+      <div class="hero-kicker" id="heroKicker">Country Risk System</div>
+      <h1 id="pageTitle">IBSS Countries</h1>
+      <p id="pageSub">
+        Sovereign country-risk reading generated from structured signals, theater compression, and strategic-file pressure.
+      </p>
+      <div id="metaLine" class="meta-line">Engine source: -</div>
+      <div id="alertBox" class="alert"></div>
+    </div>
 
-window.addEventListener("load", () => {
-  applyTranslations();
-  if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
-    window.IBSS_ENGINE.getSystemState();
-  }
-  renderCountries();
-  setInterval(renderCountries, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
-});
-</script>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label" id="statTopCountryLabel">Top Country</div>
+        <div id="statTopCountry" class="stat-value gold">-</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label" id="statTopRiskLabel">Top Risk</div>
+        <div id="statTopRisk" class="stat-value high">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label" id="statTrendLabel">Trend</div>
+        <div id="statTrend" class="stat-value blue">-</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label" id="statCountryCountLabel">Tracked Entries</div>
+        <div id="statCountryCount" class="stat-value low">0</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="grid-2">
+        <div class="card">
+          <div class="title" id="focusTitle">Primary Country Risk</div>
+
+          <div class="focus-shell">
+            <div class="focus-meta">
+              <span id="focusLevelBadge" class="badge low">LOW</span>
+              <span id="focusTrendBadge" class="badge">STABLE</span>
+            </div>
+
+            <h3 id="focusCountryTitle" class="focus-title">-</h3>
+            <p id="focusCountryDesc" class="focus-text">-</p>
+
+            <div class="info-grid">
+              <div class="info-box">
+                <span id="infoRiskScoreLabel">Risk Score</span>
+                <strong id="infoRiskScore">0</strong>
+              </div>
+
+              <div class="info-box">
+                <span id="infoRiskLevelLabel">Risk Level</span>
+                <strong id="infoRiskLevel">-</strong>
+              </div>
+
+              <div class="info-box">
+                <span id="infoTopTheaterLabel">Top Theater</span>
+                <strong id="infoTopTheater">-</strong>
+              </div>
+
+              <div class="info-box">
+                <span id="infoTopFileLabel">Top Strategic File</span>
+                <strong id="infoTopFile">-</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="title" id="contextTitle">Country Context</div>
+          <div id="contextList" class="context-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 id="countriesTitle">Country Risk Grid</h2>
+      <p class="section-subtitle" id="countriesSub">
+        Ranked sovereign country-risk entries ordered by score, trend, and structured pressure linkage.
+      </p>
+      <div id="countryList" class="country-list"></div>
+    </div>
+
+    <div class="section">
+      <div class="grid-2">
+        <div class="card">
+          <div class="title" id="driversTitle">Primary Drivers</div>
+          <div id="driversList" class="context-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="title" id="feedTitle">Country Feed</div>
+          <div id="feedList" class="feed-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer" id="footerText">© 2026 IBSS — Countries Unified Layer</div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="sources.js"></script>
+  <script src="ingestion.js"></script>
+  <script src="news.js"></script>
+  <script src="analysis.js"></script>
+  <script src="cluster-engine.js"></script>
+  <script src="engine.js"></script>
+
+  <script>
+    const UI = {
+      en: {
+        nav_home: "Home",
+        nav_dashboard: "Dashboard",
+        nav_signals: "Signals",
+        nav_reports: "Reports",
+        nav_countries: "Countries",
+        nav_models: "Models",
+        nav_about: "About",
+
+        hero_kicker: "Country Risk System",
+        title: "IBSS Countries",
+        sub: "Sovereign country-risk reading generated from structured signals, theater compression, and strategic-file pressure.",
+        source_engine: "Engine source",
+        updated_at: "Updated",
+
+        alert_high: "⚠ HIGH ESCALATION — COUNTRY RISK FIELD TRACKS A HIGH-PRESSURE ENVIRONMENT",
+        alert_medium: "⚠ STRUCTURED PRESSURE — COUNTRY RISK FIELD TRACKS A PREPARATION ENVIRONMENT",
+        alert_low: "✓ LOW PRESSURE — COUNTRY RISK FIELD TRACKS A MONITORING ENVIRONMENT",
+
+        stat_top_country: "Top Country",
+        stat_top_risk: "Top Risk",
+        stat_trend: "Trend",
+        stat_country_count: "Tracked Entries",
+
+        focus_title: "Primary Country Risk",
+        risk_score: "Risk Score",
+        risk_level: "Risk Level",
+        top_theater: "Top Theater",
+        top_file: "Top Strategic File",
+        context_title: "Country Context",
+
+        countries_title: "Country Risk Grid",
+        countries_sub: "Ranked sovereign country-risk entries ordered by score, trend, and structured pressure linkage.",
+
+        drivers_title: "Primary Drivers",
+        feed_title: "Country Feed",
+
+        trend: "Trend",
+        decision_mode: "Decision Mode",
+        priority: "Priority",
+        no_data: "No data available.",
+        no_feed: "No country feed available.",
+        footer: "© 2026 IBSS — Countries Unified Layer"
+      },
+
+      ar: {
+        nav_home: "الرئيسية",
+        nav_dashboard: "لوحة التحكم",
+        nav_signals: "الإشارات",
+        nav_reports: "التقارير",
+        nav_countries: "الدول",
+        nav_models: "النماذج",
+        nav_about: "حول",
+
+        hero_kicker: "نظام مخاطر الدول",
+        title: "دول IBSS",
+        sub: "قراءة سيادية لمخاطر الدول مولدة من الإشارات المنظمة وضغط المسرح والملفات الاستراتيجية.",
+        source_engine: "مصدر المحرك",
+        updated_at: "آخر تحديث",
+
+        alert_high: "⚠ تصعيد مرتفع — حقل مخاطر الدول يتتبع بيئة ضغط مرتفعة",
+        alert_medium: "⚠ ضغط بنيوي — حقل مخاطر الدول يتتبع بيئة تحضير",
+        alert_low: "✓ ضغط منخفض — حقل مخاطر الدول يتتبع بيئة مراقبة",
+
+        stat_top_country: "الدولة الأعلى",
+        stat_top_risk: "أعلى خطر",
+        stat_trend: "الاتجاه",
+        stat_country_count: "المدخلات المتتبعة",
+
+        focus_title: "الخطر الأساسي للدولة",
+        risk_score: "درجة الخطر",
+        risk_level: "مستوى الخطر",
+        top_theater: "المسرح الأعلى",
+        top_file: "الملف الاستراتيجي الأعلى",
+        context_title: "سياق الدولة",
+
+        countries_title: "شبكة مخاطر الدول",
+        countries_sub: "مدخلات مخاطر الدول السيادية مرتبة حسب الدرجة والاتجاه والارتباط بالضغط البنيوي.",
+
+        drivers_title: "المحركات الرئيسية",
+        feed_title: "تغذية الدول",
+
+        trend: "الاتجاه",
+        decision_mode: "وضع القرار",
+        priority: "الأولوية",
+        no_data: "لا توجد بيانات.",
+        no_feed: "لا توجد تغذية دول.",
+        footer: "© 2026 IBSS — الطبقة الموحدة للدول"
+      }
+    };
+
+    let currentLang = localStorage.getItem("ibss_lang") || "en";
+
+    function t(key){
+      return UI[currentLang]?.[key] || key;
+    }
+
+    function safe(value, fallback = "-"){
+      return value !== undefined && value !== null && value !== "" ? value : fallback;
+    }
+
+    function getLocalizedText(value){
+      if (!value) return "-";
+      if (typeof value === "string" || typeof value === "number") return String(value);
+      return value[currentLang] || value.en || value.ar || value.name || value.title || "-";
+    }
+
+    function escapeHtml(text){
+      const div = document.createElement("div");
+      div.textContent = text ?? "";
+      return div.innerHTML;
+    }
+
+    function formatDateTime(value){
+      if (!value) return "-";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "-";
+
+      return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
+        year:"numeric",
+        month:"short",
+        day:"2-digit",
+        hour:"2-digit",
+        minute:"2-digit"
+      });
+    }
+
+    function levelClass(level){
+      const v = String(level || "LOW").toUpperCase();
+      if (v === "HIGH") return "high";
+      if (v === "MEDIUM") return "medium";
+      return "low";
+    }
+
+    function applyLanguage(){
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+      document.querySelector('[data-i18n="nav_home"]').textContent = t("nav_home");
+      document.querySelector('[data-i18n="nav_dashboard"]').textContent = t("nav_dashboard");
+      document.querySelector('[data-i18n="nav_signals"]').textContent = t("nav_signals");
+      document.querySelector('[data-i18n="nav_reports"]').textContent = t("nav_reports");
+      document.querySelector('[data-i18n="nav_countries"]').textContent = t("nav_countries");
+      document.querySelector('[data-i18n="nav_models"]').textContent = t("nav_models");
+      document.querySelector('[data-i18n="nav_about"]').textContent = t("nav_about");
+
+      document.getElementById("heroKicker").textContent = t("hero_kicker");
+      document.getElementById("pageTitle").textContent = t("title");
+      document.getElementById("pageSub").textContent = t("sub");
+
+      document.getElementById("statTopCountryLabel").textContent = t("stat_top_country");
+      document.getElementById("statTopRiskLabel").textContent = t("stat_top_risk");
+      document.getElementById("statTrendLabel").textContent = t("stat_trend");
+      document.getElementById("statCountryCountLabel").textContent = t("stat_country_count");
+
+      document.getElementById("focusTitle").textContent = t("focus_title");
+      document.getElementById("infoRiskScoreLabel").textContent = t("risk_score");
+      document.getElementById("infoRiskLevelLabel").textContent = t("risk_level");
+      document.getElementById("infoTopTheaterLabel").textContent = t("top_theater");
+      document.getElementById("infoTopFileLabel").textContent = t("top_file");
+      document.getElementById("contextTitle").textContent = t("context_title");
+
+      document.getElementById("countriesTitle").textContent = t("countries_title");
+      document.getElementById("countriesSub").textContent = t("countries_sub");
+      document.getElementById("driversTitle").textContent = t("drivers_title");
+      document.getElementById("feedTitle").textContent = t("feed_title");
+      document.getElementById("footerText").textContent = t("footer");
+
+      document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
+      document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+    }
+
+    function getSystem(){
+      try {
+        if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
+          window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
+        }
+
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+          return window.IBSS_ENGINE.getSystemState();
+        }
+
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
+          return window.IBSS_ENGINE.getStaticSystemFallback();
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Countries render error:", error);
+        return null;
+      }
+    }
+
+    function renderMeta(system){
+      document.getElementById("metaLine").textContent =
+        `${t("source_engine")}: ${safe(system?.source, "-")} | ${t("updated_at")}: ${formatDateTime(system?.updatedAt)}`;
+    }
+
+    function renderAlert(system){
+      const alert = document.getElementById("alertBox");
+      alert.style.display = "block";
+
+      if (system?.level === "HIGH") {
+        alert.textContent = t("alert_high");
+      } else if (system?.level === "MEDIUM") {
+        alert.textContent = t("alert_medium");
+      } else {
+        alert.textContent = t("alert_low");
+      }
+    }
+
+    function renderStats(system){
+      const countries = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed : [];
+      const top = countries[0] || null;
+
+      document.getElementById("statTopCountry").textContent =
+        top ? getLocalizedText(top.nameLocalized || top.name) : "-";
+
+      const riskEl = document.getElementById("statTopRisk");
+      riskEl.textContent = top ? Number(top.riskScore || 0) : 0;
+      riskEl.className = `stat-value ${levelClass(top?.riskLevel)}`;
+
+      document.getElementById("statTrend").textContent =
+        top ? safe(top.trend, "-") : "-";
+
+      document.getElementById("statCountryCount").textContent = countries.length;
+    }
+
+    function renderFocus(system){
+      const countries = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed : [];
+      const top = countries[0] || null;
+
+      if (!top) {
+        document.getElementById("focusCountryTitle").textContent = "-";
+        document.getElementById("focusCountryDesc").textContent = t("no_data");
+        document.getElementById("infoRiskScore").textContent = "0";
+        document.getElementById("infoRiskLevel").textContent = "-";
+        document.getElementById("infoTopTheater").textContent = "-";
+        document.getElementById("infoTopFile").textContent = "-";
+        return;
+      }
+
+      const levelBadge = document.getElementById("focusLevelBadge");
+      levelBadge.className = `badge ${levelClass(top.riskLevel)}`;
+      levelBadge.textContent = safe(top.riskLevel, "LOW");
+
+      const trendBadge = document.getElementById("focusTrendBadge");
+      trendBadge.className = "badge";
+      trendBadge.textContent = safe(top.trend, "STABLE");
+
+      document.getElementById("focusCountryTitle").textContent =
+        getLocalizedText(top.nameLocalized || top.name);
+
+      const drivers = Array.isArray(top.primaryDrivers) ? top.primaryDrivers.slice(0, 3) : [];
+      document.getElementById("focusCountryDesc").textContent =
+        drivers.length
+          ? drivers.join(" | ")
+          : t("no_data");
+
+      document.getElementById("infoRiskScore").textContent = Number(top.riskScore || 0);
+      document.getElementById("infoRiskLevel").textContent = safe(top.riskLevel, "-");
+      document.getElementById("infoTopTheater").textContent =
+        system?.topTheater ? getLocalizedText(system.topTheater.name) : "-";
+      document.getElementById("infoTopFile").textContent =
+        system?.topCluster ? getLocalizedText(system.topCluster.name) : "-";
+    }
+
+    function renderContext(system){
+      const list = document.getElementById("contextList");
+      const top = (system?.countryRiskFeed || [])[0] || null;
+
+      const items = [
+        {
+          title: system?.topTheater ? getLocalizedText(system.topTheater.name) : "-",
+          sub: `${t("top_theater")} | ${t("risk_level")}: ${safe(system?.topTheater?.escalationLevel, "-")} | ${t("trend")}: ${safe(system?.topTheater?.trend, "-")}`,
+          value: Number(system?.theaterPressure?.pressure || 0)
+        },
+        {
+          title: system?.topCluster ? getLocalizedText(system.topCluster.name) : "-",
+          sub: `${t("top_file")} | ${t("risk_level")}: ${safe(system?.topCluster?.escalationLevel, "-")} | ${t("trend")}: ${safe(system?.topCluster?.trend, "-")}`,
+          value: Number(system?.clusterPressure?.pressure || 0)
+        },
+        {
+          title: top ? getLocalizedText(top.nameLocalized || top.name) : "-",
+          sub: `${t("decision_mode")}: ${safe(system?.mode, "-")} | ${t("trend")}: ${safe(top?.trend, "-")}`,
+          value: Number(top?.riskScore || 0)
+        }
+      ];
+
+      list.innerHTML = items.map(item => `
+        <div class="context-item">
+          <div class="context-top">
+            <div>
+              <h3 class="context-title">${escapeHtml(item.title)}</h3>
+              <div class="context-sub">${escapeHtml(item.sub)}</div>
+            </div>
+            <div class="context-value">${item.value}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderCountries(system){
+      const list = document.getElementById("countryList");
+      const countries = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed : [];
+
+      if (!countries.length) {
+        list.innerHTML = `<div class="country-item">${t("no_data")}</div>`;
+        return;
+      }
+
+      list.innerHTML = countries.map(country => {
+        const riskLevel = safe(country.riskLevel, "LOW");
+        const drivers = Array.isArray(country.primaryDrivers) ? country.primaryDrivers.slice(0, 3) : [];
+
+        return `
+          <div class="country-item">
+            <div class="country-top">
+              <div>
+                <h3 class="country-title">${escapeHtml(getLocalizedText(country.nameLocalized || country.name))}</h3>
+                <div class="country-sub">${escapeHtml(t("trend"))}: ${escapeHtml(safe(country.trend, "-"))}</div>
+              </div>
+              <div class="country-score">${Number(country.riskScore || 0)}</div>
+            </div>
+
+            <p class="country-text">${escapeHtml(drivers.join(" | ") || t("no_data"))}</p>
+
+            <div class="meta-row">
+              <span class="chip ${levelClass(riskLevel)}">${escapeHtml(t("risk_level"))}: ${escapeHtml(riskLevel)}</span>
+              <span class="chip">${escapeHtml(t("trend"))}: ${escapeHtml(safe(country.trend, "-"))}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderDrivers(system){
+      const list = document.getElementById("driversList");
+      const countries = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed : [];
+      const buckets = new Map();
+
+      countries.forEach(country => {
+        (country.primaryDrivers || []).forEach(driver => {
+          const key = String(driver || "").trim();
+          if (!key) return;
+          buckets.set(key, (buckets.get(key) || 0) + 1);
+        });
+      });
+
+      const items = [...buckets.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8);
+
+      if (!items.length) {
+        list.innerHTML = `<div class="context-item">${t("no_data")}</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(item => `
+        <div class="context-item">
+          <div class="context-top">
+            <div>
+              <h3 class="context-title">${escapeHtml(item[0])}</h3>
+              <div class="context-sub">${escapeHtml(t("priority"))}</div>
+            </div>
+            <div class="context-value">${item[1]}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderFeed(system){
+      const list = document.getElementById("feedList");
+      const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 10) : [];
+
+      if (!feed.length) {
+        list.innerHTML = `<div class="feed-item">${t("no_feed")}</div>`;
+        return;
+      }
+
+      list.innerHTML = feed.map(item => {
+        if (typeof item === "string") {
+          return `<div class="feed-item">${escapeHtml(item)}</div>`;
+        }
+
+        if (item && typeof item === "object" && item.text) {
+          return `<div class="feed-item">${escapeHtml(getLocalizedText(item.text))}</div>`;
+        }
+
+        return `<div class="feed-item">-</div>`;
+      }).join("");
+    }
+
+    function renderPage(){
+      applyLanguage();
+
+      const system = getSystem();
+      if (!system) return;
+
+      renderMeta(system);
+      renderAlert(system);
+      renderStats(system);
+      renderFocus(system);
+      renderContext(system);
+      renderCountries(system);
+      renderDrivers(system);
+      renderFeed(system);
+    }
+
+    document.getElementById("btn-en").addEventListener("click", function () {
+      currentLang = "en";
+      localStorage.setItem("ibss_lang", "en");
+      renderPage();
+    });
+
+    document.getElementById("btn-ar").addEventListener("click", function () {
+      currentLang = "ar";
+      localStorage.setItem("ibss_lang", "ar");
+      renderPage();
+    });
+
+    window.addEventListener("load", function () {
+      renderPage();
+      setInterval(renderPage, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
+    });
+  </script>
 </body>
-  </html>
+</html>
