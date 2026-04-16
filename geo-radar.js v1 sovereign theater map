@@ -1,0 +1,356 @@
+window.IBSS_GEO_RADAR = (function () {
+  "use strict";
+
+  const CONFIG = {
+    svgNamespace: "http://www.w3.org/2000/svg",
+    defaultSize: 300,
+    mapOpacity: 0.16,
+    pointMinRadius: 6,
+    pointMaxRadius: 16,
+    glowExtraRadius: 8
+  };
+
+  const THEATER_POINTS = {
+    gaza:        { key: "gaza",        en: "Gaza",             ar: "غزة",               x: 118, y: 118 },
+    westbank:    { key: "westbank",    en: "West Bank",        ar: "الضفة",             x: 126, y: 108 },
+    israel:      { key: "israel",      en: "Israel",           ar: "إسرائيل",           x: 132, y: 114 },
+    lebanon:     { key: "lebanon",     en: "Lebanon",          ar: "لبنان",             x: 140, y: 88  },
+    egypt:       { key: "egypt",       en: "Egypt",            ar: "مصر",               x: 96,  y: 132 },
+    iran:        { key: "iran",        en: "Iran",             ar: "إيران",             x: 210, y: 96  },
+    redsea:      { key: "redsea",      en: "Red Sea",          ar: "البحر الأحمر",      x: 122, y: 174 },
+    eastmed:     { key: "eastmed",     en: "East Med",         ar: "شرق المتوسط",       x: 120, y: 72  },
+    hornafrica:  { key: "hornafrica",  en: "Horn of Africa",   ar: "القرن الأفريقي",    x: 176, y: 218 }
+  };
+
+  function asArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function safeText(value, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+  }
+
+  function safeNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function getLocalizedText(value, lang = "en") {
+    if (!value) return "-";
+    if (typeof value === "string" || typeof value === "number") return String(value);
+    return value[lang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
+  }
+
+  function normalizeText(value) {
+    return safeText(String(value || ""))
+      .toLowerCase()
+      .replace(/\s+/g, "")
+      .replace(/[_-]/g, "");
+  }
+
+  function priorityClass(priority) {
+    const p = String(priority || "LOW").toUpperCase();
+    if (p === "HIGH") return "high";
+    if (p === "MEDIUM") return "medium";
+    return "low";
+  }
+
+  function scoreClass(score) {
+    const n = safeNumber(score, 0);
+    if (n >= 70) return "high";
+    if (n >= 35) return "medium";
+    return "low";
+  }
+
+  function radiusFromScore(score) {
+    const n = clamp(safeNumber(score, 0), 0, 100);
+    const ratio = n / 100;
+    return CONFIG.pointMinRadius + ((CONFIG.pointMaxRadius - CONFIG.pointMinRadius) * ratio);
+  }
+
+  function createSvgElement(name, attrs = {}) {
+    const el = document.createElementNS(CONFIG.svgNamespace, name);
+    Object.entries(attrs).forEach(([key, value]) => {
+      el.setAttribute(key, String(value));
+    });
+    return el;
+  }
+
+  function clearGeoLayer(radarEl) {
+    radarEl.querySelectorAll(".ibss-geo-layer, .ibss-geo-point, .ibss-geo-label").forEach(el => el.remove());
+  }
+
+  function injectStyles() {
+    if (document.getElementById("ibss-geo-radar-style")) return;
+
+    const style = document.createElement("style");
+    style.id = "ibss-geo-radar-style";
+    style.textContent = `
+      .ibss-geo-layer{
+        position:absolute;
+        inset:0;
+        z-index:1;
+        pointer-events:none;
+      }
+
+      .ibss-geo-point{
+        position:absolute;
+        border-radius:50%;
+        transform:translate(-50%, -50%);
+        z-index:7;
+        transition:.35s ease;
+        pointer-events:none;
+      }
+
+      .ibss-geo-point.high{
+        background:#ff4d4f;
+        box-shadow:0 0 16px rgba(255,77,79,.75);
+      }
+
+      .ibss-geo-point.medium{
+        background:#ff9f1a;
+        box-shadow:0 0 16px rgba(255,159,26,.70);
+      }
+
+      .ibss-geo-point.low{
+        background:#00d084;
+        box-shadow:0 0 16px rgba(0,208,132,.65);
+      }
+
+      .ibss-geo-point.dominant{
+        outline:3px solid rgba(212,175,55,.78);
+        outline-offset:5px;
+        box-shadow:
+          0 0 0 6px rgba(212,175,55,.08),
+          0 0 24px rgba(212,175,55,.30);
+      }
+
+      .ibss-geo-point::after{
+        content:"";
+        position:absolute;
+        inset:-8px;
+        border-radius:50%;
+        border:1px solid currentColor;
+        opacity:.18;
+      }
+
+      .ibss-geo-label{
+        position:absolute;
+        transform:translate(-50%, -50%);
+        z-index:8;
+        pointer-events:none;
+        color:#cfcfcf;
+        font-size:10px;
+        font-weight:700;
+        white-space:nowrap;
+        text-shadow:0 1px 6px rgba(0,0,0,.65);
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function buildBaseMapSvg(size = CONFIG.defaultSize) {
+    const svg = createSvgElement("svg", {
+      viewBox: "0 0 300 300",
+      width: size,
+      height: size,
+      class: "ibss-geo-layer",
+      "aria-hidden": "true"
+    });
+
+    const defs = createSvgElement("defs");
+    const grad = createSvgElement("radialGradient", { id: "ibssGeoGlow", cx: "50%", cy: "50%", r: "50%" });
+    grad.appendChild(createSvgElement("stop", { offset: "0%", "stop-color": "rgba(212,175,55,.12)" }));
+    grad.appendChild(createSvgElement("stop", { offset: "100%", "stop-color": "rgba(212,175,55,0)" }));
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+
+    // Subtle land masses — stylized, not political map detail
+    const landColor = "rgba(212,175,55,.16)";
+    const strokeColor = "rgba(212,175,55,.22)";
+
+    const shapes = [
+      // Egypt / Sinai / Levant block
+      createSvgElement("path", {
+        d: "M72 146 L86 116 L110 96 L137 84 L151 89 L150 111 L136 121 L124 131 L114 149 L90 161 Z",
+        fill: landColor,
+        stroke: strokeColor,
+        "stroke-width": "1"
+      }),
+      // Arabia / Red Sea side
+      createSvgElement("path", {
+        d: "M129 130 L153 115 L183 124 L196 149 L186 184 L164 213 L147 201 L142 173 L136 149 Z",
+        fill: landColor,
+        stroke: strokeColor,
+        "stroke-width": "1"
+      }),
+      // Iran plateau
+      createSvgElement("path", {
+        d: "M188 83 L223 73 L246 93 L242 121 L214 133 L191 121 L181 101 Z",
+        fill: landColor,
+        stroke: strokeColor,
+        "stroke-width": "1"
+      }),
+      // Horn of Africa
+      createSvgElement("path", {
+        d: "M167 202 L192 203 L215 220 L198 237 L178 229 L166 216 Z",
+        fill: landColor,
+        stroke: strokeColor,
+        "stroke-width": "1"
+      }),
+      // East Med sea cue
+      createSvgElement("path", {
+        d: "M88 66 L114 58 L145 62 L152 76 L138 82 L116 82 L94 78 Z",
+        fill: "rgba(255,255,255,.03)",
+        stroke: "rgba(255,255,255,.04)",
+        "stroke-width": "1"
+      }),
+      // subtle center glow
+      createSvgElement("circle", {
+        cx: "150",
+        cy: "150",
+        r: "110",
+        fill: "url(#ibssGeoGlow)"
+      })
+    ];
+
+    shapes.forEach(shape => svg.appendChild(shape));
+    return svg;
+  }
+
+  function detectPointKeyFromSignal(signal) {
+    const candidates = [
+      safeText(signal?.country, ""),
+      safeText(signal?.region, ""),
+      getLocalizedText(signal?.title, "en"),
+      getLocalizedText(signal?.description, "en")
+    ].map(normalizeText);
+
+    for (const key of Object.keys(THEATER_POINTS)) {
+      const normalizedKey = normalizeText(key);
+      if (candidates.some(text => text.includes(normalizedKey))) return key;
+    }
+
+    // extra aliases
+    const aliases = {
+      hornofafrica: "hornafrica",
+      eastmediterranean: "eastmed",
+      redsea: "redsea",
+      westbank: "westbank"
+    };
+
+    for (const [alias, mapped] of Object.entries(aliases)) {
+      if (candidates.some(text => text.includes(alias))) return mapped;
+    }
+
+    return null;
+  }
+
+  function buildGeoData(system) {
+    const map = new Map();
+    const rankedSignals = asArray(system?.rankedSignals);
+
+    rankedSignals.forEach((signal, index) => {
+      const pointKey = detectPointKeyFromSignal(signal);
+      if (!pointKey || !THEATER_POINTS[pointKey]) return;
+
+      const score = safeNumber(signal?.balancedScore100, safeNumber(signal?.score100, 0));
+      const existing = map.get(pointKey);
+
+      const item = {
+        key: pointKey,
+        signal,
+        score,
+        priority: signal?.priority || "LOW",
+        dominant: index === 0
+      };
+
+      if (!existing || score > existing.score) {
+        map.set(pointKey, item);
+      }
+    });
+
+    // fallback from country feed if no signal matched
+    asArray(system?.countryRiskFeed).forEach((country, index) => {
+      const name = normalizeText(getLocalizedText(country?.nameLocalized || country?.name, "en"));
+      const pointKey = Object.keys(THEATER_POINTS).find(key => name.includes(normalizeText(key)));
+      if (!pointKey) return;
+
+      const score = safeNumber(country?.riskScore, 0);
+      const level = safeText(country?.riskLevel, "LOW");
+      const existing = map.get(pointKey);
+
+      const item = {
+        key: pointKey,
+        signal: {
+          title: THEATER_POINTS[pointKey],
+          description: {
+            en: Array.isArray(country?.primaryDrivers) ? country.primaryDrivers.join(" • ") : "Country risk feed entry",
+            ar: Array.isArray(country?.primaryDrivers) ? country.primaryDrivers.join(" • ") : "مدخل من طبقة مخاطر الدول"
+          },
+          priority: level
+        },
+        score,
+        priority: level,
+        dominant: index === 0 && !map.size
+      };
+
+      if (!existing || score > existing.score) {
+        map.set(pointKey, item);
+      }
+    });
+
+    return [...map.values()].sort((a, b) => b.score - a.score);
+  }
+
+  function render(container, system, options = {}) {
+    if (!container || !system) return;
+
+    injectStyles();
+    clearGeoLayer(container);
+
+    const size = safeNumber(options.size, CONFIG.defaultSize);
+    const lang = options.lang || "en";
+
+    const svg = buildBaseMapSvg(size);
+    container.appendChild(svg);
+
+    const geoData = buildGeoData(system);
+
+    geoData.forEach((item, index) => {
+      const point = THEATER_POINTS[item.key];
+      if (!point) return;
+
+      const score = clamp(item.score, 0, 100);
+      const cls = priorityClass(item.priority || scoreClass(score));
+      const radius = radiusFromScore(score);
+      const isDominant = index === 0 || item.dominant;
+
+      const dot = document.createElement("div");
+      dot.className = `ibss-geo-point ${cls}${isDominant ? " dominant" : ""}`;
+      dot.style.width = `${radius * 2}px`;
+      dot.style.height = `${radius * 2}px`;
+      dot.style.left = `${point.x}px`;
+      dot.style.top = `${point.y}px`;
+      dot.title = `${lang === "ar" ? point.ar : point.en} — ${score}`;
+      container.appendChild(dot);
+
+      const label = document.createElement("div");
+      label.className = "ibss-geo-label";
+      label.style.left = `${point.x}px`;
+      label.style.top = `${point.y - radius - 10}px`;
+      label.textContent = lang === "ar" ? point.ar : point.en;
+      container.appendChild(label);
+    });
+  }
+
+  return {
+    CONFIG,
+    render,
+    THEATER_POINTS
+  };
+})();
