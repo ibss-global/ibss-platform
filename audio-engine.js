@@ -3,22 +3,41 @@ window.IBSS_AUDIO = (function () {
 
   const CONFIG = {
     enabledByDefault: false,
-    volume: 0.35,
-    sweepIntervalMs: 3000,
-    storageKey: "ibss_audio_state_v1"
+    volume: 0.4,
+    sweepIntervalMs: 2600,
+    storageKey: "ibss_audio_state_v2"
   };
 
   const STATE = {
     enabled: CONFIG.enabledByDefault,
     context: null,
     masterGain: null,
+    sweepTimer: null,
+    primed: false,
     lastLevel: null,
-    lastTopSignalId: null,
-    sweepTimer: null
+    lastTopSignalId: null
   };
 
-  // ---------- INIT ----------
-  function initAudioContext() {
+  function load() {
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (typeof parsed.enabled === "boolean") {
+        STATE.enabled = parsed.enabled;
+      }
+    } catch (error) {}
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+        enabled: STATE.enabled
+      }));
+    } catch (error) {}
+  }
+
+  function initContext() {
     if (STATE.context) return;
 
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -30,59 +49,51 @@ window.IBSS_AUDIO = (function () {
     STATE.masterGain.connect(STATE.context.destination);
   }
 
-  function ensureRunning() {
-    if (!STATE.context) return;
+  async function ensureRunning() {
+    if (!STATE.context) return false;
+
     if (STATE.context.state === "suspended") {
-      STATE.context.resume();
+      try {
+        await STATE.context.resume();
+      } catch (error) {
+        console.error("IBSS_AUDIO resume error:", error);
+      }
     }
+
+    return STATE.context.state === "running";
   }
 
-  // ---------- SOUND BUILDERS ----------
-  function playTone(freq = 440, duration = 0.1, type = "sine", gain = 0.2) {
-    if (!STATE.enabled || !STATE.context) return;
+  function playTone(freq = 440, duration = 0.12, type = "sine", gainValue = 0.2) {
+    if (!STATE.enabled || !STATE.context || !STATE.masterGain) return;
 
     const ctx = STATE.context;
-
     const osc = ctx.createOscillator();
-    const g = ctx.createGain();
+    const gain = ctx.createGain();
 
     osc.type = type;
     osc.frequency.setValueAtTime(freq, ctx.currentTime);
 
-    g.gain.setValueAtTime(gain, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    gain.gain.setValueAtTime(gainValue, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
-    osc.connect(g);
-    g.connect(STATE.masterGain);
+    osc.connect(gain);
+    gain.connect(STATE.masterGain);
 
     osc.start();
     osc.stop(ctx.currentTime + duration);
   }
 
-  // ---------- SOVEREIGN SOUNDS ----------
   function playSweep() {
-    // radar pulse (subtle)
-    playTone(220, 0.08, "sine", 0.12);
+    playTone(200, 0.07, "sine", 0.12);
   }
 
-  function playHighSignalPing() {
-    // short sharp ping
-    playTone(880, 0.12, "triangle", 0.25);
+  function playPing() {
+    playTone(880, 0.12, "triangle", 0.24);
   }
 
   function playEscalationAlert() {
-    // double tone alert
-    playTone(520, 0.15, "square", 0.25);
-    setTimeout(() => playTone(660, 0.15, "square", 0.25), 120);
-  }
-
-  // ---------- LOOP ----------
-  function startSweepLoop() {
-    stopSweepLoop();
-
-    STATE.sweepTimer = setInterval(() => {
-      playSweep();
-    }, CONFIG.sweepIntervalMs);
+    playTone(520, 0.14, "square", 0.22);
+    setTimeout(() => playTone(680, 0.16, "square", 0.24), 140);
   }
 
   function stopSweepLoop() {
@@ -92,38 +103,30 @@ window.IBSS_AUDIO = (function () {
     }
   }
 
-  // ---------- STATE LOGIC ----------
-  function updateFromSystem(system) {
-    if (!STATE.enabled || !system) return;
+  function startSweepLoop() {
+    stopSweepLoop();
 
-    ensureRunning();
+    if (!STATE.enabled) return;
 
-    // escalation detection
-    if (STATE.lastLevel && system.level !== STATE.lastLevel) {
-      if (system.level === "HIGH") {
-        playEscalationAlert();
-      }
-    }
-
-    // top signal change
-    if (
-      STATE.lastTopSignalId &&
-      system.topSignal &&
-      system.topSignal.id !== STATE.lastTopSignalId &&
-      system.topSignal.priority === "HIGH"
-    ) {
-      playHighSignalPing();
-    }
-
-    STATE.lastLevel = system.level;
-    STATE.lastTopSignalId = system.topSignal?.id || null;
+    STATE.sweepTimer = setInterval(async () => {
+      const running = await ensureRunning();
+      if (!running) return;
+      playSweep();
+    }, CONFIG.sweepIntervalMs);
   }
 
-  // ---------- CONTROL ----------
-  function enable() {
-    initAudioContext();
+  async function enable() {
+    initContext();
+    const running = await ensureRunning();
+
     STATE.enabled = true;
     save();
+
+    if (running) {
+      STATE.primed = true;
+      playPing();
+    }
+
     startSweepLoop();
   }
 
@@ -133,44 +136,65 @@ window.IBSS_AUDIO = (function () {
     save();
   }
 
-  function toggle() {
-    if (STATE.enabled) disable();
-    else enable();
+  async function toggle() {
+    if (STATE.enabled) {
+      disable();
+      return;
+    }
+    await enable();
   }
 
-  function setVolume(v) {
-    const value = Math.max(0, Math.min(v, 1));
+  function setVolume(value) {
+    const volume = Math.max(0, Math.min(Number(value) || 0, 1));
     if (STATE.masterGain) {
-      STATE.masterGain.gain.value = value;
+      STATE.masterGain.gain.value = volume;
     }
   }
 
-  // ---------- STORAGE ----------
-  function save() {
-    try {
-      localStorage.setItem(
-        CONFIG.storageKey,
-        JSON.stringify({ enabled: STATE.enabled })
-      );
-    } catch (e) {}
-  }
+  async function updateFromSystem(system) {
+    if (!STATE.enabled) return;
 
-  function load() {
-    try {
-      const raw = localStorage.getItem(CONFIG.storageKey);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (typeof parsed.enabled === "boolean") {
-        STATE.enabled = parsed.enabled;
+    initContext();
+    const running = await ensureRunning();
+    if (!running) return;
+
+    if (!STATE.primed) {
+      STATE.primed = true;
+      playPing();
+    }
+
+    if (STATE.lastLevel && system?.level !== STATE.lastLevel) {
+      if (system?.level === "HIGH") {
+        playEscalationAlert();
+      } else if (system?.level === "MEDIUM") {
+        playPing();
       }
-    } catch (e) {}
+    }
+
+    const topSignalId = system?.topSignal?.id || null;
+    const topSignalPriority = String(system?.topSignal?.priority || "LOW").toUpperCase();
+
+    if (
+      STATE.lastTopSignalId &&
+      topSignalId &&
+      topSignalId !== STATE.lastTopSignalId &&
+      topSignalPriority === "HIGH"
+    ) {
+      playPing();
+    }
+
+    STATE.lastLevel = system?.level || null;
+    STATE.lastTopSignalId = topSignalId;
   }
 
-  // ---------- PUBLIC API ----------
+  function isEnabled() {
+    return STATE.enabled;
+  }
+
   load();
 
   if (STATE.enabled) {
-    initAudioContext();
+    initContext();
     startSweepLoop();
   }
 
@@ -180,6 +204,6 @@ window.IBSS_AUDIO = (function () {
     toggle,
     setVolume,
     updateFromSystem,
-    isEnabled: () => STATE.enabled
+    isEnabled
   };
 })();
