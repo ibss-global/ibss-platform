@@ -7,48 +7,48 @@
 
   <style>
     :root{
+      --gold:#d4af37;
       --bg:#040404;
       --panel:#0d0d0d;
       --panel2:#121212;
       --panel3:#171717;
-      --gold:#d4af37;
-      --text:#e8e8e8;
+      --text:#ffffff;
       --muted:#9d9d9d;
-      --green:#00d084;
-      --orange:#ff9f1a;
       --red:#ff4d4f;
-      --blue:#5a8cff;
+      --orange:#ff9f1a;
+      --green:#00d084;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
-      --glow:0 0 18px rgba(212,175,55,.08);
+      --shadow:0 10px 24px rgba(0,0,0,.18);
     }
 
     *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
 
-    body{
+    html,body{
       margin:0;
+      padding:0;
       font-family:Arial,sans-serif;
       background:
-        radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
-        linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,0)),
+        radial-gradient(circle at top, rgba(212,175,55,.07), transparent 30%),
         var(--bg);
       color:var(--text);
     }
 
+    body{min-height:100vh}
+
     .wrap{
-      width:min(1180px,92%);
+      width:min(1200px,92%);
       margin:auto;
-      padding:20px 0 60px;
+      padding:20px 0 42px;
     }
 
     .topbar{
       display:flex;
       justify-content:space-between;
       align-items:center;
-      gap:12px;
-      padding:14px 0 20px;
+      gap:16px;
+      padding:14px 0 22px;
       border-bottom:1px solid rgba(255,255,255,.05);
       flex-wrap:wrap;
     }
@@ -79,15 +79,15 @@
     .nav a{
       color:var(--muted);
       text-decoration:none;
+      border:1px solid var(--soft-border);
       padding:10px 14px;
-      border:1px solid rgba(255,255,255,.08);
       border-radius:12px;
       font-size:14px;
       transition:.2s ease;
     }
 
-    .nav a.active,
-    .nav a:hover{
+    .nav a:hover,
+    .nav a.active{
       color:var(--gold);
       border-color:var(--border);
       box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
@@ -117,43 +117,68 @@
 
     .hero{
       text-align:center;
-      padding:34px 0 20px;
-    }
-
-    .hero-kicker{
-      color:var(--gold);
-      font-size:16px;
-      margin-bottom:12px;
+      padding:30px 0 18px;
     }
 
     .hero h1{
-      font-size:clamp(36px,5vw,58px);
-      line-height:1.12;
-      margin:0 0 14px;
-      color:#fff;
+      margin:0 0 10px;
+      font-size:42px;
+      color:var(--gold);
       font-weight:900;
+      letter-spacing:.5px;
     }
 
     .hero p{
-      max-width:860px;
-      margin:0 auto;
+      margin:0;
       color:var(--muted);
-      line-height:1.9;
-      font-size:17px;
+      font-size:16px;
+      line-height:1.8;
     }
 
     .meta-line{
-      margin-top:16px;
+      margin-top:10px;
       color:#8a8a8a;
       font-size:13px;
     }
 
+    .hero-badges{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .meta-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
+    }
+
+    .meta-badge.live{
+      color:var(--green);
+      border-color:rgba(0,208,132,.25);
+      background:rgba(0,208,132,.08);
+    }
+
+    .meta-badge.fallback{
+      color:var(--orange);
+      border-color:rgba(255,159,26,.30);
+      background:rgba(255,159,26,.08);
+    }
+
     .alert{
       display:none;
-      margin:22px auto 0;
-      max-width:760px;
+      margin:18px 0 0;
       text-align:center;
-      padding:14px 16px;
+      padding:14px;
       border-radius:14px;
       background:rgba(255,77,79,.14);
       border:1px solid rgba(255,77,79,.40);
@@ -162,80 +187,30 @@
       line-height:1.7;
     }
 
-    .stats-grid{
-      margin-top:28px;
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:16px;
-    }
-
-    .stat-card{
-      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;
-      padding:22px;
-      text-align:center;
-      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
-    }
-
-    .stat-label{
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:10px;
-    }
-
-    .stat-value{
-      font-size:30px;
-      font-weight:900;
-      color:#fff;
-      line-height:1.2;
-      word-break:break-word;
-    }
-
-    .stat-value.high{color:var(--red)}
-    .stat-value.medium{color:var(--orange)}
-    .stat-value.low{color:var(--green)}
-    .stat-value.gold{color:var(--gold)}
-    .stat-value.blue{color:var(--blue)}
-
     .section{
-      margin-top:34px;
+      margin-top:18px;
     }
 
-    .section h2{
-      color:var(--gold);
-      text-align:center;
-      font-size:clamp(28px,4vw,40px);
-      margin:0 0 14px;
-    }
-
-    .section-subtitle{
-      text-align:center;
-      color:var(--muted);
-      max-width:880px;
-      margin:0 auto 22px;
-      line-height:1.8;
-      font-size:15px;
-    }
-
-    .grid-2{
+    .grid{
       display:grid;
       grid-template-columns:1.15fr .85fr;
       gap:18px;
+      margin-top:18px;
     }
 
     .grid-3{
       display:grid;
       grid-template-columns:repeat(3,1fr);
-      gap:16px;
+      gap:18px;
+      margin-top:18px;
     }
 
     .card{
       background:var(--panel);
-      border:1px solid rgba(255,255,255,.08);
+      border:1px solid var(--soft-border);
       border-radius:22px;
       padding:22px;
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
+      box-shadow:var(--shadow);
     }
 
     .title{
@@ -245,229 +220,12 @@
       margin-bottom:16px;
     }
 
-    .top-signal-box{
-      border:1px solid rgba(212,175,55,.18);
-      border-radius:20px;
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.04), transparent 35%),
-        rgba(255,255,255,.015);
-      padding:18px;
-    }
-
-    .top-signal-meta{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:12px;
-    }
-
-    .signal-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:7px 12px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      color:#ddd;
-    }
-
-    .signal-badge.high{
-      color:#ffd7d7;
-      background:rgba(255,77,79,.12);
-      border-color:rgba(255,77,79,.25);
-    }
-
-    .signal-badge.medium{
-      color:#ffe2b8;
-      background:rgba(255,159,26,.12);
-      border-color:rgba(255,159,26,.25);
-    }
-
-    .signal-badge.low{
-      color:#d6fff1;
-      background:rgba(0,208,132,.12);
-      border-color:rgba(0,208,132,.22);
-    }
-
-    .top-signal-title{
-      font-size:30px;
-      line-height:1.35;
-      font-weight:900;
-      color:#fff;
-      margin:0 0 12px;
-    }
-
-    .top-signal-desc{
-      color:#ddd;
-      line-height:1.9;
-      font-size:15px;
-      margin:0;
-    }
-
-    .inline-metrics{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-      margin-top:18px;
-    }
-
-    .metric-box{
-      background:var(--panel2);
-      border:1px solid var(--soft-border-2);
-      border-radius:16px;
-      padding:14px;
-    }
-
-    .metric-box span{
-      display:block;
-      font-size:12px;
-      color:#8f8f8f;
-      margin-bottom:8px;
-    }
-
-    .metric-box strong{
-      font-size:18px;
-      color:#fff;
-      line-height:1.5;
-      word-break:break-word;
-    }
-
-    .signal-list,
-    .group-list,
-    .feed-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .signal-item,
-    .group-item,
-    .feed-item{
-      background:var(--panel2);
-      border:1px solid var(--soft-border-2);
-      border-radius:18px;
-      padding:16px;
-    }
-
-    .signal-item-top,
-    .group-item-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:14px;
-      margin-bottom:10px;
-    }
-
-    .signal-item-title,
-    .group-item-title{
-      color:#fff;
-      font-size:18px;
-      font-weight:800;
-      line-height:1.5;
-      margin:0;
-    }
-
-    .signal-item-sub,
-    .group-item-sub{
-      color:var(--muted);
+    .sub-title{
+      color:#b8b8b8;
       font-size:13px;
+      margin-top:-8px;
+      margin-bottom:16px;
       line-height:1.7;
-      margin-top:6px;
-    }
-
-    .signal-score,
-    .group-score{
-      color:var(--gold);
-      font-size:28px;
-      font-weight:900;
-      flex:0 0 auto;
-      line-height:1;
-    }
-
-    .signal-item-desc{
-      color:#dcdcdc;
-      font-size:14px;
-      line-height:1.8;
-      margin:0 0 12px;
-    }
-
-    .signal-meta-row,
-    .group-meta-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      color:#ddd;
-    }
-
-    .chip.high{
-      color:#ffd7d7;
-      background:rgba(255,77,79,.12);
-      border-color:rgba(255,77,79,.22);
-    }
-
-    .chip.medium{
-      color:#ffe2b8;
-      background:rgba(255,159,26,.12);
-      border-color:rgba(255,159,26,.22);
-    }
-
-    .chip.low{
-      color:#d6fff1;
-      background:rgba(0,208,132,.12);
-      border-color:rgba(0,208,132,.22);
-    }
-
-    .theater-shell{
-      display:grid;
-      gap:12px;
-    }
-
-    .theater-row{
-      background:var(--panel2);
-      border:1px solid var(--soft-border-2);
-      border-radius:16px;
-      padding:15px 16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:14px;
-    }
-
-    .theater-row-title{
-      color:#fff;
-      font-size:16px;
-      font-weight:800;
-      line-height:1.5;
-    }
-
-    .theater-row-sub{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-      margin-top:4px;
-    }
-
-    .theater-row-value{
-      color:var(--gold);
-      font-size:24px;
-      font-weight:900;
-      flex:0 0 auto;
     }
 
     .ticker-shell{
@@ -475,15 +233,20 @@
       border-radius:18px;
       background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
       overflow:hidden;
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+      position:relative;
     }
 
     .ticker-track{
       display:flex;
-      gap:14px;
       align-items:center;
+      gap:14px;
       padding:14px 16px;
       overflow-x:auto;
+      overflow-y:hidden;
       scrollbar-width:none;
+      direction:ltr;
+      white-space:nowrap;
       scroll-behavior:smooth;
     }
 
@@ -493,22 +256,24 @@
 
     .ticker-item{
       flex:0 0 auto;
-      display:flex;
+      display:inline-flex;
       align-items:center;
       gap:10px;
+      min-height:44px;
+      max-width:min(82vw,520px);
       padding:10px 14px;
       border-radius:999px;
       background:rgba(255,255,255,.03);
       border:1px solid rgba(255,255,255,.05);
       color:#f0f0f0;
       font-size:13px;
-      line-height:1.5;
-      max-width:540px;
+      line-height:1.6;
+      white-space:normal;
     }
 
     .ticker-item-text{
       display:block;
-      white-space:nowrap;
+      unicode-bidi:plaintext;
     }
 
     .ticker-dot{
@@ -522,8 +287,279 @@
     .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
     .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
 
+    .highlight-box,
+    .metric-row,
+    .snapshot-item,
+    .signal-row,
+    .feed-item,
+    .filter-card,
+    .mini-row{
+      background:var(--panel2);
+      border:1px solid var(--soft-border-2);
+      border-radius:16px;
+    }
+
+    .highlight-box{
+      padding:18px;
+    }
+
+    .highlight-box h3{
+      margin:0 0 10px;
+      font-size:28px;
+      line-height:1.35;
+      color:#fff;
+    }
+
+    .highlight-box p{
+      margin:0;
+      color:#ddd;
+      line-height:1.9;
+      font-size:15px;
+    }
+
+    .mini-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .mini-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
+    }
+
+    .mini-badge.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.28);
+    }
+
+    .mini-badge.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.28);
+    }
+
+    .mini-badge.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
+    .snapshot-box,
+    .metrics-box,
+    .feed-box{
+      display:grid;
+      gap:12px;
+    }
+
+    .snapshot-item,
+    .metric-row,
+    .feed-item{
+      padding:14px 15px;
+    }
+
+    .snapshot-item strong,
+    .metric-name{
+      display:block;
+      color:#fff;
+      margin-bottom:6px;
+      font-size:15px;
+    }
+
+    .snapshot-meta,
+    .metric-sub{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.7;
+    }
+
+    .metric-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .metric-score{
+      color:var(--gold);
+      font-size:21px;
+      font-weight:900;
+      flex:0 0 auto;
+    }
+
+    .metric-score.high{color:var(--red)}
+    .metric-score.medium{color:var(--orange)}
+    .metric-score.low{color:var(--green)}
+
+    .filter-wrap{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+
+    .filter-card{
+      padding:14px;
+    }
+
+    .filter-card label{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .filter-card select,
+    .filter-card input{
+      width:100%;
+      background:#101010;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      padding:11px 12px;
+      font-size:14px;
+      outline:none;
+    }
+
+    .signal-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .signal-row{
+      padding:16px;
+      display:grid;
+      grid-template-columns:1.4fr .8fr .7fr .8fr .7fr;
+      gap:14px;
+      align-items:center;
+    }
+
+    .signal-main{
+      min-width:0;
+    }
+
+    .signal-name{
+      color:#fff;
+      font-size:16px;
+      font-weight:800;
+      line-height:1.6;
+      margin-bottom:6px;
+    }
+
+    .signal-desc{
+      color:#bcbcbc;
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .signal-meta,
+    .signal-score-box,
+    .signal-band-box,
+    .signal-region-box,
+    .signal-layer-box{
+      min-width:0;
+    }
+
+    .signal-label{
+      color:#8d8d8d;
+      font-size:11px;
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+
+    .signal-value{
+      color:#fff;
+      font-size:14px;
+      line-height:1.6;
+      word-break:break-word;
+    }
+
+    .signal-score{
+      color:var(--gold);
+      font-size:28px;
+      font-weight:900;
+      line-height:1;
+    }
+
+    .signal-score.high{color:var(--red)}
+    .signal-score.medium{color:var(--orange)}
+    .signal-score.low{color:var(--green)}
+
+    .signal-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:32px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
+    }
+
+    .signal-badge.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.28);
+    }
+
+    .signal-badge.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.28);
+    }
+
+    .signal-badge.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
+    .mini-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:18px;
+    }
+
+    .mini-card{
+      background:var(--panel);
+      border:1px solid var(--soft-border);
+      border-radius:20px;
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
+
+    .mini-card .mini-title{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:10px;
+    }
+
+    .mini-card .mini-value{
+      font-size:28px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .mini-card .mini-value.high{color:var(--red)}
+    .mini-card .mini-value.medium{color:var(--orange)}
+    .mini-card .mini-value.low{color:var(--green)}
+    .mini-card .mini-value.gold{color:var(--gold)}
+
     .footer{
-      margin-top:40px;
+      margin-top:26px;
       text-align:center;
       color:#777;
       font-size:14px;
@@ -538,60 +574,46 @@
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
-    html[dir="rtl"] .signal-item-top,
-    html[dir="rtl"] .group-item-top,
-    html[dir="rtl"] .top-signal-meta,
-    html[dir="rtl"] .theater-row{
+    html[dir="rtl"] .metric-row,
+    html[dir="rtl"] .signal-row,
+    html[dir="rtl"] .mini-row{
       direction:rtl;
     }
 
     html[dir="rtl"] .hero,
-    html[dir="rtl"] .section h2,
-    html[dir="rtl"] .section-subtitle,
-    html[dir="rtl"] .alert,
-    html[dir="rtl"] .stat-card,
-    html[dir="rtl"] .footer{
+    html[dir="rtl"] .footer,
+    html[dir="rtl"] .alert{
       text-align:center;
     }
 
-    html[dir="rtl"] .ticker-track{
-      direction:ltr;
+    @media (max-width:1100px){
+      .grid,
+      .grid-3,
+      .mini-grid{
+        grid-template-columns:1fr;
+      }
+
+      .filter-wrap{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .signal-row{
+        grid-template-columns:1fr;
+      }
     }
 
-    html[dir="rtl"] .ticker-item{
-      direction:rtl;
-    }
-
-    html[dir="rtl"] .ticker-item-text{
-      text-align:right;
-    }
-
-    @media(max-width:1100px){
-      .stats-grid{grid-template-columns:repeat(2,1fr)}
-      .grid-2{grid-template-columns:1fr}
-      .grid-3{grid-template-columns:1fr}
-    }
-
-    @media(max-width:700px){
+    @media (max-width:640px){
+      .hero h1{font-size:34px}
       .topbar{flex-direction:column}
-      .stats-grid{grid-template-columns:1fr}
-      .inline-metrics{grid-template-columns:1fr}
-      .signal-item-top,
-      .group-item-top,
-      .theater-row{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .signal-score,
-      .group-score,
-      .theater-row-value{
-        text-align:left;
-      }
+      .nav{justify-content:center}
+      .brand{text-align:center}
+      .filter-wrap{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
+
     <div class="topbar">
       <a class="brand" href="index.html">IBSS</a>
 
@@ -614,147 +636,117 @@
     </div>
 
     <div class="hero">
-      <div class="hero-kicker" id="heroKicker">Signals System</div>
       <h1 id="pageTitle">IBSS Signals</h1>
-      <p id="pageSub">
-        Structured sovereign signals generated through the unified engine, analysis layer, and theater logic.
-      </p>
+      <p id="pageSub">Unified Signal Layer — Metrics / Ranking / Pressure Structure</p>
       <div id="metaLine" class="meta-line">Engine source: -</div>
-      <div id="alertBox" class="alert"></div>
-    </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label" id="statTopSignalLabel">Top Signal</div>
-        <div id="statTopSignal" class="stat-value gold">-</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-label" id="statLiveSignalsLabel">Live Signals</div>
-        <div id="statLiveSignals" class="stat-value low">0</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-label" id="statHighPriorityLabel">High Priority</div>
-        <div id="statHighPriority" class="stat-value high">0</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-label" id="statDominantTypeLabel">Dominant Type</div>
-        <div id="statDominantType" class="stat-value gold">-</div>
+      <div class="hero-badges">
+        <span id="sourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
+        <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
       </div>
     </div>
+
+    <div id="alertBox" class="alert"></div>
 
     <div class="section">
-      <h2 id="tickerTitle">Live Signal Strip</h2>
-      <p class="section-subtitle" id="tickerSub">
-        Immediate movement across active live signals, top files, and field-linked intelligence pressure.
-      </p>
-
+      <div class="title" id="tickerTitle">Live Intelligence Strip</div>
       <div class="ticker-shell">
         <div id="tickerTrack" class="ticker-track"></div>
       </div>
     </div>
 
-    <div class="section">
-      <div class="grid-2">
-        <div class="card">
-          <div class="title" id="topSignalSectionTitle">Primary Signal</div>
+    <div class="mini-grid section">
+      <div class="mini-card">
+        <div class="mini-title" id="miniTopSignalLabel">Top Signal Score</div>
+        <div id="miniTopSignalScore" class="mini-value gold">0</div>
+      </div>
 
-          <div class="top-signal-box">
-            <div class="top-signal-meta">
-              <span id="topSignalPriorityBadge" class="signal-badge low">LOW</span>
-              <span id="topSignalSourceBadge" class="signal-badge">ENGINE</span>
-            </div>
+      <div class="mini-card">
+        <div class="mini-title" id="miniLiveSignalsLabel">Live Signals</div>
+        <div id="miniLiveSignals" class="mini-value low">0</div>
+      </div>
 
-            <h3 id="topSignalTitle" class="top-signal-title">-</h3>
-            <p id="topSignalDesc" class="top-signal-desc">-</p>
+      <div class="mini-card">
+        <div class="mini-title" id="miniSignalPressureLabel">Signal Pressure</div>
+        <div id="miniSignalPressure" class="mini-value medium">0</div>
+      </div>
 
-            <div class="inline-metrics">
-              <div class="metric-box">
-                <span id="metricSignalTypeLabel">Signal Type</span>
-                <strong id="metricSignalType">-</strong>
-              </div>
-              <div class="metric-box">
-                <span id="metricDecisionModeLabel">Decision Mode</span>
-                <strong id="metricDecisionMode">-</strong>
-              </div>
-              <div class="metric-box">
-                <span id="metricInfluenceBandLabel">Influence Band</span>
-                <strong id="metricInfluenceBand">-</strong>
-              </div>
-              <div class="metric-box">
-                <span id="metricSignalScoreLabel">Score</span>
-                <strong id="metricSignalScore">0</strong>
-              </div>
-            </div>
-          </div>
+      <div class="mini-card">
+        <div class="mini-title" id="miniSystemPressureLabel">System Stress</div>
+        <div id="miniSystemPressure" class="mini-value high">0</div>
+      </div>
+    </div>
+
+    <div class="grid section">
+      <div class="card">
+        <div class="title" id="highlightTitle">Primary Signal</div>
+
+        <div class="highlight-box">
+          <h3 id="highlightSignalTitle">-</h3>
+          <p id="highlightSignalDesc">-</p>
+          <div id="highlightBadges" class="mini-badges"></div>
         </div>
+      </div>
 
-        <div class="card">
-          <div class="title" id="theaterLayerTitle">Theater Context</div>
+      <div class="card">
+        <div class="title" id="snapshotTitle">Signal Snapshot</div>
+        <div id="snapshotBox" class="snapshot-box"></div>
+      </div>
+    </div>
 
-          <div class="theater-shell">
-            <div class="theater-row">
-              <div>
-                <div id="topTheaterTitle" class="theater-row-title">-</div>
-                <div id="topTheaterMeta" class="theater-row-sub">-</div>
-              </div>
-              <div id="topTheaterScore" class="theater-row-value">0</div>
-            </div>
+    <div class="grid-3 section">
+      <div class="card">
+        <div class="title" id="metricsTitle">Signal Metrics</div>
+        <div class="sub-title" id="metricsSub">Signal / Cluster / Theater / Country / System</div>
+        <div id="metricsBox" class="metrics-box"></div>
+      </div>
 
-            <div class="theater-row">
-              <div>
-                <div id="topClusterTitle" class="theater-row-title">-</div>
-                <div id="topClusterMeta" class="theater-row-sub">-</div>
-              </div>
-              <div id="topClusterScore" class="theater-row-value">0</div>
-            </div>
+      <div class="card">
+        <div class="title" id="feedTitle">Signal Feed</div>
+        <div id="feedBox" class="feed-box"></div>
+      </div>
 
-            <div class="theater-row">
-              <div>
-                <div id="signalPressureTitle" class="theater-row-title">Signal Pressure</div>
-                <div id="signalPressureSub" class="theater-row-sub">Raw signal compression</div>
-              </div>
-              <div id="signalPressureValue" class="theater-row-value">0</div>
-            </div>
+      <div class="card">
+        <div class="title" id="filtersTitle">Filters</div>
+        <div class="filter-wrap">
+          <div class="filter-card">
+            <label id="priorityFilterLabel" for="priorityFilter">Priority</label>
+            <select id="priorityFilter">
+              <option value="ALL">ALL</option>
+              <option value="HIGH">HIGH</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="LOW">LOW</option>
+            </select>
+          </div>
 
-            <div class="theater-row">
-              <div>
-                <div id="theaterPressureTitle" class="theater-row-title">Theater Pressure</div>
-                <div id="theaterPressureSub" class="theater-row-sub">Sovereign theater compression</div>
-              </div>
-              <div id="theaterPressureValue" class="theater-row-value">0</div>
-            </div>
+          <div class="filter-card">
+            <label id="regionFilterLabel" for="regionFilter">Region</label>
+            <select id="regionFilter">
+              <option value="ALL">ALL</option>
+            </select>
+          </div>
+
+          <div class="filter-card">
+            <label id="layerFilterLabel" for="layerFilter">Layer</label>
+            <select id="layerFilter">
+              <option value="ALL">ALL</option>
+            </select>
+          </div>
+
+          <div class="filter-card">
+            <label id="searchFilterLabel" for="searchFilter">Search</label>
+            <input id="searchFilter" type="text" placeholder="Search signal..." />
           </div>
         </div>
       </div>
     </div>
 
-    <div class="section">
-      <h2 id="signalsGridTitle">Structured Signal Grid</h2>
-      <p class="section-subtitle" id="signalsGridSub">
-        Highest-ranked active signals sorted by pressure, priority, and strategic relevance.
-      </p>
-
-      <div id="signalsList" class="signal-list"></div>
+    <div class="card section">
+      <div class="title" id="signalListTitle">Ranked Signal Matrix</div>
+      <div id="signalList" class="signal-list"></div>
     </div>
 
-    <div class="section">
-      <div class="grid-2">
-        <div class="card">
-          <div class="title" id="analysisGroupsTitle">Analysis Groups</div>
-          <div id="groupList" class="group-list"></div>
-        </div>
-
-        <div class="card">
-          <div class="title" id="liveFeedTitle">Signal Feed</div>
-          <div id="feedList" class="feed-list"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer" id="footerText">© 2026 IBSS — Signals Unified Layer</div>
+    <div class="footer">© 2026 IBSS — Signal Layer</div>
   </div>
 
   <script src="data.js"></script>
@@ -762,8 +754,10 @@
   <script src="ingestion.js"></script>
   <script src="news.js"></script>
   <script src="analysis.js"></script>
+  <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
   <script src="engine.js"></script>
+  <script src="publisher.js"></script>
 
   <script>
     const UI = {
@@ -775,55 +769,56 @@
         nav_countries: "Countries",
         nav_models: "Models",
         nav_about: "About",
-
-        hero_kicker: "Signals System",
         title: "IBSS Signals",
-        sub: "Structured sovereign signals generated through the unified engine, analysis layer, and theater logic.",
-        source_engine: "Engine source",
-        updated_at: "Updated",
-
-        alert_high: "⚠ HIGH ESCALATION — LIVE SIGNAL STRUCTURE IN ACTIVE RESPONSE STATE",
-        alert_medium: "⚠ STRUCTURED PRESSURE — SIGNAL SYSTEM IN PREPARATION STATE",
-        alert_low: "✓ LOW PRESSURE — SIGNAL SYSTEM IN MONITORING STATE",
-
-        stat_top_signal: "Top Signal",
-        stat_live_signals: "Live Signals",
-        stat_high_priority: "High Priority",
-        stat_dominant_type: "Dominant Type",
-
-        ticker_title: "Live Signal Strip",
-        ticker_sub: "Immediate movement across active live signals, top files, and field-linked intelligence pressure.",
-
-        top_signal_title: "Primary Signal",
-        signal_type: "Signal Type",
-        decision_mode: "Decision Mode",
-        influence_band: "Influence Band",
-        signal_score: "Score",
-
-        theater_context: "Theater Context",
-        signal_pressure: "Signal Pressure",
-        signal_pressure_sub: "Raw signal compression",
-        theater_pressure: "Theater Pressure",
-        theater_pressure_sub: "Sovereign theater compression",
-
-        signals_grid_title: "Structured Signal Grid",
-        signals_grid_sub: "Highest-ranked active signals sorted by pressure, priority, and strategic relevance.",
-
-        analysis_groups: "Analysis Groups",
-        live_feed: "Signal Feed",
-
-        theater: "Theater",
-        file: "Strategic File",
-        pattern: "Pattern",
-        items: "Items",
-        trend: "Trend",
-        risk_level: "Risk Level",
+        sub: "Unified Signal Layer — Metrics / Ranking / Pressure Structure",
+        ticker: "Live Intelligence Strip",
+        highlight: "Primary Signal",
+        snapshot: "Signal Snapshot",
+        metrics: "Signal Metrics",
+        metricsSub: "Signal / Cluster / Theater / Country / System",
+        feed: "Signal Feed",
+        filters: "Filters",
         priority: "Priority",
-        no_data: "No data available.",
-        no_feed: "No signal feed available.",
-        footer: "© 2026 IBSS — Signals Unified Layer"
+        region: "Region",
+        layer: "Layer",
+        search: "Search",
+        signalList: "Ranked Signal Matrix",
+        miniTopSignal: "Top Signal Score",
+        miniLiveSignals: "Live Signals",
+        miniSignalPressure: "Signal Pressure",
+        miniSystemPressure: "System Stress",
+        sourceEngine: "Engine source",
+        updatedAt: "Updated",
+        sourceLive: "SOURCE — ENGINE",
+        sourceFallback: "SOURCE — FALLBACK",
+        metricsOn: "METRICS — INTEGRATED",
+        metricsOff: "METRICS — OFF",
+        alertHigh: "⚠ HIGH ESCALATION — SIGNAL LAYER IN CRITICAL BAND",
+        alertMed: "⚠ STRUCTURED PRESSURE — SIGNAL LAYER IN ACTIVE WATCH BAND",
+        alertLow: "✓ LOW PRESSURE — SIGNAL LAYER IN MONITORING BAND",
+        noData: "No data available.",
+        noFeed: "No live feed available.",
+        noSignals: "No signals matched the current filters.",
+        signalScore: "Signal Score",
+        clusterRisk: "Strategic File Risk",
+        theaterRisk: "Theater Risk",
+        countryRisk: "Country Risk",
+        systemStress: "System Stress",
+        band: "Band",
+        confidence: "Confidence",
+        topTheater: "Top Theater",
+        topCluster: "Top Strategic File",
+        topCountry: "Top Country Risk",
+        liveNews: "Live News Intake",
+        signalType: "Signal Type",
+        influenceBand: "Influence Band",
+        decisionMode: "Decision Mode",
+        layerField: "Layer",
+        regionField: "Region",
+        sourceField: "Source",
+        top: "TOP",
+        all: "ALL"
       },
-
       ar: {
         nav_home: "الرئيسية",
         nav_dashboard: "لوحة التحكم",
@@ -832,71 +827,73 @@
         nav_countries: "الدول",
         nav_models: "النماذج",
         nav_about: "حول",
-
-        hero_kicker: "نظام الإشارات",
-        title: "IBSS نظام إشارات",
-        sub: "إشارات سيادية منظمة يولدها المحرك الموحد وطبقة التحليل ومنطق المسرح.",
-        source_engine: "مصدر المحرك",
-        updated_at: "آخر تحديث",
-
-        alert_high: "⚠ تم رصد تصعيد مرتفع — بنية الإشارات الحية في حالة استجابة نشطة",
-        alert_medium: "⚠ ضغط بنيوي — نظام الإشارات في حالة تحضير",
-        alert_low: "✓ ضغط منخفض — نظام الإشارات في حالة مراقبة",
-
-        stat_top_signal: "الإشارة الأعلى",
-        stat_live_signals: "الإشارات الحية",
-        stat_high_priority: "عالية الأولوية",
-        stat_dominant_type: "النوع المهيمن",
-
-        ticker_title: "شريط الإشارات الحي",
-        ticker_sub: "حركة فورية عبر الإشارات الحية النشطة والملفات الأعلى والضغط الاستخباري الميداني.",
-
-        top_signal_title: "الإشارة الأساسية",
-        signal_type: "نوع الإشارة",
-        decision_mode: "وضع القرار",
-        influence_band: "نطاق التأثير",
-        signal_score: "الدرجة",
-
-        theater_context: "سياق المسرح",
-        signal_pressure: "ضغط الإشارات",
-        signal_pressure_sub: "ضغط خام على مستوى الإشارات",
-        theater_pressure: "ضغط المسرح",
-        theater_pressure_sub: "ضغط المسرح السيادي",
-
-        signals_grid_title: "شبكة الإشارات المنظمة",
-        signals_grid_sub: "أعلى الإشارات النشطة ترتيبًا حسب الضغط والأولوية والوزن الاستراتيجي.",
-
-        analysis_groups: "مجموعات التحليل",
-        live_feed: "تغذية الإشارات",
-
-        theater: "المسرح",
-        file: "الملف الاستراتيجي",
-        pattern: "النمط",
-        items: "العناصر",
-        trend: "الاتجاه",
-        risk_level: "مستوى الخطر",
+        title: "طبقة الإشارات",
+        sub: "الطبقة الموحدة للإشارات — قياس / ترتيب / بنية الضغط",
+        ticker: "الشريط الاستخباري الحي",
+        highlight: "الإشارة الأساسية",
+        snapshot: "اللقطة السريعة للإشارات",
+        metrics: "مقاييس الإشارات",
+        metricsSub: "Signal / Cluster / Theater / Country / System",
+        feed: "تغذية الإشارات",
+        filters: "الفلاتر",
         priority: "الأولوية",
-        no_data: "لا توجد بيانات.",
-        no_feed: "لا توجد تغذية إشارات.",
-        footer: "© 2026 IBSS — الطبقة الموحدة للإشارات"
+        region: "المنطقة",
+        layer: "الطبقة",
+        search: "بحث",
+        signalList: "مصفوفة الإشارات المرتبة",
+        miniTopSignal: "أعلى درجة إشارة",
+        miniLiveSignals: "الإشارات الحية",
+        miniSignalPressure: "ضغط الإشارات",
+        miniSystemPressure: "ضغط النظام",
+        sourceEngine: "مصدر المحرك",
+        updatedAt: "آخر تحديث",
+        sourceLive: "المصدر — المحرك",
+        sourceFallback: "المصدر — الاحتياطي",
+        metricsOn: "القياس — مدمج",
+        metricsOff: "القياس — غير مفعل",
+        alertHigh: "⚠ تصعيد مرتفع — طبقة الإشارات داخل الحزمة الحرجة",
+        alertMed: "⚠ ضغط بنيوي — طبقة الإشارات داخل حزمة المراقبة النشطة",
+        alertLow: "✓ ضغط منخفض — طبقة الإشارات داخل حزمة المراقبة",
+        noData: "لا توجد بيانات.",
+        noFeed: "لا توجد تغذية حية.",
+        noSignals: "لا توجد إشارات مطابقة للفلاتر الحالية.",
+        signalScore: "درجة الإشارة",
+        clusterRisk: "خطر الملف الاستراتيجي",
+        theaterRisk: "خطر المسرح",
+        countryRisk: "خطر الدولة",
+        systemStress: "ضغط النظام",
+        band: "الحزمة",
+        confidence: "الثقة",
+        topTheater: "المسرح الأعلى",
+        topCluster: "الملف الاستراتيجي الأعلى",
+        topCountry: "أعلى دولة خطرًا",
+        liveNews: "التغذية الخبرية الحية",
+        signalType: "نوع الإشارة",
+        influenceBand: "نطاق التأثير",
+        decisionMode: "وضع القرار",
+        layerField: "الطبقة",
+        regionField: "المنطقة",
+        sourceField: "المصدر",
+        top: "TOP",
+        all: "الكل"
       }
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
-    let tickerAutoTimer = null;
+    let currentSystem = null;
 
     function t(key){
       return UI[currentLang]?.[key] || key;
     }
 
-    function safe(value, fallback = "-"){
-      return value !== undefined && value !== null && value !== "" ? value : fallback;
+    function safeText(value, fallback = "-"){
+      return typeof value === "string" && value.trim() ? value.trim() : fallback;
     }
 
     function getLocalizedText(value){
       if (!value) return "-";
       if (typeof value === "string" || typeof value === "number") return String(value);
-      return value[currentLang] || value.en || value.ar || value.name || value.title || "-";
+      return value[currentLang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
     }
 
     function escapeHtml(text){
@@ -919,10 +916,24 @@
       });
     }
 
-    function priorityClass(value){
-      const v = String(value || "LOW").toUpperCase();
-      if (v === "HIGH") return "high";
-      if (v === "MEDIUM") return "medium";
+    function getBandLabel(score){
+      if (window.IBSS_METRICS?.classifyBand) {
+        const band = window.IBSS_METRICS.classifyBand(Number(score || 0));
+        return currentLang === "ar" ? band?.ar || "-" : band?.en || "-";
+      }
+      return "-";
+    }
+
+    function levelClass(level){
+      if (level === "HIGH") return "high";
+      if (level === "MEDIUM") return "medium";
+      return "low";
+    }
+
+    function scoreClass(score){
+      const n = Number(score || 0);
+      if (n >= 70) return "high";
+      if (n >= 35) return "medium";
       return "low";
     }
 
@@ -935,30 +946,44 @@
         el.textContent = t(key);
       });
 
-      document.getElementById("heroKicker").textContent = t("hero_kicker");
       document.getElementById("pageTitle").textContent = t("title");
       document.getElementById("pageSub").textContent = t("sub");
-      document.getElementById("statTopSignalLabel").textContent = t("stat_top_signal");
-      document.getElementById("statLiveSignalsLabel").textContent = t("stat_live_signals");
-      document.getElementById("statHighPriorityLabel").textContent = t("stat_high_priority");
-      document.getElementById("statDominantTypeLabel").textContent = t("stat_dominant_type");
-      document.getElementById("tickerTitle").textContent = t("ticker_title");
-      document.getElementById("tickerSub").textContent = t("ticker_sub");
-      document.getElementById("topSignalSectionTitle").textContent = t("top_signal_title");
-      document.getElementById("metricSignalTypeLabel").textContent = t("signal_type");
-      document.getElementById("metricDecisionModeLabel").textContent = t("decision_mode");
-      document.getElementById("metricInfluenceBandLabel").textContent = t("influence_band");
-      document.getElementById("metricSignalScoreLabel").textContent = t("signal_score");
-      document.getElementById("theaterLayerTitle").textContent = t("theater_context");
-      document.getElementById("signalPressureTitle").textContent = t("signal_pressure");
-      document.getElementById("signalPressureSub").textContent = t("signal_pressure_sub");
-      document.getElementById("theaterPressureTitle").textContent = t("theater_pressure");
-      document.getElementById("theaterPressureSub").textContent = t("theater_pressure_sub");
-      document.getElementById("signalsGridTitle").textContent = t("signals_grid_title");
-      document.getElementById("signalsGridSub").textContent = t("signals_grid_sub");
-      document.getElementById("analysisGroupsTitle").textContent = t("analysis_groups");
-      document.getElementById("liveFeedTitle").textContent = t("live_feed");
-      document.getElementById("footerText").textContent = t("footer");
+      document.getElementById("tickerTitle").textContent = t("ticker");
+      document.getElementById("highlightTitle").textContent = t("highlight");
+      document.getElementById("snapshotTitle").textContent = t("snapshot");
+      document.getElementById("metricsTitle").textContent = t("metrics");
+      document.getElementById("metricsSub").textContent = t("metricsSub");
+      document.getElementById("feedTitle").textContent = t("feed");
+      document.getElementById("filtersTitle").textContent = t("filters");
+      document.getElementById("priorityFilterLabel").textContent = t("priority");
+      document.getElementById("regionFilterLabel").textContent = t("region");
+      document.getElementById("layerFilterLabel").textContent = t("layer");
+      document.getElementById("searchFilterLabel").textContent = t("search");
+      document.getElementById("signalListTitle").textContent = t("signalList");
+      document.getElementById("miniTopSignalLabel").textContent = t("miniTopSignal");
+      document.getElementById("miniLiveSignalsLabel").textContent = t("miniLiveSignals");
+      document.getElementById("miniSignalPressureLabel").textContent = t("miniSignalPressure");
+      document.getElementById("miniSystemPressureLabel").textContent = t("miniSystemPressure");
+
+      const prioritySelect = document.getElementById("priorityFilter");
+      if (prioritySelect) {
+        prioritySelect.options[0].text = t("all");
+      }
+
+      const regionSelect = document.getElementById("regionFilter");
+      if (regionSelect && regionSelect.options.length) {
+        regionSelect.options[0].text = t("all");
+      }
+
+      const layerSelect = document.getElementById("layerFilter");
+      if (layerSelect && layerSelect.options.length) {
+        layerSelect.options[0].text = t("all");
+      }
+
+      const searchInput = document.getElementById("searchFilter");
+      if (searchInput) {
+        searchInput.placeholder = currentLang === "ar" ? "ابحث داخل الإشارات..." : "Search signal...";
+      }
 
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
@@ -987,64 +1012,68 @@
 
     function renderMeta(system){
       const line = document.getElementById("metaLine");
-      line.textContent = `${t("source_engine")}: ${safe(system?.source, "-")} | ${t("updated_at")}: ${formatDateTime(system?.updatedAt)}`;
-    }
+      const sourceBadge = document.getElementById("sourceBadge");
+      const metricsBadge = document.getElementById("metricsBadge");
+      const dateText = formatDateTime(system?.updatedAt);
 
-    function renderAlert(system){
-      const alert = document.getElementById("alertBox");
-      alert.style.display = "block";
+      line.textContent = `${t("sourceEngine")}: ${safeText(system?.source, "-")} | ${t("updatedAt")}: ${dateText}`;
 
-      if (system?.level === "HIGH") {
-        alert.textContent = t("alert_high");
-      } else if (system?.level === "MEDIUM") {
-        alert.textContent = t("alert_medium");
+      if (system?.source === "engine") {
+        sourceBadge.textContent = t("sourceLive");
+        sourceBadge.className = "meta-badge live";
       } else {
-        alert.textContent = t("alert_low");
+        sourceBadge.textContent = t("sourceFallback");
+        sourceBadge.className = "meta-badge fallback";
+      }
+
+      if (system?.metricsReference) {
+        metricsBadge.textContent = t("metricsOn");
+        metricsBadge.className = "meta-badge live";
+      } else {
+        metricsBadge.textContent = t("metricsOff");
+        metricsBadge.className = "meta-badge fallback";
       }
     }
 
-    function renderStats(system){
-      const ranked = Array.isArray(system?.rankedSignals) ? system.rankedSignals : [];
-      const liveSignals = ranked.filter(item => item?.live);
-      const topSignal = system?.topSignal || system?.dominantSignal || ranked[0] || null;
-      const highPriorityCount = ranked.filter(item => String(item?.priority || "").toUpperCase() === "HIGH").length;
+    function renderAlert(system){
+      const alertBox = document.getElementById("alertBox");
+      alertBox.style.display = "block";
 
-      const typeCounts = {};
-      ranked.forEach(item => {
-        const key = getLocalizedText(item?.signalType);
-        typeCounts[key] = (typeCounts[key] || 0) + 1;
-      });
-
-      const dominantType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
-
-      document.getElementById("statTopSignal").textContent =
-        topSignal ? getLocalizedText(topSignal.title) : "-";
-
-      document.getElementById("statLiveSignals").textContent = liveSignals.length;
-      document.getElementById("statHighPriority").textContent = highPriorityCount;
-      document.getElementById("statDominantType").textContent = dominantType;
+      if (system?.level === "HIGH") {
+        alertBox.textContent = t("alertHigh");
+      } else if (system?.level === "MEDIUM") {
+        alertBox.textContent = t("alertMed");
+      } else {
+        alertBox.textContent = t("alertLow");
+      }
     }
 
     function renderTicker(system){
       const track = document.getElementById("tickerTrack");
       if (!track) return;
 
+      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(8) || [];
       const items = [];
-      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
 
       tickerNews.forEach(item => {
+        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
         items.push({
-          level: priorityClass(item.priority || item.severity),
+          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
           text: getLocalizedText(item.title)
         });
       });
 
       if (!items.length) {
-        const ranked = Array.isArray(system?.rankedSignals) ? system.rankedSignals.slice(0, 8) : [];
-        ranked.forEach(item => {
+        const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 6) : [];
+        feed.forEach(line => {
           items.push({
-            level: priorityClass(item.priority),
-            text: getLocalizedText(item.title)
+            level:
+              system?.level === "HIGH"
+                ? "high"
+                : system?.level === "MEDIUM"
+                  ? "medium"
+                  : "low",
+            text: typeof line === "string" ? line : getLocalizedText(line?.text)
           });
         });
       }
@@ -1053,198 +1082,238 @@
         track.innerHTML = `
           <div class="ticker-item">
             <span class="ticker-dot low"></span>
-            <span class="ticker-item-text">${t("no_feed")}</span>
+            <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(t("noFeed"))}</span>
           </div>
         `;
+        track.scrollLeft = 0;
         return;
       }
 
       track.innerHTML = items.map(item => `
         <div class="ticker-item">
           <span class="ticker-dot ${item.level}"></span>
-          <span class="ticker-item-text">${escapeHtml(item.text)}</span>
+          <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
         </div>
       `).join("");
 
-      startTickerAutoScroll(track);
+      requestAnimationFrame(() => {
+        track.scrollLeft = 0;
+      });
     }
 
-    function startTickerAutoScroll(track){
-      if (!track) return;
+    function renderMiniCards(system){
+      const topSignal = system?.topSignal || null;
+      document.getElementById("miniTopSignalScore").textContent = Number(topSignal?.balancedScore100 || 0);
+      document.getElementById("miniTopSignalScore").className = `mini-value ${scoreClass(Number(topSignal?.balancedScore100 || 0))}`;
 
-      if (tickerAutoTimer) {
-        clearInterval(tickerAutoTimer);
-        tickerAutoTimer = null;
-      }
+      document.getElementById("miniLiveSignals").textContent = Number(system?.liveSignalsCount || 0);
+      document.getElementById("miniLiveSignals").className = `mini-value ${scoreClass(Number(system?.liveSignalsCount || 0) * 6)}`;
 
-      track.scrollLeft = 0;
+      document.getElementById("miniSignalPressure").textContent = Number(system?.signalPressure || 0);
+      document.getElementById("miniSignalPressure").className = `mini-value ${scoreClass(Number(system?.signalPressure || 0))}`;
 
-      tickerAutoTimer = setInterval(() => {
-        const maxScroll = track.scrollWidth - track.clientWidth;
-        if (maxScroll <= 0) return;
-
-        if (track.scrollLeft >= maxScroll - 1) {
-          track.scrollLeft = 0;
-        } else {
-          track.scrollLeft += 1;
-        }
-      }, 24);
+      document.getElementById("miniSystemPressure").textContent = Number(system?.systemPressure || 0);
+      document.getElementById("miniSystemPressure").className = `mini-value ${scoreClass(Number(system?.systemPressure || 0))}`;
     }
 
-    function renderTopSignal(system){
-      const signal = system?.topSignal || system?.dominantSignal || (system?.rankedSignals || [])[0] || null;
+    function renderHighlight(system){
+      const signal = system?.topSignal || system?.dominantSignal || null;
+      const titleEl = document.getElementById("highlightSignalTitle");
+      const descEl = document.getElementById("highlightSignalDesc");
+      const badges = document.getElementById("highlightBadges");
 
       if (!signal) {
-        document.getElementById("topSignalTitle").textContent = "-";
-        document.getElementById("topSignalDesc").textContent = t("no_data");
-        document.getElementById("metricSignalType").textContent = "-";
-        document.getElementById("metricDecisionMode").textContent = "-";
-        document.getElementById("metricInfluenceBand").textContent = "-";
-        document.getElementById("metricSignalScore").textContent = "0";
+        titleEl.textContent = "-";
+        descEl.textContent = t("noData");
+        badges.innerHTML = "";
         return;
       }
 
-      const pClass = priorityClass(signal.priority);
+      titleEl.textContent = getLocalizedText(signal.title);
+      descEl.textContent = getLocalizedText(signal.description);
 
-      const priorityBadge = document.getElementById("topSignalPriorityBadge");
-      priorityBadge.className = `signal-badge ${pClass}`;
-      priorityBadge.textContent = safe(signal.priority, "LOW");
+      const score = Number(signal?.balancedScore100 || signal?.score100 || 0);
+      const priority = safeText(signal?.priority, "LOW");
+      const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
 
-      const sourceBadge = document.getElementById("topSignalSourceBadge");
-      sourceBadge.className = "signal-badge";
-      sourceBadge.textContent = safe(signal.sourceUnit || signal.source || "ENGINE", "ENGINE");
-
-      document.getElementById("topSignalTitle").textContent = getLocalizedText(signal.title);
-      document.getElementById("topSignalDesc").textContent = getLocalizedText(signal.description);
-      document.getElementById("metricSignalType").textContent = getLocalizedText(signal.signalType);
-      document.getElementById("metricDecisionMode").textContent = getLocalizedText(signal.decisionMode);
-      document.getElementById("metricInfluenceBand").textContent = getLocalizedText(signal.influenceBand);
-      document.getElementById("metricSignalScore").textContent =
-        Number(signal.balancedScore100 ?? signal.score100 ?? 0);
+      badges.innerHTML = `
+        <span class="mini-badge ${cls}">${escapeHtml(t("signalScore"))}: ${score}</span>
+        <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
+        <span class="mini-badge">${escapeHtml(t("signalType"))}: ${escapeHtml(getLocalizedText(signal.signalType))}</span>
+        <span class="mini-badge">${escapeHtml(t("regionField"))}: ${escapeHtml(safeText(signal.region, "-"))}</span>
+      `;
     }
 
-    function renderTheaterContext(system){
-      const topTheater = system?.topTheater || null;
+    function renderSnapshot(system){
+      const box = document.getElementById("snapshotBox");
+      const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.() || null;
+
+      const topTheater = snapshot?.topTheater || system?.topTheater || null;
+      const topCluster = snapshot?.topCluster || system?.topCluster || null;
+      const topCountry = snapshot?.topCountry || (system?.countryRiskFeed || [])[0] || null;
+
+      box.innerHTML = `
+        <div class="snapshot-item">
+          <strong>${escapeHtml(t("topTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
+          <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("theaterRisk")}: ${Number(topTheater.avgRisk || 0)} | ${t("band")}: ${getBandLabel(Number(topTheater.avgRisk || 0))}` : t("noData"))}</div>
+        </div>
+
+        <div class="snapshot-item">
+          <strong>${escapeHtml(t("topCluster"))}: ${escapeHtml(topCluster ? getLocalizedText(topCluster.name) : "-")}</strong>
+          <div class="snapshot-meta">${escapeHtml(topCluster ? `${t("clusterRisk")}: ${Number(topCluster.avgRisk || 0)} | ${t("band")}: ${getBandLabel(Number(topCluster.avgRisk || 0))}` : t("noData"))}</div>
+        </div>
+
+        <div class="snapshot-item">
+          <strong>${escapeHtml(t("topCountry"))}: ${escapeHtml(topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-")}</strong>
+          <div class="snapshot-meta">${escapeHtml(topCountry ? `${t("countryRisk")}: ${Number(topCountry.riskScore || 0)} | ${t("band")}: ${getBandLabel(Number(topCountry.riskScore || 0))}` : t("noData"))}</div>
+        </div>
+      `;
+    }
+
+    function renderMetrics(system){
+      const box = document.getElementById("metricsBox");
+      const topSignal = system?.topSignal || null;
       const topCluster = system?.topCluster || null;
+      const topTheater = system?.topTheater || null;
+      const topCountry = (system?.countryRiskFeed || [])[0] || null;
 
-      document.getElementById("topTheaterTitle").textContent =
-        topTheater ? getLocalizedText(topTheater.name) : "-";
+      const rows = [
+        { label: t("signalScore"), value: Number(topSignal?.balancedScore100 || 0) },
+        { label: t("clusterRisk"), value: Number(topCluster?.avgRisk || 0) },
+        { label: t("theaterRisk"), value: Number(topTheater?.avgRisk || 0) },
+        { label: t("countryRisk"), value: Number(topCountry?.riskScore || 0) },
+        { label: t("systemStress"), value: Number(system?.systemPressure || 0) },
+        { label: t("confidence"), value: Number(system?.confidenceScore || 0) }
+      ];
 
-      document.getElementById("topTheaterMeta").textContent =
-        topTheater
-          ? `${t("risk_level")}: ${safe(topTheater.escalationLevel, "-")} | ${t("trend")}: ${safe(topTheater.trend, "-")}`
-          : t("no_data");
-
-      document.getElementById("topTheaterScore").textContent =
-        topTheater ? Number(topTheater.avgRisk || 0) : 0;
-
-      document.getElementById("topClusterTitle").textContent =
-        topCluster ? getLocalizedText(topCluster.name) : "-";
-
-      document.getElementById("topClusterMeta").textContent =
-        topCluster
-          ? `${t("file")}: ${safe(topCluster.code, "-")} | ${t("trend")}: ${safe(topCluster.trend, "-")}`
-          : t("no_data");
-
-      document.getElementById("topClusterScore").textContent =
-        topCluster ? Number(topCluster.maxRisk || 0) : 0;
-
-      document.getElementById("signalPressureValue").textContent =
-        Number(system?.signalPressure || 0);
-
-      document.getElementById("theaterPressureValue").textContent =
-        Number(system?.theaterPressure?.pressure || 0);
-    }
-
-    function renderSignalsList(system){
-      const list = document.getElementById("signalsList");
-      const signals = Array.isArray(system?.rankedSignals) ? system.rankedSignals.slice(0, 12) : [];
-
-      if (!signals.length) {
-        list.innerHTML = `<div class="signal-item">${t("no_data")}</div>`;
-        return;
-      }
-
-      list.innerHTML = signals.map(signal => {
-        const pClass = priorityClass(signal.priority);
-        const score = Number(signal.balancedScore100 ?? signal.score100 ?? 0);
-
-        return `
-          <div class="signal-item">
-            <div class="signal-item-top">
-              <div>
-                <h3 class="signal-item-title">${escapeHtml(getLocalizedText(signal.title))}</h3>
-                <div class="signal-item-sub">${escapeHtml(getLocalizedText(signal.signalType))}</div>
-              </div>
-              <div class="signal-score">${score}</div>
-            </div>
-
-            <p class="signal-item-desc">${escapeHtml(getLocalizedText(signal.description))}</p>
-
-            <div class="signal-meta-row">
-              <span class="chip ${pClass}">${escapeHtml(t("priority"))}: ${escapeHtml(safe(signal.priority, "-"))}</span>
-              <span class="chip">${escapeHtml(t("decision_mode"))}: ${escapeHtml(getLocalizedText(signal.decisionMode))}</span>
-              <span class="chip">${escapeHtml(t("influence_band"))}: ${escapeHtml(getLocalizedText(signal.influenceBand))}</span>
-              <span class="chip">${escapeHtml(t("theater"))}: ${escapeHtml(safe(signal.theaterCode || signal.region || "-", "-"))}</span>
-              <span class="chip">${escapeHtml(t("file"))}: ${escapeHtml(safe(signal.clusterCode || signal.country || "-", "-"))}</span>
-            </div>
+      box.innerHTML = rows.map(row => `
+        <div class="metric-row">
+          <div>
+            <div class="metric-name">${escapeHtml(row.label)}</div>
+            <div class="metric-sub">${escapeHtml(`${t("band")}: ${getBandLabel(row.value)}`)}</div>
           </div>
-        `;
-      }).join("");
-    }
-
-    function renderGroups(){
-      const list = document.getElementById("groupList");
-      const groups = window.IBSS_ANALYSIS?.getTopGrouped?.(8) || [];
-
-      if (!groups.length) {
-        list.innerHTML = `<div class="group-item">${t("no_data")}</div>`;
-        return;
-      }
-
-      list.innerHTML = groups.map(group => {
-        const pClass = priorityClass(group.priority);
-
-        return `
-          <div class="group-item">
-            <div class="group-item-top">
-              <div>
-                <h3 class="group-item-title">${escapeHtml(getLocalizedText(group.signalType))}</h3>
-                <div class="group-item-sub">${escapeHtml(safe(group.country || group.region, "-"))}</div>
-              </div>
-              <div class="group-score">${Number(group.maxScore || 0)}</div>
-            </div>
-
-            <div class="group-meta-row">
-              <span class="chip ${pClass}">${escapeHtml(t("priority"))}: ${escapeHtml(safe(group.priority, "-"))}</span>
-              <span class="chip">${escapeHtml(t("items"))}: ${Number(group.count || 0)}</span>
-              <span class="chip">${escapeHtml(t("pattern"))}: ${group.patternDetected ? "YES" : "NO"}</span>
-              <span class="chip">${escapeHtml(t("trend"))}: ${Number(group.avgScore || 0)}</span>
-            </div>
-          </div>
-        `;
-      }).join("");
+          <div class="metric-score ${scoreClass(row.value)}">${row.value}</div>
+        </div>
+      `).join("");
     }
 
     function renderFeed(system){
-      const list = document.getElementById("feedList");
-      const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 10) : [];
+      const box = document.getElementById("feedBox");
+      const lines = Array.isArray(system?.feed) ? system.feed.slice(0, 8) : [];
 
-      if (!feed.length) {
-        list.innerHTML = `<div class="feed-item">${t("no_feed")}</div>`;
+      if (!lines.length) {
+        box.innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
         return;
       }
 
-      list.innerHTML = feed.map(item => {
-        if (typeof item === "string") {
-          return `<div class="feed-item">${escapeHtml(item)}</div>`;
-        }
+      box.innerHTML = lines.map(line => {
+        const text = typeof line === "string" ? line : getLocalizedText(line?.text);
+        return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
+      }).join("");
+    }
 
-        if (item && typeof item === "object" && item.text) {
-          return `<div class="feed-item">${escapeHtml(getLocalizedText(item.text))}</div>`;
-        }
+    function buildUniqueValues(list, getter){
+      const set = new Set();
+      list.forEach(item => {
+        const value = getter(item);
+        if (value && value !== "-") set.add(value);
+      });
+      return [...set].sort((a,b) => String(a).localeCompare(String(b)));
+    }
 
-        return `<div class="feed-item">-</div>`;
+    function populateFilters(system){
+      const signals = Array.isArray(system?.rankedSignals) ? system.rankedSignals : [];
+      const regionSelect = document.getElementById("regionFilter");
+      const layerSelect = document.getElementById("layerFilter");
+
+      const currentRegion = regionSelect.value || "ALL";
+      const currentLayer = layerSelect.value || "ALL";
+
+      const regions = buildUniqueValues(signals, signal => safeText(signal.region, ""));
+      const layers = buildUniqueValues(signals, signal => getLocalizedText(signal.layer));
+
+      regionSelect.innerHTML = `<option value="ALL">${escapeHtml(t("all"))}</option>` +
+        regions.map(region => `<option value="${escapeHtml(region)}">${escapeHtml(region)}</option>`).join("");
+
+      layerSelect.innerHTML = `<option value="ALL">${escapeHtml(t("all"))}</option>` +
+        layers.map(layer => `<option value="${escapeHtml(layer)}">${escapeHtml(layer)}</option>`).join("");
+
+      regionSelect.value = regions.includes(currentRegion) ? currentRegion : "ALL";
+      layerSelect.value = layers.includes(currentLayer) ? currentLayer : "ALL";
+    }
+
+    function getFilteredSignals(system){
+      const signals = Array.isArray(system?.rankedSignals) ? system.rankedSignals : [];
+      const priority = document.getElementById("priorityFilter").value;
+      const region = document.getElementById("regionFilter").value;
+      const layer = document.getElementById("layerFilter").value;
+      const search = document.getElementById("searchFilter").value.trim().toLowerCase();
+
+      return signals.filter(signal => {
+        const matchPriority = priority === "ALL" || safeText(signal.priority, "LOW") === priority;
+        const matchRegion = region === "ALL" || safeText(signal.region, "") === region;
+        const matchLayer = layer === "ALL" || getLocalizedText(signal.layer) === layer;
+
+        const haystack = [
+          getLocalizedText(signal.title),
+          getLocalizedText(signal.description),
+          getLocalizedText(signal.signalType),
+          safeText(signal.region, ""),
+          safeText(signal.country, ""),
+          safeText(signal.sourceUnit, "")
+        ].join(" ").toLowerCase();
+
+        const matchSearch = !search || haystack.includes(search);
+
+        return matchPriority && matchRegion && matchLayer && matchSearch;
+      });
+    }
+
+    function renderSignalList(system){
+      const list = document.getElementById("signalList");
+      const signals = getFilteredSignals(system);
+
+      if (!signals.length) {
+        list.innerHTML = `<div class="signal-row"><div class="signal-name">${escapeHtml(t("noSignals"))}</div></div>`;
+        return;
+      }
+
+      list.innerHTML = signals.map((signal, index) => {
+        const score = Number(signal?.balancedScore100 || signal?.score100 || 0);
+        const cls = scoreClass(score);
+        const priority = safeText(signal?.priority, "LOW");
+        const badgeClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+
+        return `
+          <div class="signal-row">
+            <div class="signal-main">
+              <div class="signal-name">${escapeHtml(getLocalizedText(signal.title))}</div>
+              <div class="signal-desc">${escapeHtml(getLocalizedText(signal.description))}</div>
+            </div>
+
+            <div class="signal-score-box">
+              <div class="signal-label">${escapeHtml(t("signalScore"))}</div>
+              <div class="signal-score ${cls}">${score}</div>
+            </div>
+
+            <div class="signal-band-box">
+              <div class="signal-label">${escapeHtml(t("band"))}</div>
+              <div class="signal-value">
+                <span class="signal-badge ${badgeClass}">${index === 0 ? escapeHtml(t("top")) : escapeHtml(getBandLabel(score))}</span>
+              </div>
+            </div>
+
+            <div class="signal-region-box">
+              <div class="signal-label">${escapeHtml(t("regionField"))}</div>
+              <div class="signal-value">${escapeHtml(safeText(signal.region, "-"))}</div>
+            </div>
+
+            <div class="signal-layer-box">
+              <div class="signal-label">${escapeHtml(t("layerField"))}</div>
+              <div class="signal-value">${escapeHtml(getLocalizedText(signal.layer))}</div>
+            </div>
+          </div>
+        `;
       }).join("");
     }
 
@@ -1254,15 +1323,32 @@
       const system = getSystem();
       if (!system) return;
 
+      currentSystem = system;
+
       renderMeta(system);
       renderAlert(system);
-      renderStats(system);
       renderTicker(system);
-      renderTopSignal(system);
-      renderTheaterContext(system);
-      renderSignalsList(system);
-      renderGroups();
+      renderMiniCards(system);
+      renderHighlight(system);
+      renderSnapshot(system);
+      renderMetrics(system);
       renderFeed(system);
+      populateFilters(system);
+      renderSignalList(system);
+    }
+
+    function bindFilters(){
+      ["priorityFilter", "regionFilter", "layerFilter", "searchFilter"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || el.dataset.bound) return;
+
+        el.dataset.bound = "1";
+        const eventName = id === "searchFilter" ? "input" : "change";
+
+        el.addEventListener(eventName, function () {
+          if (currentSystem) renderSignalList(currentSystem);
+        });
+      });
     }
 
     document.getElementById("btn-en").addEventListener("click", function () {
@@ -1278,6 +1364,7 @@
     });
 
     window.addEventListener("load", function () {
+      bindFilters();
       renderPage();
       setInterval(renderPage, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
     });
