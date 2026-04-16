@@ -2,10 +2,11 @@ window.IBSS_RUNTIME = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_runtime_state_v1",
+    storageKey: "ibss_runtime_state_v2",
     tickerStepPx: 1,
-    tickerFrameMs: 26,
-    defaultRefreshMs: 4000
+    tickerFrameMs: 22,
+    defaultRefreshMs: 4000,
+    minTickerCopies: 3
   };
 
   const STATE = {
@@ -24,13 +25,8 @@ window.IBSS_RUNTIME = (function () {
     refreshTimer: null,
     tickerTimer: null,
 
-    tickerPaused: false,
-    tickerDirection: 1
+    tickerPaused: false
   };
-
-  function asArray(value) {
-    return Array.isArray(value) ? value : [];
-  }
 
   function safeNumber(value, fallback = 0) {
     const n = Number(value);
@@ -39,6 +35,10 @@ window.IBSS_RUNTIME = (function () {
 
   function safeText(value, fallback = "") {
     return typeof value === "string" && value.trim() ? value.trim() : fallback;
+  }
+
+  function asArray(value) {
+    return Array.isArray(value) ? value : [];
   }
 
   function getLocalizedText(value, lang = "en") {
@@ -51,6 +51,26 @@ window.IBSS_RUNTIME = (function () {
     const div = document.createElement("div");
     div.textContent = text ?? "";
     return div.innerHTML;
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return;
+      STATE.pageId = parsed.pageId || null;
+      STATE.lang = parsed.lang || "en";
+    } catch (error) {}
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+        pageId: STATE.pageId,
+        lang: STATE.lang
+      }));
+    } catch (error) {}
   }
 
   function getSystem() {
@@ -79,7 +99,7 @@ window.IBSS_RUNTIME = (function () {
 
   function buildDefaultTickerItems(system, lang) {
     const items = [];
-    const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(8) || [];
+    const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
 
     tickerNews.forEach(item => {
       const severity = String(item.severity || item.priority || "LOW").toLowerCase();
@@ -90,7 +110,7 @@ window.IBSS_RUNTIME = (function () {
     });
 
     if (!items.length) {
-      asArray(system?.feed).slice(0, 6).forEach(line => {
+      asArray(system?.feed).slice(0, 8).forEach(line => {
         items.push({
           level:
             system?.level === "HIGH"
@@ -119,26 +139,25 @@ window.IBSS_RUNTIME = (function () {
     return buildDefaultTickerItems(system, lang);
   }
 
+  function buildTickerCopies(items) {
+    const copies = [];
+    const base = items.length ? items : [{ level: "low", text: "No live feed available." }];
+
+    for (let i = 0; i < CONFIG.minTickerCopies; i += 1) {
+      base.forEach(item => copies.push(item));
+    }
+
+    return copies;
+  }
+
   function renderTicker(system) {
     const track = STATE.tickerTrackEl;
     if (!track) return;
 
-    const items = getTickerItems(system, STATE.lang);
+    const baseItems = getTickerItems(system, STATE.lang);
+    const items = buildTickerCopies(baseItems);
 
-    if (!items.length) {
-      track.innerHTML = `
-        <div class="ticker-item">
-          <span class="ticker-dot low"></span>
-          <span class="ticker-item-text" dir="${STATE.lang === "ar" ? "rtl" : "ltr"}">No live feed</span>
-        </div>
-      `;
-      track.scrollLeft = 0;
-      return;
-    }
-
-    const duplicated = items.concat(items);
-
-    track.innerHTML = duplicated.map(item => `
+    track.innerHTML = items.map(item => `
       <div class="ticker-item">
         <span class="ticker-dot ${escapeHtml(item.level || "low")}"></span>
         <span class="ticker-item-text" dir="${STATE.lang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text || "-")}</span>
@@ -146,34 +165,6 @@ window.IBSS_RUNTIME = (function () {
     `).join("");
 
     track.scrollLeft = 0;
-  }
-
-  function stopTickerMotion() {
-    if (STATE.tickerTimer) {
-      clearInterval(STATE.tickerTimer);
-      STATE.tickerTimer = null;
-    }
-  }
-
-  function startTickerMotion() {
-    const track = STATE.tickerTrackEl;
-    if (!track) return;
-
-    stopTickerMotion();
-
-    STATE.tickerTimer = setInterval(() => {
-      if (!track || STATE.tickerPaused) return;
-
-      const maxScroll = track.scrollWidth - track.clientWidth;
-      if (maxScroll <= 0) return;
-
-      track.scrollLeft += CONFIG.tickerStepPx * STATE.tickerDirection;
-
-      // loop in both language cases
-      if (track.scrollLeft >= maxScroll / 2) {
-        track.scrollLeft = 0;
-      }
-    }, CONFIG.tickerFrameMs);
   }
 
   function bindTickerHover() {
@@ -197,6 +188,46 @@ window.IBSS_RUNTIME = (function () {
     track.addEventListener("touchend", function () {
       STATE.tickerPaused = false;
     }, { passive: true });
+  }
+
+  function stopTickerMotion() {
+    if (STATE.tickerTimer) {
+      clearInterval(STATE.tickerTimer);
+      STATE.tickerTimer = null;
+    }
+  }
+
+  function startTickerMotion() {
+    const track = STATE.tickerTrackEl;
+    if (!track) return;
+
+    stopTickerMotion();
+
+    let stallCount = 0;
+
+    STATE.tickerTimer = setInterval(() => {
+      if (!track || STATE.tickerPaused) return;
+
+      const maxScroll = track.scrollWidth - track.clientWidth;
+
+      if (maxScroll <= 0) {
+        stallCount += 1;
+
+        if (stallCount >= 10 && STATE.system) {
+          renderTicker(STATE.system);
+          stallCount = 0;
+        }
+        return;
+      }
+
+      stallCount = 0;
+      track.scrollLeft += CONFIG.tickerStepPx;
+
+      const resetPoint = Math.max(1, Math.floor(maxScroll / CONFIG.minTickerCopies));
+      if (track.scrollLeft >= resetPoint) {
+        track.scrollLeft = 0;
+      }
+    }, CONFIG.tickerFrameMs);
   }
 
   function renderRadar(system) {
@@ -260,27 +291,6 @@ window.IBSS_RUNTIME = (function () {
     }, refreshMs);
   }
 
-  function save() {
-    try {
-      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
-        pageId: STATE.pageId,
-        lang: STATE.lang
-      }));
-    } catch (error) {}
-  }
-
-  function load() {
-    try {
-      const raw = localStorage.getItem(CONFIG.storageKey);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object") {
-        STATE.pageId = parsed.pageId || null;
-        STATE.lang = parsed.lang || STATE.lang;
-      }
-    } catch (error) {}
-  }
-
   function start(options = {}) {
     STATE.pageId = options.pageId || STATE.pageId || "ibss-page";
     STATE.lang = options.lang || STATE.lang || "en";
@@ -298,7 +308,6 @@ window.IBSS_RUNTIME = (function () {
       CONFIG.defaultRefreshMs;
 
     STATE.started = true;
-
     tick();
     startRefreshLoop(refreshMs);
 
@@ -319,7 +328,10 @@ window.IBSS_RUNTIME = (function () {
   function setLanguage(lang) {
     STATE.lang = lang === "ar" ? "ar" : "en";
     save();
-    if (STATE.started) tick();
+
+    if (STATE.started) {
+      tick();
+    }
   }
 
   function getState() {
