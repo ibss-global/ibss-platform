@@ -92,12 +92,14 @@
       box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
     }
 
-    .lang-switch{
+    .lang-switch,
+    .audio-switch{
       display:flex;
       gap:6px;
     }
 
-    .lang-switch button{
+    .lang-switch button,
+    .audio-switch button{
       background:none;
       border:1px solid rgba(255,255,255,.1);
       color:#ccc;
@@ -109,7 +111,9 @@
     }
 
     .lang-switch button:hover,
-    .lang-switch button.active{
+    .lang-switch button.active,
+    .audio-switch button:hover,
+    .audio-switch button.active{
       color:var(--gold);
       border-color:var(--gold);
     }
@@ -145,6 +149,36 @@
       margin-top:16px;
       color:#8a8a8a;
       font-size:13px;
+    }
+
+    .hero-badges{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .meta-badge{
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
+    }
+
+    .meta-badge.live{
+      color:var(--green);
+      border-color:rgba(0,208,132,.35);
+      background:rgba(0,208,132,.08);
+    }
+
+    .meta-badge.fallback{
+      color:var(--orange);
+      border-color:rgba(255,159,26,.35);
+      background:rgba(255,159,26,.08);
     }
 
     .alert{
@@ -215,6 +249,65 @@
       line-height:1.8;
       font-size:15px;
     }
+
+    .ticker-shell{
+      border:1px solid rgba(212,175,55,.18);
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
+      overflow:hidden;
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+      position:relative;
+    }
+
+    .ticker-track{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:14px 16px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      scrollbar-width:none;
+      direction:ltr;
+      white-space:nowrap;
+      scroll-behavior:auto;
+    }
+
+    .ticker-track::-webkit-scrollbar{
+      display:none;
+    }
+
+    .ticker-item{
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      min-height:44px;
+      max-width:min(82vw,520px);
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.05);
+      color:#f0f0f0;
+      font-size:13px;
+      line-height:1.6;
+      white-space:normal;
+    }
+
+    .ticker-item-text{
+      display:block;
+      unicode-bidi:plaintext;
+    }
+
+    .ticker-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      flex:0 0 8px;
+    }
+
+    .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
+    .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
+    .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
 
     .grid-2{
       display:grid;
@@ -491,6 +584,10 @@
           <button id="btn-en" type="button">EN</button>
           <button id="btn-ar" type="button">AR</button>
         </div>
+
+        <div class="audio-switch">
+          <button id="audioToggleBtn" type="button">AUDIO</button>
+        </div>
       </div>
     </div>
 
@@ -501,7 +598,21 @@
         Decision-grade sovereign reporting generated from the unified engine, theater layer, strategic files, and structured signals.
       </p>
       <div id="metaLine" class="meta-line">Engine source: -</div>
+
+      <div class="hero-badges">
+        <span id="sourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
+        <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
+        <span id="audioBadge" class="meta-badge fallback">AUDIO — OFF</span>
+      </div>
+
       <div id="alertBox" class="alert"></div>
+    </div>
+
+    <div class="section">
+      <div class="title" id="tickerTitle">Live Intelligence Strip</div>
+      <div class="ticker-shell">
+        <div id="tickerTrack" class="ticker-track"></div>
+      </div>
     </div>
 
     <div class="stats-grid">
@@ -619,8 +730,12 @@
   <script src="ingestion.js"></script>
   <script src="news.js"></script>
   <script src="analysis.js"></script>
+  <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
   <script src="engine.js"></script>
+  <script src="audio-engine.js"></script>
+  <script src="runtime-engine.js"></script>
+  <script src="publisher.js"></script>
 
   <script>
     const UI = {
@@ -638,6 +753,17 @@
         sub: "Decision-grade sovereign reporting generated from the unified engine, theater layer, strategic files, and structured signals.",
         source_engine: "Engine source",
         updated_at: "Updated",
+
+        source_live: "SOURCE — ENGINE",
+        source_fallback: "SOURCE — FALLBACK",
+        metrics_on: "METRICS — INTEGRATED",
+        metrics_off: "METRICS — OFF",
+        audio_on: "AUDIO — ON",
+        audio_off: "AUDIO — OFF",
+        audio_button_on: "AUDIO ON",
+        audio_button_off: "AUDIO OFF",
+
+        live_intelligence: "Live Intelligence Strip",
 
         alert_high: "⚠ HIGH ESCALATION — REPORT SYSTEM TRACKS AN ACTIVE RESPONSE ENVIRONMENT",
         alert_medium: "⚠ STRUCTURED PRESSURE — REPORT SYSTEM TRACKS A PREPARATION ENVIRONMENT",
@@ -689,6 +815,17 @@
         source_engine: "مصدر المحرك",
         updated_at: "آخر تحديث",
 
+        source_live: "المصدر — المحرك",
+        source_fallback: "المصدر — الاحتياطي",
+        metrics_on: "القياس — مدمج",
+        metrics_off: "القياس — غير مفعل",
+        audio_on: "الصوت — يعمل",
+        audio_off: "الصوت — متوقف",
+        audio_button_on: "تشغيل الصوت",
+        audio_button_off: "إيقاف الصوت",
+
+        live_intelligence: "الشريط الاستخباري الحي",
+
         alert_high: "⚠ تصعيد مرتفع — نظام التقارير يتتبع بيئة استجابة نشطة",
         alert_medium: "⚠ ضغط بنيوي — نظام التقارير يتتبع بيئة تحضير",
         alert_low: "✓ ضغط منخفض — نظام التقارير يتتبع بيئة مراقبة",
@@ -726,6 +863,7 @@
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
+    let currentSystem = null;
 
     function t(key){
       return UI[currentLang]?.[key] || key;
@@ -775,6 +913,7 @@
       document.getElementById("heroKicker").textContent = t("hero_kicker");
       document.getElementById("pageTitle").textContent = t("title");
       document.getElementById("pageSub").textContent = t("sub");
+      document.getElementById("tickerTitle").textContent = t("live_intelligence");
 
       document.querySelector('[data-i18n="nav_home"]').textContent = t("nav_home");
       document.querySelector('[data-i18n="nav_dashboard"]').textContent = t("nav_dashboard");
@@ -804,6 +943,8 @@
 
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+
+      updateAudioBadge();
     }
 
     function getSystem(){
@@ -838,9 +979,45 @@
       return [];
     }
 
+    function updateAudioBadge(){
+      const btn = document.getElementById("audioToggleBtn");
+      if (!btn) return;
+      const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
+      btn.textContent = enabled ? t("audio_button_off") : t("audio_button_on");
+      btn.classList.toggle("active", enabled);
+    }
+
     function renderMeta(system){
       document.getElementById("metaLine").textContent =
         `${t("source_engine")}: ${safe(system?.source, "-")} | ${t("updated_at")}: ${formatDateTime(system?.updatedAt)}`;
+
+      const sourceBadge = document.getElementById("sourceBadge");
+      const metricsBadge = document.getElementById("metricsBadge");
+      const audioBadge = document.getElementById("audioBadge");
+
+      if (system?.source === "engine") {
+        sourceBadge.textContent = t("source_live");
+        sourceBadge.className = "meta-badge live";
+      } else {
+        sourceBadge.textContent = t("source_fallback");
+        sourceBadge.className = "meta-badge fallback";
+      }
+
+      if (system?.metricsReference) {
+        metricsBadge.textContent = t("metrics_on");
+        metricsBadge.className = "meta-badge live";
+      } else {
+        metricsBadge.textContent = t("metrics_off");
+        metricsBadge.className = "meta-badge fallback";
+      }
+
+      if (window.IBSS_AUDIO?.isEnabled?.()) {
+        audioBadge.textContent = t("audio_on");
+        audioBadge.className = "meta-badge live";
+      } else {
+        audioBadge.textContent = t("audio_off");
+        audioBadge.className = "meta-badge fallback";
+      }
     }
 
     function renderAlert(system){
@@ -1022,12 +1199,11 @@
         Number(system?.confidenceScore || 0);
     }
 
-    function renderPage(){
-      applyLanguage();
-
-      const system = getSystem();
+    function renderPage(system){
       if (!system) return;
+      currentSystem = system;
 
+      applyLanguage();
       const reports = getReports();
 
       renderMeta(system);
@@ -1040,21 +1216,48 @@
       renderSummary(system);
     }
 
+    function startRuntime(){
+      if (!window.IBSS_RUNTIME) {
+        const system = getSystem();
+        if (system) renderPage(system);
+        return;
+      }
+
+      window.IBSS_RUNTIME.start({
+        pageId: "reports",
+        lang: currentLang,
+        tickerTrackEl: document.getElementById("tickerTrack"),
+        refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+        systemProvider: getSystem,
+        afterRender: function(system) {
+          renderPage(system);
+        }
+      });
+    }
+
     document.getElementById("btn-en").addEventListener("click", function () {
       currentLang = "en";
       localStorage.setItem("ibss_lang", "en");
-      renderPage();
+      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (currentSystem) renderPage(currentSystem);
     });
 
     document.getElementById("btn-ar").addEventListener("click", function () {
       currentLang = "ar";
       localStorage.setItem("ibss_lang", "ar");
-      renderPage();
+      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (currentSystem) renderPage(currentSystem);
+    });
+
+    document.getElementById("audioToggleBtn").addEventListener("click", function () {
+      if (!window.IBSS_AUDIO) return;
+      window.IBSS_AUDIO.toggle();
+      updateAudioBadge();
+      if (currentSystem) renderMeta(currentSystem);
     });
 
     window.addEventListener("load", function () {
-      renderPage();
-      setInterval(renderPage, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
+      startRuntime();
     });
   </script>
 </body>
