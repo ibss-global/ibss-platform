@@ -17,11 +17,10 @@
       --red:#ff4d4f;
       --orange:#ff9f1a;
       --green:#00d084;
-      --blue:#5a8cff;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
-      --glow:0 0 18px rgba(212,175,55,.08);
+      --shadow:0 10px 24px rgba(0,0,0,.18);
     }
 
     *{box-sizing:border-box}
@@ -41,7 +40,7 @@
     .wrap{
       width:min(1180px,92%);
       margin:auto;
-      padding:20px 0 40px;
+      padding:20px 0 42px;
     }
 
     .topbar{
@@ -118,7 +117,7 @@
 
     .hero{
       text-align:center;
-      padding:30px 0 18px;
+      padding:28px 0 18px;
     }
 
     .hero h1{
@@ -142,6 +141,39 @@
       font-size:13px;
     }
 
+    .hero-badges{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .meta-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
+    }
+
+    .meta-badge.live{
+      color:var(--green);
+      border-color:rgba(0,208,132,.25);
+      background:rgba(0,208,132,.08);
+    }
+
+    .meta-badge.fallback{
+      color:var(--orange);
+      border-color:rgba(255,159,26,.30);
+      background:rgba(255,159,26,.08);
+    }
+
     .alert{
       display:none;
       margin:18px 0 0;
@@ -155,6 +187,10 @@
       line-height:1.7;
     }
 
+    .section{
+      margin-top:18px;
+    }
+
     .grid{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -162,12 +198,19 @@
       margin-top:22px;
     }
 
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+      margin-top:18px;
+    }
+
     .card{
       background:var(--panel);
       border:1px solid var(--soft-border);
       border-radius:22px;
       padding:22px;
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
+      box-shadow:var(--shadow);
     }
 
     .title{
@@ -175,6 +218,14 @@
       font-size:24px;
       font-weight:900;
       margin-bottom:16px;
+    }
+
+    .sub-title{
+      color:#b8b8b8;
+      font-size:13px;
+      margin-top:-8px;
+      margin-bottom:16px;
+      line-height:1.7;
     }
 
     .state{
@@ -190,8 +241,9 @@
     .decision-box,
     .scenario-row,
     .country-row,
-    .layer-row,
-    .cluster-row{
+    .metric-row,
+    .snapshot-item,
+    .ticker-item{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -216,14 +268,12 @@
       font-weight:900;
       letter-spacing:.3px;
       line-height:1.2;
-      word-break:break-word;
     }
 
     .high{color:var(--red)}
     .medium{color:var(--orange)}
     .low{color:var(--green)}
     .gold{color:var(--gold)}
-    .blue{color:var(--blue)}
 
     .decision-box{
       margin-top:18px;
@@ -266,12 +316,18 @@
       font-size:15px;
     }
 
-    .news-chip{
+    .mini-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .mini-badge{
       display:inline-flex;
       align-items:center;
-      gap:8px;
-      margin-top:10px;
-      padding:6px 10px;
+      justify-content:center;
+      padding:7px 10px;
       border-radius:999px;
       font-size:11px;
       font-weight:700;
@@ -280,66 +336,22 @@
       color:#ddd;
     }
 
-    .news-chip.high{
+    .mini-badge.high{
       color:#ffd7d7;
       background:rgba(255,77,79,.12);
       border-color:rgba(255,77,79,.28);
     }
 
-    .news-chip.medium{
+    .mini-badge.medium{
       color:#ffe2b8;
       background:rgba(255,159,26,.12);
       border-color:rgba(255,159,26,.28);
     }
 
-    .news-chip.low{
+    .mini-badge.low{
       color:#d6fff1;
       background:rgba(0,208,132,.12);
       border-color:rgba(0,208,132,.28);
-    }
-
-    .layer-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-      margin-top:18px;
-    }
-
-    .layer-row,
-    .cluster-row,
-    .scenario-row,
-    .country-row{
-      padding:14px 16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-
-    .row-left{
-      min-width:0;
-    }
-
-    .row-title{
-      color:#fff;
-      font-size:15px;
-      font-weight:800;
-      line-height:1.6;
-    }
-
-    .row-sub{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.6;
-      margin-top:4px;
-    }
-
-    .row-value{
-      color:var(--gold);
-      font-size:22px;
-      font-weight:900;
-      flex:0 0 auto;
-      text-align:right;
     }
 
     .radar-wrap{
@@ -427,7 +439,8 @@
     .feed,
     .scenario-box,
     .country-box,
-    .cluster-box{
+    .metrics-box,
+    .snapshot-box{
       display:grid;
       gap:12px;
     }
@@ -473,7 +486,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      max-width:220px;
+      max-width:230px;
     }
 
     .legend-sub{
@@ -522,16 +535,108 @@
       border-color:rgba(0,208,132,.28);
     }
 
-    .feed-item{
+    .feed-item,
+    .scenario-row,
+    .country-row,
+    .metric-row,
+    .snapshot-item{
       padding:13px 15px;
       color:#e3e3e3;
       line-height:1.7;
       font-size:14px;
     }
 
-    .muted{
-      color:var(--muted);
+    .scenario-row,
+    .country-row,
+    .metric-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
     }
+
+    .snapshot-item strong,
+    .country-name{
+      color:#fff;
+      display:block;
+      margin-bottom:6px;
+      font-size:15px;
+    }
+
+    .snapshot-meta,
+    .country-meta,
+    .metric-sub{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.7;
+    }
+
+    .metric-row strong,
+    .country-score{
+      color:var(--gold);
+      font-size:20px;
+      font-weight:900;
+      flex:0 0 auto;
+    }
+
+    .ticker-shell{
+      border:1px solid rgba(212,175,55,.18);
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
+      overflow:hidden;
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+      position:relative;
+    }
+
+    .ticker-track{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:14px 16px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      scrollbar-width:none;
+      direction:ltr;
+      white-space:nowrap;
+      scroll-behavior:smooth;
+    }
+
+    .ticker-track::-webkit-scrollbar{
+      display:none;
+    }
+
+    .ticker-item{
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      min-height:44px;
+      max-width:min(82vw,520px);
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.05);
+      color:#f0f0f0;
+      font-size:13px;
+      line-height:1.6;
+      white-space:normal;
+    }
+
+    .ticker-item-text{
+      display:block;
+      unicode-bidi:plaintext;
+    }
+
+    .ticker-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      flex:0 0 8px;
+    }
+
+    .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
+    .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
+    .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
 
     .publisher-actions{
       display:flex;
@@ -568,7 +673,7 @@
 
     .publisher-textarea{
       width:100%;
-      min-height:220px;
+      min-height:210px;
       background:#121212;
       color:#fff;
       border:1px solid rgba(255,255,255,.08);
@@ -605,8 +710,7 @@
     html[dir="rtl"] .legend-item,
     html[dir="rtl"] .scenario-row,
     html[dir="rtl"] .country-row,
-    html[dir="rtl"] .cluster-row,
-    html[dir="rtl"] .layer-row{
+    html[dir="rtl"] .metric-row{
       direction:rtl;
     }
 
@@ -617,14 +721,13 @@
       text-align:center;
     }
 
-    html[dir="rtl"] .legend-right,
-    html[dir="rtl"] .row-value{
+    html[dir="rtl"] .legend-right{
       text-align:left;
     }
 
     @media (max-width:980px){
       .grid{grid-template-columns:1fr}
-      .layer-grid{grid-template-columns:1fr}
+      .grid-3{grid-template-columns:1fr}
     }
 
     @media (max-width:640px){
@@ -667,6 +770,10 @@
       .publisher-actions{
         flex-direction:column;
       }
+
+      .state{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
@@ -696,11 +803,23 @@
 
     <div class="hero">
       <h1 id="pageTitle">IBSS Dashboard</h1>
-      <p id="pageSub">Sovereign Theater Decision System</p>
+      <p id="pageSub">Unified Sovereign Metrics & Decision Layer</p>
       <div id="metaLine" class="meta-line">Engine source: -</div>
+
+      <div class="hero-badges">
+        <span id="sourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
+        <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
+      </div>
     </div>
 
     <div id="alertBox" class="alert"></div>
+
+    <div class="section">
+      <div class="title" id="tickerTitle">Live Intelligence Strip</div>
+      <div class="ticker-shell">
+        <div id="tickerTrack" class="ticker-track"></div>
+      </div>
+    </div>
 
     <div class="grid">
       <div class="card">
@@ -719,52 +838,18 @@
 
           <div class="state-item">
             <div class="label" id="decisionLabel">Decision</div>
-            <div id="decision" class="value gold">-</div>
+            <div id="decision" class="value">-</div>
           </div>
 
           <div class="state-item">
             <div class="label" id="modeLabel">Mode</div>
-            <div id="mode" class="value gold">-</div>
+            <div id="mode" class="value">-</div>
           </div>
         </div>
 
         <div class="decision-box">
           <div class="decision" id="decisionWord">-</div>
           <div class="decision-note" id="decisionNote">-</div>
-        </div>
-
-        <div class="layer-grid">
-          <div class="layer-row">
-            <div class="row-left">
-              <div class="row-title" id="signalPressureTitle">Signal Pressure</div>
-              <div class="row-sub" id="signalPressureSub">Raw signal layer pressure</div>
-            </div>
-            <div id="signalPressureValue" class="row-value">0</div>
-          </div>
-
-          <div class="layer-row">
-            <div class="row-left">
-              <div class="row-title" id="clusterPressureTitle">Strategic File Pressure</div>
-              <div class="row-sub" id="clusterPressureSub">Cluster pressure layer</div>
-            </div>
-            <div id="clusterPressureValue" class="row-value">0</div>
-          </div>
-
-          <div class="layer-row">
-            <div class="row-left">
-              <div class="row-title" id="theaterPressureTitle">Theater Pressure</div>
-              <div class="row-sub" id="theaterPressureSub">Core theater compression</div>
-            </div>
-            <div id="theaterPressureValue" class="row-value">0</div>
-          </div>
-
-          <div class="layer-row">
-            <div class="row-left">
-              <div class="row-title" id="confidenceTitle">Confidence Score</div>
-              <div class="row-sub" id="confidenceSub">Analytical confidence</div>
-            </div>
-            <div id="confidenceValue" class="row-value">0</div>
-          </div>
         </div>
       </div>
 
@@ -774,7 +859,7 @@
         <div class="signal-box">
           <h3 id="signalTitle">-</h3>
           <p id="signalDesc">-</p>
-          <div id="signalNewsChipWrap"></div>
+          <div id="signalBadges" class="mini-badges"></div>
         </div>
 
         <div class="title" style="margin-top:18px" id="radarTitle">Radar</div>
@@ -794,53 +879,45 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:18px">
-      <div class="title" id="theaterTitle">Top Theater Layer</div>
-      <div class="cluster-box">
-        <div class="cluster-row">
-          <div class="row-left">
-            <div id="topTheaterName" class="row-title">-</div>
-            <div id="topTheaterMeta" class="row-sub">-</div>
-          </div>
-          <div id="topTheaterRisk" class="row-value">0</div>
-        </div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="title" id="snapshotTitle">Strategic Snapshot</div>
+        <div id="snapshotBox" class="snapshot-box"></div>
+      </div>
 
-        <div class="cluster-row">
-          <div class="row-left">
-            <div id="topClusterName" class="row-title">-</div>
-            <div id="topClusterMeta" class="row-sub">-</div>
-          </div>
-          <div id="topClusterRisk" class="row-value">0</div>
-        </div>
+      <div class="card">
+        <div class="title" id="metricsTitle">Unified Metrics</div>
+        <div class="sub-title" id="metricsSub">SSI / CRI / Signal / Cluster / Theater</div>
+        <div id="metricsBox" class="metrics-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="title" id="scenarioTitle">Scenario Engine</div>
+        <div id="scenarioBox" class="scenario-box"></div>
       </div>
     </div>
 
-    <div class="card" style="margin-top:18px">
-      <div class="title" id="scenarioTitle">Scenario Engine</div>
-      <div id="scenarioBox" class="scenario-box"></div>
-    </div>
-
-    <div class="card" style="margin-top:18px">
+    <div class="card section">
       <div class="title" id="countryTitle">Country Risk Unit</div>
       <div id="countryBox" class="country-box"></div>
     </div>
 
-    <div class="card" style="margin-top:18px">
+    <div class="card section">
       <div class="title" id="feedTitle">Live Feed</div>
       <div id="feed" class="feed"></div>
     </div>
 
-    <div class="card" style="margin-top:18px">
+    <div class="card section">
       <div class="title" id="publisherTitle">Publishing Console</div>
 
       <div class="scenario-box">
         <div class="scenario-row">
-          <span class="muted" id="pubDraftTypeLabel">Latest Draft Type</span>
+          <span class="label" id="pubDraftTypeLabel">Latest Draft Type</span>
           <strong id="pubDraftType">-</strong>
         </div>
 
         <div class="scenario-row">
-          <span class="muted" id="pubDraftTimeLabel">Created At</span>
+          <span class="label" id="pubDraftTimeLabel">Created At</span>
           <strong id="pubDraftTime">-</strong>
         </div>
       </div>
@@ -862,7 +939,7 @@
       </div>
     </div>
 
-    <div class="footer" id="footerText">© 2026 IBSS — Dashboard Sovereign Layer</div>
+    <div class="footer">© 2026 IBSS — Dashboard Layer</div>
   </div>
 
   <script src="data.js"></script>
@@ -870,6 +947,7 @@
   <script src="ingestion.js"></script>
   <script src="news.js"></script>
   <script src="analysis.js"></script>
+  <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
   <script src="engine.js"></script>
   <script src="publisher.js"></script>
@@ -884,9 +962,9 @@
         nav_countries: "Countries",
         nav_models: "Models",
         nav_about: "About",
-
         title: "IBSS Dashboard",
-        sub: "Sovereign Theater Decision System",
+        sub: "Unified Sovereign Metrics & Decision Layer",
+        ticker: "Live Intelligence Strip",
         state: "System State",
         level: "Level",
         ssi: "SSI",
@@ -897,47 +975,28 @@
         feed: "Live Feed",
         scenario: "Scenario Engine",
         country: "Country Risk Unit",
-        theater: "Top Theater Layer",
+        snapshot: "Strategic Snapshot",
+        metrics: "Unified Metrics",
+        metricsSub: "SSI / CRI / Signal / Cluster / Theater",
         publisher: "Publishing Console",
-
-        signal_pressure: "Signal Pressure",
-        signal_pressure_sub: "Raw signal layer pressure",
-        cluster_pressure: "Strategic File Pressure",
-        cluster_pressure_sub: "Cluster pressure layer",
-        theater_pressure: "Theater Pressure",
-        theater_pressure_sub: "Core theater compression",
-        confidence: "Confidence Score",
-        confidence_sub: "Analytical confidence",
-
-        pub_type: "Latest Draft Type",
-        pub_time: "Created At",
-
         levelHigh: "HIGH",
         levelMed: "MEDIUM",
         levelLow: "LOW",
-
         decisionHigh: "ACT",
         decisionMed: "PRD",
-        decisionWatchPlus: "WATCH+",
         decisionLow: "WATCH",
-
         modeHigh: "ACTIVE RESPONSE",
         modeMed: "PREPARATION",
-        modeWatchPlus: "HEIGHTENED MONITORING",
         modeLow: "MONITORING",
-
-        noteHigh: "Composite pressure crossed the sovereign high threshold. Theater and strategic-file escalation require active readiness.",
-        noteMedium: "Structured pressure remains elevated. Maintain preparation across leading strategic files.",
-        noteLow: "Pressure remains contained. Continue monitoring and update sovereign assessment.",
-
-        alertHigh: "⚠ HIGH ESCALATION — SOVEREIGN ACTIVE RESPONSE WINDOW",
-        alertMed: "⚠ STRUCTURED PRESSURE — THEATER PREPARATION MODE",
-        alertLow: "✓ LOW PRESSURE — MONITORING STABLE",
-
+        noteHigh: "Critical composite pressure detected. Immediate sovereign readiness required.",
+        noteMedium: "Structured pressure detected. Maintain preparation posture and monitor transition bands.",
+        noteLow: "System remains inside low-stress monitoring conditions.",
+        alertHigh: "⚠ HIGH ESCALATION — COMPOSITE SYSTEM IN ACTIVE RESPONSE BAND",
+        alertMed: "⚠ STRUCTURED PRESSURE — COMPOSITE SYSTEM IN PREPARATION BAND",
+        alertLow: "✓ LOW PRESSURE — COMPOSITE SYSTEM IN MONITORING BAND",
         scenarioA: "Scenario A",
         scenarioB: "Scenario B",
         scenarioC: "Scenario C",
-
         riskScore: "Risk Score",
         riskLevel: "Risk Level",
         trend: "Trend",
@@ -945,12 +1004,23 @@
         updatedAt: "Updated",
         noData: "No data available.",
         newsIntake: "Live News Intake",
-        fileLabel: "Strategic File",
-        theaterLabel: "Theater",
-        footer: "© 2026 IBSS — Dashboard Sovereign Layer",
-        copied: "Copied"
+        sourceLive: "SOURCE — ENGINE",
+        sourceFallback: "SOURCE — FALLBACK",
+        metricsOn: "METRICS — INTEGRATED",
+        metricsOff: "METRICS — OFF",
+        snapshotTheater: "Top Theater",
+        snapshotCluster: "Top Strategic File",
+        snapshotCountry: "Top Country Risk",
+        latestDraftType: "Latest Draft Type",
+        createdAt: "Created At",
+        signalScore: "Signal Score",
+        clusterRisk: "Strategic File Risk",
+        theaterRisk: "Theater Risk",
+        countryRisk: "Country Risk",
+        systemStress: "System Stress",
+        band: "Band",
+        confidence: "Confidence"
       },
-
       ar: {
         nav_home: "الرئيسية",
         nav_dashboard: "لوحة التحكم",
@@ -959,9 +1029,9 @@
         nav_countries: "الدول",
         nav_models: "النماذج",
         nav_about: "حول",
-
         title: "لوحة تحكم IBSS",
-        sub: "نظام القرار السيادي للمسرح",
+        sub: "طبقة القرار والقياس السيادي الموحد",
+        ticker: "الشريط الاستخباري الحي",
         state: "حالة النظام",
         level: "المستوى",
         ssi: "مؤشر SSI",
@@ -972,47 +1042,28 @@
         feed: "التغذية الحية",
         scenario: "محرك السيناريو",
         country: "وحدة تتبع مخاطر الدول",
-        theater: "طبقة المسرح الأعلى",
+        snapshot: "اللقطة الاستراتيجية",
+        metrics: "المقاييس الموحدة",
+        metricsSub: "SSI / CRI / Signal / Cluster / Theater",
         publisher: "وحدة النشر",
-
-        signal_pressure: "ضغط الإشارات",
-        signal_pressure_sub: "ضغط طبقة الإشارات الخام",
-        cluster_pressure: "ضغط الملفات الاستراتيجية",
-        cluster_pressure_sub: "ضغط طبقة الملفات",
-        theater_pressure: "ضغط المسرح",
-        theater_pressure_sub: "ضغط المسرح السيادي",
-        confidence: "درجة الثقة",
-        confidence_sub: "الثقة التحليلية",
-
-        pub_type: "نوع المسودة الأخيرة",
-        pub_time: "وقت الإنشاء",
-
         levelHigh: "مرتفع",
         levelMed: "متوسط",
         levelLow: "منخفض",
-
         decisionHigh: "تحرك",
         decisionMed: "استعداد",
-        decisionWatchPlus: "مراقبة معززة",
         decisionLow: "مراقبة",
-
         modeHigh: "استجابة نشطة",
         modeMed: "تحضير",
-        modeWatchPlus: "مراقبة معززة",
         modeLow: "مراقبة",
-
-        noteHigh: "الضغط المركب تجاوز العتبة العليا السيادية. تصعيد المسرح والملفات الاستراتيجية يتطلب جاهزية نشطة.",
-        noteMedium: "الضغط البنيوي ما يزال مرتفعًا. حافظ على وضعية التحضير عبر الملفات الاستراتيجية الأعلى.",
-        noteLow: "الضغط ما يزال مضبوطًا. استمر في المراقبة وتحديث التقدير السيادي.",
-
-        alertHigh: "⚠ تصعيد مرتفع — نافذة استجابة سيادية نشطة",
-        alertMed: "⚠ ضغط بنيوي — وضعية تحضير على مستوى المسرح",
-        alertLow: "✓ ضغط منخفض — المراقبة مستقرة",
-
+        noteHigh: "تم رصد ضغط مركب حرج. الجاهزية السيادية الفورية مطلوبة.",
+        noteMedium: "تم رصد ضغط بنيوي. حافظ على وضعية التحضير وراقب انتقالات الخطر.",
+        noteLow: "النظام ما يزال ضمن ظروف مراقبة منخفضة الضغط.",
+        alertHigh: "⚠ تصعيد مرتفع — النظام المركب داخل حزمة الاستجابة النشطة",
+        alertMed: "⚠ ضغط بنيوي — النظام المركب داخل حزمة التحضير",
+        alertLow: "✓ ضغط منخفض — النظام المركب داخل حزمة المراقبة",
         scenarioA: "السيناريو أ",
         scenarioB: "السيناريو ب",
         scenarioC: "السيناريو ج",
-
         riskScore: "درجة الخطر",
         riskLevel: "مستوى الخطر",
         trend: "الاتجاه",
@@ -1020,10 +1071,22 @@
         updatedAt: "آخر تحديث",
         noData: "لا توجد بيانات.",
         newsIntake: "التغذية الخبرية الحية",
-        fileLabel: "الملف الاستراتيجي",
-        theaterLabel: "المسرح",
-        footer: "© 2026 IBSS — الطبقة السيادية للوحة التحكم",
-        copied: "تم النسخ"
+        sourceLive: "المصدر — المحرك",
+        sourceFallback: "المصدر — الاحتياطي",
+        metricsOn: "القياس — مدمج",
+        metricsOff: "القياس — غير مفعل",
+        snapshotTheater: "المسرح الأعلى",
+        snapshotCluster: "الملف الاستراتيجي الأعلى",
+        snapshotCountry: "أعلى دولة خطرًا",
+        latestDraftType: "نوع المسودة الأخيرة",
+        createdAt: "تاريخ الإنشاء",
+        signalScore: "درجة الإشارة",
+        clusterRisk: "خطر الملف الاستراتيجي",
+        theaterRisk: "خطر المسرح",
+        countryRisk: "خطر الدولة",
+        systemStress: "ضغط النظام",
+        band: "الحزمة",
+        confidence: "الثقة"
       }
     };
 
@@ -1037,16 +1100,55 @@
       return value !== undefined && value !== null && value !== "" ? value : fallback;
     }
 
+    function safeText(value, fallback = "-"){
+      return typeof value === "string" && value.trim() ? value.trim() : fallback;
+    }
+
     function getLocalizedText(value){
       if (!value) return "-";
       if (typeof value === "string" || typeof value === "number") return String(value);
-      return value[currentLang] || value.en || value.ar || value.name || value.title || "-";
+      return value[currentLang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
     }
 
     function escapeHtml(text){
       const div = document.createElement("div");
       div.textContent = text ?? "";
       return div.innerHTML;
+    }
+
+    function formatDateTime(value){
+      if (!value) return "-";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "-";
+
+      return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
+        year:"numeric",
+        month:"short",
+        day:"2-digit",
+        hour:"2-digit",
+        minute:"2-digit"
+      });
+    }
+
+    function getBandLabel(score){
+      if (window.IBSS_METRICS?.classifyBand) {
+        const band = window.IBSS_METRICS.classifyBand(Number(score || 0));
+        return currentLang === "ar" ? band?.ar || "-" : band?.en || "-";
+      }
+      return "-";
+    }
+
+    function levelClass(level){
+      if (level === "HIGH") return "high";
+      if (level === "MEDIUM") return "medium";
+      return "low";
+    }
+
+    function metricLevelClass(score){
+      const n = Number(score || 0);
+      if (n >= 70) return "high";
+      if (n >= 35) return "medium";
+      return "low";
     }
 
     function applyLanguage(){
@@ -1060,6 +1162,7 @@
 
       document.getElementById("pageTitle").textContent = t("title");
       document.getElementById("pageSub").textContent = t("sub");
+      document.getElementById("tickerTitle").textContent = t("ticker");
       document.getElementById("stateTitle").textContent = t("state");
       document.getElementById("levelLabel").textContent = t("level");
       document.getElementById("ssiLabel").textContent = t("ssi");
@@ -1067,22 +1170,22 @@
       document.getElementById("modeLabel").textContent = t("mode");
       document.getElementById("signalTitleLabel").textContent = t("signal");
       document.getElementById("radarTitle").textContent = t("radar");
-      document.getElementById("feedTitle").textContent = t("feed");
+      document.getElementById("snapshotTitle").textContent = t("snapshot");
+      document.getElementById("metricsTitle").textContent = t("metrics");
+      document.getElementById("metricsSub").textContent = t("metricsSub");
       document.getElementById("scenarioTitle").textContent = t("scenario");
       document.getElementById("countryTitle").textContent = t("country");
-      document.getElementById("theaterTitle").textContent = t("theater");
+      document.getElementById("feedTitle").textContent = t("feed");
       document.getElementById("publisherTitle").textContent = t("publisher");
-      document.getElementById("signalPressureTitle").textContent = t("signal_pressure");
-      document.getElementById("signalPressureSub").textContent = t("signal_pressure_sub");
-      document.getElementById("clusterPressureTitle").textContent = t("cluster_pressure");
-      document.getElementById("clusterPressureSub").textContent = t("cluster_pressure_sub");
-      document.getElementById("theaterPressureTitle").textContent = t("theater_pressure");
-      document.getElementById("theaterPressureSub").textContent = t("theater_pressure_sub");
-      document.getElementById("confidenceTitle").textContent = t("confidence");
-      document.getElementById("confidenceSub").textContent = t("confidence_sub");
-      document.getElementById("pubDraftTypeLabel").textContent = t("pub_type");
-      document.getElementById("pubDraftTimeLabel").textContent = t("pub_time");
-      document.getElementById("footerText").textContent = t("footer");
+      document.getElementById("pubDraftTypeLabel").textContent = t("latestDraftType");
+      document.getElementById("pubDraftTimeLabel").textContent = t("createdAt");
+
+      document.getElementById("btnGenerateSignalPost").textContent =
+        currentLang === "ar" ? "توليد منشور الإشارة الأعلى" : "Generate Top Signal Post";
+      document.getElementById("btnGenerateBriefPost").textContent =
+        currentLang === "ar" ? "توليد موجز استراتيجي" : "Generate Strategic Brief";
+      document.getElementById("btnCopyDraftPost").textContent =
+        currentLang === "ar" ? "نسخ المسودة" : "Copy Draft";
 
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
@@ -1090,6 +1193,10 @@
 
     function getSystem(){
       try {
+        if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
+          window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
+        }
+
         if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
           return window.IBSS_ENGINE.getSystemState();
         }
@@ -1107,11 +1214,27 @@
 
     function renderMeta(system){
       const line = document.getElementById("metaLine");
-      const dateText = system?.updatedAt
-        ? new Date(system.updatedAt).toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US")
-        : "-";
+      const sourceBadge = document.getElementById("sourceBadge");
+      const metricsBadge = document.getElementById("metricsBadge");
+      const dateText = formatDateTime(system?.updatedAt);
 
       line.textContent = `${t("sourceEngine")}: ${safe(system?.source, "-")} | ${t("updatedAt")}: ${dateText}`;
+
+      if (system?.source === "engine") {
+        sourceBadge.textContent = t("sourceLive");
+        sourceBadge.className = "meta-badge live";
+      } else {
+        sourceBadge.textContent = t("sourceFallback");
+        sourceBadge.className = "meta-badge fallback";
+      }
+
+      if (system?.metricsReference) {
+        metricsBadge.textContent = t("metricsOn");
+        metricsBadge.className = "meta-badge live";
+      } else {
+        metricsBadge.textContent = t("metricsOff");
+        metricsBadge.className = "meta-badge fallback";
+      }
     }
 
     function renderLevel(system){
@@ -1123,23 +1246,21 @@
       const level = safe(system?.level, "LOW");
 
       ssiEl.textContent = pressure;
+      ssiEl.className = `value ${levelClass(level)}`;
 
       if (level === "HIGH") {
         levelEl.textContent = t("levelHigh");
         levelEl.className = "value high";
-        ssiEl.className = "value high";
         alertBox.style.display = "block";
         alertBox.textContent = t("alertHigh");
       } else if (level === "MEDIUM") {
         levelEl.textContent = t("levelMed");
         levelEl.className = "value medium";
-        ssiEl.className = "value medium";
         alertBox.style.display = "block";
         alertBox.textContent = t("alertMed");
       } else {
         levelEl.textContent = t("levelLow");
         levelEl.className = "value low";
-        ssiEl.className = "value low";
         alertBox.style.display = "block";
         alertBox.textContent = t("alertLow");
       }
@@ -1153,32 +1274,16 @@
       const decisionNote = document.getElementById("decisionNote");
       const modeEl = document.getElementById("mode");
 
-      const decisionValue = safe(system?.decision, "WATCH");
-      const modeValue = safe(system?.mode, "MONITORING");
+      const decisionMap = {
+        ACT: t("decisionHigh"),
+        PRD: t("decisionMed"),
+        WATCH: t("decisionLow"),
+        "WATCH+": currentLang === "ar" ? "مراقبة+" : "WATCH+"
+      };
 
-      if (decisionValue === "ACT") {
-        decisionEl.textContent = t("decisionHigh");
-        decisionWord.textContent = t("decisionHigh");
-      } else if (decisionValue === "PRD") {
-        decisionEl.textContent = t("decisionMed");
-        decisionWord.textContent = t("decisionMed");
-      } else if (decisionValue === "WATCH+") {
-        decisionEl.textContent = t("decisionWatchPlus");
-        decisionWord.textContent = t("decisionWatchPlus");
-      } else {
-        decisionEl.textContent = t("decisionLow");
-        decisionWord.textContent = t("decisionLow");
-      }
-
-      if (modeValue === "ACTIVE RESPONSE") {
-        modeEl.textContent = t("modeHigh");
-      } else if (modeValue === "PREPARATION") {
-        modeEl.textContent = t("modeMed");
-      } else if (modeValue === "HEIGHTENED MONITORING") {
-        modeEl.textContent = t("modeWatchPlus");
-      } else {
-        modeEl.textContent = t("modeLow");
-      }
+      decisionEl.textContent = decisionMap[system?.decision] || safe(system?.decision, "-");
+      decisionWord.textContent = decisionMap[system?.decision] || safe(system?.decision, "-");
+      modeEl.textContent = safe(system?.mode, "-");
 
       if (level === "HIGH") {
         decisionNote.textContent = t("noteHigh");
@@ -1189,49 +1294,29 @@
       }
     }
 
-    function renderLayerMetrics(system){
-      document.getElementById("signalPressureValue").textContent =
-        Number(system?.signalPressure || 0);
-
-      document.getElementById("clusterPressureValue").textContent =
-        Number(system?.clusterPressure?.pressure || 0);
-
-      document.getElementById("theaterPressureValue").textContent =
-        Number(system?.theaterPressure?.pressure || 0);
-
-      document.getElementById("confidenceValue").textContent =
-        Number(system?.confidenceScore || 0);
-    }
-
     function renderPrimarySignal(signal, system){
       const titleEl = document.getElementById("signalTitle");
       const descEl = document.getElementById("signalDesc");
-      const chipWrap = document.getElementById("signalNewsChipWrap");
+      const badges = document.getElementById("signalBadges");
 
       if (!signal) {
         titleEl.textContent = "-";
         descEl.textContent = t("noData");
-        chipWrap.innerHTML = "";
+        badges.innerHTML = "";
         return;
       }
 
       titleEl.textContent = getLocalizedText(signal.title);
       descEl.textContent = getLocalizedText(signal.description);
 
-      const newsPressure = system?.newsPressure || null;
-      if (!newsPressure || !newsPressure.count) {
-        chipWrap.innerHTML = "";
-        return;
-      }
+      const score = Number(signal?.balancedScore100 || signal?.score100 || 0);
+      const priority = safe(signal?.priority, "LOW");
+      const signalClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
 
-      const chipClass =
-        newsPressure.highCount > 0 ? "high" :
-        newsPressure.mediumCount > 0 ? "medium" : "low";
-
-      chipWrap.innerHTML = `
-        <span class="news-chip ${chipClass}">
-          ${escapeHtml(t("newsIntake"))}: ${newsPressure.count}
-        </span>
+      badges.innerHTML = `
+        <span class="mini-badge ${signalClass}">${escapeHtml(t("signalScore"))}: ${score}</span>
+        <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
+        <span class="mini-badge">${escapeHtml(t("newsIntake"))}: ${Number(system?.newsPressure?.count || 0)}</span>
       `;
     }
 
@@ -1277,7 +1362,7 @@
           <div class="legend-item">
             <div class="legend-left">
               <div class="legend-texts">
-                <div class="legend-name">${t("noData")}</div>
+                <div class="legend-name">${escapeHtml(t("noData"))}</div>
               </div>
             </div>
           </div>
@@ -1310,31 +1395,110 @@
       }).join("");
     }
 
-    function renderTheaterLayer(system){
-      const theater = system?.topTheater || null;
-      const cluster = system?.topCluster || null;
+    function renderTicker(system){
+      const track = document.getElementById("tickerTrack");
+      if (!track) return;
 
-      document.getElementById("topTheaterName").textContent =
-        theater ? getLocalizedText(theater.name) : "-";
+      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(8) || [];
+      const items = [];
 
-      document.getElementById("topTheaterMeta").textContent =
-        theater
-          ? `${t("riskLevel")}: ${safe(theater.escalationLevel, "-")} | ${t("trend")}: ${safe(theater.trend, "-")}`
-          : t("noData");
+      tickerNews.forEach(item => {
+        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
+        items.push({
+          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
+          text: getLocalizedText(item.title)
+        });
+      });
 
-      document.getElementById("topTheaterRisk").textContent =
-        theater ? Number(theater.avgRisk || 0) : 0;
+      if (!items.length) {
+        const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 6) : [];
+        feed.forEach(line => {
+          items.push({
+            level:
+              system?.level === "HIGH"
+                ? "high"
+                : system?.level === "MEDIUM"
+                  ? "medium"
+                  : "low",
+            text: typeof line === "string" ? line : getLocalizedText(line?.text)
+          });
+        });
+      }
 
-      document.getElementById("topClusterName").textContent =
-        cluster ? getLocalizedText(cluster.name) : "-";
+      if (!items.length) {
+        track.innerHTML = `
+          <div class="ticker-item">
+            <span class="ticker-dot low"></span>
+            <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(t("noData"))}</span>
+          </div>
+        `;
+        track.scrollLeft = 0;
+        return;
+      }
 
-      document.getElementById("topClusterMeta").textContent =
-        cluster
-          ? `${t("fileLabel")}: ${safe(cluster.code, "-")} | ${t("trend")}: ${safe(cluster.trend, "-")}`
-          : t("noData");
+      track.innerHTML = items.map(item => `
+        <div class="ticker-item">
+          <span class="ticker-dot ${item.level}"></span>
+          <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
+        </div>
+      `).join("");
 
-      document.getElementById("topClusterRisk").textContent =
-        cluster ? Number(cluster.maxRisk || 0) : 0;
+      requestAnimationFrame(() => {
+        track.scrollLeft = 0;
+      });
+    }
+
+    function renderSnapshot(system){
+      const box = document.getElementById("snapshotBox");
+      const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.() || null;
+
+      const topTheater = snapshot?.topTheater || system?.topTheater || null;
+      const topCluster = snapshot?.topCluster || system?.topCluster || null;
+      const topCountry = snapshot?.topCountry || (system?.countryRiskFeed || [])[0] || null;
+
+      box.innerHTML = `
+        <div class="snapshot-item">
+          <strong>${escapeHtml(t("snapshotTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
+          <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("riskScore")}: ${Number(topTheater.avgRisk || 0)} | ${t("band")}: ${getBandLabel(Number(topTheater.avgRisk || 0))}` : t("noData"))}</div>
+        </div>
+
+        <div class="snapshot-item">
+          <strong>${escapeHtml(t("snapshotCluster"))}: ${escapeHtml(topCluster ? getLocalizedText(topCluster.name) : "-")}</strong>
+          <div class="snapshot-meta">${escapeHtml(topCluster ? `${t("riskScore")}: ${Number(topCluster.avgRisk || 0)} | ${t("trend")}: ${safeText(topCluster.trend, "-")}` : t("noData"))}</div>
+        </div>
+
+        <div class="snapshot-item">
+          <strong>${escapeHtml(t("snapshotCountry"))}: ${escapeHtml(topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-")}</strong>
+          <div class="snapshot-meta">${escapeHtml(topCountry ? `${t("riskScore")}: ${Number(topCountry.riskScore || 0)} | ${t("riskLevel")}: ${safeText(topCountry.riskLevel, "-")}` : t("noData"))}</div>
+        </div>
+      `;
+    }
+
+    function renderMetrics(system){
+      const box = document.getElementById("metricsBox");
+      const topSignal = system?.topSignal || null;
+      const topCluster = system?.topCluster || null;
+      const topTheater = system?.topTheater || null;
+      const topCountry = (system?.countryRiskFeed || [])[0] || null;
+
+      const rows = [
+        { label: t("systemStress"), value: Number(system?.systemPressure || 0), sub: `${t("band")}: ${getBandLabel(Number(system?.systemPressure || 0))}` },
+        { label: t("signalScore"), value: Number(topSignal?.balancedScore100 || 0), sub: `${t("band")}: ${getBandLabel(Number(topSignal?.balancedScore100 || 0))}` },
+        { label: t("clusterRisk"), value: Number(topCluster?.avgRisk || 0), sub: `${t("band")}: ${getBandLabel(Number(topCluster?.avgRisk || 0))}` },
+        { label: t("theaterRisk"), value: Number(topTheater?.avgRisk || 0), sub: `${t("band")}: ${getBandLabel(Number(topTheater?.avgRisk || 0))}` },
+        { label: t("countryRisk"), value: Number(topCountry?.riskScore || 0), sub: `${t("band")}: ${getBandLabel(Number(topCountry?.riskScore || 0))}` },
+        { label: t("confidence"), value: Number(system?.confidenceScore || 0), sub: `${t("band")}: ${getBandLabel(Number(system?.confidenceScore || 0))}` }
+      ];
+
+      box.innerHTML = rows.map(row => `
+        <div class="metric-row">
+          <div>
+            <strong style="font-size:15px;color:#fff">${escapeHtml(row.label)}</strong>
+            <div class="metric-sub">${escapeHtml(row.sub)}</div>
+          </div>
+          <strong class="${metricLevelClass(row.value)}">${row.value}</strong>
+        </div>
+      `).join("");
     }
 
     function renderScenarios(system){
@@ -1343,7 +1507,7 @@
       const labels = [t("scenarioA"), t("scenarioB"), t("scenarioC")];
 
       if (!scenarios.length) {
-        box.innerHTML = `<div class="scenario-row"><span class="muted">${t("noData")}</span><strong>0%</strong></div>`;
+        box.innerHTML = `<div class="scenario-row"><span>${escapeHtml(t("noData"))}</span><strong>0%</strong></div>`;
         return;
       }
 
@@ -1351,7 +1515,7 @@
         const value = typeof item === "object" ? item.value : item;
         return `
           <div class="scenario-row">
-            <span class="muted">${labels[index] || safe(item?.key, "Scenario")}</span>
+            <span>${escapeHtml(labels[index] || safe(item?.key, "Scenario"))}</span>
             <strong>${safe(value, 0)}%</strong>
           </div>
         `;
@@ -1363,17 +1527,17 @@
       const items = (system?.countryRiskFeed || []).slice(0, 5);
 
       if (!items.length) {
-        box.innerHTML = `<div class="country-row"><span class="muted">${t("noData")}</span><strong>0</strong></div>`;
+        box.innerHTML = `<div class="country-row"><span>${escapeHtml(t("noData"))}</span><strong>0</strong></div>`;
         return;
       }
 
       box.innerHTML = items.map(item => `
         <div class="country-row">
           <div>
-            <div><strong>${escapeHtml(getLocalizedText(item.nameLocalized || item.name))}</strong></div>
-            <div class="muted">${t("riskLevel")}: ${escapeHtml(safe(item.riskLevel, "-"))} | ${t("trend")}: ${escapeHtml(safe(item.trend, "-"))}</div>
+            <div class="country-name">${escapeHtml(getLocalizedText(item.nameLocalized || item.name))}</div>
+            <div class="country-meta">${escapeHtml(`${t("riskLevel")}: ${safeText(item.riskLevel, "-")} | ${t("trend")}: ${safeText(item.trend, "-")} | ${t("band")}: ${getBandLabel(Number(item.riskScore || 0))}`)}</div>
           </div>
-          <div><strong>${safe(item.riskScore, 0)}</strong></div>
+          <div class="country-score">${Number(item.riskScore || 0)}</div>
         </div>
       `).join("");
     }
@@ -1383,20 +1547,13 @@
       const lines = system?.feed || [];
 
       if (!lines.length) {
-        feed.innerHTML = `<div class="feed-item">${t("noData")}</div>`;
+        feed.innerHTML = `<div class="feed-item">${escapeHtml(t("noData"))}</div>`;
         return;
       }
 
       feed.innerHTML = lines.map(line => {
-        if (typeof line === "string") {
-          return `<div class="feed-item">${escapeHtml(line)}</div>`;
-        }
-
-        if (line && typeof line === "object" && line.text) {
-          return `<div class="feed-item">${escapeHtml(getLocalizedText(line.text))}</div>`;
-        }
-
-        return `<div class="feed-item">-</div>`;
+        const text = typeof line === "string" ? line : getLocalizedText(line?.text);
+        return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
       }).join("");
     }
 
@@ -1418,50 +1575,62 @@
       }
 
       typeEl.textContent = draft.type || "-";
-      timeEl.textContent = draft.createdAt
-        ? new Date(draft.createdAt).toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US")
-        : "-";
-
+      timeEl.textContent = draft.createdAt ? formatDateTime(draft.createdAt) : "-";
       textEl.value =
         currentLang === "ar"
           ? (draft?.payload?.text_ar || draft?.payload?.text_en || "")
           : (draft?.payload?.text_en || draft?.payload?.text_ar || "");
     }
 
-    function bindPublisher(){
-      document.getElementById("btnGenerateSignalPost")?.addEventListener("click", () => {
-        if (window.IBSS_PUBLISHER?.queueTopSignalFromEngine) {
-          window.IBSS_PUBLISHER.queueTopSignalFromEngine();
-          renderPublisherConsole();
-        }
-      });
+    function wirePublisherButtons(){
+      const btnSignal = document.getElementById("btnGenerateSignalPost");
+      const btnBrief = document.getElementById("btnGenerateBriefPost");
+      const btnCopy = document.getElementById("btnCopyDraftPost");
 
-      document.getElementById("btnGenerateBriefPost")?.addEventListener("click", () => {
-        if (window.IBSS_PUBLISHER?.queueStrategicBriefFromEngine) {
-          window.IBSS_PUBLISHER.queueStrategicBriefFromEngine();
-          renderPublisherConsole();
-        }
-      });
+      if (btnSignal && !btnSignal.dataset.bound) {
+        btnSignal.dataset.bound = "1";
+        btnSignal.addEventListener("click", function () {
+          try {
+            if (window.IBSS_PUBLISHER?.generateTopSignalPost) {
+              window.IBSS_PUBLISHER.generateTopSignalPost();
+              renderPublisherConsole();
+            }
+          } catch (error) {
+            console.error("Generate Top Signal Post error:", error);
+          }
+        });
+      }
 
-      document.getElementById("btnCopyDraftPost")?.addEventListener("click", async () => {
-        const text = document.getElementById("pubDraftText").value;
-        if (!text) return;
+      if (btnBrief && !btnBrief.dataset.bound) {
+        btnBrief.dataset.bound = "1";
+        btnBrief.addEventListener("click", function () {
+          try {
+            if (window.IBSS_PUBLISHER?.generateStrategicBrief) {
+              window.IBSS_PUBLISHER.generateStrategicBrief();
+              renderPublisherConsole();
+            }
+          } catch (error) {
+            console.error("Generate Strategic Brief error:", error);
+          }
+        });
+      }
 
-        try {
-          await navigator.clipboard.writeText(text);
-          alert(t("copied"));
-        } catch (error) {
-          console.error("Copy failed:", error);
-        }
-      });
+      if (btnCopy && !btnCopy.dataset.bound) {
+        btnCopy.dataset.bound = "1";
+        btnCopy.addEventListener("click", async function () {
+          try {
+            const text = document.getElementById("pubDraftText")?.value || "";
+            if (!text) return;
+            await navigator.clipboard.writeText(text);
+          } catch (error) {
+            console.error("Copy Draft error:", error);
+          }
+        });
+      }
     }
 
     function renderDashboard(){
       applyLanguage();
-
-      if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
-        window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
-      }
 
       const system = getSystem();
       if (!system) return;
@@ -1469,14 +1638,16 @@
       renderMeta(system);
       const level = renderLevel(system);
       renderDecision(level, system);
-      renderLayerMetrics(system);
       renderPrimarySignal(system.topSignal || system.dominantSignal || null, system);
       renderRadar(system);
-      renderTheaterLayer(system);
+      renderTicker(system);
+      renderSnapshot(system);
+      renderMetrics(system);
       renderScenarios(system);
       renderCountries(system);
       renderFeed(system);
       renderPublisherConsole();
+      wirePublisherButtons();
     }
 
     document.getElementById("btn-en").addEventListener("click", function () {
@@ -1492,7 +1663,6 @@
     });
 
     window.addEventListener("load", function () {
-      bindPublisher();
       renderDashboard();
       setInterval(renderDashboard, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
     });
