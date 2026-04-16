@@ -93,12 +93,14 @@
       box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
     }
 
-    .lang-switch{
+    .lang-switch,
+    .audio-switch{
       display:flex;
       gap:6px;
     }
 
-    .lang-switch button{
+    .lang-switch button,
+    .audio-switch button{
       background:none;
       border:1px solid rgba(255,255,255,.1);
       color:#ccc;
@@ -110,7 +112,9 @@
     }
 
     .lang-switch button:hover,
-    .lang-switch button.active{
+    .lang-switch button.active,
+    .audio-switch button:hover,
+    .audio-switch button.active{
       color:var(--gold);
       border-color:var(--gold);
     }
@@ -247,7 +251,7 @@
       scrollbar-width:none;
       direction:ltr;
       white-space:nowrap;
-      scroll-behavior:smooth;
+      scroll-behavior:auto;
     }
 
     .ticker-track::-webkit-scrollbar{
@@ -292,8 +296,7 @@
     .snapshot-item,
     .signal-row,
     .feed-item,
-    .filter-card,
-    .mini-row{
+    .filter-card{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -461,14 +464,6 @@
       line-height:1.7;
     }
 
-    .signal-meta,
-    .signal-score-box,
-    .signal-band-box,
-    .signal-region-box,
-    .signal-layer-box{
-      min-width:0;
-    }
-
     .signal-label{
       color:#8d8d8d;
       font-size:11px;
@@ -575,8 +570,7 @@
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
     html[dir="rtl"] .metric-row,
-    html[dir="rtl"] .signal-row,
-    html[dir="rtl"] .mini-row{
+    html[dir="rtl"] .signal-row{
       direction:rtl;
     }
 
@@ -632,6 +626,10 @@
           <button id="btn-en" type="button">EN</button>
           <button id="btn-ar" type="button">AR</button>
         </div>
+
+        <div class="audio-switch">
+          <button id="audioToggleBtn" type="button">AUDIO</button>
+        </div>
       </div>
     </div>
 
@@ -643,6 +641,7 @@
       <div class="hero-badges">
         <span id="sourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
         <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
+        <span id="audioBadge" class="meta-badge fallback">AUDIO — OFF</span>
       </div>
     </div>
 
@@ -757,6 +756,8 @@
   <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
   <script src="engine.js"></script>
+  <script src="audio-engine.js"></script>
+  <script src="runtime-engine.js"></script>
   <script src="publisher.js"></script>
 
   <script>
@@ -793,6 +794,10 @@
         sourceFallback: "SOURCE — FALLBACK",
         metricsOn: "METRICS — INTEGRATED",
         metricsOff: "METRICS — OFF",
+        audioOn: "AUDIO — ON",
+        audioOff: "AUDIO — OFF",
+        audioButtonOn: "AUDIO ON",
+        audioButtonOff: "AUDIO OFF",
         alertHigh: "⚠ HIGH ESCALATION — SIGNAL LAYER IN CRITICAL BAND",
         alertMed: "⚠ STRUCTURED PRESSURE — SIGNAL LAYER IN ACTIVE WATCH BAND",
         alertLow: "✓ LOW PRESSURE — SIGNAL LAYER IN MONITORING BAND",
@@ -851,6 +856,10 @@
         sourceFallback: "المصدر — الاحتياطي",
         metricsOn: "القياس — مدمج",
         metricsOff: "القياس — غير مفعل",
+        audioOn: "الصوت — يعمل",
+        audioOff: "الصوت — متوقف",
+        audioButtonOn: "تشغيل الصوت",
+        audioButtonOff: "إيقاف الصوت",
         alertHigh: "⚠ تصعيد مرتفع — طبقة الإشارات داخل الحزمة الحرجة",
         alertMed: "⚠ ضغط بنيوي — طبقة الإشارات داخل حزمة المراقبة النشطة",
         alertLow: "✓ ضغط منخفض — طبقة الإشارات داخل حزمة المراقبة",
@@ -924,12 +933,6 @@
       return "-";
     }
 
-    function levelClass(level){
-      if (level === "HIGH") return "high";
-      if (level === "MEDIUM") return "medium";
-      return "low";
-    }
-
     function scoreClass(score){
       const n = Number(score || 0);
       if (n >= 70) return "high";
@@ -966,19 +969,13 @@
       document.getElementById("miniSystemPressureLabel").textContent = t("miniSystemPressure");
 
       const prioritySelect = document.getElementById("priorityFilter");
-      if (prioritySelect) {
-        prioritySelect.options[0].text = t("all");
-      }
+      if (prioritySelect) prioritySelect.options[0].text = t("all");
 
       const regionSelect = document.getElementById("regionFilter");
-      if (regionSelect && regionSelect.options.length) {
-        regionSelect.options[0].text = t("all");
-      }
+      if (regionSelect && regionSelect.options.length) regionSelect.options[0].text = t("all");
 
       const layerSelect = document.getElementById("layerFilter");
-      if (layerSelect && layerSelect.options.length) {
-        layerSelect.options[0].text = t("all");
-      }
+      if (layerSelect && layerSelect.options.length) layerSelect.options[0].text = t("all");
 
       const searchInput = document.getElementById("searchFilter");
       if (searchInput) {
@@ -987,6 +984,8 @@
 
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+
+      updateAudioBadge();
     }
 
     function getSystem(){
@@ -1010,10 +1009,11 @@
       }
     }
 
-    function renderMeta(system){
+    function updateMeta(system){
       const line = document.getElementById("metaLine");
       const sourceBadge = document.getElementById("sourceBadge");
       const metricsBadge = document.getElementById("metricsBadge");
+      const audioBadge = document.getElementById("audioBadge");
       const dateText = formatDateTime(system?.updatedAt);
 
       line.textContent = `${t("sourceEngine")}: ${safeText(system?.source, "-")} | ${t("updatedAt")}: ${dateText}`;
@@ -1033,6 +1033,22 @@
         metricsBadge.textContent = t("metricsOff");
         metricsBadge.className = "meta-badge fallback";
       }
+
+      if (window.IBSS_AUDIO?.isEnabled?.()) {
+        audioBadge.textContent = t("audioOn");
+        audioBadge.className = "meta-badge live";
+      } else {
+        audioBadge.textContent = t("audioOff");
+        audioBadge.className = "meta-badge fallback";
+      }
+    }
+
+    function updateAudioBadge(){
+      const btn = document.getElementById("audioToggleBtn");
+      if (!btn) return;
+      const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
+      btn.textContent = enabled ? t("audioButtonOff") : t("audioButtonOn");
+      btn.classList.toggle("active", enabled);
     }
 
     function renderAlert(system){
@@ -1046,59 +1062,6 @@
       } else {
         alertBox.textContent = t("alertLow");
       }
-    }
-
-    function renderTicker(system){
-      const track = document.getElementById("tickerTrack");
-      if (!track) return;
-
-      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(8) || [];
-      const items = [];
-
-      tickerNews.forEach(item => {
-        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
-        items.push({
-          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
-          text: getLocalizedText(item.title)
-        });
-      });
-
-      if (!items.length) {
-        const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 6) : [];
-        feed.forEach(line => {
-          items.push({
-            level:
-              system?.level === "HIGH"
-                ? "high"
-                : system?.level === "MEDIUM"
-                  ? "medium"
-                  : "low",
-            text: typeof line === "string" ? line : getLocalizedText(line?.text)
-          });
-        });
-      }
-
-      if (!items.length) {
-        track.innerHTML = `
-          <div class="ticker-item">
-            <span class="ticker-dot low"></span>
-            <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(t("noFeed"))}</span>
-          </div>
-        `;
-        track.scrollLeft = 0;
-        return;
-      }
-
-      track.innerHTML = items.map(item => `
-        <div class="ticker-item">
-          <span class="ticker-dot ${item.level}"></span>
-          <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
-        </div>
-      `).join("");
-
-      requestAnimationFrame(() => {
-        track.scrollLeft = 0;
-      });
     }
 
     function renderMiniCards(system){
@@ -1291,24 +1254,24 @@
               <div class="signal-desc">${escapeHtml(getLocalizedText(signal.description))}</div>
             </div>
 
-            <div class="signal-score-box">
+            <div>
               <div class="signal-label">${escapeHtml(t("signalScore"))}</div>
               <div class="signal-score ${cls}">${score}</div>
             </div>
 
-            <div class="signal-band-box">
+            <div>
               <div class="signal-label">${escapeHtml(t("band"))}</div>
               <div class="signal-value">
                 <span class="signal-badge ${badgeClass}">${index === 0 ? escapeHtml(t("top")) : escapeHtml(getBandLabel(score))}</span>
               </div>
             </div>
 
-            <div class="signal-region-box">
+            <div>
               <div class="signal-label">${escapeHtml(t("regionField"))}</div>
               <div class="signal-value">${escapeHtml(safeText(signal.region, "-"))}</div>
             </div>
 
-            <div class="signal-layer-box">
+            <div>
               <div class="signal-label">${escapeHtml(t("layerField"))}</div>
               <div class="signal-value">${escapeHtml(getLocalizedText(signal.layer))}</div>
             </div>
@@ -1317,17 +1280,13 @@
       }).join("");
     }
 
-    function renderPage(){
-      applyLanguage();
-
-      const system = getSystem();
+    function renderSignalsCore(system){
       if (!system) return;
-
       currentSystem = system;
 
-      renderMeta(system);
+      applyLanguage();
+      updateMeta(system);
       renderAlert(system);
-      renderTicker(system);
       renderMiniCards(system);
       renderHighlight(system);
       renderSnapshot(system);
@@ -1351,22 +1310,49 @@
       });
     }
 
+    function startRuntime(){
+      if (!window.IBSS_RUNTIME) {
+        const system = getSystem();
+        if (system) renderSignalsCore(system);
+        return;
+      }
+
+      window.IBSS_RUNTIME.start({
+        pageId: "signals",
+        lang: currentLang,
+        tickerTrackEl: document.getElementById("tickerTrack"),
+        refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+        systemProvider: getSystem,
+        afterRender: function(system) {
+          renderSignalsCore(system);
+        }
+      });
+    }
+
     document.getElementById("btn-en").addEventListener("click", function () {
       currentLang = "en";
       localStorage.setItem("ibss_lang", "en");
-      renderPage();
+      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (currentSystem) renderSignalsCore(currentSystem);
     });
 
     document.getElementById("btn-ar").addEventListener("click", function () {
       currentLang = "ar";
       localStorage.setItem("ibss_lang", "ar");
-      renderPage();
+      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (currentSystem) renderSignalsCore(currentSystem);
+    });
+
+    document.getElementById("audioToggleBtn").addEventListener("click", function () {
+      if (!window.IBSS_AUDIO) return;
+      window.IBSS_AUDIO.toggle();
+      updateAudioBadge();
+      if (currentSystem) updateMeta(currentSystem);
     });
 
     window.addEventListener("load", function () {
       bindFilters();
-      renderPage();
-      setInterval(renderPage, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
+      startRuntime();
     });
   </script>
 </body>
