@@ -98,7 +98,8 @@
       gap:6px;
     }
 
-    .lang-switch button{
+    .lang-switch button,
+    .audio-switch button{
       background:none;
       border:1px solid rgba(255,255,255,.1);
       color:#ccc;
@@ -110,9 +111,16 @@
     }
 
     .lang-switch button:hover,
-    .lang-switch button.active{
+    .lang-switch button.active,
+    .audio-switch button:hover,
+    .audio-switch button.active{
       color:var(--gold);
       border-color:var(--gold);
+    }
+
+    .audio-switch{
+      display:flex;
+      gap:6px;
     }
 
     .hero{
@@ -367,12 +375,14 @@
       height:300px;
       border-radius:50%;
       filter:drop-shadow(0 0 20px rgba(212,175,55,.08));
+      overflow:hidden;
     }
 
     .circle{
       position:absolute;
       border:1px solid rgba(212,175,55,.16);
       border-radius:50%;
+      z-index:2;
     }
 
     .c1{width:90px;height:90px;top:105px;left:105px}
@@ -389,7 +399,7 @@
       top:141px;
       left:141px;
       box-shadow:0 0 20px rgba(212,175,55,.8);
-      z-index:5;
+      z-index:6;
     }
 
     .sweep{
@@ -402,37 +412,7 @@
       background:conic-gradient(rgba(212,175,55,.26), rgba(212,175,55,.05), transparent 42%);
       animation:spin 4s linear infinite;
       opacity:.9;
-    }
-
-    .radar-signal{
-      position:absolute;
-      border-radius:50%;
-      transform:translate(-50%, -50%);
-      transition:.35s ease;
-      z-index:6;
-    }
-
-    .radar-signal.high{
-      background:var(--red);
-      box-shadow:0 0 16px rgba(255,77,79,.75);
-    }
-
-    .radar-signal.medium{
-      background:var(--orange);
-      box-shadow:0 0 16px rgba(255,159,26,.75);
-    }
-
-    .radar-signal.low{
-      background:var(--green);
-      box-shadow:0 0 16px rgba(0,208,132,.7);
-    }
-
-    .radar-signal.dominant{
-      outline:3px solid rgba(212,175,55,.75);
-      outline-offset:5px;
-      box-shadow:
-        0 0 0 6px rgba(212,175,55,.08),
-        0 0 24px rgba(212,175,55,.28);
+      z-index:3;
     }
 
     .legend,
@@ -598,7 +578,7 @@
       scrollbar-width:none;
       direction:ltr;
       white-space:nowrap;
-      scroll-behavior:smooth;
+      scroll-behavior:auto;
     }
 
     .ticker-track::-webkit-scrollbar{
@@ -798,6 +778,10 @@
           <button id="btn-en" type="button">EN</button>
           <button id="btn-ar" type="button">AR</button>
         </div>
+
+        <div class="audio-switch">
+          <button id="audioToggleBtn" type="button">AUDIO</button>
+        </div>
       </div>
     </div>
 
@@ -809,6 +793,7 @@
       <div class="hero-badges">
         <span id="sourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
         <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
+        <span id="audioBadge" class="meta-badge fallback">AUDIO — OFF</span>
       </div>
     </div>
 
@@ -862,10 +847,10 @@
           <div id="signalBadges" class="mini-badges"></div>
         </div>
 
-        <div class="title" style="margin-top:18px" id="radarTitle">Radar</div>
+        <div class="title" style="margin-top:18px" id="radarTitle">Geo Radar</div>
 
         <div class="radar-wrap">
-          <div class="radar" id="radar">
+          <div class="radar" id="radar" data-radar-size="300">
             <div class="circle c4"></div>
             <div class="circle c3"></div>
             <div class="circle c2"></div>
@@ -950,6 +935,9 @@
   <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
   <script src="engine.js"></script>
+  <script src="audio-engine.js"></script>
+  <script src="geo-radar.js"></script>
+  <script src="runtime-engine.js"></script>
   <script src="publisher.js"></script>
 
   <script>
@@ -971,7 +959,7 @@
         decision: "Decision",
         mode: "Mode",
         signal: "Primary Signal",
-        radar: "Radar",
+        radar: "Geo Radar",
         feed: "Live Feed",
         scenario: "Scenario Engine",
         country: "Country Risk Unit",
@@ -1019,7 +1007,11 @@
         countryRisk: "Country Risk",
         systemStress: "System Stress",
         band: "Band",
-        confidence: "Confidence"
+        confidence: "Confidence",
+        audioOn: "AUDIO — ON",
+        audioOff: "AUDIO — OFF",
+        audioButtonOn: "AUDIO ON",
+        audioButtonOff: "AUDIO OFF"
       },
       ar: {
         nav_home: "الرئيسية",
@@ -1038,7 +1030,7 @@
         decision: "القرار",
         mode: "الوضع",
         signal: "الإشارة الأساسية",
-        radar: "الرادار",
+        radar: "الرادار الجغرافي",
         feed: "التغذية الحية",
         scenario: "محرك السيناريو",
         country: "وحدة تتبع مخاطر الدول",
@@ -1086,11 +1078,16 @@
         countryRisk: "خطر الدولة",
         systemStress: "ضغط النظام",
         band: "الحزمة",
-        confidence: "الثقة"
+        confidence: "الثقة",
+        audioOn: "الصوت — يعمل",
+        audioOff: "الصوت — متوقف",
+        audioButtonOn: "تشغيل الصوت",
+        audioButtonOff: "إيقاف الصوت"
       }
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
+    let dashboardSystem = null;
 
     function t(key){
       return UI[currentLang]?.[key] || key;
@@ -1187,6 +1184,12 @@
       document.getElementById("btnCopyDraftPost").textContent =
         currentLang === "ar" ? "نسخ المسودة" : "Copy Draft";
 
+      const audioBtn = document.getElementById("audioToggleBtn");
+      if (audioBtn) {
+        audioBtn.textContent = window.IBSS_AUDIO?.isEnabled?.() ? t("audioButtonOff") : t("audioButtonOn");
+        audioBtn.classList.toggle("active", !!window.IBSS_AUDIO?.isEnabled?.());
+      }
+
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
     }
@@ -1197,25 +1200,24 @@
           window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
         }
 
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+        if (window.IBSS_ENGINE?.getSystemState) {
           return window.IBSS_ENGINE.getSystemState();
         }
 
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
+        if (window.IBSS_ENGINE?.getStaticSystemFallback) {
           return window.IBSS_ENGINE.getStaticSystemFallback();
         }
-
-        return null;
       } catch (error) {
-        console.error("IBSS dashboard render error:", error);
-        return null;
+        console.error("Dashboard getSystem error:", error);
       }
+      return null;
     }
 
     function renderMeta(system){
       const line = document.getElementById("metaLine");
       const sourceBadge = document.getElementById("sourceBadge");
       const metricsBadge = document.getElementById("metricsBadge");
+      const audioBadge = document.getElementById("audioBadge");
       const dateText = formatDateTime(system?.updatedAt);
 
       line.textContent = `${t("sourceEngine")}: ${safe(system?.source, "-")} | ${t("updatedAt")}: ${dateText}`;
@@ -1234,6 +1236,14 @@
       } else {
         metricsBadge.textContent = t("metricsOff");
         metricsBadge.className = "meta-badge fallback";
+      }
+
+      if (window.IBSS_AUDIO?.isEnabled?.()) {
+        audioBadge.textContent = t("audioOn");
+        audioBadge.className = "meta-badge live";
+      } else {
+        audioBadge.textContent = t("audioOff");
+        audioBadge.className = "meta-badge fallback";
       }
     }
 
@@ -1320,42 +1330,9 @@
       `;
     }
 
-    function renderRadar(system){
-      const radar = document.getElementById("radar");
+    function renderRadarLegend(system){
       const legend = document.getElementById("radarLegend");
-
-      if (!radar || !legend) return;
-
-      radar.querySelectorAll(".radar-signal").forEach(el => el.remove());
-
       const signals = (system?.rankedSignals || []).slice(0, 5);
-      const positions = [
-        { x: 50, y: 18 },
-        { x: 78, y: 38 },
-        { x: 68, y: 72 },
-        { x: 28, y: 68 },
-        { x: 18, y: 45 }
-      ];
-
-      signals.forEach((signal, index) => {
-        const dot = document.createElement("div");
-        const pos = positions[index] || { x: 50, y: 50 };
-        const score = Number(signal?.balancedScore100 ?? signal?.score100 ?? 0);
-        const size = Math.max(10, Math.min(26, Math.round(score / 5)));
-
-        const priority = signal?.priority || signal?.weight || "LOW";
-        const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
-
-        dot.className = "radar-signal " + cls;
-        if (index === 0) dot.classList.add("dominant");
-
-        dot.style.width = size + "px";
-        dot.style.height = size + "px";
-        dot.style.left = pos.x + "%";
-        dot.style.top = pos.y + "%";
-
-        radar.appendChild(dot);
-      });
 
       if (!signals.length) {
         legend.innerHTML = `
@@ -1393,59 +1370,6 @@
           </div>
         `;
       }).join("");
-    }
-
-    function renderTicker(system){
-      const track = document.getElementById("tickerTrack");
-      if (!track) return;
-
-      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(8) || [];
-      const items = [];
-
-      tickerNews.forEach(item => {
-        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
-        items.push({
-          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
-          text: getLocalizedText(item.title)
-        });
-      });
-
-      if (!items.length) {
-        const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 6) : [];
-        feed.forEach(line => {
-          items.push({
-            level:
-              system?.level === "HIGH"
-                ? "high"
-                : system?.level === "MEDIUM"
-                  ? "medium"
-                  : "low",
-            text: typeof line === "string" ? line : getLocalizedText(line?.text)
-          });
-        });
-      }
-
-      if (!items.length) {
-        track.innerHTML = `
-          <div class="ticker-item">
-            <span class="ticker-dot low"></span>
-            <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(t("noData"))}</span>
-          </div>
-        `;
-        track.scrollLeft = 0;
-        return;
-      }
-
-      track.innerHTML = items.map(item => `
-        <div class="ticker-item">
-          <span class="ticker-dot ${item.level}"></span>
-          <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
-        </div>
-      `).join("");
-
-      requestAnimationFrame(() => {
-        track.scrollLeft = 0;
-      });
     }
 
     function renderSnapshot(system){
@@ -1629,18 +1553,33 @@
       }
     }
 
-    function renderDashboard(){
-      applyLanguage();
+    function wireAudioButton(){
+      const btn = document.getElementById("audioToggleBtn");
+      if (!btn || btn.dataset.bound === "1") return;
 
-      const system = getSystem();
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", function () {
+        try {
+          if (!window.IBSS_AUDIO) return;
+          window.IBSS_AUDIO.toggle();
+          applyLanguage();
+          if (dashboardSystem) renderMeta(dashboardSystem);
+        } catch (error) {
+          console.error("Audio toggle error:", error);
+        }
+      });
+    }
+
+    function renderDashboardCore(system){
       if (!system) return;
+      dashboardSystem = system;
 
+      applyLanguage();
       renderMeta(system);
       const level = renderLevel(system);
       renderDecision(level, system);
       renderPrimarySignal(system.topSignal || system.dominantSignal || null, system);
-      renderRadar(system);
-      renderTicker(system);
+      renderRadarLegend(system);
       renderSnapshot(system);
       renderMetrics(system);
       renderScenarios(system);
@@ -1648,23 +1587,45 @@
       renderFeed(system);
       renderPublisherConsole();
       wirePublisherButtons();
+      wireAudioButton();
+    }
+
+    function startRuntime(){
+      if (!window.IBSS_RUNTIME) {
+        const system = getSystem();
+        if (system) renderDashboardCore(system);
+        return;
+      }
+
+      window.IBSS_RUNTIME.start({
+        pageId: "dashboard",
+        lang: currentLang,
+        radarEl: document.getElementById("radar"),
+        tickerTrackEl: document.getElementById("tickerTrack"),
+        refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+        systemProvider: getSystem,
+        afterRender: function(system) {
+          renderDashboardCore(system);
+        }
+      });
     }
 
     document.getElementById("btn-en").addEventListener("click", function () {
       currentLang = "en";
       localStorage.setItem("ibss_lang", "en");
-      renderDashboard();
+      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (dashboardSystem) renderDashboardCore(dashboardSystem);
     });
 
     document.getElementById("btn-ar").addEventListener("click", function () {
       currentLang = "ar";
       localStorage.setItem("ibss_lang", "ar");
-      renderDashboard();
+      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (dashboardSystem) renderDashboardCore(dashboardSystem);
     });
 
     window.addEventListener("load", function () {
-      renderDashboard();
-      setInterval(renderDashboard, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
+      startRuntime();
     });
   </script>
 </body>
