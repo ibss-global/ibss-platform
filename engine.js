@@ -6,7 +6,7 @@ window.IBSS_ENGINE = (function () {
     historyLimit: 180,
     reportLimit: 80,
     archiveLimit: 120,
-    storageKey: "ibss_engine_state_v8"
+    storageKey: "ibss_engine_state_v9"
   };
 
   const STATE = {
@@ -44,18 +44,6 @@ window.IBSS_ENGINE = (function () {
       .trim();
   }
 
-  function localize(en, ar) {
-    return { en, ar };
-  }
-
-  function titleCase(text) {
-    return safeText(text)
-      .split(" ")
-      .filter(Boolean)
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-  }
-
   function getLocalizedText(value, lang = "en") {
     if (!value) return "-";
 
@@ -81,6 +69,18 @@ window.IBSS_ENGINE = (function () {
     }
 
     return "-";
+  }
+
+  function localize(en, ar) {
+    return { en, ar };
+  }
+
+  function titleCase(text) {
+    return safeText(text)
+      .split(" ")
+      .filter(Boolean)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
   }
 
   function normalizePriority(value) {
@@ -130,6 +130,41 @@ window.IBSS_ENGINE = (function () {
     return localize("WATCH", "مراقبة");
   }
 
+  function normalizeBandCode(score) {
+    if (window.IBSS_METRICS?.classifyBand) {
+      return window.IBSS_METRICS.classifyBand(score)?.code || "LOW";
+    }
+
+    if (score >= 85) return "CRITICAL";
+    if (score >= 70) return "HIGH";
+    if (score >= 55) return "PRESSURE";
+    if (score >= 35) return "WATCH";
+    return "LOW";
+  }
+
+  function riskLevelFromScore(score) {
+    const band = normalizeBandCode(score);
+    if (band === "CRITICAL" || band === "HIGH") return "HIGH";
+    if (band === "PRESSURE" || band === "WATCH") return "MEDIUM";
+    return "LOW";
+  }
+
+  function decisionFromSystem(systemPressure, confidenceScore) {
+    if (systemPressure >= 90 && confidenceScore >= 75) {
+      return { decision: "ACT", mode: "ACTIVE RESPONSE" };
+    }
+
+    if (systemPressure >= 78) {
+      return { decision: "PRD", mode: "PREPARATION" };
+    }
+
+    if (systemPressure >= 55) {
+      return { decision: "WATCH+", mode: "HEIGHTENED MONITORING" };
+    }
+
+    return { decision: "WATCH", mode: "MONITORING" };
+  }
+
   function getSignals() {
     return asArray(window.IBSS_SIGNALS);
   }
@@ -146,6 +181,7 @@ window.IBSS_ENGINE = (function () {
     if (window.IBSS_NEWS_UTILS && typeof window.IBSS_NEWS_UTILS.getAllNews === "function") {
       return asArray(window.IBSS_NEWS_UTILS.getAllNews());
     }
+
     return asArray(window.IBSS_NEWS);
   }
 
@@ -246,7 +282,8 @@ window.IBSS_ENGINE = (function () {
         newsMeta: {
           source: item.source || item.sourceName || "External",
           publishedAt: item.publishedAt || item.timestamp || nowIso()
-        }
+        },
+        raw: item
       };
     });
   }
@@ -282,6 +319,10 @@ window.IBSS_ENGINE = (function () {
   }
 
   function scoreSignalBase(signal) {
+    if (window.IBSS_METRICS?.computeSignalScore) {
+      return clamp(safeNumber(window.IBSS_METRICS.computeSignalScore(signal).score, 0) / 100, 0, 1);
+    }
+
     if (safeNumber(signal?.balancedScore100, 0) > 0 && !signal?.metrics) {
       return clamp(safeNumber(signal.balancedScore100) / 100, 0, 1);
     }
@@ -308,23 +349,30 @@ window.IBSS_ENGINE = (function () {
   }
 
   function scoreSignal100(signal) {
+    if (window.IBSS_METRICS?.computeSignalScore) {
+      return safeNumber(window.IBSS_METRICS.computeSignalScore(signal).score, 0);
+    }
+
     return Math.round(scoreSignalBase(signal) * 100);
   }
 
   function buildRankedSignals() {
     return buildUnifiedSignals()
       .map(signal => {
-        const baseScore = scoreSignalBase(signal);
-        const score100 = Math.round(baseScore * 100);
-        const priority = normalizePriority(detectPriority(signal));
+        const metricScore = scoreSignal100(signal);
+        const priority = normalizePriority(detectPriority({
+          ...signal,
+          balancedScore100: metricScore,
+          score100: metricScore
+        }));
 
         return {
           ...signal,
           priority,
-          score: baseScore,
-          score100,
-          balancedScore100: safeNumber(signal?.balancedScore100, score100),
-          live: !!(signal.live || signal.active)
+          score: clamp(metricScore / 100, 0, 1),
+          score100: metricScore,
+          balancedScore100: metricScore,
+          live: !!(signal.live || signal.active || metricScore >= 45)
         };
       })
       .sort((a, b) => {
@@ -335,43 +383,56 @@ window.IBSS_ENGINE = (function () {
   }
 
   function buildSignalPressure(rankedSignals) {
-    const topSignal = rankedSignals[0] || null;
-    const average = rankedSignals.length
-      ? rankedSignals.reduce((sum, signal) => sum + safeNumber(signal.score, 0), 0) / rankedSignals.length
+    const list = asArray(rankedSignals);
+    if (!list.length) return 0;
+
+    const avgScore = list.length
+      ? Math.round(list.reduce((sum, signal) => sum + safeNumber(signal.balancedScore100, 0), 0) / list.length)
       : 0;
 
-    const activeSignals = rankedSignals.filter(signal => signal.live).length;
+    const maxScore = safeNumber(list[0]?.balancedScore100, 0);
+    const liveCount = list.filter(signal => signal.live).length;
 
     let pressure = Math.round(
-      Math.min(
-        (average * 55) +
-        ((topSignal?.score || 0) * 25) +
-        Math.min(activeSignals, 10),
-        100
-      )
+      (avgScore * 0.60) +
+      (maxScore * 0.25) +
+      (Math.min(liveCount, 12) * 1.25)
     );
-
-    if (topSignal?.priority === "HIGH") pressure += 8;
-    else if (topSignal?.priority === "MEDIUM") pressure += 4;
 
     return clamp(pressure, 0, 100);
   }
 
   function buildNewsPressure(newsItems) {
+    if (window.IBSS_METRICS?.computeSystemStress) {
+      const list = asArray(newsItems);
+
+      const highCount = list.filter(item =>
+        normalizePriority(item.priority || item.severity) === "HIGH"
+      ).length;
+
+      const mediumCount = list.filter(item =>
+        normalizePriority(item.priority || item.severity) === "MEDIUM"
+      ).length;
+
+      const lowCount = list.filter(item =>
+        normalizePriority(item.priority || item.severity) === "LOW"
+      ).length;
+
+      const weighted = (highCount * 16) + (mediumCount * 9) + (lowCount * 4);
+
+      return {
+        count: list.length,
+        highCount,
+        mediumCount,
+        lowCount,
+        pressure: clamp(weighted, 0, 100)
+      };
+    }
+
     const list = asArray(newsItems);
-
-    const highCount = list.filter(item =>
-      normalizePriority(item.priority || item.severity) === "HIGH"
-    ).length;
-
-    const mediumCount = list.filter(item =>
-      normalizePriority(item.priority || item.severity) === "MEDIUM"
-    ).length;
-
-    const lowCount = list.filter(item =>
-      normalizePriority(item.priority || item.severity) === "LOW"
-    ).length;
-
+    const highCount = list.filter(item => normalizePriority(item.priority || item.severity) === "HIGH").length;
+    const mediumCount = list.filter(item => normalizePriority(item.priority || item.severity) === "MEDIUM").length;
+    const lowCount = list.filter(item => normalizePriority(item.priority || item.severity) === "LOW").length;
     const weighted = (highCount * 16) + (mediumCount * 9) + (lowCount * 4);
 
     return {
@@ -413,12 +474,16 @@ window.IBSS_ENGINE = (function () {
   function normalizeClusterEntry(item, index = 0) {
     if (!item) return null;
 
+    const metricScore = window.IBSS_METRICS?.computeClusterRisk
+      ? window.IBSS_METRICS.computeClusterRisk(item).score
+      : safeNumber(item.avgRisk, item.riskScore);
+
     return {
       id: item.id || `CLUSTER-${index + 1}`,
       name: item.name || item.title || localize(`Cluster ${index + 1}`, `عنقود ${index + 1}`),
-      avgRisk: safeNumber(item.avgRisk, item.riskScore),
-      maxRisk: safeNumber(item.maxRisk, item.avgRisk),
-      escalationLevel: safeText(item.escalationLevel, riskLevelFromScore(safeNumber(item.avgRisk, 0))),
+      avgRisk: metricScore,
+      maxRisk: safeNumber(item.maxRisk, metricScore),
+      escalationLevel: safeText(item.escalationLevel, riskLevelFromScore(metricScore)),
       priority: safeText(item.priority, "SUPPORT"),
       trend: safeText(item.trend, "STABLE"),
       theaterId: item.theaterId || item.parentTheaterId || null,
@@ -430,12 +495,16 @@ window.IBSS_ENGINE = (function () {
   function normalizeTheaterEntry(item, index = 0) {
     if (!item) return null;
 
+    const metricScore = window.IBSS_METRICS?.computeTheaterRisk
+      ? window.IBSS_METRICS.computeTheaterRisk(item).score
+      : safeNumber(item.avgRisk, item.riskScore);
+
     return {
       id: item.id || `THEATER-${index + 1}`,
       name: item.name || item.title || localize(`Theater ${index + 1}`, `مسرح ${index + 1}`),
-      avgRisk: safeNumber(item.avgRisk, item.riskScore),
-      maxRisk: safeNumber(item.maxRisk, item.avgRisk),
-      escalationLevel: safeText(item.escalationLevel, riskLevelFromScore(safeNumber(item.avgRisk, 0))),
+      avgRisk: metricScore,
+      maxRisk: safeNumber(item.maxRisk, metricScore),
+      escalationLevel: safeText(item.escalationLevel, riskLevelFromScore(metricScore)),
       priority: safeText(item.priority, "SUPPORT"),
       trend: safeText(item.trend, "STABLE"),
       clusters: asArray(item.clusters)
@@ -606,11 +675,18 @@ window.IBSS_ENGINE = (function () {
       safeText(cluster.escalationLevel).toUpperCase() === "ELEVATED"
     ).length;
 
-    let pressure = Math.round(
-      (avgRisk * 0.65) +
-      (safeNumber(topCluster?.maxRisk, 0) * 0.20) +
-      (Math.min(list.length, 8) * 2.2)
-    );
+    let pressure = window.IBSS_METRICS?.computeSystemStress
+      ? safeNumber(window.IBSS_METRICS.computeSystemStress({
+          signalPressure: avgRisk,
+          clusterPressure: safeNumber(topCluster?.maxRisk, 0),
+          theaterPressure: Math.min(list.length * 10, 100),
+          newsPressure: highCount * 12 + elevatedCount * 6
+        }).score, 0)
+      : Math.round(
+          (avgRisk * 0.65) +
+          (safeNumber(topCluster?.maxRisk, 0) * 0.20) +
+          (Math.min(list.length, 8) * 2.2)
+        );
 
     const topLevel = safeText(topCluster?.escalationLevel).toUpperCase();
     if (topLevel === "SEVERE") pressure += 8;
@@ -668,66 +744,6 @@ window.IBSS_ENGINE = (function () {
     return "STABLE";
   }
 
-  function riskLevelFromScore(score) {
-    if (score >= 78) return "HIGH";
-    if (score >= 52) return "MEDIUM";
-    return "LOW";
-  }
-
-  function decisionFromLevel(level, systemPressure, confidenceScore) {
-    if (level === "HIGH") {
-      if (systemPressure >= 85 && confidenceScore >= 75) {
-        return { decision: "ACT", mode: "ACTIVE RESPONSE" };
-      }
-      return { decision: "PRD", mode: "PREPARATION" };
-    }
-
-    if (level === "MEDIUM") {
-      if (systemPressure >= 65) {
-        return { decision: "PRD", mode: "PREPARATION" };
-      }
-      return { decision: "WATCH+", mode: "HEIGHTENED MONITORING" };
-    }
-
-    return { decision: "WATCH", mode: "MONITORING" };
-  }
-
-  function buildScenarios(level, signalPressure, clusterPressure, theaterPressure) {
-    const clusterTop = safeNumber(clusterPressure?.pressure, 0);
-    const theaterTop = safeNumber(theaterPressure?.pressure, 0);
-    const signalTop = safeNumber(signalPressure, 0);
-
-    if (level === "HIGH") {
-      const a = clamp(Math.round((clusterTop * 0.25) + 38), 35, 68);
-      const b = clamp(Math.round((theaterTop * 0.18) + 18), 18, 38);
-      const c = clamp(100 - a - b, 8, 30);
-
-      return [
-        { key: "A", value: a },
-        { key: "B", value: b },
-        { key: "C", value: c }
-      ];
-    }
-
-    if (level === "MEDIUM") {
-      const a = clamp(Math.round((signalTop * 0.16) + 22), 22, 48);
-      const b = clamp(Math.round((clusterTop * 0.14) + 20), 20, 42);
-      const c = clamp(100 - a - b, 18, 38);
-
-      return [
-        { key: "A", value: a },
-        { key: "B", value: b },
-        { key: "C", value: c }
-      ];
-    }
-
-    return [
-      { key: "A", value: 18 },
-      { key: "B", value: 30 },
-      { key: "C", value: 52 }
-    ];
-  }
-
   function findPreviousCountryRisk(name) {
     for (let i = STATE.history.length - 1; i >= 0; i -= 1) {
       const row = STATE.history[i];
@@ -737,22 +753,74 @@ window.IBSS_ENGINE = (function () {
     return null;
   }
 
-  function buildCountryRiskFeed(rankedSignals) {
+  function detectCountryTheater(countryName, theaters) {
+    const normalizedCountry = normalizeText(countryName);
+    const theaterList = asArray(theaters);
+
+    return theaterList.find(theater => {
+      const tName = normalizeText(getLocalizedText(theater?.name, "en"));
+      return tName.includes(normalizedCountry);
+    }) || null;
+  }
+
+  function detectCountryClusters(countryName, clusters) {
+    const normalizedCountry = normalizeText(countryName);
+
+    return asArray(clusters).filter(cluster => {
+      const cName = normalizeText(getLocalizedText(cluster?.name, "en"));
+      const region = normalizeText(cluster?.region);
+      return cName.includes(normalizedCountry) || region.includes(normalizedCountry);
+    });
+  }
+
+  function detectCountrySignals(countryName, rankedSignals) {
+    const normalizedCountry = normalizeText(countryName);
+
+    return asArray(rankedSignals).filter(signal => {
+      const sCountry = normalizeText(signal?.country);
+      const sRegion = normalizeText(signal?.region);
+      const sTitle = normalizeText(getLocalizedText(signal?.title, "en"));
+
+      return (
+        sCountry === normalizedCountry ||
+        sRegion === normalizedCountry ||
+        sTitle.includes(normalizedCountry)
+      );
+    });
+  }
+
+  function buildCountryRiskFeed(rankedSignals, clusters, theaters, newsPressure) {
     const countries = getCountries();
 
     if (countries.length) {
       return [...countries]
-        .sort((a, b) => safeNumber(b.riskScore) - safeNumber(a.riskScore))
-        .slice(0, 5)
-        .map(country => ({
-          id: country.id,
-          name: getLocalizedText(country.name, "en"),
-          nameLocalized: country.name,
-          riskScore: safeNumber(country.riskScore),
-          riskLevel: country.riskLevel || riskLevelFromScore(safeNumber(country.riskScore)),
-          trend: country.trend || "STABLE",
-          primaryDrivers: asArray(country.primaryDrivers?.en || country.primaryDrivers || [])
-        }));
+        .map(country => {
+          const countryName = getLocalizedText(country.name, "en");
+          const relatedSignals = detectCountrySignals(countryName, rankedSignals);
+          const relatedClusters = detectCountryClusters(countryName, clusters);
+          const relatedTheater = detectCountryTheater(countryName, theaters);
+
+          const metric = window.IBSS_METRICS?.computeCountryRisk
+            ? window.IBSS_METRICS.computeCountryRisk(country, {
+                relatedSignals,
+                relatedClusters,
+                relatedTheater,
+                newsPressure: safeNumber(newsPressure?.pressure, 0)
+              })
+            : { score: safeNumber(country.riskScore, 0) };
+
+          return {
+            id: country.id,
+            name: countryName,
+            nameLocalized: country.name,
+            riskScore: safeNumber(metric.score, safeNumber(country.riskScore, 0)),
+            riskLevel: country.riskLevel || riskLevelFromScore(safeNumber(metric.score, 0)),
+            trend: country.trend || "STABLE",
+            primaryDrivers: asArray(country.primaryDrivers?.en || country.primaryDrivers || [])
+          };
+        })
+        .sort((a, b) => b.riskScore - a.riskScore)
+        .slice(0, 5);
     }
 
     return rankedSignals.slice(0, 5).map(signal => {
@@ -967,7 +1035,7 @@ window.IBSS_ENGINE = (function () {
       : (lang === "ar" ? "غير محدد" : "Undefined");
 
     const level = lang === "ar"
-      ? (system.level === "HIGH" ? "مرتفع" : system.level === "MEDIUM" ? "متوسط" : "منخفض")
+      ? (system.level === "HIGH" ? "مرتفع" : "متوسط")
       : system.level;
 
     const decision = lang === "ar"
@@ -986,7 +1054,7 @@ window.IBSS_ENGINE = (function () {
           `المسرح الأعلى حاليًا هو ${topTheater}. ` +
           `الملف الاستراتيجي الأعلى هو ${topCluster}. ` +
           `أما الإشارة الأعلى فهي ${topSignal}. ` +
-          `تم حساب الضغط النهائي اعتمادًا على ضغط الإشارات، ضغط الملفات الاستراتيجية، ضغط المسرح، والضغط الخبري الحي. ` +
+          `تم حساب الضغط النهائي اعتمادًا على مرجع metrics-engine الموحد بين الإشارات، الملفات، المسرح، والأخبار الحية. ` +
           `محرك السيناريو يوزّع الاحتمالات على النحو التالي: ` +
           `أ ${system.scenarios[0]?.value || 0}%، ` +
           `ب ${system.scenarios[1]?.value || 0}%، ` +
@@ -994,9 +1062,7 @@ window.IBSS_ENGINE = (function () {
         recommendation:
           system.level === "HIGH"
             ? "يوصى برفع الجاهزية التشغيلية وتكثيف المراقبة على مستوى المسرح والملف الأعلى."
-            : system.level === "MEDIUM"
-              ? "يوصى بالحفاظ على وضعية التحضير ومراقبة تحولات الملف الاستراتيجي الأعلى."
-              : "يوصى باستمرار المراقبة وتحديث التقدير دون تصعيد إضافي."
+            : "يوصى بالحفاظ على وضعية التحضير ومراقبة تحولات الملف الاستراتيجي الأعلى."
       };
     }
 
@@ -1006,7 +1072,7 @@ window.IBSS_ENGINE = (function () {
         `The top theater is ${topTheater}. ` +
         `The leading strategic file is ${topCluster}. ` +
         `The dominant signal is ${topSignal}. ` +
-        `Final system pressure was calculated from signal pressure, strategic file pressure, theater pressure, and live news pressure. ` +
+        `Final system pressure was calculated through the unified metrics-engine layer across signals, strategic files, theaters, and live news. ` +
         `Scenario distribution currently stands at ` +
         `A ${system.scenarios[0]?.value || 0}%, ` +
         `B ${system.scenarios[1]?.value || 0}%, ` +
@@ -1014,9 +1080,7 @@ window.IBSS_ENGINE = (function () {
       recommendation:
         system.level === "HIGH"
           ? "Raise operational readiness and intensify monitoring at both theater and strategic-file levels."
-          : system.level === "MEDIUM"
-            ? "Maintain preparation posture and watch transitions in the leading strategic file."
-            : "Continue monitoring and refresh assessment without further escalation."
+          : "Maintain preparation posture and watch transitions in the leading strategic file."
     };
   }
 
@@ -1190,7 +1254,6 @@ window.IBSS_ENGINE = (function () {
 
     const topCluster = clusters[0] || null;
     const topTheater = theaters[0] || null;
-
     const newsItems = getNews();
 
     const signalPressure = buildSignalPressure(rankedSignals);
@@ -1205,12 +1268,21 @@ window.IBSS_ENGINE = (function () {
       rankedSignals
     );
 
-    let systemPressure = Math.round(
-      (signalPressure * 0.36) +
-      (clusterPressure.pressure * 0.24) +
-      (theaterPressure.pressure * 0.22) +
-      (newsPressure.pressure * 0.18)
-    );
+    const systemMetric = window.IBSS_METRICS?.computeSystemStress
+      ? window.IBSS_METRICS.computeSystemStress({
+          signalPressure,
+          clusterPressure: clusterPressure.pressure,
+          theaterPressure: theaterPressure.pressure,
+          newsPressure: newsPressure.pressure
+        })
+      : { score: Math.round(
+          (signalPressure * 0.36) +
+          (clusterPressure.pressure * 0.24) +
+          (theaterPressure.pressure * 0.22) +
+          (newsPressure.pressure * 0.18)
+        ) };
+
+    let systemPressure = clamp(safeNumber(systemMetric.score, 0), 0, 100);
 
     const theaterPriority = safeText(topTheater?.priority).toUpperCase();
     const clusterEsc = safeText(topCluster?.escalationLevel).toUpperCase();
@@ -1222,11 +1294,16 @@ window.IBSS_ENGINE = (function () {
     systemPressure = clamp(systemPressure, 0, 100);
 
     const level = riskLevelFromScore(systemPressure);
-    const decisionState = decisionFromLevel(level, systemPressure, confidenceScore);
+    const decisionState = decisionFromSystem(systemPressure, confidenceScore);
 
     const liveSignals = rankedSignals.filter(signal => signal.live);
-    const scenarios = buildScenarios(level, signalPressure, clusterPressure, theaterPressure);
-    const countryRiskFeed = buildCountryRiskFeed(rankedSignals);
+    const scenarios = systemPressure >= 85
+      ? [{ key: "A", value: 57 }, { key: "B", value: 28 }, { key: "C", value: 15 }]
+      : systemPressure >= 70
+        ? [{ key: "A", value: 43 }, { key: "B", value: 34 }, { key: "C", value: 23 }]
+        : [{ key: "A", value: 24 }, { key: "B", value: 33 }, { key: "C", value: 43 }];
+
+    const countryRiskFeed = buildCountryRiskFeed(rankedSignals, clusters, theaters, newsPressure);
 
     const system = {
       source: "engine",
@@ -1257,7 +1334,8 @@ window.IBSS_ENGINE = (function () {
       publishedContent: getPublishedContent(),
       publishedNewsContent: getPublishedNewsContent(),
       liveNews: newsItems,
-      snapshot: null
+      snapshot: null,
+      metricsReference: "IBSS_METRICS_V1"
     };
 
     system.feed = buildFeed(system);
@@ -1295,7 +1373,6 @@ window.IBSS_ENGINE = (function () {
 
     const topCluster = clusters[0] || null;
     const topTheater = theaters[0] || null;
-
     const newsItems = getNews();
 
     const signalPressure = buildSignalPressure(rankedSignals);
@@ -1310,12 +1387,21 @@ window.IBSS_ENGINE = (function () {
       rankedSignals
     );
 
-    let systemPressure = Math.round(
-      (signalPressure * 0.36) +
-      (clusterPressure.pressure * 0.24) +
-      (theaterPressure.pressure * 0.22) +
-      (newsPressure.pressure * 0.18)
-    );
+    const systemMetric = window.IBSS_METRICS?.computeSystemStress
+      ? window.IBSS_METRICS.computeSystemStress({
+          signalPressure,
+          clusterPressure: clusterPressure.pressure,
+          theaterPressure: theaterPressure.pressure,
+          newsPressure: newsPressure.pressure
+        })
+      : { score: Math.round(
+          (signalPressure * 0.36) +
+          (clusterPressure.pressure * 0.24) +
+          (theaterPressure.pressure * 0.22) +
+          (newsPressure.pressure * 0.18)
+        ) };
+
+    let systemPressure = clamp(safeNumber(systemMetric.score, 0), 0, 100);
 
     const theaterPriority = safeText(topTheater?.priority).toUpperCase();
     const clusterEsc = safeText(topCluster?.escalationLevel).toUpperCase();
@@ -1327,8 +1413,15 @@ window.IBSS_ENGINE = (function () {
     systemPressure = clamp(systemPressure, 0, 100);
 
     const level = riskLevelFromScore(systemPressure);
-    const decisionState = decisionFromLevel(level, systemPressure, confidenceScore);
-    const countryRiskFeed = buildCountryRiskFeed(rankedSignals);
+    const decisionState = decisionFromSystem(systemPressure, confidenceScore);
+
+    const scenarios = systemPressure >= 85
+      ? [{ key: "A", value: 57 }, { key: "B", value: 28 }, { key: "C", value: 15 }]
+      : systemPressure >= 70
+        ? [{ key: "A", value: 43 }, { key: "B", value: 34 }, { key: "C", value: 23 }]
+        : [{ key: "A", value: 24 }, { key: "B", value: 33 }, { key: "C", value: 43 }];
+
+    const countryRiskFeed = buildCountryRiskFeed(rankedSignals, clusters, theaters, newsPressure);
 
     const system = {
       source: "fallback",
@@ -1351,7 +1444,7 @@ window.IBSS_ENGINE = (function () {
       rankedSignals,
       liveSignals: rankedSignals.filter(signal => signal.live),
       liveSignalsCount: rankedSignals.filter(signal => signal.live).length,
-      scenarios: buildScenarios(level, signalPressure, clusterPressure, theaterPressure),
+      scenarios,
       countryRiskFeed,
       newsPressure,
       feed: [],
@@ -1359,7 +1452,8 @@ window.IBSS_ENGINE = (function () {
       publishedContent: getPublishedContent(),
       publishedNewsContent: getPublishedNewsContent(),
       liveNews: newsItems,
-      snapshot: null
+      snapshot: null,
+      metricsReference: "IBSS_METRICS_V1"
     };
 
     system.feed = buildFeed(system);
