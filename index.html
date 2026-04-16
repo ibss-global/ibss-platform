@@ -92,12 +92,14 @@
       border-color:var(--border);
     }
 
-    .lang-switch{
+    .lang-switch,
+    .audio-switch{
       display:flex;
       gap:6px;
     }
 
-    .lang-switch button{
+    .lang-switch button,
+    .audio-switch button{
       background:none;
       border:1px solid rgba(255,255,255,.1);
       color:#ccc;
@@ -109,7 +111,9 @@
     }
 
     .lang-switch button:hover,
-    .lang-switch button.active{
+    .lang-switch button.active,
+    .audio-switch button:hover,
+    .audio-switch button.active{
       color:var(--gold);
       border-color:var(--gold);
     }
@@ -316,7 +320,7 @@
       padding:24px 20px;
       background:var(--panel);
       text-align:center;
-      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset, var(--shadow);
     }
 
     .card strong{
@@ -411,7 +415,7 @@
       scrollbar-width:none;
       direction:ltr;
       white-space:nowrap;
-      scroll-behavior:smooth;
+      scroll-behavior:auto;
     }
 
     .ticker-track::-webkit-scrollbar{
@@ -620,7 +624,6 @@
     .mini-metric strong{
       color:#fff;
       font-size:16px;
-      margin:0;
     }
 
     .unit-btn{
@@ -758,6 +761,10 @@
           <button id="btn-en" type="button">EN</button>
           <button id="btn-ar" type="button">AR</button>
         </div>
+
+        <div class="audio-switch">
+          <button id="audioToggleBtn" type="button">AUDIO</button>
+        </div>
       </div>
     </div>
 
@@ -784,6 +791,7 @@
         <span id="systemSourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
         <span id="systemHealthBadge" class="meta-badge">ENGINE — READY</span>
         <span id="systemMetricsBadge" class="meta-badge">METRICS — OFF</span>
+        <span id="systemAudioBadge" class="meta-badge fallback">AUDIO — OFF</span>
       </div>
 
       <div id="homeAlert" class="home-alert"></div>
@@ -831,7 +839,7 @@
     <div class="section">
       <h2 data-i18n="strategic_snapshot">Strategic Snapshot</h2>
       <p class="section-subtitle" data-i18n="strategic_snapshot_desc">
-        Immediate sovereign reading of the dominant file, leading country risk, and latest strategic publication.
+        Immediate sovereign reading of the dominant theater, leading strategic file, and top country risk.
       </p>
 
       <div class="snapshot-grid">
@@ -1003,6 +1011,9 @@
   <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
   <script src="engine.js"></script>
+  <script src="audio-engine.js"></script>
+  <script src="geo-radar.js"></script>
+  <script src="runtime-engine.js"></script>
   <script src="publisher.js"></script>
 
   <script>
@@ -1088,6 +1099,10 @@
         engine_limited: "ENGINE — LIMITED",
         metrics_on: "METRICS — INTEGRATED",
         metrics_off: "METRICS — OFF",
+        audio_on: "AUDIO — ON",
+        audio_off: "AUDIO — OFF",
+        audio_button_on: "AUDIO ON",
+        audio_button_off: "AUDIO OFF",
         risk_level: "Risk Level",
         trend: "Trend",
         band: "Band",
@@ -1184,6 +1199,10 @@
         engine_limited: "المحرك — محدود",
         metrics_on: "القياس — مدمج",
         metrics_off: "القياس — غير مفعل",
+        audio_on: "الصوت — يعمل",
+        audio_off: "الصوت — متوقف",
+        audio_button_on: "تشغيل الصوت",
+        audio_button_off: "إيقاف الصوت",
         risk_level: "مستوى الخطر",
         trend: "الاتجاه",
         band: "الحزمة",
@@ -1201,6 +1220,7 @@
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
+    let pageSystem = null;
 
     function t(key){
       return translations[currentLang]?.[key] || key;
@@ -1244,45 +1264,11 @@
       return "-";
     }
 
-    function applyLanguage(){
-      document.documentElement.lang = currentLang;
-      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
-
-      document.querySelectorAll("[data-i18n]").forEach(el => {
-        const key = el.getAttribute("data-i18n");
-        el.textContent = t(key);
-      });
-
-      document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
-      document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
-    }
-
-    function getSystemState(){
-      try {
-        if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
-          window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
-        }
-
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
-          return window.IBSS_ENGINE.getSystemState();
-        }
-
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
-          return window.IBSS_ENGINE.getStaticSystemFallback();
-        }
-
-        return null;
-      } catch (error) {
-        console.error("Index render error:", error);
-        return null;
-      }
-    }
-
-    function updateSourceBadge(system){
+    function updateSourceBadge(source){
       const badge = document.getElementById("systemSourceBadge");
       badge.className = "meta-badge";
 
-      if (system?.source === "engine") {
+      if (source === "engine") {
         badge.textContent = t("source_engine");
         badge.classList.add("live");
       } else {
@@ -1312,6 +1298,20 @@
       } else {
         badge.textContent = t("metrics_off");
         badge.className = "meta-badge fallback";
+      }
+    }
+
+    function updateAudioBadge(){
+      const badge = document.getElementById("systemAudioBadge");
+      const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
+
+      badge.textContent = enabled ? t("audio_on") : t("audio_off");
+      badge.className = enabled ? "meta-badge live" : "meta-badge fallback";
+
+      const btn = document.getElementById("audioToggleBtn");
+      if (btn) {
+        btn.textContent = enabled ? t("audio_button_off") : t("audio_button_on");
+        btn.classList.toggle("active", enabled);
       }
     }
 
@@ -1351,59 +1351,6 @@
           : system?.level === "MEDIUM"
             ? "medium"
             : "low");
-    }
-
-    function renderTicker(system){
-      const track = document.getElementById("tickerTrack");
-      if (!track) return;
-
-      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(8) || [];
-      const items = [];
-
-      tickerNews.forEach(item => {
-        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
-        items.push({
-          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
-          text: getLocalizedText(item.title)
-        });
-      });
-
-      if (!items.length) {
-        const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 5) : [];
-        feed.forEach(line => {
-          items.push({
-            level:
-              system?.level === "HIGH"
-                ? "high"
-                : system?.level === "MEDIUM"
-                  ? "medium"
-                  : "low",
-            text: typeof line === "string" ? line : getLocalizedText(line?.text)
-          });
-        });
-      }
-
-      if (!items.length) {
-        track.innerHTML = `
-          <div class="ticker-item">
-            <span class="ticker-dot low"></span>
-            <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(t("no_feed"))}</span>
-          </div>
-        `;
-        track.scrollLeft = 0;
-        return;
-      }
-
-      track.innerHTML = items.map(item => `
-        <div class="ticker-item">
-          <span class="ticker-dot ${item.level}"></span>
-          <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
-        </div>
-      `).join("");
-
-      requestAnimationFrame(() => {
-        track.scrollLeft = 0;
-      });
     }
 
     function renderSnapshot(system){
@@ -1604,18 +1551,54 @@
       }).join("");
     }
 
-    function renderIndex(){
-      applyLanguage();
+    function applyLanguage(){
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
 
-      const system = getSystemState();
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = t(key);
+      });
+
+      document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
+      document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+
+      updateAudioBadge();
+    }
+
+    function getSystemState(){
+      try {
+        if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
+          window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
+        }
+
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+          return window.IBSS_ENGINE.getSystemState();
+        }
+
+        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
+          return window.IBSS_ENGINE.getStaticSystemFallback();
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Index render error:", error);
+        return null;
+      }
+    }
+
+    function renderIndexCore(system){
       if (!system) return;
 
-      updateSourceBadge(system);
+      pageSystem = system;
+      applyLanguage();
+
+      updateSourceBadge(system.source);
       updateHealthBadge(system);
       updateMetricsBadge(system);
+      updateAudioBadge();
       updateAlert(system.level);
       updateStatusCards(system);
-      renderTicker(system);
       renderSnapshot(system);
       renderMetricBox(system);
       renderUnitStudies(system);
@@ -1628,21 +1611,47 @@
         `${t("last_update")} — ${formatDateTime(system.updatedAt)}`;
     }
 
+    function startRuntime(){
+      if (!window.IBSS_RUNTIME) {
+        const system = getSystemState();
+        if (system) renderIndexCore(system);
+        return;
+      }
+
+      window.IBSS_RUNTIME.start({
+        pageId: "index",
+        lang: currentLang,
+        tickerTrackEl: document.getElementById("tickerTrack"),
+        refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+        systemProvider: getSystemState,
+        afterRender: function(system) {
+          renderIndexCore(system);
+        }
+      });
+    }
+
     document.getElementById("btn-en").addEventListener("click", function () {
       currentLang = "en";
       localStorage.setItem("ibss_lang", "en");
-      renderIndex();
+      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (pageSystem) renderIndexCore(pageSystem);
     });
 
     document.getElementById("btn-ar").addEventListener("click", function () {
       currentLang = "ar";
       localStorage.setItem("ibss_lang", "ar");
-      renderIndex();
+      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (pageSystem) renderIndexCore(pageSystem);
+    });
+
+    document.getElementById("audioToggleBtn").addEventListener("click", function () {
+      if (!window.IBSS_AUDIO) return;
+      window.IBSS_AUDIO.toggle();
+      updateAudioBadge();
     });
 
     window.addEventListener("load", function () {
-      renderIndex();
-      setInterval(renderIndex, (window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000));
+      startRuntime();
     });
   </script>
 </body>
