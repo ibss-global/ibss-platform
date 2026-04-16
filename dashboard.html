@@ -24,7 +24,6 @@
     }
 
     *{box-sizing:border-box}
-
     html,body{
       margin:0;
       padding:0;
@@ -93,7 +92,8 @@
       box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
     }
 
-    .lang-switch{
+    .lang-switch,
+    .audio-switch{
       display:flex;
       gap:6px;
     }
@@ -116,11 +116,6 @@
     .audio-switch button.active{
       color:var(--gold);
       border-color:var(--gold);
-    }
-
-    .audio-switch{
-      display:flex;
-      gap:6px;
     }
 
     .hero{
@@ -376,6 +371,8 @@
       border-radius:50%;
       filter:drop-shadow(0 0 20px rgba(212,175,55,.08));
       overflow:hidden;
+      background:
+        radial-gradient(circle at center, rgba(212,175,55,.03), transparent 65%);
     }
 
     .circle{
@@ -414,6 +411,20 @@
       opacity:.9;
       z-index:3;
     }
+
+    .radar-node{
+      position:absolute;
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      z-index:8;
+      box-shadow:0 0 12px currentColor;
+      transform:translate(-50%, -50%);
+    }
+
+    .radar-node.high{background:var(--red); color:var(--red)}
+    .radar-node.medium{background:var(--orange); color:var(--orange)}
+    .radar-node.low{background:var(--green); color:var(--green)}
 
     .legend,
     .feed,
@@ -579,11 +590,10 @@
       direction:ltr;
       white-space:nowrap;
       scroll-behavior:auto;
+      min-height:72px;
     }
 
-    .ticker-track::-webkit-scrollbar{
-      display:none;
-    }
+    .ticker-track::-webkit-scrollbar{display:none}
 
     .ticker-item{
       flex:0 0 auto;
@@ -646,11 +656,6 @@
       color:#ddd;
     }
 
-    .btn-primary:hover,
-    .btn-secondary:hover{
-      transform:translateY(-1px);
-    }
-
     .publisher-textarea{
       width:100%;
       min-height:210px;
@@ -680,10 +685,7 @@
       to{transform:rotate(360deg)}
     }
 
-    html[dir="rtl"] body{
-      text-align:right;
-    }
-
+    html[dir="rtl"] body{text-align:right}
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
@@ -701,9 +703,7 @@
       text-align:center;
     }
 
-    html[dir="rtl"] .legend-right{
-      text-align:left;
-    }
+    html[dir="rtl"] .legend-right{text-align:left}
 
     @media (max-width:980px){
       .grid{grid-template-columns:1fr}
@@ -726,34 +726,17 @@
       .c3{width:200px;height:200px;top:35px;left:35px}
       .c4{width:270px;height:270px}
 
-      .center-dot{
-        top:126px;
-        left:126px;
-      }
-
-      .sweep{
-        width:210px;
-        height:210px;
-        top:30px;
-        left:30px;
-      }
+      .center-dot{top:126px;left:126px}
+      .sweep{width:210px;height:210px;top:30px;left:30px}
 
       .legend-item{
         align-items:flex-start;
         flex-direction:column;
       }
 
-      .legend-right{
-        text-align:left;
-      }
-
-      .publisher-actions{
-        flex-direction:column;
-      }
-
-      .state{
-        grid-template-columns:1fr;
-      }
+      .legend-right{text-align:left}
+      .publisher-actions{flex-direction:column}
+      .state{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -910,17 +893,9 @@
       <textarea id="pubDraftText" class="publisher-textarea" readonly></textarea>
 
       <div class="publisher-actions">
-        <button id="btnGenerateSignalPost" type="button" class="btn-primary">
-          Generate Top Signal Post
-        </button>
-
-        <button id="btnGenerateBriefPost" type="button" class="btn-secondary">
-          Generate Strategic Brief
-        </button>
-
-        <button id="btnCopyDraftPost" type="button" class="btn-secondary">
-          Copy Draft
-        </button>
+        <button id="btnGenerateSignalPost" type="button" class="btn-primary">Generate Top Signal Post</button>
+        <button id="btnGenerateBriefPost" type="button" class="btn-secondary">Generate Strategic Brief</button>
+        <button id="btnCopyDraftPost" type="button" class="btn-secondary">Copy Draft</button>
       </div>
     </div>
 
@@ -1011,7 +986,8 @@
         audioOn: "AUDIO — ON",
         audioOff: "AUDIO — OFF",
         audioButtonOn: "AUDIO ON",
-        audioButtonOff: "AUDIO OFF"
+        audioButtonOff: "AUDIO OFF",
+        topLabel: "TOP"
       },
       ar: {
         nav_home: "الرئيسية",
@@ -1082,12 +1058,14 @@
         audioOn: "الصوت — يعمل",
         audioOff: "الصوت — متوقف",
         audioButtonOn: "تشغيل الصوت",
-        audioButtonOff: "إيقاف الصوت"
+        audioButtonOff: "إيقاف الصوت",
+        topLabel: "TOP"
       }
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
     let dashboardSystem = null;
+    let localRefreshTimer = null;
 
     function t(key){
       return UI[currentLang]?.[key] || key;
@@ -1117,13 +1095,8 @@
       if (!value) return "-";
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return "-";
-
       return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
-        year:"numeric",
-        month:"short",
-        day:"2-digit",
-        hour:"2-digit",
-        minute:"2-digit"
+        year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit"
       });
     }
 
@@ -1199,18 +1172,94 @@
         if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
           window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
         }
-
-        if (window.IBSS_ENGINE?.getSystemState) {
-          return window.IBSS_ENGINE.getSystemState();
-        }
-
-        if (window.IBSS_ENGINE?.getStaticSystemFallback) {
-          return window.IBSS_ENGINE.getStaticSystemFallback();
-        }
+        if (window.IBSS_ENGINE?.getSystemState) return window.IBSS_ENGINE.getSystemState();
+        if (window.IBSS_ENGINE?.getStaticSystemFallback) return window.IBSS_ENGINE.getStaticSystemFallback();
       } catch (error) {
         console.error("Dashboard getSystem error:", error);
       }
       return null;
+    }
+
+    function buildFallbackTickerItems(system){
+      const items = [];
+      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
+
+      tickerNews.forEach(item => {
+        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
+        items.push({
+          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
+          text: getLocalizedText(item.title)
+        });
+      });
+
+      if (!items.length) {
+        (system?.feed || []).slice(0, 8).forEach(line => {
+          items.push({
+            level: system?.level === "HIGH" ? "high" : system?.level === "MEDIUM" ? "medium" : "low",
+            text: typeof line === "string" ? line : getLocalizedText(line?.text)
+          });
+        });
+      }
+
+      return items;
+    }
+
+    function renderFallbackTicker(system){
+      const track = document.getElementById("tickerTrack");
+      if (!track) return;
+
+      const items = buildFallbackTickerItems(system);
+      const duplicated = [];
+      const base = items.length ? items : [{ level: "low", text: t("noData") }];
+
+      for (let i = 0; i < 3; i += 1) duplicated.push(...base);
+
+      track.innerHTML = duplicated.map(item => `
+        <div class="ticker-item">
+          <span class="ticker-dot ${escapeHtml(item.level)}"></span>
+          <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
+        </div>
+      `).join("");
+    }
+
+    function buildRadarHotspots(system){
+      const signals = (system?.rankedSignals || []).slice(0, 5);
+
+      const coords = [
+        { x: 50, y: 18 },
+        { x: 76, y: 38 },
+        { x: 64, y: 72 },
+        { x: 22, y: 50 },
+        { x: 30, y: 74 }
+      ];
+
+      return signals.map((signal, index) => {
+        const priority = signal?.priority || "LOW";
+        const level = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+        return {
+          x: coords[index]?.x || 50,
+          y: coords[index]?.y || 50,
+          level,
+          label: getLocalizedText(signal.title)
+        };
+      });
+    }
+
+    function renderFallbackRadar(system){
+      const radar = document.getElementById("radar");
+      if (!radar) return;
+
+      radar.querySelectorAll(".radar-node").forEach(node => node.remove());
+
+      const hotspots = buildRadarHotspots(system);
+      hotspots.forEach(point => {
+        const node = document.createElement("span");
+        node.className = `radar-node ${point.level}`;
+        node.style.left = `${point.x}%`;
+        node.style.top = `${point.y}%`;
+        node.title = point.label;
+        radar.appendChild(node);
+      });
     }
 
     function renderMeta(system){
@@ -1365,7 +1414,7 @@
             </div>
             <div class="legend-right">
               <div class="legend-score">${score}</div>
-              <span class="legend-badge ${cls}">${index === 0 ? "TOP" : escapeHtml(priority)}</span>
+              <span class="legend-badge ${cls}">${index === 0 ? escapeHtml(t("topLabel")) : escapeHtml(priority)}</span>
             </div>
           </div>
         `;
@@ -1558,16 +1607,48 @@
       if (!btn || btn.dataset.bound === "1") return;
 
       btn.dataset.bound = "1";
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", async function () {
         try {
           if (!window.IBSS_AUDIO) return;
-          window.IBSS_AUDIO.toggle();
+          await window.IBSS_AUDIO.toggle();
           applyLanguage();
           if (dashboardSystem) renderMeta(dashboardSystem);
         } catch (error) {
           console.error("Audio toggle error:", error);
         }
       });
+    }
+
+    function renderRadar(system){
+      let usedExternal = false;
+
+      try {
+        if (window.IBSS_GEO_RADAR?.render) {
+          window.IBSS_GEO_RADAR.render(document.getElementById("radar"), system, {
+            lang: currentLang,
+            size: 300
+          });
+          usedExternal = true;
+        }
+      } catch (error) {
+        console.error("External radar render error:", error);
+      }
+
+      if (!usedExternal) {
+        renderFallbackRadar(system);
+      }
+    }
+
+    function renderTicker(system){
+      const track = document.getElementById("tickerTrack");
+      if (!track) return;
+
+      if (!track.children.length) {
+        renderFallbackTicker(system);
+      } else {
+        const visibleText = track.textContent.trim();
+        if (!visibleText) renderFallbackTicker(system);
+      }
     }
 
     function renderDashboardCore(system){
@@ -1579,6 +1660,7 @@
       const level = renderLevel(system);
       renderDecision(level, system);
       renderPrimarySignal(system.topSignal || system.dominantSignal || null, system);
+      renderRadar(system);
       renderRadarLegend(system);
       renderSnapshot(system);
       renderMetrics(system);
@@ -1588,39 +1670,73 @@
       renderPublisherConsole();
       wirePublisherButtons();
       wireAudioButton();
+      renderTicker(system);
+    }
+
+    function localFallbackStart(){
+      if (localRefreshTimer) clearInterval(localRefreshTimer);
+
+      const run = () => {
+        const system = getSystem();
+        if (system) renderDashboardCore(system);
+      };
+
+      run();
+      localRefreshTimer = setInterval(run, window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000);
     }
 
     function startRuntime(){
-      if (!window.IBSS_RUNTIME) {
-        const system = getSystem();
-        if (system) renderDashboardCore(system);
+      const hasRuntime = !!window.IBSS_RUNTIME?.start;
+      if (!hasRuntime) {
+        localFallbackStart();
         return;
       }
 
-      window.IBSS_RUNTIME.start({
-        pageId: "dashboard",
-        lang: currentLang,
-        radarEl: document.getElementById("radar"),
-        tickerTrackEl: document.getElementById("tickerTrack"),
-        refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
-        systemProvider: getSystem,
-        afterRender: function(system) {
-          renderDashboardCore(system);
-        }
-      });
+      try {
+        window.IBSS_RUNTIME.start({
+          pageId: "dashboard",
+          lang: currentLang,
+          radarEl: document.getElementById("radar"),
+          tickerTrackEl: document.getElementById("tickerTrack"),
+          refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+          systemProvider: getSystem,
+          afterRender: function(system) {
+            renderDashboardCore(system);
+          }
+        });
+
+        setTimeout(() => {
+          const track = document.getElementById("tickerTrack");
+          const radar = document.getElementById("radar");
+
+          const tickerLooksDead = !track || !track.textContent.trim();
+          const radarLooksDead = !radar || radar.querySelectorAll(".radar-node").length === 0;
+
+          if (tickerLooksDead || radarLooksDead) {
+            const system = getSystem();
+            if (system) {
+              renderDashboardCore(system);
+            }
+          }
+        }, 800);
+
+      } catch (error) {
+        console.error("Runtime start failed, switching to local fallback:", error);
+        localFallbackStart();
+      }
     }
 
     document.getElementById("btn-en").addEventListener("click", function () {
       currentLang = "en";
       localStorage.setItem("ibss_lang", "en");
-      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
       if (dashboardSystem) renderDashboardCore(dashboardSystem);
     });
 
     document.getElementById("btn-ar").addEventListener("click", function () {
       currentLang = "ar";
       localStorage.setItem("ibss_lang", "ar");
-      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
       if (dashboardSystem) renderDashboardCore(dashboardSystem);
     });
 
