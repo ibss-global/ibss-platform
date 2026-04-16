@@ -6,7 +6,7 @@ window.IBSS_ENGINE = (function () {
     historyLimit: 180,
     reportLimit: 80,
     archiveLimit: 120,
-    storageKey: "ibss_engine_state_v7"
+    storageKey: "ibss_engine_state_v8"
   };
 
   const STATE = {
@@ -44,9 +44,24 @@ window.IBSS_ENGINE = (function () {
       .trim();
   }
 
+  function localize(en, ar) {
+    return { en, ar };
+  }
+
+  function titleCase(text) {
+    return safeText(text)
+      .split(" ")
+      .filter(Boolean)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+
   function getLocalizedText(value, lang = "en") {
     if (!value) return "-";
-    if (typeof value === "string" || typeof value === "number") return String(value);
+
+    if (typeof value === "string" || typeof value === "number") {
+      return String(value);
+    }
 
     const localized =
       value[lang] ??
@@ -66,10 +81,6 @@ window.IBSS_ENGINE = (function () {
     }
 
     return "-";
-  }
-
-  function localize(en, ar) {
-    return { en, ar };
   }
 
   function normalizePriority(value) {
@@ -372,20 +383,201 @@ window.IBSS_ENGINE = (function () {
     };
   }
 
-  function refreshClusterLayer() {
+  function resolveClusterAPI() {
+    const candidates = [
+      window.IBSS_CLUSTER,
+      window.IBSS_CLUSTER_ENGINE,
+      window.IBSS_THEATER,
+      window.IBSS_THEATER_LAYER
+    ];
+
+    for (const api of candidates) {
+      if (!api || typeof api !== "object") continue;
+
+      if (typeof api.compute === "function") {
+        return { api, method: "compute" };
+      }
+
+      if (typeof api.getState === "function") {
+        return { api, method: "getState" };
+      }
+
+      if (typeof api.getClusterState === "function") {
+        return { api, method: "getClusterState" };
+      }
+    }
+
+    return null;
+  }
+
+  function normalizeClusterEntry(item, index = 0) {
+    if (!item) return null;
+
+    return {
+      id: item.id || `CLUSTER-${index + 1}`,
+      name: item.name || item.title || localize(`Cluster ${index + 1}`, `عنقود ${index + 1}`),
+      avgRisk: safeNumber(item.avgRisk, item.riskScore),
+      maxRisk: safeNumber(item.maxRisk, item.avgRisk),
+      escalationLevel: safeText(item.escalationLevel, riskLevelFromScore(safeNumber(item.avgRisk, 0))),
+      priority: safeText(item.priority, "SUPPORT"),
+      trend: safeText(item.trend, "STABLE"),
+      theaterId: item.theaterId || item.parentTheaterId || null,
+      region: safeText(item.region, ""),
+      signals: asArray(item.signals)
+    };
+  }
+
+  function normalizeTheaterEntry(item, index = 0) {
+    if (!item) return null;
+
+    return {
+      id: item.id || `THEATER-${index + 1}`,
+      name: item.name || item.title || localize(`Theater ${index + 1}`, `مسرح ${index + 1}`),
+      avgRisk: safeNumber(item.avgRisk, item.riskScore),
+      maxRisk: safeNumber(item.maxRisk, item.avgRisk),
+      escalationLevel: safeText(item.escalationLevel, riskLevelFromScore(safeNumber(item.avgRisk, 0))),
+      priority: safeText(item.priority, "SUPPORT"),
+      trend: safeText(item.trend, "STABLE"),
+      clusters: asArray(item.clusters)
+    };
+  }
+
+  function buildFallbackClusterState(rankedSignals) {
+    const liveSignals = rankedSignals.filter(signal => signal.live);
+
+    if (!liveSignals.length) {
+      return {
+        clusters: [],
+        theaters: [],
+        lastUpdate: nowIso()
+      };
+    }
+
+    const groups = new Map();
+
+    liveSignals.forEach(signal => {
+      const region = normalizeText(signal.region || signal.country || "global") || "global";
+      const domain = normalizeText(signal.domain || getLocalizedText(signal.signalType, "en") || "general") || "general";
+      const key = `${region}::${domain}`;
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          key,
+          region,
+          domain,
+          signals: [],
+          totalRisk: 0,
+          maxRisk: 0
+        });
+      }
+
+      const bucket = groups.get(key);
+      const risk = safeNumber(signal.balancedScore100, signal.score100);
+
+      bucket.signals.push(signal);
+      bucket.totalRisk += risk;
+      bucket.maxRisk = Math.max(bucket.maxRisk, risk);
+    });
+
+    const clusters = [...groups.values()]
+      .map((group, index) => {
+        const avgRisk = group.signals.length ? Math.round(group.totalRisk / group.signals.length) : 0;
+        const regionLabel = group.region === "global"
+          ? localize("Global", "عالمي")
+          : localize(titleCase(group.region), titleCase(group.region));
+        const domainLabel = group.domain === "general"
+          ? localize("Strategic File", "ملف استراتيجي")
+          : localize(titleCase(group.domain), titleCase(group.domain));
+
+        return normalizeClusterEntry({
+          id: `FCL-${index + 1}`,
+          name: {
+            en: `${getLocalizedText(regionLabel, "en")} ${getLocalizedText(domainLabel, "en")}`,
+            ar: `${getLocalizedText(domainLabel, "ar")} ${getLocalizedText(regionLabel, "ar")}`
+          },
+          avgRisk,
+          maxRisk: group.maxRisk,
+          escalationLevel: riskLevelFromScore(avgRisk),
+          priority: avgRisk >= 75 ? "CORE" : avgRisk >= 50 ? "SUPPORT" : "WATCH",
+          trend: "STABLE",
+          theaterId: `FTH-${group.region}`,
+          region: group.region,
+          signals: group.signals
+        }, index);
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.avgRisk - a.avgRisk);
+
+    const theaterMap = new Map();
+
+    clusters.forEach(cluster => {
+      const region = normalizeText(cluster.region || "global") || "global";
+
+      if (!theaterMap.has(region)) {
+        theaterMap.set(region, {
+          id: `FTH-${region}`,
+          region,
+          name: region === "global"
+            ? localize("Global Theater", "المسرح العالمي")
+            : localize(`${titleCase(region)} Theater`, `مسرح ${titleCase(region)}`),
+          clusters: [],
+          avgSum: 0,
+          maxRisk: 0
+        });
+      }
+
+      const theater = theaterMap.get(region);
+      theater.clusters.push(cluster);
+      theater.avgSum += safeNumber(cluster.avgRisk, 0);
+      theater.maxRisk = Math.max(theater.maxRisk, safeNumber(cluster.maxRisk, 0));
+    });
+
+    const theaters = [...theaterMap.values()]
+      .map((item, index) => {
+        const avgRisk = item.clusters.length ? Math.round(item.avgSum / item.clusters.length) : 0;
+        return normalizeTheaterEntry({
+          id: item.id || `FTH-${index + 1}`,
+          name: item.name,
+          avgRisk,
+          maxRisk: item.maxRisk,
+          escalationLevel: riskLevelFromScore(avgRisk),
+          priority: avgRisk >= 75 ? "CORE" : avgRisk >= 50 ? "SUPPORT" : "WATCH",
+          trend: "STABLE",
+          clusters: item.clusters
+        }, index);
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.avgRisk - a.avgRisk);
+
+    return {
+      clusters,
+      theaters,
+      lastUpdate: nowIso()
+    };
+  }
+
+  function refreshClusterLayer(rankedSignals) {
     try {
-      if (window.IBSS_CLUSTER && typeof window.IBSS_CLUSTER.compute === "function") {
-        return window.IBSS_CLUSTER.compute();
+      const resolved = resolveClusterAPI();
+
+      if (resolved) {
+        const raw = resolved.api[resolved.method]();
+        const clusters = asArray(raw?.clusters).map(normalizeClusterEntry).filter(Boolean);
+        const theaters = asArray(raw?.theaters).map(normalizeTheaterEntry).filter(Boolean);
+
+        if (clusters.length || theaters.length) {
+          return {
+            clusters: clusters.sort((a, b) => b.avgRisk - a.avgRisk),
+            theaters: theaters.sort((a, b) => b.avgRisk - a.avgRisk),
+            lastUpdate: raw?.lastUpdate || nowIso()
+          };
+        }
       }
     } catch (error) {
       console.error("IBSS cluster refresh error:", error);
     }
 
-    return {
-      clusters: [],
-      theaters: [],
-      lastUpdate: nowIso()
-    };
+    return buildFallbackClusterState(rankedSignals);
   }
 
   function buildClusterPressure(clusters) {
@@ -405,12 +597,13 @@ window.IBSS_ENGINE = (function () {
       list.reduce((sum, cluster) => sum + safeNumber(cluster.avgRisk, 0), 0) / list.length
     );
 
-    const highCount = list.filter(cluster =>
-      safeText(cluster.escalationLevel) === "HIGH" || safeText(cluster.escalationLevel) === "SEVERE"
-    ).length;
+    const highCount = list.filter(cluster => {
+      const level = safeText(cluster.escalationLevel).toUpperCase();
+      return level === "HIGH" || level === "SEVERE";
+    }).length;
 
     const elevatedCount = list.filter(cluster =>
-      safeText(cluster.escalationLevel) === "ELEVATED"
+      safeText(cluster.escalationLevel).toUpperCase() === "ELEVATED"
     ).length;
 
     let pressure = Math.round(
@@ -419,8 +612,9 @@ window.IBSS_ENGINE = (function () {
       (Math.min(list.length, 8) * 2.2)
     );
 
-    if (safeText(topCluster?.escalationLevel) === "SEVERE") pressure += 8;
-    else if (safeText(topCluster?.escalationLevel) === "HIGH") pressure += 4;
+    const topLevel = safeText(topCluster?.escalationLevel).toUpperCase();
+    if (topLevel === "SEVERE") pressure += 8;
+    else if (topLevel === "HIGH") pressure += 4;
 
     return {
       count: list.length,
@@ -453,9 +647,12 @@ window.IBSS_ENGINE = (function () {
       (Math.min(list.length, 5) * 2)
     );
 
-    if (safeText(topTheater?.priority) === "CORE") pressure += 5;
-    if (safeText(topTheater?.escalationLevel) === "SEVERE") pressure += 6;
-    else if (safeText(topTheater?.escalationLevel) === "HIGH") pressure += 3;
+    const priority = safeText(topTheater?.priority).toUpperCase();
+    const level = safeText(topTheater?.escalationLevel).toUpperCase();
+
+    if (priority === "CORE") pressure += 5;
+    if (level === "SEVERE") pressure += 6;
+    else if (level === "HIGH") pressure += 3;
 
     return {
       count: list.length,
@@ -567,6 +764,7 @@ window.IBSS_ENGINE = (function () {
       return {
         id: signal.id || name.toLowerCase().replace(/\s+/g, "-"),
         name,
+        nameLocalized: { en: name, ar: getLocalizedText(signal.title, "ar") },
         riskScore,
         riskLevel: riskLevelFromScore(riskScore),
         trend,
@@ -591,9 +789,12 @@ window.IBSS_ENGINE = (function () {
       Math.min(theaterCount, 3) * 8 +
       Math.min(signalCount, 20) * 1.2;
 
-    if (safeText(theaterPressure?.topTheater?.priority) === "CORE") score += 8;
-    if (safeText(clusterPressure?.topCluster?.escalationLevel) === "SEVERE") score += 6;
-    if (safeText(clusterPressure?.topCluster?.escalationLevel) === "HIGH") score += 3;
+    const theaterPriority = safeText(theaterPressure?.topTheater?.priority).toUpperCase();
+    const clusterEsc = safeText(clusterPressure?.topCluster?.escalationLevel).toUpperCase();
+
+    if (theaterPriority === "CORE") score += 8;
+    if (clusterEsc === "SEVERE") score += 6;
+    if (clusterEsc === "HIGH") score += 3;
 
     return clamp(Math.round(score), 0, 100);
   }
@@ -631,7 +832,7 @@ window.IBSS_ENGINE = (function () {
     if (system.topCluster) {
       lines.push({
         type: "cluster",
-        priority: system.topCluster.priority || system.level,
+        priority: system.level,
         text: {
           en: `Top strategic file: ${getLocalizedText(system.topCluster.name, "en")}`,
           ar: `الملف الاستراتيجي الأعلى: ${getLocalizedText(system.topCluster.name, "ar")}`
@@ -983,7 +1184,7 @@ window.IBSS_ENGINE = (function () {
     const rankedSignals = buildRankedSignals();
     const topSignal = rankedSignals[0] || null;
 
-    const clusterState = refreshClusterLayer();
+    const clusterState = refreshClusterLayer(rankedSignals);
     const clusters = asArray(clusterState?.clusters);
     const theaters = asArray(clusterState?.theaters);
 
@@ -1011,14 +1212,17 @@ window.IBSS_ENGINE = (function () {
       (newsPressure.pressure * 0.18)
     );
 
-    if (safeText(topTheater?.priority) === "CORE") systemPressure += 4;
-    if (safeText(topCluster?.escalationLevel) === "SEVERE") systemPressure += 5;
-    else if (safeText(topCluster?.escalationLevel) === "HIGH") systemPressure += 2;
+    const theaterPriority = safeText(topTheater?.priority).toUpperCase();
+    const clusterEsc = safeText(topCluster?.escalationLevel).toUpperCase();
+
+    if (theaterPriority === "CORE") systemPressure += 4;
+    if (clusterEsc === "SEVERE") systemPressure += 5;
+    else if (clusterEsc === "HIGH") systemPressure += 2;
 
     systemPressure = clamp(systemPressure, 0, 100);
 
     const level = riskLevelFromScore(systemPressure);
-    const { decision, mode } = decisionFromLevel(level, systemPressure, confidenceScore);
+    const decisionState = decisionFromLevel(level, systemPressure, confidenceScore);
 
     const liveSignals = rankedSignals.filter(signal => signal.live);
     const scenarios = buildScenarios(level, signalPressure, clusterPressure, theaterPressure);
@@ -1032,8 +1236,8 @@ window.IBSS_ENGINE = (function () {
       signalPressure,
       confidenceScore,
       level,
-      decision,
-      mode,
+      decision: decisionState.decision,
+      mode: decisionState.mode,
       topTheater,
       theaters,
       theaterPressure,
@@ -1085,18 +1289,9 @@ window.IBSS_ENGINE = (function () {
     const rankedSignals = buildRankedSignals();
     const topSignal = rankedSignals[0] || null;
 
-    let clusters = [];
-    let theaters = [];
-
-    try {
-      if (window.IBSS_CLUSTER?.compute) {
-        const clusterState = window.IBSS_CLUSTER.compute();
-        clusters = asArray(clusterState?.clusters);
-        theaters = asArray(clusterState?.theaters);
-      }
-    } catch (error) {
-      console.error("IBSS fallback cluster error:", error);
-    }
+    const clusterState = buildFallbackClusterState(rankedSignals);
+    const clusters = asArray(clusterState?.clusters);
+    const theaters = asArray(clusterState?.theaters);
 
     const topCluster = clusters[0] || null;
     const topTheater = theaters[0] || null;
@@ -1122,14 +1317,17 @@ window.IBSS_ENGINE = (function () {
       (newsPressure.pressure * 0.18)
     );
 
-    if (safeText(topTheater?.priority) === "CORE") systemPressure += 4;
-    if (safeText(topCluster?.escalationLevel) === "SEVERE") systemPressure += 5;
-    else if (safeText(topCluster?.escalationLevel) === "HIGH") systemPressure += 2;
+    const theaterPriority = safeText(topTheater?.priority).toUpperCase();
+    const clusterEsc = safeText(topCluster?.escalationLevel).toUpperCase();
+
+    if (theaterPriority === "CORE") systemPressure += 4;
+    if (clusterEsc === "SEVERE") systemPressure += 5;
+    else if (clusterEsc === "HIGH") systemPressure += 2;
 
     systemPressure = clamp(systemPressure, 0, 100);
 
     const level = riskLevelFromScore(systemPressure);
-    const { decision, mode } = decisionFromLevel(level, systemPressure, confidenceScore);
+    const decisionState = decisionFromLevel(level, systemPressure, confidenceScore);
     const countryRiskFeed = buildCountryRiskFeed(rankedSignals);
 
     const system = {
@@ -1140,8 +1338,8 @@ window.IBSS_ENGINE = (function () {
       signalPressure,
       confidenceScore,
       level,
-      decision,
-      mode,
+      decision: decisionState.decision,
+      mode: decisionState.mode,
       topTheater,
       theaters,
       theaterPressure,
