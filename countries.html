@@ -215,6 +215,7 @@
       direction:ltr;
       white-space:nowrap;
       scroll-behavior:auto;
+      min-height:72px;
     }
 
     .ticker-track::-webkit-scrollbar{
@@ -895,6 +896,11 @@
       return typeof value === "string" && value.trim() ? value.trim() : fallback;
     }
 
+    function safeNumber(value, fallback = 0){
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
     function getLocalizedText(value){
       if (!value) return "-";
       if (typeof value === "string" || typeof value === "number") return String(value);
@@ -934,6 +940,16 @@
       if (n >= 70) return "high";
       if (n >= 35) return "medium";
       return "low";
+    }
+
+    function normalizeRiskLevel(value, score){
+      const upper = String(value || "").toUpperCase();
+      if (upper === "HIGH" || upper === "MEDIUM" || upper === "LOW") return upper;
+
+      const n = safeNumber(score, 0);
+      if (n >= 70) return "HIGH";
+      if (n >= 35) return "MEDIUM";
+      return "LOW";
     }
 
     function applyLanguage(){
@@ -979,25 +995,51 @@
       updateAudioBadge();
     }
 
-    function getSystem(){
-      try {
-        if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
-          window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
-        }
+    function buildFallbackTickerItems(system){
+      const items = [];
+      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
 
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
-          return window.IBSS_ENGINE.getSystemState();
-        }
+      tickerNews.forEach(item => {
+        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
+        items.push({
+          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
+          text: getLocalizedText(item.title)
+        });
+      });
 
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
-          return window.IBSS_ENGINE.getStaticSystemFallback();
-        }
-
-        return null;
-      } catch (error) {
-        console.error("Countries render error:", error);
-        return null;
+      if (!items.length) {
+        (system?.publisherFeed || system?.feed || []).slice(0, 8).forEach(line => {
+          items.push({
+            level:
+              system?.level === "HIGH"
+                ? "high"
+                : system?.level === "MEDIUM"
+                  ? "medium"
+                  : "low",
+            text: typeof line === "string" ? line : getLocalizedText(line?.text)
+          });
+        });
       }
+
+      return items;
+    }
+
+    function renderFallbackTicker(system){
+      const track = document.getElementById("tickerTrack");
+      if (!track) return;
+
+      const items = buildFallbackTickerItems(system);
+      const duplicated = [];
+      const base = items.length ? items : [{ level: "low", text: t("noData") }];
+
+      for (let i = 0; i < 3; i += 1) duplicated.push(...base);
+
+      track.innerHTML = duplicated.map(item => `
+        <div class="ticker-item">
+          <span class="ticker-dot ${escapeHtml(item.level)}"></span>
+          <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
+        </div>
+      `).join("");
     }
 
     function updateMeta(system){
@@ -1059,16 +1101,57 @@
       return Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed : [];
     }
 
+    function getOrchestratedSystem(){
+      try {
+        if (window.IBSS_PUBLISHER?.getLatestOrchestratedSystem) {
+          const orchestrated = window.IBSS_PUBLISHER.getLatestOrchestratedSystem();
+          if (orchestrated) return orchestrated;
+        }
+      } catch (error) {
+        console.error("Countries orchestrator read error:", error);
+      }
+
+      return getSystem();
+    }
+
+    function getSystem(){
+      try {
+        if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
+          window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
+        }
+
+        let system = null;
+
+        if (window.IBSS_ENGINE?.getSystemState) {
+          system = window.IBSS_ENGINE.getSystemState();
+        } else if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+          system = window.IBSS_ENGINE.getStaticSystemFallback();
+        }
+
+        if (!system) return null;
+
+        if (window.IBSS_PUBLISHER?.orchestrateSystem) {
+          return window.IBSS_PUBLISHER.orchestrateSystem(system) || system;
+        }
+
+        return system;
+      } catch (error) {
+        console.error("Countries render error:", error);
+        return null;
+      }
+    }
+
     function renderMiniCards(system){
       const countries = getCountryList(system);
-      const topCountry = countries[0] || null;
+      const visibleCountries = getFilteredCountries(system);
+      const topCountry = visibleCountries[0] || countries[0] || null;
       const topTheater = system?.topTheater || null;
 
       document.getElementById("miniTopCountryScore").textContent = Number(topCountry?.riskScore || 0);
       document.getElementById("miniTopCountryScore").className = `mini-value ${scoreClass(Number(topCountry?.riskScore || 0))}`;
 
-      document.getElementById("miniCountryCount").textContent = countries.length;
-      document.getElementById("miniCountryCount").className = `mini-value ${scoreClass(countries.length * 12)}`;
+      document.getElementById("miniCountryCount").textContent = visibleCountries.length;
+      document.getElementById("miniCountryCount").className = `mini-value ${scoreClass(visibleCountries.length * 12)}`;
 
       document.getElementById("miniTheaterRisk").textContent = Number(topTheater?.avgRisk || 0);
       document.getElementById("miniTheaterRisk").className = `mini-value ${scoreClass(Number(topTheater?.avgRisk || 0))}`;
@@ -1078,8 +1161,10 @@
     }
 
     function renderHighlight(system){
-      const countries = getCountryList(system);
-      const country = countries[0] || null;
+      const countries = getFilteredCountries(system);
+      const fallbackCountries = getCountryList(system);
+      const country = countries[0] || fallbackCountries[0] || null;
+
       const titleEl = document.getElementById("highlightCountryTitle");
       const descEl = document.getElementById("highlightCountryDesc");
       const badges = document.getElementById("highlightBadges");
@@ -1091,13 +1176,15 @@
         return;
       }
 
-      const drivers = Array.isArray(country.primaryDrivers) ? country.primaryDrivers.slice(0, 3).join(" • ") : t("noData");
+      const drivers = Array.isArray(country.primaryDrivers)
+        ? country.primaryDrivers.slice(0, 3).join(" • ")
+        : t("noData");
 
       titleEl.textContent = getLocalizedText(country.nameLocalized || country.name);
       descEl.textContent = `${t("drivers")}: ${drivers}`;
 
       const score = Number(country?.riskScore || 0);
-      const level = safeText(country?.riskLevel, "LOW");
+      const level = normalizeRiskLevel(country?.riskLevel, score);
       const cls = level === "HIGH" ? "high" : level === "MEDIUM" ? "medium" : "low";
 
       badges.innerHTML = `
@@ -1168,7 +1255,11 @@
 
     function renderFeed(system){
       const box = document.getElementById("feedBox");
-      const lines = Array.isArray(system?.feed) ? system.feed.slice(0, 8) : [];
+      const lines = Array.isArray(system?.publisherFeed)
+        ? system.publisherFeed.slice(0, 8)
+        : Array.isArray(system?.feed)
+          ? system.feed.slice(0, 8)
+          : [];
 
       if (!lines.length) {
         box.innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
@@ -1186,9 +1277,14 @@
       const current = bandSelect.value || "ALL";
       const countries = getCountryList(system);
 
-      const bands = [...new Set(countries.map(country => getBandLabel(Number(country.riskScore || 0))).filter(Boolean))];
+      const bands = [...new Set(
+        countries
+          .map(country => getBandLabel(Number(country.riskScore || 0)))
+          .filter(Boolean)
+      )];
 
-      bandSelect.innerHTML = `<option value="ALL">${escapeHtml(t("all"))}</option>` +
+      bandSelect.innerHTML =
+        `<option value="ALL">${escapeHtml(t("all"))}</option>` +
         bands.map(band => `<option value="${escapeHtml(band)}">${escapeHtml(band)}</option>`).join("");
 
       bandSelect.value = bands.includes(current) ? current : "ALL";
@@ -1196,15 +1292,18 @@
 
     function getFilteredCountries(system){
       const countries = getCountryList(system);
-      const risk = document.getElementById("riskFilter").value;
-      const trend = document.getElementById("trendFilter").value;
-      const band = document.getElementById("bandFilter").value;
-      const search = document.getElementById("searchFilter").value.trim().toLowerCase();
+      const risk = document.getElementById("riskFilter")?.value || "ALL";
+      const trend = document.getElementById("trendFilter")?.value || "ALL";
+      const band = document.getElementById("bandFilter")?.value || "ALL";
+      const search = (document.getElementById("searchFilter")?.value || "").trim().toLowerCase();
 
       return countries.filter(country => {
-        const matchRisk = risk === "ALL" || safeText(country.riskLevel, "LOW") === risk;
+        const score = Number(country.riskScore || 0);
+        const computedRisk = normalizeRiskLevel(country.riskLevel, score);
+
+        const matchRisk = risk === "ALL" || computedRisk === risk;
         const matchTrend = trend === "ALL" || safeText(country.trend, "STABLE") === trend;
-        const matchBand = band === "ALL" || getBandLabel(Number(country.riskScore || 0)) === band;
+        const matchBand = band === "ALL" || getBandLabel(score) === band;
 
         const haystack = [
           getLocalizedText(country.nameLocalized || country.name),
@@ -1232,7 +1331,7 @@
       table.innerHTML = countries.map((country, index) => {
         const score = Number(country?.riskScore || 0);
         const cls = scoreClass(score);
-        const level = safeText(country?.riskLevel, "LOW");
+        const level = normalizeRiskLevel(country?.riskLevel, score);
         const badgeClass = level === "HIGH" ? "high" : level === "MEDIUM" ? "medium" : "low";
         const drivers = Array.isArray(country.primaryDrivers) && country.primaryDrivers.length
           ? country.primaryDrivers.slice(0, 3).join(" • ")
@@ -1271,6 +1370,15 @@
       }).join("");
     }
 
+    function renderTicker(system){
+      const track = document.getElementById("tickerTrack");
+      if (!track) return;
+
+      if (!track.children.length || !track.textContent.trim()) {
+        renderFallbackTicker(system);
+      }
+    }
+
     function renderCountriesCore(system){
       if (!system) return;
       currentSystem = system;
@@ -1278,13 +1386,14 @@
       applyLanguage();
       updateMeta(system);
       renderAlert(system);
+      populateBandFilter(system);
+      renderCountryTable(system);
       renderMiniCards(system);
       renderHighlight(system);
       renderSnapshot(system);
       renderMetrics(system);
       renderFeed(system);
-      populateBandFilter(system);
-      renderCountryTable(system);
+      renderTicker(system);
     }
 
     function bindFilters(){
@@ -1296,14 +1405,18 @@
         const eventName = id === "searchFilter" ? "input" : "change";
 
         el.addEventListener(eventName, function () {
-          if (currentSystem) renderCountryTable(currentSystem);
+          if (currentSystem) {
+            renderCountryTable(currentSystem);
+            renderMiniCards(currentSystem);
+            renderHighlight(currentSystem);
+          }
         });
       });
     }
 
     function startRuntime(){
-      if (!window.IBSS_RUNTIME) {
-        const system = getSystem();
+      if (!window.IBSS_RUNTIME?.start) {
+        const system = getOrchestratedSystem();
         if (system) renderCountriesCore(system);
         return;
       }
@@ -1318,19 +1431,27 @@
           renderCountriesCore(system);
         }
       });
+
+      setTimeout(() => {
+        const track = document.getElementById("tickerTrack");
+        if (!track || !track.textContent.trim()) {
+          const fallbackSystem = getOrchestratedSystem();
+          if (fallbackSystem) renderCountriesCore(fallbackSystem);
+        }
+      }, 800);
     }
 
     document.getElementById("btn-en").addEventListener("click", function () {
       currentLang = "en";
       localStorage.setItem("ibss_lang", "en");
-      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
       if (currentSystem) renderCountriesCore(currentSystem);
     });
 
     document.getElementById("btn-ar").addEventListener("click", function () {
       currentLang = "ar";
       localStorage.setItem("ibss_lang", "ar");
-      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
       if (currentSystem) renderCountriesCore(currentSystem);
     });
 
