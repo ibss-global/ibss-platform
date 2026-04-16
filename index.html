@@ -17,11 +17,11 @@
       --green:#00d084;
       --orange:#ff9f1a;
       --red:#ff4d4f;
-      --blue:#5a8cff;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
       --glow:0 0 18px rgba(212,175,55,.08);
+      --shadow:0 10px 24px rgba(0,0,0,.18);
     }
 
     *{box-sizing:border-box}
@@ -38,7 +38,7 @@
     }
 
     .wrap{
-      width:min(1180px,92%);
+      width:min(1160px,92%);
       margin:auto;
       padding:20px 0 70px;
     }
@@ -56,7 +56,7 @@
     .brand{
       color:var(--gold);
       font-size:30px;
-      font-weight:900;
+      font-weight:800;
       text-decoration:none;
       letter-spacing:1px;
     }
@@ -81,7 +81,7 @@
       text-decoration:none;
       padding:10px 14px;
       border:1px solid rgba(255,255,255,.08);
-      border-radius:12px;
+      border-radius:10px;
       font-size:14px;
       transition:.2s ease;
     }
@@ -90,7 +90,6 @@
     .nav a:hover{
       color:var(--gold);
       border-color:var(--border);
-      box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
     }
 
     .lang-switch{
@@ -103,7 +102,7 @@
       border:1px solid rgba(255,255,255,.1);
       color:#ccc;
       padding:8px 10px;
-      border-radius:10px;
+      border-radius:8px;
       cursor:pointer;
       transition:.2s ease;
       font-size:13px;
@@ -120,25 +119,24 @@
       padding:56px 0 24px;
     }
 
-    .hero-kicker{
-      color:var(--gold);
-      font-size:18px;
-      font-weight:800;
-      margin-bottom:14px;
-    }
-
     .hero h1{
       font-size:clamp(40px,6vw,70px);
       line-height:1.06;
       color:#fff;
       margin:0 0 14px;
       letter-spacing:1px;
-      font-weight:900;
+    }
+
+    .official{
+      color:var(--gold);
+      font-size:clamp(18px,2.5vw,26px);
+      font-weight:700;
+      margin-bottom:14px;
     }
 
     .desc{
       color:var(--muted);
-      max-width:860px;
+      max-width:840px;
       margin:0 auto;
       line-height:1.9;
       font-size:clamp(16px,2vw,20px);
@@ -191,13 +189,13 @@
     .home-alert{
       display:none;
       margin:22px auto 0;
-      max-width:780px;
+      max-width:760px;
       padding:14px 16px;
-      border-radius:14px;
+      border-radius:12px;
       background:rgba(255,77,79,.12);
       border:1px solid rgba(255,77,79,.45);
       color:#ffd5d5;
-      font-weight:800;
+      font-weight:700;
       text-align:center;
       line-height:1.8;
     }
@@ -233,7 +231,7 @@
       background:var(--gold);
       color:#000;
       border:none;
-      font-weight:800;
+      font-weight:700;
     }
 
     .btn-primary:hover{
@@ -272,7 +270,7 @@
 
     .status-value{
       font-size:28px;
-      font-weight:900;
+      font-weight:800;
       color:#fff;
       word-break:break-word;
     }
@@ -281,7 +279,10 @@
     .status-value.medium{color:var(--orange)}
     .status-value.high{color:var(--red)}
     .status-value.gold{color:var(--gold)}
-    .status-value.blue{color:var(--blue)}
+
+    #topThreat{
+      text-shadow:0 0 12px rgba(212,175,55,.3);
+    }
 
     .section{
       margin-top:36px;
@@ -291,16 +292,104 @@
       color:var(--gold);
       text-align:center;
       font-size:clamp(28px,4vw,40px);
-      margin:0 0 14px;
+      margin:0 0 24px;
     }
 
     .section-subtitle{
       text-align:center;
       color:var(--muted);
       max-width:880px;
-      margin:0 auto 22px;
+      margin:-6px auto 22px;
       line-height:1.8;
       font-size:15px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+
+    .card{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      padding:24px 20px;
+      background:var(--panel);
+      text-align:center;
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+    }
+
+    .card strong{
+      display:block;
+      font-size:clamp(24px,3vw,38px);
+      margin-bottom:14px;
+      color:#fff;
+    }
+
+    .card p{
+      margin:0;
+      color:#ddd;
+      line-height:1.8;
+      font-size:15px;
+    }
+
+    .feed-box,
+    .country-box,
+    .metric-box{
+      display:grid;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .feed-item,
+    .country-item,
+    .metric-item{
+      border:1px solid var(--soft-border-2);
+      border-radius:16px;
+      background:var(--panel2);
+      padding:14px 16px;
+    }
+
+    .country-item,
+    .metric-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .country-left,
+    .metric-left{
+      min-width:0;
+    }
+
+    .country-name,
+    .metric-name{
+      color:#fff;
+      font-weight:800;
+      font-size:16px;
+      margin-bottom:6px;
+    }
+
+    .country-meta,
+    .metric-meta{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .country-score,
+    .metric-score{
+      color:var(--gold);
+      font-weight:900;
+      font-size:28px;
+      flex:0 0 auto;
+    }
+
+    .feed-item{
+      color:#ddd;
+      line-height:1.8;
+      font-size:14px;
     }
 
     .ticker-shell{
@@ -314,11 +403,14 @@
 
     .ticker-track{
       display:flex;
-      gap:14px;
       align-items:center;
+      gap:14px;
       padding:14px 16px;
       overflow-x:auto;
+      overflow-y:hidden;
       scrollbar-width:none;
+      direction:ltr;
+      white-space:nowrap;
       scroll-behavior:smooth;
     }
 
@@ -328,22 +420,24 @@
 
     .ticker-item{
       flex:0 0 auto;
-      display:flex;
+      display:inline-flex;
       align-items:center;
       gap:10px;
+      min-height:44px;
+      max-width:min(82vw, 520px);
       padding:10px 14px;
       border-radius:999px;
       background:rgba(255,255,255,.03);
       border:1px solid rgba(255,255,255,.05);
       color:#f0f0f0;
       font-size:13px;
-      line-height:1.5;
-      max-width:560px;
+      line-height:1.6;
+      white-space:normal;
     }
 
     .ticker-item-text{
       display:block;
-      white-space:nowrap;
+      unicode-bidi:plaintext;
     }
 
     .ticker-dot{
@@ -356,42 +450,6 @@
     .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
     .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
     .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
-
-    .snapshot-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:16px;
-    }
-
-    .snapshot-card{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;
-      padding:22px;
-      background:var(--panel);
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
-    }
-
-    .snapshot-card .kicker{
-      color:#8f8f8f;
-      font-size:12px;
-      letter-spacing:.08em;
-      margin-bottom:10px;
-    }
-
-    .snapshot-card .big{
-      color:var(--gold);
-      font-size:22px;
-      font-weight:900;
-      line-height:1.5;
-      margin-bottom:8px;
-      word-break:break-word;
-    }
-
-    .snapshot-card .small{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.8;
-    }
 
     .unit-grid{
       display:grid;
@@ -495,7 +553,6 @@
       font-weight:800;
       line-height:1.8;
       font-size:16px;
-      word-break:break-word;
     }
 
     .unit-list{
@@ -563,7 +620,7 @@
     .mini-metric strong{
       color:#fff;
       font-size:16px;
-      word-break:break-word;
+      margin:0;
     }
 
     .unit-btn{
@@ -587,86 +644,39 @@
       transform:translateY(-1px);
     }
 
-    .grid{
+    .snapshot-grid{
       display:grid;
       grid-template-columns:repeat(3,1fr);
       gap:16px;
     }
 
-    .card{
+    .snapshot-card{
       border:1px solid rgba(255,255,255,.08);
       border-radius:20px;
-      padding:24px 20px;
+      padding:22px;
       background:var(--panel);
-      text-align:center;
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
+      box-shadow:var(--shadow);
     }
 
-    .card strong{
-      display:block;
-      font-size:clamp(24px,3vw,38px);
-      margin-bottom:14px;
-      color:#fff;
+    .snapshot-card .kicker{
+      color:#8f8f8f;
+      font-size:12px;
+      letter-spacing:.08em;
+      margin-bottom:10px;
     }
 
-    .card p{
-      margin:0;
-      color:#ddd;
-      line-height:1.8;
-      font-size:15px;
-    }
-
-    .feed-box,
-    .country-box{
-      display:grid;
-      gap:12px;
-      margin-top:18px;
-    }
-
-    .feed-item,
-    .country-item{
-      border:1px solid var(--soft-border-2);
-      border-radius:16px;
-      background:var(--panel2);
-      padding:14px 16px;
-    }
-
-    .country-item{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-
-    .country-left{
-      min-width:0;
-    }
-
-    .country-name{
-      color:#fff;
-      font-weight:800;
-      font-size:16px;
-      margin-bottom:6px;
-      word-break:break-word;
-    }
-
-    .country-meta{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .country-score{
+    .snapshot-card .big{
       color:var(--gold);
-      font-weight:900;
-      font-size:28px;
-      flex:0 0 auto;
+      font-size:22px;
+      font-weight:800;
+      line-height:1.5;
+      margin-bottom:8px;
     }
 
-    .feed-item{
-      color:#ddd;
-      line-height:1.8;
+    .snapshot-card .small{
+      color:var(--muted);
       font-size:14px;
+      line-height:1.8;
     }
 
     .founder{
@@ -695,6 +705,7 @@
     html[dir="rtl"] .hero-buttons,
     html[dir="rtl"] .system-meta,
     html[dir="rtl"] .country-item,
+    html[dir="rtl"] .metric-item,
     html[dir="rtl"] .unit-top{
       direction:rtl;
     }
@@ -710,36 +721,23 @@
       text-align:center;
     }
 
-    html[dir="rtl"] .ticker-track{
-      direction:ltr;
-    }
-
-    html[dir="rtl"] .ticker-item{
-      direction:rtl;
-    }
-
-    html[dir="rtl"] .ticker-item-text{
-      text-align:right;
-    }
-
     @media(max-width:1100px){
       .status-grid{grid-template-columns:repeat(2,1fr)}
       .unit-grid{grid-template-columns:1fr}
       .snapshot-grid{grid-template-columns:1fr}
-    }
-
-    @media(max-width:950px){
       .grid{grid-template-columns:1fr}
     }
 
     @media(max-width:700px){
       .topbar{flex-direction:column}
       .status-grid{grid-template-columns:1fr}
-      .country-item{flex-direction:column; align-items:flex-start}
+      .country-item,
+      .metric-item{flex-direction:column; align-items:flex-start}
       .mini-metrics{grid-template-columns:1fr}
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="topbar">
@@ -764,15 +762,17 @@
     </div>
 
     <div class="hero">
-      <div id="heroKicker" class="hero-kicker">Sovereign Decision System</div>
+      <h1>IBSS</h1>
 
-      <h1 id="pageTitle">IBSS</h1>
+      <div class="official" data-i18n="hero_official">
+        International Bureau of Sovereign Studies
+      </div>
 
-      <p id="pageSub" class="desc">
+      <p class="desc" data-i18n="hero_desc">
         A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.
       </p>
 
-      <p id="systemLine" class="system-line">
+      <p class="system-line" data-i18n="system_line">
         System Active — Monitoring Global Signals
       </p>
 
@@ -783,42 +783,43 @@
       <div class="system-meta">
         <span id="systemSourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
         <span id="systemHealthBadge" class="meta-badge">ENGINE — READY</span>
+        <span id="systemMetricsBadge" class="meta-badge">METRICS — OFF</span>
       </div>
 
       <div id="homeAlert" class="home-alert"></div>
 
       <div class="hero-buttons">
-        <a href="dashboard.html" class="btn btn-primary" id="btnDashboard">Open Dashboard</a>
-        <a href="signals.html" class="btn" id="btnSignals">Explore Signals</a>
-        <a href="reports.html" class="btn" id="btnReports">View Reports</a>
+        <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Open Dashboard</a>
+        <a href="signals.html" class="btn" data-i18n="btn_signals">Explore Signals</a>
+        <a href="reports.html" class="btn" data-i18n="btn_reports">View Reports</a>
       </div>
 
       <div class="status-grid">
         <div class="status-card">
-          <div id="topThreatLabel" class="status-label">Top Threat</div>
+          <div class="status-label" data-i18n="top_threat">Top Threat</div>
           <div id="topThreat" class="status-value gold">-</div>
         </div>
 
         <div class="status-card">
-          <div id="systemPressureLabel" class="status-label">System Pressure</div>
+          <div class="status-label" data-i18n="system_pressure">System Pressure</div>
           <div id="systemPressure" class="status-value high">0</div>
         </div>
 
         <div class="status-card">
-          <div id="decisionModeLabel" class="status-label">Decision Mode</div>
+          <div class="status-label" data-i18n="decision_mode">Decision Mode</div>
           <div id="decisionMode" class="status-value gold">-</div>
         </div>
 
         <div class="status-card">
-          <div id="activeSignalsLabel" class="status-label">Active Signals</div>
+          <div class="status-label" data-i18n="active_signals">Active Signals</div>
           <div id="activeSignals" class="status-value low">0</div>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <h2 id="liveIntelTitle">Live Intelligence Strip</h2>
-      <p id="liveIntelSub" class="section-subtitle">
+      <h2 data-i18n="live_intelligence">Live Intelligence Strip</h2>
+      <p class="section-subtitle" data-i18n="live_intelligence_desc">
         Real-time signal condensation layer highlighting active pressure, dominant files, and current system movement.
       </p>
 
@@ -828,26 +829,26 @@
     </div>
 
     <div class="section">
-      <h2 id="snapshotTitle">Strategic Snapshot</h2>
-      <p id="snapshotSub" class="section-subtitle">
-        Immediate sovereign reading of the dominant theater, strategic file, top country risk, and latest study.
+      <h2 data-i18n="strategic_snapshot">Strategic Snapshot</h2>
+      <p class="section-subtitle" data-i18n="strategic_snapshot_desc">
+        Immediate sovereign reading of the dominant file, leading country risk, and latest strategic publication.
       </p>
 
       <div class="snapshot-grid">
         <div class="snapshot-card">
-          <div id="snapshotTopTheaterLabel" class="kicker">Top Theater</div>
+          <div class="kicker" data-i18n="snapshot_top_theater">Top Theater</div>
           <div id="snapshotTopTheater" class="big">-</div>
           <div id="snapshotTopTheaterMeta" class="small">-</div>
         </div>
 
         <div class="snapshot-card">
-          <div id="snapshotTopFileLabel" class="kicker">Top Strategic File</div>
-          <div id="snapshotTopFile" class="big">-</div>
-          <div id="snapshotTopFileMeta" class="small">-</div>
+          <div class="kicker" data-i18n="snapshot_top_cluster">Top Strategic File</div>
+          <div id="snapshotTopCluster" class="big">-</div>
+          <div id="snapshotTopClusterMeta" class="small">-</div>
         </div>
 
         <div class="snapshot-card">
-          <div id="snapshotTopCountryLabel" class="kicker">Top Country Risk</div>
+          <div class="kicker" data-i18n="snapshot_top_country">Top Country Risk</div>
           <div id="snapshotTopCountry" class="big">-</div>
           <div id="snapshotTopCountryMeta" class="small">-</div>
         </div>
@@ -855,8 +856,17 @@
     </div>
 
     <div class="section">
-      <h2 id="unitsTitle">Sovereign Intelligence Units</h2>
-      <p id="unitsSub" class="section-subtitle">
+      <h2 data-i18n="unified_metrics">Unified Metrics</h2>
+      <p class="section-subtitle" data-i18n="unified_metrics_desc">
+        A single sovereign metrics layer aligning signal score, strategic-file risk, theater risk, country risk, and system stress.
+      </p>
+
+      <div id="metricBox" class="metric-box"></div>
+    </div>
+
+    <div class="section">
+      <h2 data-i18n="sovereign_units">Sovereign Intelligence Units</h2>
+      <p class="section-subtitle" data-i18n="sovereign_units_desc">
         Institutional layer connecting strategic studies, news analysis, and pattern-risk observation before entering the operational engine.
       </p>
 
@@ -864,123 +874,123 @@
         <article class="unit-card">
           <div class="unit-top">
             <span class="unit-tag">SSU</span>
-            <span id="unitStatusActive1" class="unit-status active">Active</span>
+            <span class="unit-status active" data-i18n="unit_status_active">Active</span>
           </div>
 
-          <h3 id="unitSsuTitle">Sovereign Strategic Studies Unit</h3>
-          <div id="unitSsuDesc" class="unit-desc">
+          <h3 data-i18n="unit_ssu_title">Sovereign Strategic Studies Unit</h3>
+          <div class="unit-desc" data-i18n="unit_ssu_desc">
             The analytical doctrine arm of the platform, producing sovereign studies, pressure papers, and decision-grade strategic estimates.
           </div>
 
           <div class="unit-panel">
-            <div id="latestStudyLabel" class="unit-panel-label">Latest Study</div>
+            <div class="unit-panel-label" data-i18n="latest_study_label">Latest Study</div>
             <div id="latestStudyTitle" class="unit-panel-title">-</div>
           </div>
 
           <div class="mini-metrics">
             <div class="mini-metric">
-              <span id="metricPublishedLabel">Published</span>
+              <span data-i18n="metric_published">Published</span>
               <strong id="metricPublishedContent">0</strong>
             </div>
             <div class="mini-metric">
-              <span id="metricReportsLabel">Reports</span>
+              <span data-i18n="metric_reports">Reports</span>
               <strong id="metricReportsCount">0</strong>
             </div>
           </div>
 
-          <a href="reports.html" class="unit-btn" id="btnStudies">Open Studies</a>
+          <a href="reports.html" class="unit-btn" data-i18n="btn_studies">Open Studies</a>
         </article>
 
         <article class="unit-card">
           <div class="unit-top">
             <span class="unit-tag">NIU</span>
-            <span id="unitStatusActive2" class="unit-status active">Active</span>
+            <span class="unit-status active" data-i18n="unit_status_active">Active</span>
           </div>
 
-          <h3 id="unitNiuTitle">News Tracking & Analysis Unit</h3>
-          <div id="unitNiuDesc" class="unit-desc">
+          <h3 data-i18n="unit_niu_title">News Tracking & Analysis Unit</h3>
+          <div class="unit-desc" data-i18n="unit_niu_desc">
             Converts statements, developments, and live information flows into structured signals ready for sovereign interpretation.
           </div>
 
           <div id="latestNewsList" class="unit-list"></div>
 
-          <a href="signals.html" class="unit-btn" id="btnNewsUnit">Open News Unit</a>
+          <a href="signals.html" class="unit-btn" data-i18n="btn_news_unit">Open News Unit</a>
         </article>
 
         <article class="unit-card">
           <div class="unit-top">
             <span class="unit-tag">PRU</span>
-            <span id="unitStatusWatch" class="unit-status watch">Watch</span>
+            <span class="unit-status watch" data-i18n="unit_status_watch">Watch</span>
           </div>
 
-          <h3 id="unitPruTitle">Pattern & Country Risk Unit</h3>
-          <div id="unitPruDesc" class="unit-desc">
+          <h3 data-i18n="unit_pru_title">Pattern & Country Risk Unit</h3>
+          <div class="unit-desc" data-i18n="unit_pru_desc">
             Tracks structural pressure, trend direction, and state-level risk shifts across active strategic theaters.
           </div>
 
           <div class="mini-metrics">
             <div class="mini-metric">
-              <span id="metricTopTheaterLabel">Top Theater</span>
-              <strong id="unitTopTheater">-</strong>
-            </div>
-            <div class="mini-metric">
-              <span id="metricTopFileLabel">Top File</span>
-              <strong id="unitTopFile">-</strong>
-            </div>
-            <div class="mini-metric">
-              <span id="metricTopCountryLabel">Top Country</span>
+              <span data-i18n="metric_top_country">Top Country</span>
               <strong id="unitTopCountry">-</strong>
             </div>
             <div class="mini-metric">
-              <span id="metricLiveSignalsLabel">Live Signals</span>
+              <span data-i18n="metric_top_country_score">Risk Score</span>
+              <strong id="unitTopCountryScore">0</strong>
+            </div>
+            <div class="mini-metric">
+              <span data-i18n="metric_risk_trend">Trend</span>
+              <strong id="unitTopCountryTrend">-</strong>
+            </div>
+            <div class="mini-metric">
+              <span data-i18n="metric_live_signals">Live Signals</span>
               <strong id="unitLiveSignals">0</strong>
             </div>
           </div>
 
-          <a href="countries.html" class="unit-btn" id="btnPatterns">Open Risk Unit</a>
+          <a href="countries.html" class="unit-btn" data-i18n="btn_patterns">Open Risk Unit</a>
         </article>
       </div>
     </div>
 
     <div class="section">
-      <h2 id="coreSystemsTitle">Core Systems</h2>
-      <p id="coreSystemsSub" class="section-subtitle">
+      <h2 data-i18n="core_systems">Core Systems</h2>
+      <p class="section-subtitle" data-i18n="core_systems_desc">
         The sovereign engine layer that transforms raw signals into classification, escalation logic, and decision structure.
       </p>
 
       <div class="grid">
         <div class="card">
           <strong>Σ-9X</strong>
-          <p id="cardSigma">Signal to Decision Engine</p>
+          <p data-i18n="card_sigma">Signal to Decision Engine</p>
         </div>
 
         <div class="card">
           <strong>WAAD</strong>
-          <p id="cardWaad">War Acceptance Architecture</p>
+          <p data-i18n="card_waad">War Acceptance Architecture</p>
         </div>
 
         <div class="card">
           <strong>CRU</strong>
-          <p id="cardCru">Country Risk Unit</p>
+          <p data-i18n="card_cru">Country Risk Unit</p>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <h2 id="countryUnitTitle">Country Risk Unit</h2>
+      <h2 data-i18n="country_unit">Country Risk Unit</h2>
       <div id="countryBox" class="country-box"></div>
     </div>
 
     <div class="section">
-      <h2 id="liveFeedTitle">Live Feed</h2>
+      <h2 data-i18n="live_feed">Live Feed</h2>
       <div id="feedBox" class="feed-box"></div>
     </div>
 
-    <div id="founderLine" class="founder">
+    <div class="founder" data-i18n="founder_line">
       Founded by Naeem M. Dahalan
     </div>
 
-    <div id="footerText" class="footer">
+    <div class="footer" data-i18n="footer_text">
       © 2026 IBSS — Founded by Naeem M. Dahalan
     </div>
   </div>
@@ -990,6 +1000,7 @@
   <script src="ingestion.js"></script>
   <script src="news.js"></script>
   <script src="analysis.js"></script>
+  <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
   <script src="engine.js"></script>
   <script src="publisher.js"></script>
@@ -1005,8 +1016,7 @@
         nav_models: "Models",
         nav_about: "About",
 
-        hero_kicker: "Sovereign Decision System",
-        hero_title: "IBSS",
+        hero_official: "International Bureau of Sovereign Studies",
         hero_desc: "A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.",
         system_line: "System Active — Monitoring Global Signals",
 
@@ -1023,10 +1033,13 @@
         live_intelligence_desc: "Real-time signal condensation layer highlighting active pressure, dominant files, and current system movement.",
 
         strategic_snapshot: "Strategic Snapshot",
-        strategic_snapshot_desc: "Immediate sovereign reading of the dominant theater, strategic file, top country risk, and latest study.",
+        strategic_snapshot_desc: "Immediate sovereign reading of the dominant theater, leading strategic file, and top country risk.",
         snapshot_top_theater: "Top Theater",
-        snapshot_top_file: "Top Strategic File",
+        snapshot_top_cluster: "Top Strategic File",
         snapshot_top_country: "Top Country Risk",
+
+        unified_metrics: "Unified Metrics",
+        unified_metrics_desc: "A single sovereign metrics layer aligning signal score, strategic-file risk, theater risk, country risk, and system stress.",
 
         sovereign_units: "Sovereign Intelligence Units",
         sovereign_units_desc: "Institutional layer connecting strategic studies, news analysis, and pattern-risk observation before entering the operational engine.",
@@ -1046,9 +1059,9 @@
 
         unit_pru_title: "Pattern & Country Risk Unit",
         unit_pru_desc: "Tracks structural pressure, trend direction, and state-level risk shifts across active strategic theaters.",
-        metric_top_theater: "Top Theater",
-        metric_top_file: "Top File",
         metric_top_country: "Top Country",
+        metric_top_country_score: "Risk Score",
+        metric_risk_trend: "Trend",
         metric_live_signals: "Live Signals",
         btn_patterns: "Open Risk Unit",
 
@@ -1073,8 +1086,18 @@
         source_fallback: "SOURCE — FALLBACK",
         engine_ready: "ENGINE — READY",
         engine_limited: "ENGINE — LIMITED",
+        metrics_on: "METRICS — INTEGRATED",
+        metrics_off: "METRICS — OFF",
         risk_level: "Risk Level",
         trend: "Trend",
+        band: "Band",
+        signal_score: "Signal Score",
+        cluster_risk: "Strategic File Risk",
+        theater_risk: "Theater Risk",
+        country_risk: "Country Risk",
+        system_stress: "System Stress",
+        confidence: "Confidence",
+
         no_data: "No data available.",
         no_feed: "No live feed available.",
         no_news: "No recent news items available."
@@ -1089,8 +1112,7 @@
         nav_models: "النماذج",
         nav_about: "حول",
 
-        hero_kicker: "نظام القرار السيادي",
-        hero_title: "IBSS",
+        hero_official: "المكتب الدولي للدراسات السيادية",
         hero_desc: "منصة سيادية للإشارات المنظمة والتحليل الاستراتيجي والاستخبارات بدرجة قرار.",
         system_line: "النظام فعال — يراقب الإشارات العالمية",
 
@@ -1106,14 +1128,17 @@
         live_intelligence: "الشريط الاستخباري الحي",
         live_intelligence_desc: "طبقة عرض حية تضغط الإشارات النشطة والملفات المهيمنة واتجاه الحركة الحالية داخل النظام.",
 
-        strategic_snapshot: "اللقطة السيادية السريعة",
-        strategic_snapshot_desc: "قراءة سيادية فورية للمسرح المهيمن والملف الاستراتيجي الأعلى وأعلى دولة خطرًا وآخر دراسة.",
+        strategic_snapshot: "اللقطة الاستراتيجية",
+        strategic_snapshot_desc: "قراءة سيادية فورية للمسرح المهيمن، الملف الاستراتيجي الأعلى، وأعلى دولة خطرًا.",
         snapshot_top_theater: "المسرح الأعلى",
-        snapshot_top_file: "الملف الاستراتيجي الأعلى",
+        snapshot_top_cluster: "الملف الاستراتيجي الأعلى",
         snapshot_top_country: "أعلى دولة خطرًا",
 
+        unified_metrics: "المقاييس الموحدة",
+        unified_metrics_desc: "طبقة قياس سيادية واحدة توحّد درجة الإشارة وخطر الملف وخطر المسرح وخطر الدولة وضغط النظام.",
+
         sovereign_units: "الوحدات السيادية",
-        sovereign_units_desc: "طبقة مؤسسية تربط الدراسات وتحليل الأخبار وتتبع الأنماط قبل الدخول إلى المحرك التشغيلي.",
+        sovereign_units_desc: "طبقة مؤسسية تربط الدراسات، تحليل الأخبار، وتتبع الأنماط قبل الدخول إلى المحرك التشغيلي.",
         unit_status_active: "نشط",
         unit_status_watch: "مراقبة",
 
@@ -1128,11 +1153,11 @@
         unit_niu_desc: "تحول التصريحات والتطورات وتدفقات الأخبار إلى إشارات منظمة جاهزة للقراءة السيادية.",
         btn_news_unit: "فتح وحدة الأخبار",
 
-        unit_pru_title: "وحدة تتبع وتحليل الأنماط ومخاطر الدول",
+        unit_pru_title: "وحدة تتبع وتحليل أنماط ومخاطر الدول",
         unit_pru_desc: "تراقب الضغط البنيوي واتجاه المخاطر وتحولات الدول عبر الساحات الاستراتيجية النشطة.",
-        metric_top_theater: "المسرح الأعلى",
-        metric_top_file: "الملف الأعلى",
         metric_top_country: "الدولة الأعلى",
+        metric_top_country_score: "درجة الخطر",
+        metric_risk_trend: "الاتجاه",
         metric_live_signals: "الإشارات الحية",
         btn_patterns: "فتح وحدة المخاطر",
 
@@ -1157,8 +1182,18 @@
         source_fallback: "المصدر — الاحتياطي",
         engine_ready: "المحرك — جاهز",
         engine_limited: "المحرك — محدود",
+        metrics_on: "القياس — مدمج",
+        metrics_off: "القياس — غير مفعل",
         risk_level: "مستوى الخطر",
         trend: "الاتجاه",
+        band: "الحزمة",
+        signal_score: "درجة الإشارة",
+        cluster_risk: "خطر الملف الاستراتيجي",
+        theater_risk: "خطر المسرح",
+        country_risk: "خطر الدولة",
+        system_stress: "ضغط النظام",
+        confidence: "الثقة",
+
         no_data: "لا توجد بيانات.",
         no_feed: "لا توجد تغذية حية.",
         no_news: "لا توجد عناصر خبرية حديثة."
@@ -1166,7 +1201,6 @@
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
-    let tickerAutoTimer = null;
 
     function t(key){
       return translations[currentLang]?.[key] || key;
@@ -1179,7 +1213,13 @@
     function getLocalizedText(value){
       if (!value) return "-";
       if (typeof value === "string" || typeof value === "number") return String(value);
-      return value[currentLang] || value.en || value.ar || value.name || value.title || "-";
+      return value[currentLang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
+    }
+
+    function escapeHtml(text){
+      const div = document.createElement("div");
+      div.textContent = text ?? "";
+      return div.innerHTML;
     }
 
     function formatDateTime(value){
@@ -1196,76 +1236,22 @@
       });
     }
 
+    function getBandLabel(score){
+      if (window.IBSS_METRICS?.classifyBand) {
+        const band = window.IBSS_METRICS.classifyBand(Number(score || 0));
+        return currentLang === "ar" ? band?.ar || "-" : band?.en || "-";
+      }
+      return "-";
+    }
+
     function applyLanguage(){
       document.documentElement.lang = currentLang;
       document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
 
-      document.querySelector('[data-i18n="nav_home"]').textContent = t("nav_home");
-      document.querySelector('[data-i18n="nav_dashboard"]').textContent = t("nav_dashboard");
-      document.querySelector('[data-i18n="nav_signals"]').textContent = t("nav_signals");
-      document.querySelector('[data-i18n="nav_reports"]').textContent = t("nav_reports");
-      document.querySelector('[data-i18n="nav_countries"]').textContent = t("nav_countries");
-      document.querySelector('[data-i18n="nav_models"]').textContent = t("nav_models");
-      document.querySelector('[data-i18n="nav_about"]').textContent = t("nav_about");
-
-      document.getElementById("heroKicker").textContent = t("hero_kicker");
-      document.getElementById("pageTitle").textContent = t("hero_title");
-      document.getElementById("pageSub").textContent = t("hero_desc");
-      document.getElementById("systemLine").textContent = t("system_line");
-
-      document.getElementById("btnDashboard").textContent = t("btn_dashboard");
-      document.getElementById("btnSignals").textContent = t("btn_signals");
-      document.getElementById("btnReports").textContent = t("btn_reports");
-
-      document.getElementById("topThreatLabel").textContent = t("top_threat");
-      document.getElementById("systemPressureLabel").textContent = t("system_pressure");
-      document.getElementById("decisionModeLabel").textContent = t("decision_mode");
-      document.getElementById("activeSignalsLabel").textContent = t("active_signals");
-
-      document.getElementById("liveIntelTitle").textContent = t("live_intelligence");
-      document.getElementById("liveIntelSub").textContent = t("live_intelligence_desc");
-
-      document.getElementById("snapshotTitle").textContent = t("strategic_snapshot");
-      document.getElementById("snapshotSub").textContent = t("strategic_snapshot_desc");
-      document.getElementById("snapshotTopTheaterLabel").textContent = t("snapshot_top_theater");
-      document.getElementById("snapshotTopFileLabel").textContent = t("snapshot_top_file");
-      document.getElementById("snapshotTopCountryLabel").textContent = t("snapshot_top_country");
-
-      document.getElementById("unitsTitle").textContent = t("sovereign_units");
-      document.getElementById("unitsSub").textContent = t("sovereign_units_desc");
-      document.getElementById("unitStatusActive1").textContent = t("unit_status_active");
-      document.getElementById("unitStatusActive2").textContent = t("unit_status_active");
-      document.getElementById("unitStatusWatch").textContent = t("unit_status_watch");
-
-      document.getElementById("unitSsuTitle").textContent = t("unit_ssu_title");
-      document.getElementById("unitSsuDesc").textContent = t("unit_ssu_desc");
-      document.getElementById("latestStudyLabel").textContent = t("latest_study_label");
-      document.getElementById("metricPublishedLabel").textContent = t("metric_published");
-      document.getElementById("metricReportsLabel").textContent = t("metric_reports");
-      document.getElementById("btnStudies").textContent = t("btn_studies");
-
-      document.getElementById("unitNiuTitle").textContent = t("unit_niu_title");
-      document.getElementById("unitNiuDesc").textContent = t("unit_niu_desc");
-      document.getElementById("btnNewsUnit").textContent = t("btn_news_unit");
-
-      document.getElementById("unitPruTitle").textContent = t("unit_pru_title");
-      document.getElementById("unitPruDesc").textContent = t("unit_pru_desc");
-      document.getElementById("metricTopTheaterLabel").textContent = t("metric_top_theater");
-      document.getElementById("metricTopFileLabel").textContent = t("metric_top_file");
-      document.getElementById("metricTopCountryLabel").textContent = t("metric_top_country");
-      document.getElementById("metricLiveSignalsLabel").textContent = t("metric_live_signals");
-      document.getElementById("btnPatterns").textContent = t("btn_patterns");
-
-      document.getElementById("coreSystemsTitle").textContent = t("core_systems");
-      document.getElementById("coreSystemsSub").textContent = t("core_systems_desc");
-      document.getElementById("cardSigma").textContent = t("card_sigma");
-      document.getElementById("cardWaad").textContent = t("card_waad");
-      document.getElementById("cardCru").textContent = t("card_cru");
-
-      document.getElementById("countryUnitTitle").textContent = t("country_unit");
-      document.getElementById("liveFeedTitle").textContent = t("live_feed");
-      document.getElementById("founderLine").textContent = t("founder_line");
-      document.getElementById("footerText").textContent = t("footer_text");
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = t(key);
+      });
 
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
@@ -1292,11 +1278,11 @@
       }
     }
 
-    function updateSourceBadge(source){
+    function updateSourceBadge(system){
       const badge = document.getElementById("systemSourceBadge");
       badge.className = "meta-badge";
 
-      if (source === "engine") {
+      if (system?.source === "engine") {
         badge.textContent = t("source_engine");
         badge.classList.add("live");
       } else {
@@ -1313,6 +1299,18 @@
         badge.className = "meta-badge live";
       } else {
         badge.textContent = t("engine_limited");
+        badge.className = "meta-badge fallback";
+      }
+    }
+
+    function updateMetricsBadge(system){
+      const badge = document.getElementById("systemMetricsBadge");
+
+      if (system?.metricsReference) {
+        badge.textContent = t("metrics_on");
+        badge.className = "meta-badge live";
+      } else {
+        badge.textContent = t("metrics_off");
         badge.className = "meta-badge fallback";
       }
     }
@@ -1359,7 +1357,7 @@
       const track = document.getElementById("tickerTrack");
       if (!track) return;
 
-      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
+      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(8) || [];
       const items = [];
 
       tickerNews.forEach(item => {
@@ -1371,10 +1369,15 @@
       });
 
       if (!items.length) {
-        const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 6) : [];
+        const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 5) : [];
         feed.forEach(line => {
           items.push({
-            level: system?.level === "HIGH" ? "high" : system?.level === "MEDIUM" ? "medium" : "low",
+            level:
+              system?.level === "HIGH"
+                ? "high"
+                : system?.level === "MEDIUM"
+                  ? "medium"
+                  : "low",
             text: typeof line === "string" ? line : getLocalizedText(line?.text)
           });
         });
@@ -1384,46 +1387,27 @@
         track.innerHTML = `
           <div class="ticker-item">
             <span class="ticker-dot low"></span>
-            <span class="ticker-item-text">${t("no_feed")}</span>
+            <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(t("no_feed"))}</span>
           </div>
         `;
+        track.scrollLeft = 0;
         return;
       }
 
       track.innerHTML = items.map(item => `
         <div class="ticker-item">
           <span class="ticker-dot ${item.level}"></span>
-          <span class="ticker-item-text">${escapeHtml(item.text)}</span>
+          <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
         </div>
       `).join("");
 
-      startTickerAutoScroll(track);
-    }
-
-    function startTickerAutoScroll(track){
-      if (!track) return;
-
-      if (tickerAutoTimer) {
-        clearInterval(tickerAutoTimer);
-        tickerAutoTimer = null;
-      }
-
-      track.scrollLeft = 0;
-
-      tickerAutoTimer = setInterval(() => {
-        const maxScroll = track.scrollWidth - track.clientWidth;
-        if (maxScroll <= 0) return;
-
-        if (track.scrollLeft >= maxScroll - 1) {
-          track.scrollLeft = 0;
-        } else {
-          track.scrollLeft += 1;
-        }
-      }, 24);
+      requestAnimationFrame(() => {
+        track.scrollLeft = 0;
+      });
     }
 
     function renderSnapshot(system){
-      const snapshot = window.IBSS_UTILS?.getHomeSnapshot?.();
+      const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.();
       if (!snapshot) return;
 
       const topTheater = snapshot.topTheater;
@@ -1434,26 +1418,77 @@
         topTheater ? getLocalizedText(topTheater.name) : "-";
       document.getElementById("snapshotTopTheaterMeta").textContent =
         topTheater
-          ? `${t("risk_level")}: ${safeText(topTheater.escalationLevel, "-")} | ${t("trend")}: ${safeText(topTheater.trend, "-")}`
+          ? `${t("risk_level")}: ${safeText(topTheater.escalationLevel, "-")} — ${t("band")}: ${getBandLabel(Number(topTheater.avgRisk || 0))}`
           : t("no_data");
 
-      document.getElementById("snapshotTopFile").textContent =
+      document.getElementById("snapshotTopCluster").textContent =
         topCluster ? getLocalizedText(topCluster.name) : "-";
-      document.getElementById("snapshotTopFileMeta").textContent =
+      document.getElementById("snapshotTopClusterMeta").textContent =
         topCluster
-          ? `${t("risk_level")}: ${safeText(topCluster.escalationLevel, "-")} | ${t("trend")}: ${safeText(topCluster.trend, "-")}`
+          ? `${t("risk_level")}: ${safeText(topCluster.escalationLevel, "-")} — ${t("band")}: ${getBandLabel(Number(topCluster.avgRisk || 0))}`
           : t("no_data");
 
       document.getElementById("snapshotTopCountry").textContent =
         topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-";
       document.getElementById("snapshotTopCountryMeta").textContent =
         topCountry
-          ? `${safeText(topCountry.riskLevel, "-")} — ${safeText(topCountry.trend, "-")}`
+          ? `${t("risk_level")}: ${safeText(topCountry.riskLevel, "-")} — ${t("trend")}: ${safeText(topCountry.trend, "-")}`
           : t("no_data");
     }
 
+    function renderMetricBox(system){
+      const box = document.getElementById("metricBox");
+      const topSignal = system?.topSignal || null;
+      const topCluster = system?.topCluster || null;
+      const topTheater = system?.topTheater || null;
+      const topCountry = (system?.countryRiskFeed || [])[0] || null;
+
+      const metrics = [
+        {
+          name: t("system_stress"),
+          score: Number(system?.systemPressure || 0),
+          meta: `${t("band")}: ${getBandLabel(Number(system?.systemPressure || 0))}`
+        },
+        {
+          name: t("signal_score"),
+          score: Number(topSignal?.balancedScore100 || 0),
+          meta: `${t("band")}: ${getBandLabel(Number(topSignal?.balancedScore100 || 0))}`
+        },
+        {
+          name: t("cluster_risk"),
+          score: Number(topCluster?.avgRisk || 0),
+          meta: `${t("band")}: ${getBandLabel(Number(topCluster?.avgRisk || 0))}`
+        },
+        {
+          name: t("theater_risk"),
+          score: Number(topTheater?.avgRisk || 0),
+          meta: `${t("band")}: ${getBandLabel(Number(topTheater?.avgRisk || 0))}`
+        },
+        {
+          name: t("country_risk"),
+          score: Number(topCountry?.riskScore || 0),
+          meta: `${t("band")}: ${getBandLabel(Number(topCountry?.riskScore || 0))}`
+        },
+        {
+          name: t("confidence"),
+          score: Number(system?.confidenceScore || 0),
+          meta: `${t("band")}: ${getBandLabel(Number(system?.confidenceScore || 0))}`
+        }
+      ];
+
+      box.innerHTML = metrics.map(item => `
+        <div class="metric-item">
+          <div class="metric-left">
+            <div class="metric-name">${escapeHtml(item.name)}</div>
+            <div class="metric-meta">${escapeHtml(item.meta)}</div>
+          </div>
+          <div class="metric-score">${item.score}</div>
+        </div>
+      `).join("");
+    }
+
     function renderUnitStudies(system){
-      const snapshot = window.IBSS_UTILS?.getHomeSnapshot?.();
+      const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.();
       const latestStudy = snapshot?.latestStudy || null;
       const contentStats = system?.contentStats || {};
 
@@ -1476,8 +1511,8 @@
           <div class="unit-list-item">
             <span class="unit-dot low"></span>
             <div>
-              <strong>${t("no_news")}</strong>
-              <small>${t("no_data")}</small>
+              <strong>${escapeHtml(t("no_news"))}</strong>
+              <small>${escapeHtml(t("no_data"))}</small>
             </div>
           </div>
         `;
@@ -1501,19 +1536,17 @@
     }
 
     function renderUnitPatterns(system){
-      const snapshot = window.IBSS_UTILS?.getHomeSnapshot?.();
-      const topTheater = snapshot?.topTheater || null;
-      const topCluster = snapshot?.topCluster || null;
+      const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.();
       const topCountry = snapshot?.topCountry || null;
-
-      document.getElementById("unitTopTheater").textContent =
-        topTheater ? getLocalizedText(topTheater.name) : "-";
-
-      document.getElementById("unitTopFile").textContent =
-        topCluster ? getLocalizedText(topCluster.name) : "-";
 
       document.getElementById("unitTopCountry").textContent =
         topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-";
+
+      document.getElementById("unitTopCountryScore").textContent =
+        topCountry ? Number(topCountry.riskScore || 0) : 0;
+
+      document.getElementById("unitTopCountryTrend").textContent =
+        topCountry && typeof topCountry.trend === "string" ? topCountry.trend : "-";
 
       document.getElementById("unitLiveSignals").textContent =
         Number(system?.liveSignalsCount || 0);
@@ -1528,7 +1561,7 @@
           <div class="country-item">
             <div class="country-left">
               <div class="country-name">-</div>
-              <div class="country-meta">${t("no_data")}</div>
+              <div class="country-meta">${escapeHtml(t("no_data"))}</div>
             </div>
             <div class="country-score">0</div>
           </div>
@@ -1541,11 +1574,10 @@
           <div class="country-left">
             <div class="country-name">${escapeHtml(getLocalizedText(country.nameLocalized || country.name))}</div>
             <div class="country-meta">
-              ${t("risk_level")}: ${escapeHtml(safeText(country.riskLevel, "-"))} |
-              ${t("trend")}: ${escapeHtml(safeText(country.trend, "-"))}
+              ${escapeHtml(`${t("risk_level")}: ${country?.riskLevel || "-"} | ${t("trend")}: ${country?.trend || "-"} | ${t("band")}: ${getBandLabel(Number(country?.riskScore || 0))}`)}
             </div>
           </div>
-          <div class="country-score">${Number(country.riskScore || 0)}</div>
+          <div class="country-score">${Number(country?.riskScore || 0)}</div>
         </div>
       `).join("");
     }
@@ -1555,7 +1587,7 @@
       const lines = Array.isArray(system?.feed) ? system.feed : [];
 
       if (!lines.length) {
-        box.innerHTML = `<div class="feed-item">${t("no_feed")}</div>`;
+        box.innerHTML = `<div class="feed-item">${escapeHtml(t("no_feed"))}</div>`;
         return;
       }
 
@@ -1578,12 +1610,14 @@
       const system = getSystemState();
       if (!system) return;
 
-      updateSourceBadge(system.source);
+      updateSourceBadge(system);
       updateHealthBadge(system);
+      updateMetricsBadge(system);
       updateAlert(system.level);
       updateStatusCards(system);
       renderTicker(system);
       renderSnapshot(system);
+      renderMetricBox(system);
       renderUnitStudies(system);
       renderUnitNews();
       renderUnitPatterns(system);
