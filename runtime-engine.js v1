@@ -5,12 +5,9 @@ window.IBSS_RUNTIME = (function () {
     storageKey: "ibss_runtime_state_v3",
     defaultRefreshMs: 4000,
     tickerStepPx: 1,
-    tickerFrameMs: 18,
-    tickerCopies: 4,
-    tickerFallbackText: {
-      en: "No live feed available.",
-      ar: "لا توجد تغذية حية."
-    }
+    tickerFrameMs: 22,
+    minTickerCopies: 3,
+    deadTickerRetryEvery: 10
   };
 
   const STATE = {
@@ -19,7 +16,6 @@ window.IBSS_RUNTIME = (function () {
     lang: "en",
 
     system: null,
-    systemHash: "",
 
     radarEl: null,
     tickerTrackEl: null,
@@ -31,9 +27,7 @@ window.IBSS_RUNTIME = (function () {
     refreshTimer: null,
     tickerTimer: null,
 
-    tickerPaused: false,
-    tickerContentHash: "",
-    tickerBound: false
+    tickerPaused: false
   };
 
   function safeNumber(value, fallback = 0) {
@@ -49,23 +43,26 @@ window.IBSS_RUNTIME = (function () {
     return Array.isArray(value) ? value : [];
   }
 
+  function getLocalizedText(value, lang = "en") {
+    if (!value) return "-";
+    if (typeof value === "string" || typeof value === "number") return String(value);
+
+    return (
+      value[lang] ??
+      value.en ??
+      value.ar ??
+      value.name ??
+      value.title ??
+      value.label ??
+      value.text ??
+      "-"
+    );
+  }
+
   function escapeHtml(text) {
     const div = document.createElement("div");
     div.textContent = text ?? "";
     return div.innerHTML;
-  }
-
-  function getLocalizedText(value, lang = "en") {
-    if (!value) return "-";
-    if (typeof value === "string" || typeof value === "number") return String(value);
-    return value[lang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
-  }
-
-  function normalizePriority(value) {
-    const p = String(value || "LOW").toUpperCase();
-    if (p === "HIGH") return "high";
-    if (p === "MEDIUM") return "medium";
-    return "low";
   }
 
   function load() {
@@ -85,85 +82,135 @@ window.IBSS_RUNTIME = (function () {
 
   function save() {
     try {
-      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
-        pageId: STATE.pageId,
-        lang: STATE.lang
-      }));
+      localStorage.setItem(
+        CONFIG.storageKey,
+        JSON.stringify({
+          pageId: STATE.pageId,
+          lang: STATE.lang
+        })
+      );
     } catch (error) {
       console.error("IBSS_RUNTIME save error:", error);
     }
   }
 
-  function buildSystemHash(system) {
-    if (!system) return "none";
-
-    const level = safeText(system.level, "LOW");
-    const pressure = safeNumber(system.systemPressure || system.ssi, 0);
-    const updatedAt = safeText(system.updatedAt, "");
-    const topSignalId = safeText(system.topSignal?.id || system.dominantSignal?.id, "none");
-    const topClusterId = safeText(system.topCluster?.id, "none");
-    const topTheaterId = safeText(system.topTheater?.id, "none");
-    const newsCount = safeNumber(system.newsPressure?.count, 0);
-
-    return [
-      level,
-      pressure,
-      updatedAt,
-      topSignalId,
-      topClusterId,
-      topTheaterId,
-      newsCount
-    ].join("|");
-  }
-
-  function getSystem() {
+  function resolveFromPublisher() {
     try {
-      if (typeof STATE.systemProvider === "function") {
-        return STATE.systemProvider();
-      }
-
-      if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
-        window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
-      }
-
-      if (window.IBSS_ENGINE?.getSystemState) {
-        return window.IBSS_ENGINE.getSystemState();
-      }
-
-      if (window.IBSS_ENGINE?.getStaticSystemFallback) {
-        return window.IBSS_ENGINE.getStaticSystemFallback();
+      if (window.IBSS_PUBLISHER?.getLatestOrchestratedSystem) {
+        const existing = window.IBSS_PUBLISHER.getLatestOrchestratedSystem();
+        if (existing) return existing;
       }
     } catch (error) {
-      console.error("IBSS_RUNTIME getSystem error:", error);
+      console.error("IBSS_RUNTIME resolveFromPublisher existing error:", error);
+    }
+
+    try {
+      if (window.IBSS_ENGINE?.getSystemState && window.IBSS_PUBLISHER?.orchestrateSystem) {
+        const live = window.IBSS_ENGINE.getSystemState();
+        if (live) return window.IBSS_PUBLISHER.orchestrateSystem(live, { force: true });
+      }
+    } catch (error) {
+      console.error("IBSS_RUNTIME resolveFromPublisher live error:", error);
     }
 
     return null;
   }
 
+  function resolveFromEngine() {
+    try {
+      if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
+        window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
+      }
+    } catch (error) {
+      console.error("IBSS_RUNTIME news refresh error:", error);
+    }
+
+    try {
+      if (window.IBSS_ENGINE?.getSystemState) {
+        return window.IBSS_ENGINE.getSystemState();
+      }
+    } catch (error) {
+      console.error("IBSS_RUNTIME getSystemState error:", error);
+    }
+
+    try {
+      if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+        return window.IBSS_ENGINE.getStaticSystemFallback();
+      }
+    } catch (error) {
+      console.error("IBSS_RUNTIME getStaticSystemFallback error:", error);
+    }
+
+    return null;
+  }
+
+  function getSystem() {
+    try {
+      if (typeof STATE.systemProvider === "function") {
+        const provided = STATE.systemProvider();
+        if (provided) {
+          if (window.IBSS_PUBLISHER?.orchestrateSystem) {
+            try {
+              return window.IBSS_PUBLISHER.orchestrateSystem(provided);
+            } catch (error) {
+              console.error("IBSS_RUNTIME provider orchestration error:", error);
+            }
+          }
+          return provided;
+        }
+      }
+    } catch (error) {
+      console.error("IBSS_RUNTIME custom systemProvider error:", error);
+    }
+
+    const publisherSystem = resolveFromPublisher();
+    if (publisherSystem) return publisherSystem;
+
+    return resolveFromEngine();
+  }
+
   function buildDefaultTickerItems(system, lang) {
     const items = [];
-    const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
 
-    tickerNews.forEach(item => {
+    const unifiedFeed = asArray(
+      system?.publisherFeed ||
+      system?.unifiedFeed ||
+      window.IBSS_PUBLISHER?.getUnifiedFeed?.()
+    );
+
+    unifiedFeed.slice(0, 10).forEach(item => {
       items.push({
-        level: normalizePriority(item?.severity || item?.priority || "LOW"),
-        text: getLocalizedText(item?.title, lang)
+        level: String(item?.priority || "LOW").toLowerCase() === "high"
+          ? "high"
+          : String(item?.priority || "LOW").toLowerCase() === "medium"
+            ? "medium"
+            : "low",
+        text: getLocalizedText(item?.text, lang)
       });
     });
 
     if (!items.length) {
-      asArray(system?.feed).slice(0, 10).forEach(line => {
+      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
+      tickerNews.forEach(item => {
+        const severity = String(item?.severity || item?.priority || "LOW").toLowerCase();
         items.push({
-          level: normalizePriority(line?.priority || system?.level || "LOW"),
-          text: typeof line === "string" ? line : getLocalizedText(line?.text, lang)
+          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
+          text: getLocalizedText(item?.title, lang)
         });
       });
     }
 
     if (!items.length) {
-      items.push({
-        level: "low",
-        text: lang === "ar" ? CONFIG.tickerFallbackText.ar : CONFIG.tickerFallbackText.en
+      asArray(system?.feed).slice(0, 8).forEach(line => {
+        items.push({
+          level:
+            system?.level === "HIGH"
+              ? "high"
+              : system?.level === "MEDIUM"
+                ? "medium"
+                : "low",
+          text: typeof line === "string" ? line : getLocalizedText(line?.text, lang)
+        });
       });
     }
 
@@ -174,46 +221,36 @@ window.IBSS_RUNTIME = (function () {
     try {
       if (typeof STATE.tickerItemsProvider === "function") {
         const custom = STATE.tickerItemsProvider(system, lang);
-        if (Array.isArray(custom) && custom.length) {
-          return custom.map(item => ({
-            level: normalizePriority(item?.level || item?.priority || "LOW"),
-            text: safeText(item?.text, "-")
-          }));
-        }
+        if (Array.isArray(custom) && custom.length) return custom;
       }
     } catch (error) {
-      console.error("IBSS_RUNTIME tickerItemsProvider error:", error);
+      console.error("IBSS_RUNTIME custom ticker provider error:", error);
     }
 
     return buildDefaultTickerItems(system, lang);
   }
 
-  function buildTickerContentHash(items, lang) {
-    return items.map(item => `${lang}:${item.level}:${item.text}`).join("||");
+  function buildTickerCopies(items) {
+    const copies = [];
+    const base = items.length ? items : [{ level: "low", text: "No live feed available." }];
+
+    for (let i = 0; i < CONFIG.minTickerCopies; i += 1) {
+      base.forEach(item => copies.push(item));
+    }
+
+    return copies;
   }
 
-  function renderTicker(system, force = false) {
+  function renderTicker(system) {
     const track = STATE.tickerTrackEl;
     if (!track) return;
 
-    const baseItems = getTickerItems(system, STATE.lang);
-    const contentHash = buildTickerContentHash(baseItems, STATE.lang);
+    const items = buildTickerCopies(getTickerItems(system, STATE.lang));
 
-    if (!force && contentHash === STATE.tickerContentHash && track.children.length) {
-      return;
-    }
-
-    STATE.tickerContentHash = contentHash;
-
-    const copies = [];
-    for (let i = 0; i < CONFIG.tickerCopies; i += 1) {
-      baseItems.forEach(item => copies.push(item));
-    }
-
-    track.innerHTML = copies.map(item => `
+    track.innerHTML = items.map(item => `
       <div class="ticker-item">
-        <span class="ticker-dot ${escapeHtml(item.level)}"></span>
-        <span class="ticker-item-text" dir="${STATE.lang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
+        <span class="ticker-dot ${escapeHtml(item.level || "low")}"></span>
+        <span class="ticker-item-text" dir="${STATE.lang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text || "-")}</span>
       </div>
     `).join("");
 
@@ -222,9 +259,9 @@ window.IBSS_RUNTIME = (function () {
 
   function bindTickerHover() {
     const track = STATE.tickerTrackEl;
-    if (!track || STATE.tickerBound) return;
+    if (!track || track.dataset.runtimeBound === "1") return;
 
-    STATE.tickerBound = true;
+    track.dataset.runtimeBound = "1";
 
     track.addEventListener("mouseenter", function () {
       STATE.tickerPaused = true;
@@ -241,10 +278,6 @@ window.IBSS_RUNTIME = (function () {
     track.addEventListener("touchend", function () {
       STATE.tickerPaused = false;
     }, { passive: true });
-
-    track.addEventListener("touchcancel", function () {
-      STATE.tickerPaused = false;
-    }, { passive: true });
   }
 
   function stopTickerMotion() {
@@ -258,34 +291,43 @@ window.IBSS_RUNTIME = (function () {
     const track = STATE.tickerTrackEl;
     if (!track) return;
 
-    if (STATE.tickerTimer) return;
+    stopTickerMotion();
 
-    bindTickerHover();
+    let stallCount = 0;
 
     STATE.tickerTimer = setInterval(() => {
-      if (!STATE.started || !track || STATE.tickerPaused) return;
+      if (!track || STATE.tickerPaused) return;
 
       const maxScroll = track.scrollWidth - track.clientWidth;
-      if (maxScroll <= 0) return;
 
+      if (maxScroll <= 0) {
+        stallCount += 1;
+
+        if (stallCount >= CONFIG.deadTickerRetryEvery && STATE.system) {
+          renderTicker(STATE.system);
+          stallCount = 0;
+        }
+        return;
+      }
+
+      stallCount = 0;
       track.scrollLeft += CONFIG.tickerStepPx;
 
-      const resetPoint = Math.max(1, Math.floor(maxScroll / CONFIG.tickerCopies));
+      const resetPoint = Math.max(1, Math.floor(maxScroll / CONFIG.minTickerCopies));
       if (track.scrollLeft >= resetPoint) {
         track.scrollLeft = 0;
       }
     }, CONFIG.tickerFrameMs);
   }
 
-  function renderRadar(system, force = false) {
+  function renderRadar(system) {
     if (!STATE.radarEl) return;
 
     try {
       if (window.IBSS_GEO_RADAR?.render) {
         window.IBSS_GEO_RADAR.render(STATE.radarEl, system, {
           lang: STATE.lang,
-          size: safeNumber(STATE.radarEl.dataset.radarSize, 300),
-          force
+          size: safeNumber(STATE.radarEl.dataset.radarSize, 300)
         });
       }
     } catch (error) {
@@ -293,39 +335,27 @@ window.IBSS_RUNTIME = (function () {
     }
   }
 
-  async function updateAudio(system) {
+  function updateAudio(system) {
     try {
       if (window.IBSS_AUDIO?.updateFromSystem) {
-        await window.IBSS_AUDIO.updateFromSystem(system);
+        window.IBSS_AUDIO.updateFromSystem(system);
       }
     } catch (error) {
       console.error("IBSS_RUNTIME audio update error:", error);
     }
   }
 
-  async function tick(options = {}) {
+  function tick() {
     const system = getSystem();
     if (!system) return null;
 
-    const force = options.force === true;
-    const nextHash = buildSystemHash(system);
-    const systemChanged = nextHash !== STATE.systemHash;
-
     STATE.system = system;
-    STATE.systemHash = nextHash;
 
-    if (!STATE.tickerTimer) {
-      renderTicker(system, true);
-      startTickerMotion();
-    } else if (force || systemChanged) {
-      renderTicker(system, false);
-    }
-
-    if (STATE.radarEl && (force || systemChanged)) {
-      renderRadar(system, force);
-    }
-
-    await updateAudio(system);
+    renderTicker(system);
+    bindTickerHover();
+    startTickerMotion();
+    renderRadar(system);
+    updateAudio(system);
 
     try {
       if (typeof STATE.afterRender === "function") {
@@ -356,11 +386,13 @@ window.IBSS_RUNTIME = (function () {
   function start(options = {}) {
     STATE.pageId = options.pageId || STATE.pageId || "ibss-page";
     STATE.lang = options.lang === "ar" ? "ar" : (options.lang || STATE.lang || "en");
+
     STATE.radarEl = options.radarEl || null;
     STATE.tickerTrackEl = options.tickerTrackEl || null;
-    STATE.systemProvider = options.systemProvider || null;
-    STATE.tickerItemsProvider = options.tickerItemsProvider || null;
-    STATE.afterRender = options.afterRender || null;
+
+    STATE.systemProvider = typeof options.systemProvider === "function" ? options.systemProvider : null;
+    STATE.tickerItemsProvider = typeof options.tickerItemsProvider === "function" ? options.tickerItemsProvider : null;
+    STATE.afterRender = typeof options.afterRender === "function" ? options.afterRender : null;
 
     save();
 
@@ -370,14 +402,8 @@ window.IBSS_RUNTIME = (function () {
       CONFIG.defaultRefreshMs;
 
     STATE.started = true;
-    STATE.systemHash = "";
-    STATE.tickerContentHash = "";
 
-    stopTickerMotion();
-    STATE.tickerBound = false;
-    STATE.tickerPaused = false;
-
-    tick({ force: true });
+    tick();
     startRefreshLoop(refreshMs);
 
     return true;
@@ -386,11 +412,7 @@ window.IBSS_RUNTIME = (function () {
   function stop() {
     stopRefreshLoop();
     stopTickerMotion();
-
     STATE.started = false;
-    STATE.system = null;
-    STATE.systemHash = "";
-    STATE.tickerPaused = false;
   }
 
   function restart(options = {}) {
@@ -402,18 +424,8 @@ window.IBSS_RUNTIME = (function () {
     STATE.lang = lang === "ar" ? "ar" : "en";
     save();
 
-    if (STATE.started && STATE.system) {
-      STATE.tickerContentHash = "";
-      renderTicker(STATE.system, true);
-      renderRadar(STATE.system, true);
-
-      try {
-        if (typeof STATE.afterRender === "function") {
-          STATE.afterRender(STATE.system);
-        }
-      } catch (error) {
-        console.error("IBSS_RUNTIME setLanguage afterRender error:", error);
-      }
+    if (STATE.started) {
+      tick();
     }
   }
 
@@ -423,9 +435,7 @@ window.IBSS_RUNTIME = (function () {
       pageId: STATE.pageId,
       lang: STATE.lang,
       hasRadar: !!STATE.radarEl,
-      hasTicker: !!STATE.tickerTrackEl,
-      tickerPaused: STATE.tickerPaused,
-      systemHash: STATE.systemHash
+      hasTicker: !!STATE.tickerTrackEl
     };
   }
 
