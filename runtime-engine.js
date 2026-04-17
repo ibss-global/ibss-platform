@@ -2,31 +2,38 @@ window.IBSS_RUNTIME = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_runtime_state_v3",
+    storageKey: "ibss_runtime_state_v4",
+    defaultRefreshMs: 4000,
     tickerStepPx: 1,
     tickerFrameMs: 22,
-    defaultRefreshMs: 4000,
-    minTickerCopies: 3
+    minTickerCopies: 3,
+    deadTickerRetryEvery: 10
   };
 
   const STATE = {
     started: false,
     pageId: null,
     lang: "en",
+
     system: null,
-
-    radarEl: null,
-    tickerTrackEl: null,
-
-    systemProvider: null,
-    tickerItemsProvider: null,
-    afterRender: null,
-
+    refreshMs: CONFIG.defaultRefreshMs,
     refreshTimer: null,
-    tickerTimer: null,
 
-    tickerPaused: false
+    tickerTrackEl: null,
+    tickerAnimationId: null,
+    tickerItems: [],
+    tickerCopies: CONFIG.minTickerCopies,
+    tickerOffset: 0,
+    tickerFrameCounter: 0,
+    tickerFrozenChecks: 0,
+
+    afterRender: null,
+    systemProvider: null
   };
+
+  function safeText(value, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+  }
 
   function safeNumber(value, fallback = 0) {
     const n = Number(value);
@@ -37,10 +44,42 @@ window.IBSS_RUNTIME = (function () {
     return Array.isArray(value) ? value : [];
   }
 
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function deepClone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
   function getLocalizedText(value, lang = "en") {
-    if (!value) return "-";
+    if (!value) return "";
     if (typeof value === "string" || typeof value === "number") return String(value);
-    return value[lang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
+
+    return (
+      value?.[lang] ||
+      value?.en ||
+      value?.ar ||
+      value?.name ||
+      value?.title ||
+      value?.label ||
+      value?.text ||
+      ""
+    );
+  }
+
+  function normalizePriority(value) {
+    const p = String(value || "LOW").toUpperCase();
+    if (p === "HIGH") return "HIGH";
+    if (p === "MEDIUM") return "MEDIUM";
+    return "LOW";
+  }
+
+  function priorityClass(value) {
+    const p = normalizePriority(value);
+    if (p === "HIGH") return "high";
+    if (p === "MEDIUM") return "medium";
+    return "low";
   }
 
   function escapeHtml(text) {
@@ -49,34 +88,227 @@ window.IBSS_RUNTIME = (function () {
     return div.innerHTML;
   }
 
-  function load() {
-    try {
-      const raw = localStorage.getItem(CONFIG.storageKey);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return;
-      STATE.pageId = parsed.pageId || null;
-      STATE.lang = parsed.lang || "en";
-    } catch (error) {}
-  }
-
-  function save() {
+  function saveState() {
     try {
       localStorage.setItem(CONFIG.storageKey, JSON.stringify({
         pageId: STATE.pageId,
-        lang: STATE.lang
+        lang: STATE.lang,
+        refreshMs: STATE.refreshMs
       }));
-    } catch (error) {}
+    } catch (error) {
+      console.error("IBSS_RUNTIME saveState error:", error);
+    }
   }
 
-  function getSystem() {
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return;
+
+      STATE.pageId = parsed.pageId || null;
+      STATE.lang = parsed.lang || "en";
+      STATE.refreshMs = safeNumber(parsed.refreshMs, CONFIG.defaultRefreshMs);
+    } catch (error) {
+      console.error("IBSS_RUNTIME loadState error:", error);
+    }
+  }
+
+  function stopTicker() {
+    if (STATE.tickerAnimationId) {
+      cancelAnimationFrame(STATE.tickerAnimationId);
+      STATE.tickerAnimationId = null;
+    }
+
+    STATE.tickerOffset = 0;
+    STATE.tickerFrameCounter = 0;
+    STATE.tickerFrozenChecks = 0;
+  }
+
+  function clearTicker() {
+    stopTicker();
+
+    if (STATE.tickerTrackEl) {
+      STATE.tickerTrackEl.innerHTML = "";
+      STATE.tickerTrackEl.scrollLeft = 0;
+    }
+
+    STATE.tickerItems = [];
+  }
+
+  function destroyRefreshTimer() {
+    if (STATE.refreshTimer) {
+      clearInterval(STATE.refreshTimer);
+      STATE.refreshTimer = null;
+    }
+  }
+
+  function buildTickerItemsFromSystem(system) {
+    const unifiedFeed = asArray(system?.publisherFeed || system?.unifiedFeed);
+    if (unifiedFeed.length) {
+      return unifiedFeed.map(item => ({
+        priority: normalizePriority(item?.priority || system?.level || "LOW"),
+        text: getLocalizedText(item?.text, STATE.lang) || "-"
+      }));
+    }
+
+    const feed = asArray(system?.feed);
+    if (feed.length) {
+      return feed.map(item => {
+        if (typeof item === "string") {
+          return {
+            priority: normalizePriority(system?.level || "LOW"),
+            text: item
+          };
+        }
+
+        return {
+          priority: normalizePriority(item?.priority || system?.level || "LOW"),
+          text: getLocalizedText(item?.text, STATE.lang) || "-"
+        };
+      });
+    }
+
+    const synthetic = [];
+
+    if (safeNumber(system?.signalPressure, 0) > 0) {
+      synthetic.push({
+        priority: normalizePriority(system?.level || "LOW"),
+        text: STATE.lang === "ar"
+          ? `ضغط الإشارات: ${safeNumber(system.signalPressure, 0)}`
+          : `Signal pressure: ${safeNumber(system.signalPressure, 0)}`
+      });
+    }
+
+    if (safeNumber(system?.clusterPressure?.pressure, 0) > 0) {
+      synthetic.push({
+        priority: normalizePriority(system?.level || "LOW"),
+        text: STATE.lang === "ar"
+          ? `ضغط الملفات الاستراتيجية: ${safeNumber(system.clusterPressure.pressure, 0)}`
+          : `Strategic file pressure: ${safeNumber(system.clusterPressure.pressure, 0)}`
+      });
+    }
+
+    if (safeNumber(system?.theaterPressure?.pressure, 0) > 0) {
+      synthetic.push({
+        priority: normalizePriority(system?.level || "LOW"),
+        text: STATE.lang === "ar"
+          ? `ضغط المسرح: ${safeNumber(system.theaterPressure.pressure, 0)}`
+          : `Theater pressure: ${safeNumber(system.theaterPressure.pressure, 0)}`
+      });
+    }
+
+    if (system?.topSignal) {
+      synthetic.push({
+        priority: normalizePriority(system?.topSignal?.priority || system?.level || "LOW"),
+        text: STATE.lang === "ar"
+          ? `الإشارة الأعلى: ${getLocalizedText(system.topSignal.title, "ar")}`
+          : `Top signal: ${getLocalizedText(system.topSignal.title, "en")}`
+      });
+    }
+
+    if (!synthetic.length) {
+      synthetic.push({
+        priority: "LOW",
+        text: STATE.lang === "ar"
+          ? "النظام في وضع المراقبة."
+          : "System remains in monitoring mode."
+      });
+    }
+
+    return synthetic;
+  }
+
+  function renderTickerMarkup(items) {
+    if (!STATE.tickerTrackEl) return;
+
+    const base = asArray(items).length ? asArray(items) : [{
+      priority: "LOW",
+      text: STATE.lang === "ar" ? "لا توجد بيانات." : "No data available."
+    }];
+
+    const repeated = [];
+    for (let i = 0; i < STATE.tickerCopies; i += 1) {
+      repeated.push(...base);
+    }
+
+    STATE.tickerTrackEl.innerHTML = repeated.map(item => `
+      <div class="ticker-item">
+        <span class="ticker-dot ${escapeHtml(priorityClass(item.priority))}"></span>
+        <span class="ticker-item-text" dir="${STATE.lang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
+      </div>
+    `).join("");
+
+    STATE.tickerTrackEl.scrollLeft = 0;
+    STATE.tickerOffset = 0;
+  }
+
+  function tickerContentWidth() {
+    if (!STATE.tickerTrackEl) return 0;
+    return Math.max(0, STATE.tickerTrackEl.scrollWidth / STATE.tickerCopies);
+  }
+
+  function animateTicker() {
+    if (!STATE.tickerTrackEl) return;
+
+    const fullCycleWidth = tickerContentWidth();
+    if (fullCycleWidth <= 0) {
+      STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
+      return;
+    }
+
+    STATE.tickerOffset += CONFIG.tickerStepPx;
+
+    if (STATE.tickerOffset >= fullCycleWidth) {
+      STATE.tickerOffset = 0;
+    }
+
+    STATE.tickerTrackEl.scrollLeft = STATE.tickerOffset;
+    STATE.tickerFrameCounter += 1;
+
+    if (STATE.tickerFrameCounter % CONFIG.deadTickerRetryEvery === 0) {
+      const actual = safeNumber(STATE.tickerTrackEl.scrollLeft, 0);
+      if (Math.abs(actual - STATE.tickerOffset) > 8) {
+        STATE.tickerFrozenChecks += 1;
+      } else {
+        STATE.tickerFrozenChecks = 0;
+      }
+
+      if (STATE.tickerFrozenChecks >= 2) {
+        STATE.tickerTrackEl.scrollLeft = STATE.tickerOffset;
+        STATE.tickerFrozenChecks = 0;
+      }
+    }
+
+    STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
+  }
+
+  function refreshTicker(system) {
+    if (!STATE.tickerTrackEl) return;
+
+    const items = buildTickerItemsFromSystem(system);
+    const signature = JSON.stringify(items);
+
+    if (JSON.stringify(STATE.tickerItems) !== signature) {
+      STATE.tickerItems = deepClone(items);
+      renderTickerMarkup(items);
+      stopTicker();
+      STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
+      return;
+    }
+
+    if (!STATE.tickerAnimationId) {
+      renderTickerMarkup(items);
+      STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
+    }
+  }
+
+  function getRawSystem() {
     try {
       if (typeof STATE.systemProvider === "function") {
         return STATE.systemProvider();
-      }
-
-      if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
-        window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
       }
 
       if (window.IBSS_ENGINE?.getSystemState) {
@@ -87,259 +319,123 @@ window.IBSS_RUNTIME = (function () {
         return window.IBSS_ENGINE.getStaticSystemFallback();
       }
     } catch (error) {
-      console.error("IBSS_RUNTIME getSystem error:", error);
+      console.error("IBSS_RUNTIME getRawSystem error:", error);
     }
 
     return null;
   }
 
-  function buildTickerFromUnifiedFeed(system, lang) {
-    const feed =
-      asArray(system?.unifiedFeed).length ? asArray(system.unifiedFeed) :
-      asArray(system?.publisherFeed).length ? asArray(system.publisherFeed) :
-      asArray(system?.feed);
-
-    return feed.slice(0, 10).map(item => {
-      const priority = String(item?.priority || item?.severity || system?.level || "LOW").toLowerCase();
-
-      return {
-        level: priority === "high" ? "high" : priority === "medium" ? "medium" : "low",
-        text:
-          getLocalizedText(item?.text, lang) ||
-          getLocalizedText(item?.title, lang) ||
-          getLocalizedText(item, lang)
-      };
-    }).filter(item => item.text && item.text !== "-");
-  }
-
-  function buildDefaultTickerItems(system, lang) {
-    const unified = buildTickerFromUnifiedFeed(system, lang);
-    if (unified.length) return unified;
-
-    const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
-
-    if (tickerNews.length) {
-      return tickerNews.map(item => {
-        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
-        return {
-          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
-          text: getLocalizedText(item.title, lang)
-        };
-      });
-    }
-
-    return [{
-      level: "low",
-      text: lang === "ar" ? "لا توجد تغذية حية." : "No live feed available."
-    }];
-  }
-
-  function getTickerItems(system, lang) {
-    try {
-      if (typeof STATE.tickerItemsProvider === "function") {
-        const custom = STATE.tickerItemsProvider(system, lang);
-        if (Array.isArray(custom) && custom.length) return custom;
-      }
-    } catch (error) {
-      console.error("IBSS_RUNTIME ticker provider error:", error);
-    }
-
-    return buildDefaultTickerItems(system, lang);
-  }
-
-  function buildTickerCopies(items) {
-    const copies = [];
-    const base = items.length ? items : [{ level: "low", text: "No live feed available." }];
-
-    for (let i = 0; i < CONFIG.minTickerCopies; i += 1) {
-      base.forEach(item => copies.push(item));
-    }
-
-    return copies;
-  }
-
-  function renderTicker(system) {
-    const track = STATE.tickerTrackEl;
-    if (!track) return;
-
-    const baseItems = getTickerItems(system, STATE.lang);
-    const items = buildTickerCopies(baseItems);
-
-    track.innerHTML = items.map(item => `
-      <div class="ticker-item">
-        <span class="ticker-dot ${escapeHtml(item.level || "low")}"></span>
-        <span class="ticker-item-text" dir="${STATE.lang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text || "-")}</span>
-      </div>
-    `).join("");
-
-    track.scrollLeft = 0;
-  }
-
-  function bindTickerHover() {
-    const track = STATE.tickerTrackEl;
-    if (!track || track.dataset.runtimeBound === "1") return;
-
-    track.dataset.runtimeBound = "1";
-
-    track.addEventListener("mouseenter", function () {
-      STATE.tickerPaused = true;
-    });
-
-    track.addEventListener("mouseleave", function () {
-      STATE.tickerPaused = false;
-    });
-
-    track.addEventListener("touchstart", function () {
-      STATE.tickerPaused = true;
-    }, { passive: true });
-
-    track.addEventListener("touchend", function () {
-      STATE.tickerPaused = false;
-    }, { passive: true });
-  }
-
-  function stopTickerMotion() {
-    if (STATE.tickerTimer) {
-      clearInterval(STATE.tickerTimer);
-      STATE.tickerTimer = null;
-    }
-  }
-
-  function startTickerMotion() {
-    const track = STATE.tickerTrackEl;
-    if (!track) return;
-
-    stopTickerMotion();
-
-    let stallCount = 0;
-
-    STATE.tickerTimer = setInterval(() => {
-      if (!track || STATE.tickerPaused) return;
-
-      const maxScroll = track.scrollWidth - track.clientWidth;
-
-      if (maxScroll <= 0) {
-        stallCount += 1;
-
-        if (stallCount >= 10 && STATE.system) {
-          renderTicker(STATE.system);
-          stallCount = 0;
-        }
-        return;
-      }
-
-      stallCount = 0;
-      track.scrollLeft += CONFIG.tickerStepPx;
-
-      const resetPoint = Math.max(1, Math.floor(maxScroll / CONFIG.minTickerCopies));
-      if (track.scrollLeft >= resetPoint) {
-        track.scrollLeft = 0;
-      }
-    }, CONFIG.tickerFrameMs);
-  }
-
-  function renderRadar(system) {
-    if (!STATE.radarEl) return;
+  function getResolvedSystem() {
+    const rawSystem = getRawSystem();
+    if (!rawSystem) return null;
 
     try {
-      if (window.IBSS_GEO_RADAR?.render) {
-        window.IBSS_GEO_RADAR.render(STATE.radarEl, system, {
-          lang: STATE.lang,
-          size: safeNumber(STATE.radarEl.dataset.radarSize, 300)
-        });
+      if (window.IBSS_PUBLISHER?.orchestrateSystem) {
+        return window.IBSS_PUBLISHER.orchestrateSystem(rawSystem);
       }
     } catch (error) {
-      console.error("IBSS_RUNTIME radar render error:", error);
+      console.error("IBSS_RUNTIME publisher orchestration error:", error);
     }
+
+    return rawSystem;
   }
 
-  function updateAudio(system) {
-    try {
-      if (window.IBSS_AUDIO?.updateFromSystem) {
-        window.IBSS_AUDIO.updateFromSystem(system);
-      }
-    } catch (error) {
-      console.error("IBSS_RUNTIME audio update error:", error);
-    }
-  }
-
-  function tick() {
-    const system = getSystem();
-    if (!system) return;
+  function render(system) {
+    if (!system) return null;
 
     STATE.system = system;
+    refreshTicker(system);
 
-    renderTicker(system);
-    bindTickerHover();
-    startTickerMotion();
-    renderRadar(system);
-    updateAudio(system);
-
-    try {
-      if (typeof STATE.afterRender === "function") {
+    if (typeof STATE.afterRender === "function") {
+      try {
         STATE.afterRender(system);
+      } catch (error) {
+        console.error("IBSS_RUNTIME afterRender error:", error);
       }
-    } catch (error) {
-      console.error("IBSS_RUNTIME afterRender error:", error);
     }
+
+    return system;
   }
 
-  function stopRefreshLoop() {
-    if (STATE.refreshTimer) {
-      clearInterval(STATE.refreshTimer);
-      STATE.refreshTimer = null;
-    }
+  function runFrame() {
+    const system = getResolvedSystem();
+    if (!system) return null;
+    return render(system);
   }
 
-  function startRefreshLoop(refreshMs) {
-    stopRefreshLoop();
+  function restartRefreshLoop() {
+    destroyRefreshTimer();
 
     STATE.refreshTimer = setInterval(() => {
-      tick();
-    }, refreshMs);
+      runFrame();
+    }, clamp(STATE.refreshMs, 1000, 60000));
+  }
+
+  function bindGlobalEvents() {
+    if (window.__IBSS_RUNTIME_EVENTS_BOUND__) return;
+    window.__IBSS_RUNTIME_EVENTS_BOUND__ = true;
+
+    window.addEventListener("ibss:ingestion", function () {
+      runFrame();
+    });
+
+    window.addEventListener("ibss:ingestion-updated", function () {
+      runFrame();
+    });
+
+    window.addEventListener("resize", function () {
+      if (!STATE.tickerTrackEl || !STATE.system) return;
+      renderTickerMarkup(buildTickerItemsFromSystem(STATE.system));
+    });
+  }
+
+  function ensureIngestionRefresh() {
+    try {
+      if (window.IBSS_INGESTION?.refresh) {
+        window.IBSS_INGESTION.refresh();
+      }
+
+      if (window.IBSS_INGESTION?.startAutoRefresh) {
+        window.IBSS_INGESTION.startAutoRefresh();
+      }
+    } catch (error) {
+      console.error("IBSS_RUNTIME ensureIngestionRefresh error:", error);
+    }
   }
 
   function start(options = {}) {
-    STATE.pageId = options.pageId || STATE.pageId || "ibss-page";
-    STATE.lang = options.lang || STATE.lang || "en";
-    STATE.radarEl = options.radarEl || null;
-    STATE.tickerTrackEl = options.tickerTrackEl || null;
-    STATE.systemProvider = options.systemProvider || null;
-    STATE.tickerItemsProvider = options.tickerItemsProvider || null;
-    STATE.afterRender = options.afterRender || null;
-
-    save();
-
-    const refreshMs =
-      safeNumber(options.refreshMs, 0) ||
-      safeNumber(window.IBSS_ENGINE?.CONFIG?.refreshMs, 0) ||
-      CONFIG.defaultRefreshMs;
+    loadState();
 
     STATE.started = true;
-    tick();
-    startRefreshLoop(refreshMs);
+    STATE.pageId = safeText(options.pageId, STATE.pageId || "unknown");
+    STATE.lang = safeText(options.lang, STATE.lang || "en");
+    STATE.refreshMs = safeNumber(options.refreshMs, CONFIG.defaultRefreshMs);
 
-    return true;
-  }
+    STATE.tickerTrackEl = options.tickerTrackEl || null;
+    STATE.afterRender = typeof options.afterRender === "function" ? options.afterRender : null;
+    STATE.systemProvider = typeof options.systemProvider === "function" ? options.systemProvider : null;
 
-  function stop() {
-    stopRefreshLoop();
-    stopTickerMotion();
-    STATE.started = false;
-  }
+    saveState();
+    bindGlobalEvents();
+    ensureIngestionRefresh();
+    restartRefreshLoop();
 
-  function restart(options = {}) {
-    stop();
-    return start(options);
+    return runFrame();
   }
 
   function setLanguage(lang) {
-    STATE.lang = lang === "ar" ? "ar" : "en";
-    save();
+    STATE.lang = safeText(lang, "en");
+    saveState();
 
-    if (STATE.started) {
-      tick();
+    if (STATE.system) {
+      refreshTicker(STATE.system);
     }
+  }
+
+  function stop() {
+    STATE.started = false;
+    destroyRefreshTimer();
+    clearTicker();
   }
 
   function getState() {
@@ -347,19 +443,16 @@ window.IBSS_RUNTIME = (function () {
       started: STATE.started,
       pageId: STATE.pageId,
       lang: STATE.lang,
-      hasRadar: !!STATE.radarEl,
-      hasTicker: !!STATE.tickerTrackEl
+      refreshMs: STATE.refreshMs,
+      hasTicker: !!STATE.tickerTrackEl,
+      hasSystem: !!STATE.system
     };
   }
-
-  load();
 
   return {
     CONFIG,
     start,
     stop,
-    restart,
-    tick,
     setLanguage,
     getState
   };
