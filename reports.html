@@ -276,9 +276,7 @@
       min-height:72px;
     }
 
-    .ticker-track::-webkit-scrollbar{
-      display:none;
-    }
+    .ticker-track::-webkit-scrollbar{display:none}
 
     .ticker-item{
       flex:0 0 auto;
@@ -434,7 +432,8 @@
 
     .context-item,
     .archive-item,
-    .feed-item{
+    .feed-item,
+    .publication-card{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:18px;
@@ -520,6 +519,153 @@
       border-color:rgba(0,208,132,.22);
     }
 
+    .publications-toolbar{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr 1.4fr;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .publications-toolbar select,
+    .publications-toolbar input{
+      width:100%;
+      background:var(--panel2);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:12px 14px;
+      font-size:14px;
+      outline:none;
+    }
+
+    .publications-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+
+    .publication-card{
+      transition:.2s ease;
+    }
+
+    .publication-card:hover{
+      border-color:var(--border);
+      transform:translateY(-2px);
+    }
+
+    .publication-kicker{
+      color:var(--gold);
+      font-size:12px;
+      font-weight:800;
+      margin-bottom:10px;
+      letter-spacing:.3px;
+    }
+
+    .publication-title{
+      font-size:22px;
+      line-height:1.5;
+      font-weight:900;
+      color:#fff;
+      margin:0 0 10px;
+    }
+
+    .publication-summary{
+      color:#ddd;
+      line-height:1.8;
+      font-size:14px;
+      margin:0 0 14px;
+    }
+
+    .publication-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .publication-tag{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      color:#ddd;
+    }
+
+    .publication-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .publication-actions{
+      display:flex;
+      justify-content:flex-start;
+      gap:10px;
+    }
+
+    .publication-open-btn{
+      border:none;
+      background:var(--gold);
+      color:#000;
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .publication-viewer-card{
+      background:var(--panel2);
+      border:1px solid var(--soft-border-2);
+      border-radius:20px;
+      padding:18px;
+    }
+
+    .publication-viewer-topline{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .publication-viewer-title{
+      font-size:30px;
+      line-height:1.35;
+      font-weight:900;
+      color:#fff;
+      margin:0 0 12px;
+    }
+
+    .publication-viewer-summary{
+      color:#ddd;
+      line-height:1.9;
+      font-size:15px;
+      margin:0 0 14px;
+    }
+
+    .publication-viewer-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .publication-viewer-body{
+      background:var(--panel3);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;
+      padding:16px;
+      color:#f0f0f0;
+      font-size:14px;
+      line-height:1.9;
+      white-space:pre-wrap;
+    }
+
     .footer{
       margin-top:40px;
       text-align:center;
@@ -529,16 +675,15 @@
       padding-top:22px;
     }
 
-    html[dir="rtl"] body{
-      text-align:right;
-    }
-
+    html[dir="rtl"] body{text-align:right}
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
     html[dir="rtl"] .report-meta,
     html[dir="rtl"] .context-top,
-    html[dir="rtl"] .archive-top{
+    html[dir="rtl"] .archive-top,
+    html[dir="rtl"] .publication-viewer-topline,
+    html[dir="rtl"] .publication-viewer-meta{
       direction:rtl;
     }
 
@@ -555,6 +700,8 @@
       .stats-grid{grid-template-columns:repeat(2,1fr)}
       .grid-2{grid-template-columns:1fr}
       .grid-3{grid-template-columns:1fr}
+      .publications-toolbar{grid-template-columns:1fr 1fr}
+      .publications-grid{grid-template-columns:1fr}
     }
 
     @media(max-width:700px){
@@ -566,6 +713,7 @@
         flex-direction:column;
         align-items:flex-start;
       }
+      .publications-toolbar{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -600,7 +748,7 @@
       <div class="hero-kicker" id="heroKicker">Sovereign Reports</div>
       <h1 id="pageTitle">IBSS Reports</h1>
       <p id="pageSub">
-        Decision-grade sovereign reporting generated from the unified engine, theater layer, strategic files, and structured signals.
+        Decision-grade sovereign reporting generated from the unified engine, theater layer, strategic files, structured signals, and institutional publications.
       </p>
       <div id="metaLine" class="meta-line">Engine source: -</div>
 
@@ -727,6 +875,57 @@
       </div>
     </div>
 
+    <div class="section">
+      <h2 id="publicationsTitle">Institutional Publications</h2>
+      <p class="section-subtitle" id="publicationsSub">
+        Unified registry of reports, studies, briefs, analyses, and policy papers published through the IBSS sovereign publication layer.
+      </p>
+
+      <div class="publications-toolbar">
+        <select id="reportsTypeFilter">
+          <option value="all">All Types</option>
+          <option value="report">Reports</option>
+          <option value="study">Studies</option>
+          <option value="policy_paper">Policy Papers</option>
+          <option value="brief">Briefs</option>
+          <option value="analysis">Analyses</option>
+        </select>
+
+        <select id="reportsCountryFilter">
+          <option value="all">All Countries</option>
+          <option value="gaza">Gaza</option>
+          <option value="lebanon">Lebanon</option>
+          <option value="iran">Iran</option>
+          <option value="westbank">West Bank</option>
+          <option value="redsea">Red Sea</option>
+        </select>
+
+        <select id="reportsDomainFilter">
+          <option value="all">All Domains</option>
+          <option value="governance-security">Governance-Security</option>
+          <option value="military">Military</option>
+          <option value="security">Security</option>
+          <option value="geopolitical">Geopolitical</option>
+          <option value="geo-security">Geo-Security</option>
+          <option value="geo-military">Geo-Military</option>
+        </select>
+
+        <input id="reportsSearchInput" type="text" placeholder="Search publications..." />
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="title" id="publicationsListTitle">Published Publications</div>
+          <div id="reportsBox" class="publications-grid"></div>
+        </div>
+
+        <div class="card">
+          <div class="title" id="publicationViewerTitle">Publication Viewer</div>
+          <div id="reportViewer"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="footer" id="footerText">© 2026 IBSS — Reports Unified Layer</div>
   </div>
 
@@ -737,6 +936,9 @@
   <script src="analysis.js"></script>
   <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
+  <script src="publications-factory.js"></script>
+  <script src="publications-registry.js"></script>
+  <script src="content.js"></script>
   <script src="engine.js"></script>
   <script src="audio-engine.js"></script>
   <script src="runtime-engine.js"></script>
@@ -755,7 +957,7 @@
 
         hero_kicker: "Sovereign Reports",
         title: "IBSS Reports",
-        sub: "Decision-grade sovereign reporting generated from the unified engine, theater layer, strategic files, and structured signals.",
+        sub: "Decision-grade sovereign reporting generated from the unified engine, theater layer, strategic files, structured signals, and institutional publications.",
         source_engine: "Engine source",
         updated_at: "Updated",
 
@@ -802,6 +1004,23 @@
         generated: "Generated",
         no_data: "No data available.",
         no_feed: "No report feed available.",
+
+        publications_title: "Institutional Publications",
+        publications_sub: "Unified registry of reports, studies, briefs, analyses, and policy papers published through the IBSS sovereign publication layer.",
+        publications_list_title: "Published Publications",
+        publication_viewer_title: "Publication Viewer",
+        all_types: "All Types",
+        reports: "Reports",
+        studies: "Studies",
+        policy_papers: "Policy Papers",
+        briefs: "Briefs",
+        analyses: "Analyses",
+        all_countries: "All Countries",
+        all_domains: "All Domains",
+        search_placeholder: "Search publications...",
+        open: "Open",
+        no_matching_publications: "No matching publications",
+        try_adjusting_filters: "Try adjusting the filters or search.",
         footer: "© 2026 IBSS — Reports Unified Layer"
       },
 
@@ -816,7 +1035,7 @@
 
         hero_kicker: "التقارير السيادية",
         title: "تقارير IBSS",
-        sub: "تقارير سيادية بدرجة قرار يولدها المحرك الموحد وطبقة المسرح والملفات الاستراتيجية والإشارات المنظمة.",
+        sub: "تقارير سيادية بدرجة قرار يولدها المحرك الموحد وطبقة المسرح والملفات الاستراتيجية والإشارات المنظمة ومنظومة النشر المؤسسي.",
         source_engine: "مصدر المحرك",
         updated_at: "آخر تحديث",
 
@@ -863,6 +1082,23 @@
         generated: "تم التوليد",
         no_data: "لا توجد بيانات.",
         no_feed: "لا توجد تغذية تقارير.",
+
+        publications_title: "المنشورات المؤسسية",
+        publications_sub: "سجل موحد للتقارير والدراسات والإحاطات والتحليلات والأوراق السياساتية المنشورة عبر طبقة النشر السيادي في IBSS.",
+        publications_list_title: "المنشورات المنشورة",
+        publication_viewer_title: "عارض المنشورات",
+        all_types: "كل الأنواع",
+        reports: "تقارير",
+        studies: "دراسات",
+        policy_papers: "أوراق سياسات",
+        briefs: "إحاطات",
+        analyses: "تحليلات",
+        all_countries: "كل الدول",
+        all_domains: "كل المجالات",
+        search_placeholder: "ابحث في المنشورات...",
+        open: "فتح",
+        no_matching_publications: "لا توجد منشورات مطابقة",
+        try_adjusting_filters: "جرّب تعديل الفلاتر أو البحث.",
         footer: "© 2026 IBSS — الطبقة الموحدة للتقارير"
       }
     };
@@ -881,6 +1117,10 @@
 
     function safeText(value, fallback = "-"){
       return typeof value === "string" && value.trim() ? value.trim() : fallback;
+    }
+
+    function asArray(value){
+      return Array.isArray(value) ? value : [];
     }
 
     function getLocalizedText(value){
@@ -906,6 +1146,18 @@
         day:"2-digit",
         hour:"2-digit",
         minute:"2-digit"
+      });
+    }
+
+    function formatDate(value){
+      if (!value) return "-";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "-";
+
+      return date.toLocaleDateString(currentLang === "ar" ? "ar-EG" : "en-US", {
+        year:"numeric",
+        month:"short",
+        day:"2-digit"
       });
     }
 
@@ -949,6 +1201,41 @@
       document.getElementById("summaryCardsTitle").textContent = t("summary_cards");
       document.getElementById("summaryConfidenceTitle").textContent = t("confidence");
       document.getElementById("summaryConfidenceMeta").textContent = t("confidence_meta");
+
+      document.getElementById("publicationsTitle").textContent = t("publications_title");
+      document.getElementById("publicationsSub").textContent = t("publications_sub");
+      document.getElementById("publicationsListTitle").textContent = t("publications_list_title");
+      document.getElementById("publicationViewerTitle").textContent = t("publication_viewer_title");
+
+      document.getElementById("reportsTypeFilter").innerHTML = `
+        <option value="all">${t("all_types")}</option>
+        <option value="report">${t("reports")}</option>
+        <option value="study">${t("studies")}</option>
+        <option value="policy_paper">${t("policy_papers")}</option>
+        <option value="brief">${t("briefs")}</option>
+        <option value="analysis">${t("analyses")}</option>
+      `;
+
+      document.getElementById("reportsCountryFilter").innerHTML = `
+        <option value="all">${t("all_countries")}</option>
+        <option value="gaza">Gaza</option>
+        <option value="lebanon">Lebanon</option>
+        <option value="iran">Iran</option>
+        <option value="westbank">West Bank</option>
+        <option value="redsea">Red Sea</option>
+      `;
+
+      document.getElementById("reportsDomainFilter").innerHTML = `
+        <option value="all">${t("all_domains")}</option>
+        <option value="governance-security">Governance-Security</option>
+        <option value="military">Military</option>
+        <option value="security">Security</option>
+        <option value="geopolitical">Geopolitical</option>
+        <option value="geo-security">Geo-Security</option>
+        <option value="geo-military">Geo-Military</option>
+      `;
+
+      document.getElementById("reportsSearchInput").placeholder = t("search_placeholder");
       document.getElementById("footerText").textContent = t("footer");
 
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
@@ -1048,7 +1335,7 @@
       const metricsBadge = document.getElementById("metricsBadge");
       const audioBadge = document.getElementById("audioBadge");
 
-      if (system?.source === "engine") {
+      if (system?.source === "engine" || system?.source === "orchestrated") {
         sourceBadge.textContent = t("source_live");
         sourceBadge.className = "meta-badge live";
       } else {
@@ -1262,6 +1549,187 @@
       }
     }
 
+    function getPublicationItems() {
+      if (window.IBSS_PUBLICATIONS && typeof window.IBSS_PUBLICATIONS.getPublished === "function") {
+        return asArray(window.IBSS_PUBLICATIONS.getPublished());
+      }
+
+      if (window.IBSS_CONTENT_UTILS && typeof window.IBSS_CONTENT_UTILS.getPublished === "function") {
+        return asArray(window.IBSS_CONTENT_UTILS.getPublished()).filter(item =>
+          item &&
+          (
+            item.type === "report" ||
+            item.type === "study" ||
+            item.type === "brief" ||
+            item.type === "analysis" ||
+            item.type === "policy_paper"
+          )
+        );
+      }
+
+      return asArray(window.IBSS_CONTENT || []).filter(item =>
+        item &&
+        item.status === "published" &&
+        (
+          item.type === "report" ||
+          item.type === "study" ||
+          item.type === "brief" ||
+          item.type === "analysis" ||
+          item.type === "policy_paper"
+        )
+      );
+    }
+
+    function getPublicationById(id) {
+      if (window.IBSS_PUBLICATIONS && typeof window.IBSS_PUBLICATIONS.getById === "function") {
+        const item = window.IBSS_PUBLICATIONS.getById(id);
+        if (item) return item;
+      }
+
+      if (window.IBSS_CONTENT_UTILS && typeof window.IBSS_CONTENT_UTILS.getById === "function") {
+        return window.IBSS_CONTENT_UTILS.getById(id);
+      }
+
+      return asArray(window.IBSS_CONTENT || []).find(item => item && item.id === id) || null;
+    }
+
+    function filterPublicationItems(items) {
+      const type = document.getElementById("reportsTypeFilter")?.value || "all";
+      const country = (document.getElementById("reportsCountryFilter")?.value || "all").toLowerCase();
+      const domain = (document.getElementById("reportsDomainFilter")?.value || "all").toLowerCase();
+      const query = (document.getElementById("reportsSearchInput")?.value || "").toLowerCase().trim();
+
+      return asArray(items).filter(item => {
+        if (!item) return false;
+        if (type !== "all" && item.type !== type) return false;
+        if (country !== "all" && String(item.country || "").toLowerCase() !== country) return false;
+        if (domain !== "all" && String(item.domain || "").toLowerCase() !== domain) return false;
+
+        if (query) {
+          const haystack = [
+            getLocalizedText(item.title),
+            getLocalizedText(item.summary),
+            getLocalizedText(item.body),
+            item.type,
+            item.domain,
+            item.country,
+            ...(item.tags || [])
+          ].join(" ").toLowerCase();
+
+          if (!haystack.includes(query)) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function renderPublicationsGrid() {
+      const box = document.getElementById("reportsBox");
+      if (!box) return;
+
+      const items = filterPublicationItems(getPublicationItems());
+
+      if (!items.length) {
+        box.innerHTML = `
+          <article class="publication-card">
+            <div class="publication-kicker">IBSS</div>
+            <div class="publication-title">${escapeHtml(t("no_matching_publications"))}</div>
+            <div class="publication-summary">${escapeHtml(t("try_adjusting_filters"))}</div>
+          </article>
+        `;
+        return;
+      }
+
+      box.innerHTML = items.map(item => {
+        const tags = asArray(item.tags).slice(0, 3);
+        return `
+          <article class="publication-card">
+            <div class="publication-kicker">${escapeHtml(safe(item.classification || item.type, "-"))} • ${escapeHtml(safe(item.unit, "SSU"))}</div>
+            <div class="publication-title">${escapeHtml(getLocalizedText(item.title))}</div>
+            <div class="publication-summary">${escapeHtml(getLocalizedText(item.summary))}</div>
+
+            <div class="publication-tags">
+              ${tags.map(tag => `<span class="publication-tag">${escapeHtml(tag)}</span>`).join("")}
+            </div>
+
+            <div class="publication-meta">
+              <span class="chip">${escapeHtml(safe(item.edition, "-"))}</span>
+              <span class="chip ${levelClass(item.priority)}">${escapeHtml(safe(item.priority, "-"))}</span>
+              <span class="chip">${escapeHtml(formatDate(item.publishedAt))}</span>
+            </div>
+
+            <div class="publication-actions">
+              <button type="button" class="publication-open-btn" onclick="ibssOpenPublicationViewer('${escapeHtml(item.id)}')">${escapeHtml(t("open"))}</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function ibssOpenPublicationViewer(id) {
+      const viewer = document.getElementById("reportViewer");
+      if (!viewer) return;
+
+      const item = getPublicationById(id);
+      if (!item) return;
+
+      viewer.innerHTML = `
+        <article class="publication-viewer-card">
+          <div class="publication-viewer-topline">
+            <span class="chip">${escapeHtml(safe(item.classification || item.type, "-"))}</span>
+            <span class="chip">${escapeHtml(safe(item.unit, "SSU"))}</span>
+            <span class="chip ${levelClass(item.priority)}">${escapeHtml(safe(item.priority, "-"))}</span>
+          </div>
+
+          <h2 class="publication-viewer-title">${escapeHtml(getLocalizedText(item.title))}</h2>
+          <p class="publication-viewer-summary">${escapeHtml(getLocalizedText(item.summary))}</p>
+
+          <div class="publication-viewer-meta">
+            <span class="chip">${escapeHtml(safe(item.edition, "-"))}</span>
+            <span class="chip">${escapeHtml(safe(item.country, "-"))}</span>
+            <span class="chip">${escapeHtml(safe(item.domain, "-"))}</span>
+            <span class="chip">${escapeHtml(formatDate(item.publishedAt))}</span>
+          </div>
+
+          <div class="publication-viewer-body">${escapeHtml(getLocalizedText(item.body))}</div>
+        </article>
+      `;
+    }
+
+    window.ibssOpenPublicationViewer = ibssOpenPublicationViewer;
+
+    function bindPublicationsEvents() {
+      ["reportsTypeFilter", "reportsCountryFilter", "reportsDomainFilter"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.dataset.bound) {
+          el.dataset.bound = "1";
+          el.addEventListener("change", renderPublicationsGrid);
+        }
+      });
+
+      const search = document.getElementById("reportsSearchInput");
+      if (search && !search.dataset.bound) {
+        search.dataset.bound = "1";
+        search.addEventListener("input", renderPublicationsGrid);
+      }
+    }
+
+    function renderPublicationsLayer() {
+      bindPublicationsEvents();
+      renderPublicationsGrid();
+
+      const latest = getPublicationItems()[0];
+      if (latest) {
+        ibssOpenPublicationViewer(latest.id);
+      } else {
+        document.getElementById("reportViewer").innerHTML = `
+          <article class="publication-viewer-card">
+            <div class="publication-viewer-title">${escapeHtml(t("no_data"))}</div>
+          </article>
+        `;
+      }
+    }
+
     function renderPage(system){
       if (!system) return;
       currentSystem = system;
@@ -1278,6 +1746,7 @@
       renderFeed(system);
       renderSummary(system);
       renderTicker(system);
+      renderPublicationsLayer();
     }
 
     function localFallbackStart(){
@@ -1286,6 +1755,10 @@
       const run = () => {
         const system = getSystem();
         if (system) renderPage(system);
+        else {
+          applyLanguage();
+          renderPublicationsLayer();
+        }
       };
 
       run();
@@ -1317,6 +1790,10 @@
           if (tickerLooksDead) {
             const system = getSystem();
             if (system) renderPage(system);
+            else {
+              applyLanguage();
+              renderPublicationsLayer();
+            }
           }
         }, 800);
       } catch (error) {
@@ -1330,6 +1807,10 @@
       localStorage.setItem("ibss_lang", "en");
       if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
       if (currentSystem) renderPage(currentSystem);
+      else {
+        applyLanguage();
+        renderPublicationsLayer();
+      }
     });
 
     document.getElementById("btn-ar").addEventListener("click", function () {
@@ -1337,6 +1818,10 @@
       localStorage.setItem("ibss_lang", "ar");
       if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
       if (currentSystem) renderPage(currentSystem);
+      else {
+        applyLanguage();
+        renderPublicationsLayer();
+      }
     });
 
     document.getElementById("audioToggleBtn").addEventListener("click", function () {
