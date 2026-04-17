@@ -21,6 +21,7 @@
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
+      --shadow:0 10px 24px rgba(0,0,0,.18);
     }
 
     *{box-sizing:border-box}
@@ -127,6 +128,7 @@
       color:var(--gold);
       font-size:16px;
       margin-bottom:12px;
+      font-weight:700;
     }
 
     .hero h1{
@@ -195,6 +197,26 @@
       line-height:1.7;
     }
 
+    .section{
+      margin-top:34px;
+    }
+
+    .section h2{
+      color:var(--gold);
+      text-align:center;
+      font-size:clamp(28px,4vw,40px);
+      margin:0 0 14px;
+    }
+
+    .section-subtitle{
+      text-align:center;
+      color:var(--muted);
+      max-width:880px;
+      margin:0 auto 22px;
+      line-height:1.8;
+      font-size:15px;
+    }
+
     .stats-grid{
       margin-top:28px;
       display:grid;
@@ -208,6 +230,7 @@
       border-radius:20px;
       padding:22px;
       text-align:center;
+      box-shadow:var(--shadow);
     }
 
     .stat-label{
@@ -230,26 +253,6 @@
     .stat-value.gold{color:var(--gold)}
     .stat-value.blue{color:var(--blue)}
 
-    .section{
-      margin-top:34px;
-    }
-
-    .section h2{
-      color:var(--gold);
-      text-align:center;
-      font-size:clamp(28px,4vw,40px);
-      margin:0 0 14px;
-    }
-
-    .section-subtitle{
-      text-align:center;
-      color:var(--muted);
-      max-width:880px;
-      margin:0 auto 22px;
-      line-height:1.8;
-      font-size:15px;
-    }
-
     .ticker-shell{
       border:1px solid rgba(212,175,55,.18);
       border-radius:18px;
@@ -270,6 +273,7 @@
       direction:ltr;
       white-space:nowrap;
       scroll-behavior:auto;
+      min-height:72px;
     }
 
     .ticker-track::-webkit-scrollbar{
@@ -326,7 +330,7 @@
       border:1px solid rgba(255,255,255,.08);
       border-radius:22px;
       padding:22px;
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
+      box-shadow:var(--shadow);
     }
 
     .title{
@@ -418,6 +422,7 @@
       font-size:14px;
       color:#f0f0f0;
       line-height:1.8;
+      white-space:pre-wrap;
     }
 
     .context-list,
@@ -864,6 +869,7 @@
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
     let currentSystem = null;
+    let localRefreshTimer = null;
 
     function t(key){
       return UI[currentLang]?.[key] || key;
@@ -873,10 +879,14 @@
       return value !== undefined && value !== null && value !== "" ? value : fallback;
     }
 
+    function safeText(value, fallback = "-"){
+      return typeof value === "string" && value.trim() ? value.trim() : fallback;
+    }
+
     function getLocalizedText(value){
       if (!value) return "-";
       if (typeof value === "string" || typeof value === "number") return String(value);
-      return value[currentLang] || value.en || value.ar || value.name || value.title || "-";
+      return value[currentLang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
     }
 
     function escapeHtml(text){
@@ -953,30 +963,73 @@
           window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
         }
 
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getSystemState === "function") {
+        if (window.IBSS_ENGINE?.getSystemState) {
           return window.IBSS_ENGINE.getSystemState();
         }
 
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getStaticSystemFallback === "function") {
+        if (window.IBSS_ENGINE?.getStaticSystemFallback) {
           return window.IBSS_ENGINE.getStaticSystemFallback();
         }
 
         return null;
       } catch (error) {
-        console.error("Reports render error:", error);
+        console.error("Reports getSystem error:", error);
         return null;
       }
     }
 
     function getReports(){
       try {
-        if (window.IBSS_ENGINE && typeof window.IBSS_ENGINE.getReports === "function") {
-          return window.IBSS_ENGINE.getReports();
+        if (window.IBSS_ENGINE?.getReports) {
+          const reports = window.IBSS_ENGINE.getReports();
+          return Array.isArray(reports) ? reports : [];
         }
       } catch (error) {
-        console.error("Reports read error:", error);
+        console.error("Reports getReports error:", error);
       }
       return [];
+    }
+
+    function buildFallbackTickerItems(system){
+      const items = [];
+      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
+
+      tickerNews.forEach(item => {
+        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
+        items.push({
+          level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
+          text: getLocalizedText(item.title)
+        });
+      });
+
+      if (!items.length) {
+        (system?.feed || []).slice(0, 8).forEach(line => {
+          items.push({
+            level: system?.level === "HIGH" ? "high" : system?.level === "MEDIUM" ? "medium" : "low",
+            text: typeof line === "string" ? line : getLocalizedText(line?.text)
+          });
+        });
+      }
+
+      return items;
+    }
+
+    function renderFallbackTicker(system){
+      const track = document.getElementById("tickerTrack");
+      if (!track) return;
+
+      const items = buildFallbackTickerItems(system);
+      const duplicated = [];
+      const base = items.length ? items : [{ level: "low", text: t("no_data") }];
+
+      for (let i = 0; i < 3; i += 1) duplicated.push(...base);
+
+      track.innerHTML = duplicated.map(item => `
+        <div class="ticker-item">
+          <span class="ticker-dot ${escapeHtml(item.level)}"></span>
+          <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
+        </div>
+      `).join("");
     }
 
     function updateAudioBadge(){
@@ -1061,6 +1114,7 @@
         document.getElementById("latestReportBody").textContent = "-";
         document.getElementById("latestReportRecommendation").textContent = "-";
         document.getElementById("latestReportLevelBadge").textContent = "LOW";
+        document.getElementById("latestReportLevelBadge").className = "badge low";
         document.getElementById("latestReportDateBadge").textContent = "-";
         return;
       }
@@ -1123,7 +1177,7 @@
       const list = document.getElementById("archiveList");
 
       if (!reports.length) {
-        list.innerHTML = `<div class="archive-item">${t("no_data")}</div>`;
+        list.innerHTML = `<div class="archive-item">${escapeHtml(t("no_data"))}</div>`;
         return;
       }
 
@@ -1155,7 +1209,7 @@
       const feed = Array.isArray(system?.feed) ? system.feed.slice(0, 10) : [];
 
       if (!feed.length) {
-        list.innerHTML = `<div class="feed-item">${t("no_feed")}</div>`;
+        list.innerHTML = `<div class="feed-item">${escapeHtml(t("no_feed"))}</div>`;
         return;
       }
 
@@ -1182,7 +1236,7 @@
           : t("no_data");
 
       document.getElementById("summaryTopClusterValue").textContent =
-        Number(system?.topCluster?.maxRisk || 0);
+        Number(system?.topCluster?.maxRisk || system?.topCluster?.avgRisk || 0);
 
       document.getElementById("summaryTopSignalTitle").textContent =
         system?.topSignal ? getLocalizedText(system.topSignal.title) : "-";
@@ -1197,6 +1251,15 @@
 
       document.getElementById("summaryConfidenceValue").textContent =
         Number(system?.confidenceScore || 0);
+    }
+
+    function renderTicker(system){
+      const track = document.getElementById("tickerTrack");
+      if (!track) return;
+
+      if (!track.children.length || !track.textContent.trim()) {
+        renderFallbackTicker(system);
+      }
     }
 
     function renderPage(system){
@@ -1214,38 +1277,65 @@
       renderArchive(reports);
       renderFeed(system);
       renderSummary(system);
+      renderTicker(system);
+    }
+
+    function localFallbackStart(){
+      if (localRefreshTimer) clearInterval(localRefreshTimer);
+
+      const run = () => {
+        const system = getSystem();
+        if (system) renderPage(system);
+      };
+
+      run();
+      localRefreshTimer = setInterval(run, window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000);
     }
 
     function startRuntime(){
-      if (!window.IBSS_RUNTIME) {
-        const system = getSystem();
-        if (system) renderPage(system);
+      if (!window.IBSS_RUNTIME?.start) {
+        localFallbackStart();
         return;
       }
 
-      window.IBSS_RUNTIME.start({
-        pageId: "reports",
-        lang: currentLang,
-        tickerTrackEl: document.getElementById("tickerTrack"),
-        refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
-        systemProvider: getSystem,
-        afterRender: function(system) {
-          renderPage(system);
-        }
-      });
+      try {
+        window.IBSS_RUNTIME.start({
+          pageId: "reports",
+          lang: currentLang,
+          tickerTrackEl: document.getElementById("tickerTrack"),
+          refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+          systemProvider: getSystem,
+          afterRender: function(system) {
+            renderPage(system);
+          }
+        });
+
+        setTimeout(() => {
+          const track = document.getElementById("tickerTrack");
+          const tickerLooksDead = !track || !track.textContent.trim();
+
+          if (tickerLooksDead) {
+            const system = getSystem();
+            if (system) renderPage(system);
+          }
+        }, 800);
+      } catch (error) {
+        console.error("Reports runtime start failed, switching to local fallback:", error);
+        localFallbackStart();
+      }
     }
 
     document.getElementById("btn-en").addEventListener("click", function () {
       currentLang = "en";
       localStorage.setItem("ibss_lang", "en");
-      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
       if (currentSystem) renderPage(currentSystem);
     });
 
     document.getElementById("btn-ar").addEventListener("click", function () {
       currentLang = "ar";
       localStorage.setItem("ibss_lang", "ar");
-      if (window.IBSS_RUNTIME) window.IBSS_RUNTIME.setLanguage(currentLang);
+      if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
       if (currentSystem) renderPage(currentSystem);
     });
 
