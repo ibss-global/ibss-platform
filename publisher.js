@@ -2,10 +2,11 @@ window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publisher_state_v2",
+    storageKey: "ibss_publisher_state_v3",
     maxQueueSize: 200,
     maxHistorySize: 300,
-    maxSnapshots: 120,
+    maxSnapshots: 160,
+    maxUnifiedFeed: 18,
     orchestrationKeyFields: [
       "updatedAt",
       "level",
@@ -24,9 +25,10 @@ window.IBSS_PUBLISHER = (function () {
 
     latestSystem: null,
     latestOrchestrated: null,
-    latestFeed: [],
     latestDigest: null,
-    latestSnapshot: null
+    latestFeed: [],
+    latestSnapshot: null,
+    latestKey: null
   };
 
   function nowIso() {
@@ -35,10 +37,6 @@ window.IBSS_PUBLISHER = (function () {
 
   function asArray(value) {
     return Array.isArray(value) ? value : [];
-  }
-
-  function clone(value) {
-    return JSON.parse(JSON.stringify(value));
   }
 
   function safeText(value, fallback = "") {
@@ -54,10 +52,29 @@ window.IBSS_PUBLISHER = (function () {
     return Math.max(min, Math.min(max, value));
   }
 
+  function clone(value) {
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      console.error("IBSS_PUBLISHER clone error:", error);
+      return null;
+    }
+  }
+
   function getLocalizedText(value, lang = "en") {
     if (!value) return "";
     if (typeof value === "string" || typeof value === "number") return String(value);
-    return value[lang] || value.en || value.ar || value.name || value.title || value.label || value.text || "";
+
+    return (
+      value[lang] ??
+      value.en ??
+      value.ar ??
+      value.name ??
+      value.title ??
+      value.label ??
+      value.text ??
+      ""
+    );
   }
 
   function normalizePriority(priority) {
@@ -78,12 +95,6 @@ window.IBSS_PUBLISHER = (function () {
     return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
   }
 
-  function ensureInit() {
-    if (STATE.initialized) return;
-    loadState();
-    STATE.initialized = true;
-  }
-
   function loadState() {
     try {
       const raw = localStorage.getItem(CONFIG.storageKey);
@@ -97,9 +108,10 @@ window.IBSS_PUBLISHER = (function () {
       STATE.snapshots = asArray(parsed.snapshots);
       STATE.latestSystem = parsed.latestSystem || null;
       STATE.latestOrchestrated = parsed.latestOrchestrated || null;
-      STATE.latestFeed = asArray(parsed.latestFeed);
       STATE.latestDigest = parsed.latestDigest || null;
+      STATE.latestFeed = asArray(parsed.latestFeed);
       STATE.latestSnapshot = parsed.latestSnapshot || null;
+      STATE.latestKey = safeText(parsed.latestKey, null);
     } catch (error) {
       console.error("IBSS_PUBLISHER loadState error:", error);
     }
@@ -107,24 +119,41 @@ window.IBSS_PUBLISHER = (function () {
 
   function saveState() {
     try {
-      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
-        queue: STATE.queue,
-        history: STATE.history,
-        snapshots: STATE.snapshots,
-        latestSystem: STATE.latestSystem,
-        latestOrchestrated: STATE.latestOrchestrated,
-        latestFeed: STATE.latestFeed,
-        latestDigest: STATE.latestDigest,
-        latestSnapshot: STATE.latestSnapshot
-      }));
+      localStorage.setItem(
+        CONFIG.storageKey,
+        JSON.stringify({
+          queue: STATE.queue,
+          history: STATE.history,
+          snapshots: STATE.snapshots,
+          latestSystem: STATE.latestSystem,
+          latestOrchestrated: STATE.latestOrchestrated,
+          latestDigest: STATE.latestDigest,
+          latestFeed: STATE.latestFeed,
+          latestSnapshot: STATE.latestSnapshot,
+          latestKey: STATE.latestKey
+        })
+      );
     } catch (error) {
       console.error("IBSS_PUBLISHER saveState error:", error);
     }
   }
 
+  function ensureInit() {
+    if (STATE.initialized) return;
+    loadState();
+    STATE.initialized = true;
+  }
+
   function buildSystemKey(system) {
     return CONFIG.orchestrationKeyFields
-      .map(field => safeText(system?.[field], String(system?.[field] ?? "")))
+      .map(field => {
+        const value = system?.[field];
+        if (value == null) return "";
+        if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+          return String(value);
+        }
+        return JSON.stringify(value);
+      })
       .join("|");
   }
 
@@ -133,7 +162,14 @@ window.IBSS_PUBLISHER = (function () {
     const clusterPressure = safeNumber(system?.clusterPressure?.pressure, 0);
     const theaterPressure = safeNumber(system?.theaterPressure?.pressure, 0);
     const newsPressure = safeNumber(system?.newsPressure?.pressure, 0);
-    const systemPressure = safeNumber(system?.systemPressure || system?.ssi, 0);
+    const systemPressure = safeNumber(system?.systemPressure ?? system?.ssi, 0);
+
+    const dominantPressure = [
+      { key: "signal", value: signalPressure },
+      { key: "cluster", value: clusterPressure },
+      { key: "theater", value: theaterPressure },
+      { key: "news", value: newsPressure }
+    ].sort((a, b) => b.value - a.value)[0] || { key: "signal", value: 0 };
 
     return {
       signalPressure,
@@ -141,13 +177,7 @@ window.IBSS_PUBLISHER = (function () {
       theaterPressure,
       newsPressure,
       systemPressure,
-      dominantPressure:
-        [
-          { key: "signal", value: signalPressure },
-          { key: "cluster", value: clusterPressure },
-          { key: "theater", value: theaterPressure },
-          { key: "news", value: newsPressure }
-        ].sort((a, b) => b.value - a.value)[0] || { key: "signal", value: 0 }
+      dominantPressure
     };
   }
 
@@ -157,6 +187,7 @@ window.IBSS_PUBLISHER = (function () {
         id: buildId("FEED"),
         type: "text",
         priority: normalizePriority(fallbackPriority),
+        source: "",
         text: {
           en: item,
           ar: item
@@ -165,12 +196,10 @@ window.IBSS_PUBLISHER = (function () {
       };
     }
 
-    const priority = normalizePriority(item?.priority || fallbackPriority);
-
     return {
       id: safeText(item?.id, buildId("FEED")),
       type: safeText(item?.type, "feed"),
-      priority,
+      priority: normalizePriority(item?.priority || fallbackPriority),
       source: safeText(item?.source, ""),
       text: {
         en: getLocalizedText(item?.text, "en") || getLocalizedText(item?.title, "en") || "-",
@@ -181,20 +210,19 @@ window.IBSS_PUBLISHER = (function () {
   }
 
   function buildUnifiedFeed(system) {
+    const levelPriority = normalizePriority(system?.level || "LOW");
     const feed = [];
-    const level = normalizePriority(system?.level || "LOW");
 
     asArray(system?.feed).forEach(item => {
-      feed.push(normalizeFeedItem(item, level));
+      feed.push(normalizeFeedItem(item, levelPriority));
     });
 
-    const liveNews = asArray(system?.liveNews).slice(0, 5);
-    liveNews.forEach(item => {
+    asArray(system?.liveNews).slice(0, 6).forEach(item => {
       feed.push({
         id: safeText(item?.id, buildId("NEWS")),
         type: "news",
-        priority: normalizePriority(item?.priority || item?.severity || level),
-        source: safeText(item?.source, ""),
+        priority: normalizePriority(item?.priority || item?.severity || levelPriority),
+        source: safeText(item?.source || item?.sourceName, ""),
         text: {
           en: getLocalizedText(item?.title, "en") || getLocalizedText(item?.summary, "en") || "-",
           ar: getLocalizedText(item?.title, "ar") || getLocalizedText(item?.summary, "ar") || "-"
@@ -203,19 +231,31 @@ window.IBSS_PUBLISHER = (function () {
       });
     });
 
-    const deduped = [];
     const seen = new Set();
+    const deduped = [];
 
     feed.forEach(item => {
-      const key = `${normalizePriority(item.priority)}|${safeText(item.source, "")}|${getLocalizedText(item.text, "en")}`;
+      const key = [
+        normalizePriority(item.priority),
+        safeText(item.source, ""),
+        getLocalizedText(item.text, "en")
+      ].join("|");
+
       if (seen.has(key)) return;
       seen.add(key);
       deduped.push(item);
     });
 
     return deduped
-      .sort((a, b) => priorityWeight(b.priority) - priorityWeight(a.priority))
-      .slice(0, 16);
+      .sort((a, b) => {
+        const priorityDiff = priorityWeight(b.priority) - priorityWeight(a.priority);
+        if (priorityDiff !== 0) return priorityDiff;
+
+        const aTime = new Date(a.createdAt || 0).getTime();
+        const bTime = new Date(b.createdAt || 0).getTime();
+        return bTime - aTime;
+      })
+      .slice(0, CONFIG.maxUnifiedFeed);
   }
 
   function buildDigest(system) {
@@ -228,12 +268,17 @@ window.IBSS_PUBLISHER = (function () {
     return {
       key: buildSystemKey(system),
       updatedAt: safeText(system?.updatedAt, nowIso()),
+      source: safeText(system?.source, "fallback"),
+
       level: safeText(system?.level, "LOW"),
       decision: safeText(system?.decision, "WATCH"),
       mode: safeText(system?.mode, "MONITORING"),
-      source: safeText(system?.source, "fallback"),
 
       pressure,
+
+      liveSignalsCount: safeNumber(system?.liveSignalsCount ?? asArray(system?.liveSignals).length, 0),
+      newsCount: safeNumber(system?.newsPressure?.count, 0),
+      confidenceScore: safeNumber(system?.confidenceScore, 0),
 
       topSignal: topSignal ? {
         id: safeText(topSignal.id, ""),
@@ -241,11 +286,15 @@ window.IBSS_PUBLISHER = (function () {
           en: getLocalizedText(topSignal.title, "en"),
           ar: getLocalizedText(topSignal.title, "ar")
         },
-        score: safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0),
+        score: safeNumber(topSignal?.balancedScore100 ?? topSignal?.score100, 0),
         priority: normalizePriority(topSignal?.priority || topSignal?.weight || "LOW"),
         decisionMode: {
           en: getLocalizedText(topSignal?.decisionMode, "en"),
           ar: getLocalizedText(topSignal?.decisionMode, "ar")
+        },
+        signalType: {
+          en: getLocalizedText(topSignal?.signalType, "en"),
+          ar: getLocalizedText(topSignal?.signalType, "ar")
         }
       } : null,
 
@@ -255,7 +304,7 @@ window.IBSS_PUBLISHER = (function () {
           en: getLocalizedText(topCluster.name, "en"),
           ar: getLocalizedText(topCluster.name, "ar")
         },
-        score: safeNumber(topCluster?.avgRisk || topCluster?.maxRisk, 0),
+        score: safeNumber(topCluster?.avgRisk ?? topCluster?.maxRisk, 0),
         trend: safeText(topCluster?.trend, "STABLE"),
         escalationLevel: safeText(topCluster?.escalationLevel, "LOW")
       } : null,
@@ -266,7 +315,7 @@ window.IBSS_PUBLISHER = (function () {
           en: getLocalizedText(topTheater.name, "en"),
           ar: getLocalizedText(topTheater.name, "ar")
         },
-        score: safeNumber(topTheater?.avgRisk || topTheater?.maxRisk, 0),
+        score: safeNumber(topTheater?.avgRisk ?? topTheater?.maxRisk, 0),
         trend: safeText(topTheater?.trend, "STABLE"),
         escalationLevel: safeText(topTheater?.escalationLevel, "LOW")
       } : null,
@@ -280,76 +329,120 @@ window.IBSS_PUBLISHER = (function () {
         score: safeNumber(topCountry?.riskScore, 0),
         riskLevel: safeText(topCountry?.riskLevel, "LOW"),
         trend: safeText(topCountry?.trend, "STABLE")
-      } : null,
-
-      liveSignalsCount: safeNumber(system?.liveSignalsCount || asArray(system?.liveSignals).length, 0),
-      newsCount: safeNumber(system?.newsPressure?.count, 0),
-      confidenceScore: safeNumber(system?.confidenceScore, 0)
+      } : null
     };
   }
 
-  function buildSnapshot(system, digest, unifiedFeed) {
+  function buildSnapshot(digest, unifiedFeed) {
     return {
       id: buildId("SNAP"),
       createdAt: nowIso(),
       key: digest.key,
       updatedAt: digest.updatedAt,
+      source: digest.source,
       level: digest.level,
       decision: digest.decision,
       mode: digest.mode,
-      systemPressure: digest.pressure.systemPressure,
-      source: digest.source,
-      topSignalId: digest.topSignal?.id || null,
-      topClusterId: digest.topCluster?.id || null,
-      topTheaterId: digest.topTheater?.id || null,
-      topCountryId: digest.topCountry?.id || null,
+      systemPressure: safeNumber(digest?.pressure?.systemPressure, 0),
+      topSignalId: digest?.topSignal?.id || null,
+      topClusterId: digest?.topCluster?.id || null,
+      topTheaterId: digest?.topTheater?.id || null,
+      topCountryId: digest?.topCountry?.id || null,
       feedCount: unifiedFeed.length
     };
   }
 
-  function normalizeOrchestratedSystem(system) {
+  function createOrchestratedSystem(system) {
     const digest = buildDigest(system);
     const unifiedFeed = buildUnifiedFeed(system);
-    const pressure = summarizePressure(system);
+    const snapshot = buildSnapshot(digest, unifiedFeed);
 
     const orchestrated = {
       ...system,
       publisherDigest: digest,
       publisherFeed: unifiedFeed,
       unifiedFeed,
-      unifiedPressure: pressure,
+      unifiedPressure: digest.pressure,
       publisherState: {
-        orchestratedAt: nowIso(),
         key: digest.key,
+        orchestratedAt: nowIso(),
         queueSize: STATE.queue.length,
-        historySize: STATE.history.length
+        historySize: STATE.history.length,
+        snapshotCount: STATE.snapshots.length
       }
     };
 
-    return { orchestrated, digest, unifiedFeed };
+    return {
+      orchestrated,
+      digest,
+      unifiedFeed,
+      snapshot
+    };
   }
 
-  function orchestrateSystem(system) {
-    ensureInit();
+  function commitOrchestratedState(rawSystem, orchestratedBundle) {
+    STATE.latestSystem = clone(rawSystem);
+    STATE.latestOrchestrated = clone(orchestratedBundle.orchestrated);
+    STATE.latestDigest = clone(orchestratedBundle.digest);
+    STATE.latestFeed = clone(orchestratedBundle.unifiedFeed);
+    STATE.latestSnapshot = clone(orchestratedBundle.snapshot);
+    STATE.latestKey = safeText(orchestratedBundle.digest?.key, null);
 
-    if (!system || typeof system !== "object") return null;
-
-    const { orchestrated, digest, unifiedFeed } = normalizeOrchestratedSystem(system);
-    const snapshot = buildSnapshot(orchestrated, digest, unifiedFeed);
-
-    STATE.latestSystem = clone(system);
-    STATE.latestOrchestrated = clone(orchestrated);
-    STATE.latestFeed = clone(unifiedFeed);
-    STATE.latestDigest = clone(digest);
-    STATE.latestSnapshot = clone(snapshot);
-
-    STATE.snapshots.unshift(snapshot);
+    STATE.snapshots.unshift(orchestratedBundle.snapshot);
     if (STATE.snapshots.length > CONFIG.maxSnapshots) {
       STATE.snapshots = STATE.snapshots.slice(0, CONFIG.maxSnapshots);
     }
 
     saveState();
-    return clone(orchestrated);
+  }
+
+  function orchestrateSystem(system, options = {}) {
+    ensureInit();
+
+    if (!system || typeof system !== "object") return null;
+
+    const force = !!options.force;
+    const key = buildSystemKey(system);
+
+    if (!force && STATE.latestOrchestrated && STATE.latestKey === key) {
+      return clone(STATE.latestOrchestrated);
+    }
+
+    const bundle = createOrchestratedSystem(system);
+    commitOrchestratedState(system, bundle);
+
+    return clone(bundle.orchestrated);
+  }
+
+  function resolveSourceSystem() {
+    try {
+      if (window.IBSS_ENGINE?.getLastSystemState) {
+        const last = window.IBSS_ENGINE.getLastSystemState();
+        if (last) return last;
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER resolve lastSystem error:", error);
+    }
+
+    try {
+      if (window.IBSS_ENGINE?.getSystemState) {
+        const live = window.IBSS_ENGINE.getSystemState();
+        if (live) return live;
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER resolve liveSystem error:", error);
+    }
+
+    try {
+      if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+        const fallback = window.IBSS_ENGINE.getStaticSystemFallback();
+        if (fallback) return fallback;
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER resolve fallbackSystem error:", error);
+    }
+
+    return null;
   }
 
   function getLatestSystem() {
@@ -364,23 +457,18 @@ window.IBSS_PUBLISHER = (function () {
       return clone(STATE.latestOrchestrated);
     }
 
-    if (window.IBSS_ENGINE?.getLastSystemState) {
-      const last = window.IBSS_ENGINE.getLastSystemState();
-      if (last) return orchestrateSystem(last);
-    }
+    const system = resolveSourceSystem();
+    if (!system) return null;
 
-    if (window.IBSS_ENGINE?.getSystemState) {
-      const live = window.IBSS_ENGINE.getSystemState();
-      if (live) return orchestrateSystem(live);
-    }
-
-    return null;
+    return orchestrateSystem(system, { force: true });
   }
 
   function getLatestDigest() {
     ensureInit();
 
-    if (STATE.latestDigest) return clone(STATE.latestDigest);
+    if (STATE.latestDigest) {
+      return clone(STATE.latestDigest);
+    }
 
     const system = getLatestOrchestratedSystem();
     return system?.publisherDigest ? clone(system.publisherDigest) : null;
@@ -389,15 +477,27 @@ window.IBSS_PUBLISHER = (function () {
   function getUnifiedFeed() {
     ensureInit();
 
-    if (STATE.latestFeed.length) return clone(STATE.latestFeed);
+    if (STATE.latestFeed.length) {
+      return clone(STATE.latestFeed);
+    }
 
     const system = getLatestOrchestratedSystem();
-    return asArray(system?.publisherFeed || system?.unifiedFeed);
+    return clone(asArray(system?.publisherFeed || system?.unifiedFeed));
+  }
+
+  function getSnapshots() {
+    ensureInit();
+    return clone(STATE.snapshots);
+  }
+
+  function getLatestSnapshot() {
+    ensureInit();
+    return STATE.latestSnapshot ? clone(STATE.latestSnapshot) : null;
   }
 
   function createPostObject(type, payload) {
     return {
-      id: buildId("PUB"),
+      id: buildId("POST"),
       type,
       createdAt: nowIso(),
       status: "draft",
@@ -495,7 +595,7 @@ ${summary}
       ? getLocalizedText(digest.topSignal.title, lang)
       : (lang === "ar" ? "لا توجد إشارة مهيمنة" : "No dominant signal");
 
-    const pressure = safeNumber(digest?.pressure?.systemPressure, safeNumber(system?.systemPressure || system?.ssi, 0));
+    const pressure = safeNumber(digest?.pressure?.systemPressure, safeNumber(system?.systemPressure ?? system?.ssi, 0));
     const level = safeText(digest?.level || system?.level, "LOW");
     const mode = safeText(digest?.mode || system?.mode || system?.decision, "MONITORING");
 
@@ -553,15 +653,13 @@ Dominant Signal: ${topTitle}
   }
 
   function queueTopSignalFromEngine() {
-    const system =
-      window.IBSS_ENGINE?.getSystemState?.() ||
-      window.IBSS_ENGINE?.getLastSystemState?.() ||
-      getLatestOrchestratedSystem();
+    const system = resolveSourceSystem() || getLatestOrchestratedSystem();
+    if (!system) return null;
 
-    const signal = system?.topSignal || system?.dominantSignal || null;
+    const orchestrated = orchestrateSystem(system);
+    const signal = orchestrated?.topSignal || orchestrated?.dominantSignal || null;
     if (!signal) return null;
 
-    orchestrateSystem(system);
     return queueSignalPost(signal);
   }
 
@@ -571,11 +669,7 @@ Dominant Signal: ${topTitle}
   }
 
   function queueStrategicBriefFromEngine() {
-    const system =
-      window.IBSS_ENGINE?.getSystemState?.() ||
-      window.IBSS_ENGINE?.getLastSystemState?.() ||
-      getLatestOrchestratedSystem();
-
+    const system = resolveSourceSystem() || getLatestOrchestratedSystem();
     if (!system) return null;
 
     const orchestrated = orchestrateSystem(system);
@@ -641,16 +735,6 @@ Dominant Signal: ${topTitle}
   function getLatestDraft() {
     ensureInit();
     return STATE.queue[0] ? clone(STATE.queue[0]) : null;
-  }
-
-  function getSnapshots() {
-    ensureInit();
-    return clone(STATE.snapshots);
-  }
-
-  function getLatestSnapshot() {
-    ensureInit();
-    return STATE.latestSnapshot ? clone(STATE.latestSnapshot) : null;
   }
 
   ensureInit();
