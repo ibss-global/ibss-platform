@@ -1,10 +1,220 @@
-// IBSS CONTENT REGISTRY — Foundation Layer
-// Version: v1.0
+// IBSS CONTENT REGISTRY — Unified Sovereign Content Layer
+// Version: v2.0 Clean Integrated Edition
 
 (function () {
   "use strict";
 
-  const IBSS_CONTENT = [
+  function asArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function safeText(value, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+  }
+
+  function safeNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function normalizeText(value) {
+    return safeText(String(value || ""))
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function normalizeLocalized(value, fallback = "-") {
+    if (typeof value === "string" || typeof value === "number") {
+      const text = String(value);
+      return {
+        ar: safeText(text, fallback),
+        en: safeText(text, fallback)
+      };
+    }
+
+    return {
+      ar: safeText(value?.ar, safeText(value?.en, fallback)),
+      en: safeText(value?.en, safeText(value?.ar, fallback))
+    };
+  }
+
+  function getLocalizedText(value, lang = "en") {
+    if (!value) return "";
+    if (typeof value === "string" || typeof value === "number") return String(value);
+
+    return (
+      value[lang] ||
+      value.en ||
+      value.ar ||
+      value.name ||
+      value.title ||
+      value.label ||
+      value.text ||
+      ""
+    );
+  }
+
+  function normalizePriority(priority) {
+    const p = String(priority || "LOW").toUpperCase().trim();
+    if (p === "HIGH") return "HIGH";
+    if (p === "MEDIUM") return "MEDIUM";
+    return "LOW";
+  }
+
+  function normalizeStatus(status) {
+    const s = normalizeText(status || "published");
+    if (s === "pending") return "pending";
+    if (s === "archived") return "archived";
+    if (s === "draft") return "draft";
+    return "published";
+  }
+
+  function normalizeType(type) {
+    const t = normalizeText(type || "report");
+    if (
+      t === "report" ||
+      t === "study" ||
+      t === "brief" ||
+      t === "news" ||
+      t === "policy_paper" ||
+      t === "analysis"
+    ) {
+      return t;
+    }
+
+    return "report";
+  }
+
+  function normalizeTags(tags) {
+    return asArray(tags)
+      .map(tag => safeText(String(tag)))
+      .filter(Boolean)
+      .slice(0, 20);
+  }
+
+  function normalizeStringArray(values) {
+    return asArray(values)
+      .map(value => safeText(String(value)))
+      .filter(Boolean);
+  }
+
+  function normalizeDate(value) {
+    const raw = safeText(value, "");
+    if (!raw) return new Date().toISOString();
+
+    const date = new Date(raw);
+    if (Number.isNaN(date.getTime())) return new Date().toISOString();
+
+    return date.toISOString();
+  }
+
+  function normalizeEngagement(engagement) {
+    return {
+      reactions: safeNumber(engagement?.reactions, 0),
+      comments: safeNumber(engagement?.comments, 0),
+      shares: safeNumber(engagement?.shares, 0)
+    };
+  }
+
+  function normalizeLegacyContentItem(item) {
+    return {
+      id: safeText(item?.id, `CNT-${Date.now()}`),
+
+      title: normalizeLocalized(item?.title, "Untitled Content"),
+      summary: normalizeLocalized(item?.summary, "No summary available."),
+      body: normalizeLocalized(item?.body, "No body available."),
+
+      type: normalizeType(item?.type),
+      classification: safeText(item?.classification, normalizeType(item?.type)),
+      edition: safeText(item?.edition, "Foundation Content Edition"),
+      status: normalizeStatus(item?.status),
+
+      domain: safeText(item?.domain, "general"),
+      region: safeText(item?.region, item?.countryId || "global"),
+      country: safeText(item?.country, item?.countryId || item?.region || "global"),
+      countryId: safeText(item?.countryId, ""),
+      signalIds: normalizeStringArray(item?.signalIds),
+
+      priority: normalizePriority(item?.priority),
+      sourcePlatform: safeText(item?.sourcePlatform, "internal"),
+      sourceUrl: safeText(item?.sourceUrl, ""),
+      publishedAt: normalizeDate(item?.publishedAt),
+
+      tags: normalizeTags(item?.tags),
+      author: safeText(item?.author, "IBSS"),
+      authors: normalizeStringArray(item?.authors?.length ? item.authors : [item?.author || "IBSS"]),
+
+      unit: safeText(item?.unit, "SSU"),
+      metrics: {
+        policyRisk: safeNumber(item?.metrics?.policyRisk, 0),
+        implementationDifficulty: safeNumber(item?.metrics?.implementationDifficulty, 0),
+        regionalSensitivity: safeNumber(item?.metrics?.regionalSensitivity, 0),
+        strategicWeight: safeNumber(item?.metrics?.strategicWeight, 0)
+      },
+
+      engagement: normalizeEngagement(item?.engagement),
+
+      links: asArray(item?.links),
+      meta: {
+        featured: !!item?.meta?.featured,
+        pinned: !!item?.meta?.pinned,
+        canonical: !!item?.meta?.canonical
+      }
+    };
+  }
+
+  function normalizePublicationItem(item) {
+    return {
+      id: safeText(item?.id, `PUB-${Date.now()}`),
+
+      title: normalizeLocalized(item?.title, "Untitled Publication"),
+      summary: normalizeLocalized(item?.summary, "No summary available."),
+      body: normalizeLocalized(item?.body, "No body available."),
+
+      type: normalizeType(item?.type),
+      classification: safeText(item?.classification, normalizeType(item?.type)),
+      edition: safeText(item?.edition, "Publication Edition"),
+      status: normalizeStatus(item?.status),
+
+      domain: safeText(item?.domain, "general"),
+      region: safeText(item?.region, "global"),
+      country: safeText(item?.country, item?.region || "global"),
+      countryId: safeText(item?.countryId, ""),
+      signalIds: normalizeStringArray(item?.signalIds),
+
+      priority: normalizePriority(item?.priority),
+      sourcePlatform: safeText(item?.sourcePlatform, "ibss_publications"),
+      sourceUrl: safeText(item?.sourceUrl, ""),
+      publishedAt: normalizeDate(item?.publishedAt),
+
+      tags: normalizeTags(item?.tags),
+      author: safeText(item?.author, item?.authors?.[0] || "IBSS"),
+      authors: normalizeStringArray(item?.authors?.length ? item.authors : [item?.author || "IBSS"]),
+
+      unit: safeText(item?.unit, "SSU"),
+      metrics: {
+        policyRisk: safeNumber(item?.metrics?.policyRisk, 0),
+        implementationDifficulty: safeNumber(item?.metrics?.implementationDifficulty, 0),
+        regionalSensitivity: safeNumber(item?.metrics?.regionalSensitivity, 0),
+        strategicWeight: safeNumber(item?.metrics?.strategicWeight, 0)
+      },
+
+      engagement: normalizeEngagement(item?.engagement),
+      links: asArray(item?.links),
+      meta: {
+        featured: !!item?.meta?.featured,
+        pinned: !!item?.meta?.pinned,
+        canonical: !!item?.meta?.canonical
+      }
+    };
+  }
+
+  const BASE_CONTENT = [
     {
       id: "CNT-001",
       title: {
@@ -19,12 +229,12 @@
         ar: "هذا المحتوى يمثل تقريرًا أساسيًا ضمن ملف غزة، ويُستخدم كمغذٍ مباشر للإشارة البنيوية الخاصة بها داخل النظام.",
         en: "This content acts as a foundational report within the Gaza file and serves as a direct feeder for its structural signal inside the system."
       },
-      type: "report", // report | study | brief | news | policy_paper | analysis
-      domain: "geo-security", // economic | security | military | geopolitical | geo-security | geo-military
+      type: "report",
+      domain: "geo-security",
       countryId: "CTR-GAZA",
       signalIds: ["SIG-GAZA-001"],
       priority: "HIGH",
-      status: "published", // published | pending | archived
+      status: "published",
       sourcePlatform: "facebook",
       sourceUrl: "",
       publishedAt: "2026-04-13T09:00:00Z",
@@ -164,15 +374,133 @@
         shares: 0
       }
     }
-  ];
+  ].map(normalizeLegacyContentItem);
+
+  const PUBLICATIONS_CONTENT =
+    globalThis.IBSS_PUBLICATIONS && typeof globalThis.IBSS_PUBLICATIONS.getAll === "function"
+      ? asArray(globalThis.IBSS_PUBLICATIONS.getAll()).map(normalizePublicationItem)
+      : [];
+
+  function buildContentKey(item) {
+    return safeText(
+      item?.id,
+      `${safeText(item?.type, "content")}::${safeText(getLocalizedText(item?.title, "en"), "untitled")}`
+    );
+  }
+
+  function mergeContent(baseContent, publications) {
+    const map = new Map();
+
+    [...asArray(baseContent), ...asArray(publications)].forEach(item => {
+      const key = buildContentKey(item);
+
+      if (!map.has(key)) {
+        map.set(key, item);
+        return;
+      }
+
+      const existing = map.get(key);
+      const existingPublished = new Date(existing?.publishedAt || 0).getTime();
+      const currentPublished = new Date(item?.publishedAt || 0).getTime();
+
+      if (currentPublished > existingPublished) {
+        map.set(key, item);
+      }
+    });
+
+    return [...map.values()].sort((a, b) => {
+      const aPinned = a?.meta?.pinned ? 1 : 0;
+      const bPinned = b?.meta?.pinned ? 1 : 0;
+
+      if (bPinned !== aPinned) return bPinned - aPinned;
+
+      return new Date(b?.publishedAt || 0).getTime() - new Date(a?.publishedAt || 0).getTime();
+    });
+  }
 
   function buildIndex(list) {
-    return list.reduce((acc, item) => {
+    return asArray(list).reduce((acc, item) => {
       acc[item.id] = item;
       return acc;
     }, {});
   }
 
-  globalThis.IBSS_CONTENT = IBSS_CONTENT;
-  globalThis.IBSS_CONTENT_INDEX = buildIndex(IBSS_CONTENT);
+  const UNIFIED_CONTENT = mergeContent(BASE_CONTENT, PUBLICATIONS_CONTENT);
+
+  function getAll() {
+    return clone(UNIFIED_CONTENT);
+  }
+
+  function getPublished() {
+    return getAll().filter(item => item.status === "published");
+  }
+
+  function getPending() {
+    return getAll().filter(item => item.status === "pending");
+  }
+
+  function getArchived() {
+    return getAll().filter(item => item.status === "archived");
+  }
+
+  function getById(id) {
+    return getAll().find(item => item.id === id) || null;
+  }
+
+  function getByType(type) {
+    return getAll().filter(item => item.type === type);
+  }
+
+  function getByCountry(country) {
+    const target = normalizeText(country);
+    return getAll().filter(item =>
+      normalizeText(item.country) === target ||
+      normalizeText(item.countryId) === target
+    );
+  }
+
+  function getByDomain(domain) {
+    const target = normalizeText(domain);
+    return getAll().filter(item => normalizeText(item.domain) === target);
+  }
+
+  function getLatestPublished() {
+    return getPublished()[0] || null;
+  }
+
+  function getFeatured() {
+    return getAll().filter(item => !!item?.meta?.featured);
+  }
+
+  function getPinned() {
+    return getAll().filter(item => !!item?.meta?.pinned);
+  }
+
+  function getContentState() {
+    return {
+      total: UNIFIED_CONTENT.length,
+      published: getPublished().length,
+      pending: getPending().length,
+      archived: getArchived().length,
+      publicationsIntegrated: PUBLICATIONS_CONTENT.length
+    };
+  }
+
+  globalThis.IBSS_CONTENT = UNIFIED_CONTENT;
+  globalThis.IBSS_CONTENT_INDEX = buildIndex(UNIFIED_CONTENT);
+
+  globalThis.IBSS_CONTENT_UTILS = {
+    getAll,
+    getPublished,
+    getPending,
+    getArchived,
+    getById,
+    getByType,
+    getByCountry,
+    getByDomain,
+    getLatestPublished,
+    getFeatured,
+    getPinned,
+    getContentState
+  };
 })();
