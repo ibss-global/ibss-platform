@@ -3,18 +3,16 @@ window.IBSS_RUNTIME = (function () {
 
   const CONFIG = {
     storageKey: "ibss_runtime_state_v3",
-    defaultRefreshMs: 4000,
     tickerStepPx: 1,
     tickerFrameMs: 22,
-    minTickerCopies: 3,
-    deadTickerRetryEvery: 10
+    defaultRefreshMs: 4000,
+    minTickerCopies: 3
   };
 
   const STATE = {
     started: false,
     pageId: null,
     lang: "en",
-
     system: null,
 
     radarEl: null,
@@ -35,10 +33,6 @@ window.IBSS_RUNTIME = (function () {
     return Number.isFinite(n) ? n : fallback;
   }
 
-  function safeText(value, fallback = "") {
-    return typeof value === "string" && value.trim() ? value.trim() : fallback;
-  }
-
   function asArray(value) {
     return Array.isArray(value) ? value : [];
   }
@@ -46,17 +40,7 @@ window.IBSS_RUNTIME = (function () {
   function getLocalizedText(value, lang = "en") {
     if (!value) return "-";
     if (typeof value === "string" || typeof value === "number") return String(value);
-
-    return (
-      value[lang] ??
-      value.en ??
-      value.ar ??
-      value.name ??
-      value.title ??
-      value.label ??
-      value.text ??
-      "-"
-    );
+    return value[lang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
   }
 
   function escapeHtml(text) {
@@ -69,152 +53,85 @@ window.IBSS_RUNTIME = (function () {
     try {
       const raw = localStorage.getItem(CONFIG.storageKey);
       if (!raw) return;
-
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") return;
-
       STATE.pageId = parsed.pageId || null;
-      STATE.lang = parsed.lang === "ar" ? "ar" : "en";
-    } catch (error) {
-      console.error("IBSS_RUNTIME load error:", error);
-    }
+      STATE.lang = parsed.lang || "en";
+    } catch (error) {}
   }
 
   function save() {
     try {
-      localStorage.setItem(
-        CONFIG.storageKey,
-        JSON.stringify({
-          pageId: STATE.pageId,
-          lang: STATE.lang
-        })
-      );
-    } catch (error) {
-      console.error("IBSS_RUNTIME save error:", error);
-    }
-  }
-
-  function resolveFromPublisher() {
-    try {
-      if (window.IBSS_PUBLISHER?.getLatestOrchestratedSystem) {
-        const existing = window.IBSS_PUBLISHER.getLatestOrchestratedSystem();
-        if (existing) return existing;
-      }
-    } catch (error) {
-      console.error("IBSS_RUNTIME resolveFromPublisher existing error:", error);
-    }
-
-    try {
-      if (window.IBSS_ENGINE?.getSystemState && window.IBSS_PUBLISHER?.orchestrateSystem) {
-        const live = window.IBSS_ENGINE.getSystemState();
-        if (live) return window.IBSS_PUBLISHER.orchestrateSystem(live, { force: true });
-      }
-    } catch (error) {
-      console.error("IBSS_RUNTIME resolveFromPublisher live error:", error);
-    }
-
-    return null;
-  }
-
-  function resolveFromEngine() {
-    try {
-      if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
-        window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
-      }
-    } catch (error) {
-      console.error("IBSS_RUNTIME news refresh error:", error);
-    }
-
-    try {
-      if (window.IBSS_ENGINE?.getSystemState) {
-        return window.IBSS_ENGINE.getSystemState();
-      }
-    } catch (error) {
-      console.error("IBSS_RUNTIME getSystemState error:", error);
-    }
-
-    try {
-      if (window.IBSS_ENGINE?.getStaticSystemFallback) {
-        return window.IBSS_ENGINE.getStaticSystemFallback();
-      }
-    } catch (error) {
-      console.error("IBSS_RUNTIME getStaticSystemFallback error:", error);
-    }
-
-    return null;
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+        pageId: STATE.pageId,
+        lang: STATE.lang
+      }));
+    } catch (error) {}
   }
 
   function getSystem() {
     try {
       if (typeof STATE.systemProvider === "function") {
-        const provided = STATE.systemProvider();
-        if (provided) {
-          if (window.IBSS_PUBLISHER?.orchestrateSystem) {
-            try {
-              return window.IBSS_PUBLISHER.orchestrateSystem(provided);
-            } catch (error) {
-              console.error("IBSS_RUNTIME provider orchestration error:", error);
-            }
-          }
-          return provided;
-        }
+        return STATE.systemProvider();
+      }
+
+      if (window.IBSS_NEWS_UTILS?.autoRefreshIfNeeded) {
+        window.IBSS_NEWS_UTILS.autoRefreshIfNeeded();
+      }
+
+      if (window.IBSS_ENGINE?.getSystemState) {
+        return window.IBSS_ENGINE.getSystemState();
+      }
+
+      if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+        return window.IBSS_ENGINE.getStaticSystemFallback();
       }
     } catch (error) {
-      console.error("IBSS_RUNTIME custom systemProvider error:", error);
+      console.error("IBSS_RUNTIME getSystem error:", error);
     }
 
-    const publisherSystem = resolveFromPublisher();
-    if (publisherSystem) return publisherSystem;
+    return null;
+  }
 
-    return resolveFromEngine();
+  function buildTickerFromUnifiedFeed(system, lang) {
+    const feed =
+      asArray(system?.unifiedFeed).length ? asArray(system.unifiedFeed) :
+      asArray(system?.publisherFeed).length ? asArray(system.publisherFeed) :
+      asArray(system?.feed);
+
+    return feed.slice(0, 10).map(item => {
+      const priority = String(item?.priority || item?.severity || system?.level || "LOW").toLowerCase();
+
+      return {
+        level: priority === "high" ? "high" : priority === "medium" ? "medium" : "low",
+        text:
+          getLocalizedText(item?.text, lang) ||
+          getLocalizedText(item?.title, lang) ||
+          getLocalizedText(item, lang)
+      };
+    }).filter(item => item.text && item.text !== "-");
   }
 
   function buildDefaultTickerItems(system, lang) {
-    const items = [];
+    const unified = buildTickerFromUnifiedFeed(system, lang);
+    if (unified.length) return unified;
 
-    const unifiedFeed = asArray(
-      system?.publisherFeed ||
-      system?.unifiedFeed ||
-      window.IBSS_PUBLISHER?.getUnifiedFeed?.()
-    );
+    const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
 
-    unifiedFeed.slice(0, 10).forEach(item => {
-      items.push({
-        level: String(item?.priority || "LOW").toLowerCase() === "high"
-          ? "high"
-          : String(item?.priority || "LOW").toLowerCase() === "medium"
-            ? "medium"
-            : "low",
-        text: getLocalizedText(item?.text, lang)
-      });
-    });
-
-    if (!items.length) {
-      const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
-      tickerNews.forEach(item => {
-        const severity = String(item?.severity || item?.priority || "LOW").toLowerCase();
-        items.push({
+    if (tickerNews.length) {
+      return tickerNews.map(item => {
+        const severity = String(item.severity || item.priority || "LOW").toLowerCase();
+        return {
           level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
-          text: getLocalizedText(item?.title, lang)
-        });
+          text: getLocalizedText(item.title, lang)
+        };
       });
     }
 
-    if (!items.length) {
-      asArray(system?.feed).slice(0, 8).forEach(line => {
-        items.push({
-          level:
-            system?.level === "HIGH"
-              ? "high"
-              : system?.level === "MEDIUM"
-                ? "medium"
-                : "low",
-          text: typeof line === "string" ? line : getLocalizedText(line?.text, lang)
-        });
-      });
-    }
-
-    return items;
+    return [{
+      level: "low",
+      text: lang === "ar" ? "لا توجد تغذية حية." : "No live feed available."
+    }];
   }
 
   function getTickerItems(system, lang) {
@@ -224,7 +141,7 @@ window.IBSS_RUNTIME = (function () {
         if (Array.isArray(custom) && custom.length) return custom;
       }
     } catch (error) {
-      console.error("IBSS_RUNTIME custom ticker provider error:", error);
+      console.error("IBSS_RUNTIME ticker provider error:", error);
     }
 
     return buildDefaultTickerItems(system, lang);
@@ -245,7 +162,8 @@ window.IBSS_RUNTIME = (function () {
     const track = STATE.tickerTrackEl;
     if (!track) return;
 
-    const items = buildTickerCopies(getTickerItems(system, STATE.lang));
+    const baseItems = getTickerItems(system, STATE.lang);
+    const items = buildTickerCopies(baseItems);
 
     track.innerHTML = items.map(item => `
       <div class="ticker-item">
@@ -303,7 +221,7 @@ window.IBSS_RUNTIME = (function () {
       if (maxScroll <= 0) {
         stallCount += 1;
 
-        if (stallCount >= CONFIG.deadTickerRetryEvery && STATE.system) {
+        if (stallCount >= 10 && STATE.system) {
           renderTicker(STATE.system);
           stallCount = 0;
         }
@@ -347,7 +265,7 @@ window.IBSS_RUNTIME = (function () {
 
   function tick() {
     const system = getSystem();
-    if (!system) return null;
+    if (!system) return;
 
     STATE.system = system;
 
@@ -364,8 +282,6 @@ window.IBSS_RUNTIME = (function () {
     } catch (error) {
       console.error("IBSS_RUNTIME afterRender error:", error);
     }
-
-    return system;
   }
 
   function stopRefreshLoop() {
@@ -385,14 +301,12 @@ window.IBSS_RUNTIME = (function () {
 
   function start(options = {}) {
     STATE.pageId = options.pageId || STATE.pageId || "ibss-page";
-    STATE.lang = options.lang === "ar" ? "ar" : (options.lang || STATE.lang || "en");
-
+    STATE.lang = options.lang || STATE.lang || "en";
     STATE.radarEl = options.radarEl || null;
     STATE.tickerTrackEl = options.tickerTrackEl || null;
-
-    STATE.systemProvider = typeof options.systemProvider === "function" ? options.systemProvider : null;
-    STATE.tickerItemsProvider = typeof options.tickerItemsProvider === "function" ? options.tickerItemsProvider : null;
-    STATE.afterRender = typeof options.afterRender === "function" ? options.afterRender : null;
+    STATE.systemProvider = options.systemProvider || null;
+    STATE.tickerItemsProvider = options.tickerItemsProvider || null;
+    STATE.afterRender = options.afterRender || null;
 
     save();
 
@@ -402,7 +316,6 @@ window.IBSS_RUNTIME = (function () {
       CONFIG.defaultRefreshMs;
 
     STATE.started = true;
-
     tick();
     startRefreshLoop(refreshMs);
 
