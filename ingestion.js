@@ -7,29 +7,34 @@ window.IBSS_INGESTION = (function () {
     maxItems: 300,
     maxPerSource: 120,
     storageKey: "ibss_ingestion_state_v5",
-    freshnessHalfLifeHours: 18,
-    defaultReliability: 55,
     primaryFeedUrl: "/api/intake/feed",
     fallbackFeedUrl: "/ibss-feed.json",
-    enableAutoRefresh: true
+    enableAutoRefresh: true,
+    acceptedLanguages: ["en", "ar"],
+    defaultSourceReliability: 55,
+    freshnessHalfLifeHours: 18
   };
 
   const STATE = {
     initialized: false,
-    raw: [],
     normalized: [],
+    raw: [],
     sources: [],
     lastUpdate: null,
     lastError: null,
     activeRequest: null
   };
 
-  function now() {
-    return Date.now();
-  }
+  /* =========================
+     CORE UTILS
+  ========================= */
 
   function nowIso() {
     return new Date().toISOString();
+  }
+
+  function nowMs() {
+    return Date.now();
   }
 
   function asArray(value) {
@@ -64,22 +69,30 @@ window.IBSS_INGESTION = (function () {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   }
 
+  function localize(enText, arText) {
+    return {
+      en: safeText(enText, "-"),
+      ar: safeText(arText, safeText(enText, "-"))
+    };
+  }
+
   function priorityRank(priority) {
     if (priority === "HIGH") return 3;
     if (priority === "MEDIUM") return 2;
     return 1;
   }
 
-  function normalizePriority(value) {
-    const p = String(value || "").toUpperCase().trim();
-    if (p === "HIGH") return "HIGH";
-    if (p === "MEDIUM") return "MEDIUM";
-    return "LOW";
-  }
+  /* =========================
+     LOCALIZED READERS
+  ========================= */
 
-  function getLocalizedText(value, lang = "en") {
-    if (!value) return "";
-    if (typeof value === "string" || typeof value === "number") return String(value);
+  function getLocalizedField(item, field, lang = "en") {
+    if (!item || !item[field]) return "";
+    const value = item[field];
+
+    if (typeof value === "string" || typeof value === "number") {
+      return String(value);
+    }
 
     return (
       value?.[lang] ||
@@ -93,7 +106,11 @@ window.IBSS_INGESTION = (function () {
     );
   }
 
-  function detectSource(item) {
+  /* =========================
+     SOURCE INTELLIGENCE
+  ========================= */
+
+  function detectSourceName(item) {
     return safeText(
       item?.source ||
       item?.sourceName ||
@@ -104,74 +121,165 @@ window.IBSS_INGESTION = (function () {
     );
   }
 
-  function sourceReliability(name) {
-    const s = normalizeText(name);
+  function detectSourceReliability(item) {
+    const explicit = safeNumber(item?.sourceProfile?.reliabilityScore, NaN);
+    if (Number.isFinite(explicit)) {
+      return clamp(explicit, 0, 100);
+    }
 
-    if (s.includes("reuters")) return 88;
-    if (s.includes("associated press")) return 86;
-    if (s === "ap") return 86;
-    if (s.includes("bbc")) return 82;
-    if (s.includes("bloomberg")) return 84;
-    if (s.includes("financial times")) return 82;
-    if (s.includes("al jazeera")) return 74;
-    if (s.includes("monitor")) return 66;
-    if (s.includes("watch")) return 62;
+    const source = normalizeText(detectSourceName(item));
 
-    return CONFIG.defaultReliability;
+    if (source.includes("reuters")) return 88;
+    if (source.includes("associated press")) return 86;
+    if (source === "ap") return 86;
+    if (source.includes("bloomberg")) return 84;
+    if (source.includes("financial times")) return 82;
+    if (source.includes("bbc")) return 80;
+    if (source.includes("al jazeera")) return 74;
+    if (source.includes("monitor")) return 66;
+    if (source.includes("watch")) return 62;
+    if (source.includes("local")) return 58;
+
+    return CONFIG.defaultSourceReliability;
+  }
+
+  /* =========================
+     LANGUAGE / GEO / DOMAIN
+  ========================= */
+
+  function detectLanguage(item) {
+    const explicit = normalizeText(item?.language || item?.lang);
+    if (CONFIG.acceptedLanguages.includes(explicit)) return explicit;
+
+    const arTitle = getLocalizedField(item, "title", "ar");
+    const arSummary = getLocalizedField(item, "summary", "ar");
+
+    if (/[ء-ي]/.test(`${arTitle} ${arSummary}`)) return "ar";
+    return "en";
   }
 
   function detectDomain(item) {
-    const direct = normalizeText(item?.domain || item?.category || item?.topic || item?.vertical);
+    const direct =
+      normalizeText(item?.domain || item?.category || item?.topic || item?.vertical);
+
     if (direct) return direct;
 
     const text = normalizeText([
-      getLocalizedText(item?.title, "en"),
-      getLocalizedText(item?.summary, "en"),
-      getLocalizedText(item?.description, "en"),
-      getLocalizedText(item?.title, "ar"),
-      getLocalizedText(item?.summary, "ar"),
-      getLocalizedText(item?.description, "ar"),
-      safeText(item?.tags),
+      getLocalizedField(item, "title", "en"),
+      getLocalizedField(item, "summary", "en"),
+      getLocalizedField(item, "title", "ar"),
+      getLocalizedField(item, "summary", "ar"),
+      safeText(item?.region),
+      safeText(item?.country),
       asArray(item?.tags).join(" ")
     ].join(" "));
 
-    if (text.match(/missile|army|strike|drone|front|military/)) return "military";
-    if (text.match(/attack|raid|security|terror|intelligence/)) return "security";
-    if (text.match(/economy|inflation|trade|market|tariff|economic/)) return "economic";
-    if (text.match(/talk|ceasefire|diplomatic|mediation|negotiation/)) return "diplomatic";
-    if (text.match(/oil|gas|energy/)) return "energy";
-    if (text.match(/shipping|maritime|sea|port|red sea/)) return "maritime";
-    if (text.match(/cyber|hack|malware/)) return "cyber";
+    if (
+      text.includes("military") ||
+      text.includes("strike") ||
+      text.includes("army") ||
+      text.includes("missile") ||
+      text.includes("drone") ||
+      text.includes("front")
+    ) return "military";
+
+    if (
+      text.includes("security") ||
+      text.includes("raid") ||
+      text.includes("attack") ||
+      text.includes("terror") ||
+      text.includes("intelligence")
+    ) return "security";
+
+    if (
+      text.includes("diplomatic") ||
+      text.includes("negotiation") ||
+      text.includes("talk") ||
+      text.includes("mediation") ||
+      text.includes("ceasefire")
+    ) return "diplomatic";
+
+    if (
+      text.includes("economic") ||
+      text.includes("market") ||
+      text.includes("inflation") ||
+      text.includes("trade") ||
+      text.includes("tariff")
+    ) return "economic";
+
+    if (
+      text.includes("oil") ||
+      text.includes("gas") ||
+      text.includes("energy")
+    ) return "energy";
+
+    if (
+      text.includes("shipping") ||
+      text.includes("maritime") ||
+      text.includes("sea") ||
+      text.includes("port") ||
+      text.includes("red sea")
+    ) return "maritime";
+
+    if (
+      text.includes("supply") ||
+      text.includes("corridor") ||
+      text.includes("route") ||
+      text.includes("logistics")
+    ) return "logistics";
+
+    if (
+      text.includes("cyber") ||
+      text.includes("hacking") ||
+      text.includes("network")
+    ) return "cyber";
 
     return "geopolitical";
   }
 
+  function detectRegion(item) {
+    return safeText(
+      item?.region ||
+      item?.geo?.region ||
+      item?.country ||
+      item?.location?.region,
+      "global"
+    );
+  }
+
   function detectCountry(item) {
-    const explicit = normalizeText(item?.country);
-    if (explicit) return explicit;
+    if (safeText(item?.country)) return safeText(item.country);
 
     const text = normalizeText([
-      getLocalizedText(item?.title, "en"),
-      getLocalizedText(item?.summary, "en"),
-      getLocalizedText(item?.description, "en"),
-      getLocalizedText(item?.title, "ar"),
-      getLocalizedText(item?.summary, "ar"),
-      getLocalizedText(item?.description, "ar"),
+      getLocalizedField(item, "title", "en"),
+      getLocalizedField(item, "summary", "en"),
+      getLocalizedField(item, "title", "ar"),
+      getLocalizedField(item, "summary", "ar"),
       asArray(item?.tags).join(" ")
     ].join(" "));
 
     if (text.includes("gaza")) return "gaza";
-    if (text.includes("israel")) return "israel";
-    if (text.includes("iran")) return "iran";
-    if (text.includes("lebanon")) return "lebanon";
     if (text.includes("west bank")) return "westbank";
+    if (text.includes("lebanon")) return "lebanon";
+    if (text.includes("iran")) return "iran";
     if (text.includes("red sea")) return "redsea";
+    if (text.includes("israel")) return "israel";
+    if (text.includes("syria")) return "syria";
+    if (text.includes("egypt")) return "egypt";
+    if (text.includes("jordan")) return "jordan";
 
-    return "global";
+    return safeText(item?.region, "global");
   }
 
-  function detectRegion(item) {
-    return safeText(item?.region, detectCountry(item));
+  /* =========================
+     TIMESTAMP / URL / TAGS
+  ========================= */
+
+  function normalizeUrl(url) {
+    const value = safeText(url, "");
+    if (!value) return "#";
+    if (value.startsWith("http://") || value.startsWith("https://")) return value;
+    return "#";
   }
 
   function normalizeTimestamp(item) {
@@ -185,7 +293,6 @@ window.IBSS_INGESTION = (function () {
 
     const date = new Date(raw);
     if (Number.isNaN(date.getTime())) return nowIso();
-
     return date.toISOString();
   }
 
@@ -196,42 +303,48 @@ window.IBSS_INGESTION = (function () {
       .slice(0, 12);
   }
 
-  function freshnessScore(timestamp) {
-    const ageMs = now() - new Date(timestamp).getTime();
-    const ageH = ageMs / (1000 * 60 * 60);
-    const decay = Math.exp(-ageH / CONFIG.freshnessHalfLifeHours);
-
-    return clamp(decay, 0, 1);
+  function normalizeActors(item) {
+    return asArray(item?.actors)
+      .map(actor => safeText(String(actor)))
+      .filter(Boolean)
+      .slice(0, 10);
   }
 
-  function normalizeSeverity(priority, item) {
-    const explicit = safeNumber(item?.severity, NaN);
-    if (Number.isFinite(explicit)) return clamp(Math.round(explicit), 0, 10);
+  /* =========================
+     PRIORITY / SCORES
+  ========================= */
 
+  function normalizePriority(value) {
+    const p = String(value || "").toUpperCase().trim();
+    if (p === "HIGH") return "HIGH";
+    if (p === "MEDIUM") return "MEDIUM";
+    return "LOW";
+  }
+
+  function deriveSeverityFromPriority(priority) {
     if (priority === "HIGH") return 8;
     if (priority === "MEDIUM") return 6;
     return 3;
   }
 
-  function normalizeImpact(item) {
-    return clamp(Math.round(safeNumber(item?.impact, 5)), 0, 10);
+  function normalizeNumericScore(value, fallback = 5) {
+    return clamp(Math.round(safeNumber(value, fallback)), 0, 10);
   }
 
-  function normalizeUrgency(item) {
-    return clamp(Math.round(safeNumber(item?.urgency, 5)), 0, 10);
+  function freshnessScore(timestamp) {
+    const ageMs = nowMs() - new Date(timestamp).getTime();
+    const ageHours = ageMs / (1000 * 60 * 60);
+    const decay = Math.exp(-ageHours / CONFIG.freshnessHalfLifeHours);
+    return clamp(decay, 0, 1);
   }
 
-  function normalizeConfidence(item) {
-    return clamp(Math.round(safeNumber(item?.confidence, 6)), 0, 10);
-  }
+  /* =========================
+     NORMALIZATION PIPELINE
+  ========================= */
 
   function normalizeTitle(item) {
-    const en =
-      getLocalizedText(item?.title, "en") ||
-      safeText(item?.title, "");
-    const ar =
-      getLocalizedText(item?.title, "ar") ||
-      safeText(item?.title_ar, "");
+    const en = getLocalizedField(item, "title", "en");
+    const ar = getLocalizedField(item, "title", "ar");
 
     return {
       en: safeText(en, safeText(ar, "Untitled Signal")),
@@ -240,12 +353,8 @@ window.IBSS_INGESTION = (function () {
   }
 
   function normalizeSummary(item, title) {
-    const en =
-      getLocalizedText(item?.summary, "en") ||
-      getLocalizedText(item?.description, "en");
-    const ar =
-      getLocalizedText(item?.summary, "ar") ||
-      getLocalizedText(item?.description, "ar");
+    const en = getLocalizedField(item, "summary", "en");
+    const ar = getLocalizedField(item, "summary", "ar");
 
     return {
       en: safeText(en, safeText(title?.en, "No summary available.")),
@@ -253,73 +362,96 @@ window.IBSS_INGESTION = (function () {
     };
   }
 
-  function buildNormalizedItem(item, index = 0, sourceId = "default") {
+  function normalizeSourceProfile(item) {
+    return {
+      name: detectSourceName(item),
+      reliabilityScore: detectSourceReliability(item)
+    };
+  }
+
+  function normalizeRawItem(item, index = 0, sourceId = null) {
     const priority = normalizePriority(item?.priority || item?.severity);
     const title = normalizeTitle(item);
     const summary = normalizeSummary(item, title);
     const timestamp = normalizeTimestamp(item);
-    const source = detectSource(item);
-    const reliability = sourceReliability(source);
-
-    const severity = normalizeSeverity(priority, item);
-    const impact = normalizeImpact(item);
-    const urgency = normalizeUrgency(item);
-    const confidence = normalizeConfidence(item);
-
+    const reliability = detectSourceReliability(item);
     const freshness = freshnessScore(timestamp);
-    const priorityWeight =
-      priority === "HIGH" ? 0.9 :
-      priority === "MEDIUM" ? 0.6 : 0.3;
-    const reliabilityWeight = reliability / 100;
 
-    const score =
-      (freshness * 0.25) +
-      (priorityWeight * 0.30) +
-      (reliabilityWeight * 0.20) +
-      ((severity / 10) * 0.10) +
-      ((impact / 10) * 0.07) +
-      ((urgency / 10) * 0.05) +
-      ((confidence / 10) * 0.03);
+    const severity = normalizeNumericScore(
+      item?.severity,
+      deriveSeverityFromPriority(priority)
+    );
+    const confidence = normalizeNumericScore(item?.confidence, 6);
+    const impact = normalizeNumericScore(item?.impact, 5);
+    const urgency = normalizeNumericScore(item?.urgency, 5);
+    const persistence = normalizeNumericScore(item?.persistence, 5);
+    const spread = normalizeNumericScore(item?.spread, 5);
 
-    const score100 = clamp(Math.round(score * 100), 0, 100);
+    const strategicScore10 =
+      (severity * 0.25) +
+      (impact * 0.20) +
+      (urgency * 0.18) +
+      (confidence * 0.15) +
+      (persistence * 0.12) +
+      (spread * 0.10);
+
+    const finalScore100 = clamp(
+      Math.round(
+        (strategicScore10 * 10 * 0.70) +
+        (reliability * 0.20) +
+        (freshness * 100 * 0.10)
+      ),
+      0,
+      100
+    );
 
     return {
       id: safeText(item?.id, buildId("RAW")),
-      sourceId,
-      source,
-      reliability,
+      sourceId: safeText(sourceId, "unknown-source"),
+      source: detectSourceName(item),
+      sourceProfile: normalizeSourceProfile(item),
 
       title,
       summary,
 
-      timestamp,
-      priority,
       domain: detectDomain(item),
       region: detectRegion(item),
       country: detectCountry(item),
+      language: detectLanguage(item),
 
+      priority,
       severity,
+      confidence,
       impact,
       urgency,
-      confidence,
-      freshness,
-      score,
-      score100,
+      persistence,
+      spread,
+
+      reliabilityScore: reliability,
+      freshnessScore: freshness,
+      score100: finalScore100,
 
       tags: normalizeTags(item),
-      url: safeText(item?.url || item?.link, "#"),
+      actors: normalizeActors(item),
+
+      timestamp,
+      url: normalizeUrl(item?.url || item?.link),
 
       rawIndex: index,
       raw: item
     };
   }
 
+  /* =========================
+     DEDUPE / SORT
+  ========================= */
+
   function buildDeduplicationKey(item) {
     return [
-      normalizeText(getLocalizedText(item?.title, "en")),
+      normalizeText(item?.source),
+      normalizeText(getLocalizedField(item, "title", "en")),
       normalizeText(item?.country),
-      normalizeText(item?.domain),
-      normalizeText(item?.source)
+      normalizeText(item?.domain)
     ].join("|");
   }
 
@@ -350,21 +482,22 @@ window.IBSS_INGESTION = (function () {
     return asArray(items)
       .slice()
       .sort((a, b) => {
-        const pr = priorityRank(b.priority) - priorityRank(a.priority);
-        if (pr !== 0) return pr;
+        const pDiff = priorityRank(b.priority) - priorityRank(a.priority);
+        if (pDiff !== 0) return pDiff;
 
-        const sr = safeNumber(b.score100, 0) - safeNumber(a.score100, 0);
-        if (sr !== 0) return sr;
+        const sDiff = safeNumber(b.score100, 0) - safeNumber(a.score100, 0);
+        if (sDiff !== 0) return sDiff;
 
         return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
       });
   }
 
+  /* =========================
+     SOURCE PAYLOAD NORMALIZATION
+  ========================= */
+
   function normalizeSourcePayload(source, sourceIndex = 0) {
     const sourceId = safeText(source?.id, `source-${sourceIndex + 1}`);
-    const sourceName = safeText(source?.name, sourceId);
-    const sourceType = safeText(source?.type, "feed");
-
     const rawItems = asArray(
       source?.items ||
       source?.data ||
@@ -373,15 +506,15 @@ window.IBSS_INGESTION = (function () {
       source?.signals
     );
 
-    const items = rawItems
-      .map((item, index) => buildNormalizedItem(item, index, sourceId))
-      .slice(0, CONFIG.maxPerSource);
+    const normalizedItems = rawItems
+      .map((item, index) => normalizeRawItem(item, index, sourceId))
+      .filter(item => item.language && CONFIG.acceptedLanguages.includes(item.language));
 
     return {
       id: sourceId,
-      name: sourceName,
-      type: sourceType,
-      items
+      name: safeText(source?.name, sourceId),
+      type: safeText(source?.type, "feed"),
+      items: normalizedItems.slice(0, CONFIG.maxPerSource)
     };
   }
 
@@ -413,6 +546,117 @@ window.IBSS_INGESTION = (function () {
     return [];
   }
 
+  /* =========================
+     FALLBACK SOVEREIGN SEED
+  ========================= */
+
+  function buildSovereignFallbackSeed() {
+    const ts = nowIso();
+
+    return [
+      {
+        id: "seed-gaza-1",
+        source: "IBSS_SEED",
+        title: {
+          en: "Military pressure remains concentrated around Gaza structure",
+          ar: "الضغط العسكري ما زال متركزًا حول بنية غزة"
+        },
+        summary: {
+          en: "Live monitoring detects persistent military and structural pressure around Gaza.",
+          ar: "الرصد الحي يلتقط ضغطًا عسكريًا وبنيويًا مستمرًا حول غزة."
+        },
+        domain: "military",
+        region: "gaza",
+        country: "gaza",
+        priority: "HIGH",
+        severity: 9,
+        impact: 9,
+        urgency: 8,
+        confidence: 8,
+        persistence: 8,
+        spread: 7,
+        tags: ["gaza", "military", "pressure"],
+        timestamp: ts
+      },
+      {
+        id: "seed-lebanon-1",
+        source: "IBSS_SEED",
+        title: {
+          en: "Northern front tension sustains pressure near Lebanon",
+          ar: "توتر الجبهة الشمالية يحافظ على الضغط قرب لبنان"
+        },
+        summary: {
+          en: "Cross-border tension sustains a high-watch environment around Lebanon.",
+          ar: "التوتر عبر الحدود يحافظ على بيئة مراقبة مرتفعة حول لبنان."
+        },
+        domain: "security",
+        region: "lebanon",
+        country: "lebanon",
+        priority: "HIGH",
+        severity: 8,
+        impact: 8,
+        urgency: 7,
+        confidence: 7,
+        persistence: 7,
+        spread: 6,
+        tags: ["lebanon", "security", "border"],
+        timestamp: ts
+      },
+      {
+        id: "seed-iran-1",
+        source: "IBSS_SEED",
+        title: {
+          en: "Iranian strategic posture remains under structured pressure",
+          ar: "التموضع الاستراتيجي الإيراني ما يزال تحت ضغط بنيوي"
+        },
+        summary: {
+          en: "Regional posture indicates continued pressure with medium escalation probability.",
+          ar: "التموضع الإقليمي يشير إلى ضغط مستمر مع احتمال تصعيد متوسط."
+        },
+        domain: "diplomatic",
+        region: "iran",
+        country: "iran",
+        priority: "MEDIUM",
+        severity: 6,
+        impact: 7,
+        urgency: 5,
+        confidence: 7,
+        persistence: 6,
+        spread: 5,
+        tags: ["iran", "diplomatic", "regional"],
+        timestamp: ts
+      },
+      {
+        id: "seed-redsea-1",
+        source: "IBSS_SEED",
+        title: {
+          en: "Maritime corridor volatility persists in the Red Sea",
+          ar: "تقلب الممر البحري مستمر في البحر الأحمر"
+        },
+        summary: {
+          en: "Shipping-route fragility continues to generate maritime watch pressure.",
+          ar: "هشاشة خط الملاحة ما تزال تولد ضغط مراقبة بحري."
+        },
+        domain: "maritime",
+        region: "red sea",
+        country: "redsea",
+        priority: "MEDIUM",
+        severity: 5,
+        impact: 6,
+        urgency: 5,
+        confidence: 6,
+        persistence: 5,
+        spread: 5,
+        tags: ["red sea", "maritime", "shipping"],
+        timestamp: ts
+      }
+    ];
+  }
+
+  /* =========================
+     FETCH HELPERS
+  ========================= */
+
   async function fetchJsonWithTimeout(url, timeoutMs = CONFIG.requestTimeoutMs) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -422,7 +666,9 @@ window.IBSS_INGESTION = (function () {
         method: "GET",
         cache: "no-store",
         signal: controller.signal,
-        headers: { "Accept": "application/json" }
+        headers: {
+          "Accept": "application/json"
+        }
       });
 
       if (!response.ok) {
@@ -435,103 +681,84 @@ window.IBSS_INGESTION = (function () {
     }
   }
 
-  async function tryPrimaryFeed() {
+  async function tryLoadPrimaryFeed() {
     return await fetchJsonWithTimeout(CONFIG.primaryFeedUrl);
   }
 
-  async function tryFallbackFeed() {
+  async function tryLoadFallbackFeed() {
     return await fetchJsonWithTimeout(CONFIG.fallbackFeedUrl);
   }
 
-  function tryWindowNews() {
-    if (asArray(window.IBSS_NEWS).length) {
-      return { items: deepClone(window.IBSS_NEWS) };
-    }
-    return null;
+  function loadWindowSources() {
+    return asArray(window.IBSS_SOURCES).length
+      ? { sources: deepClone(window.IBSS_SOURCES) }
+      : null;
   }
 
-  function buildSovereignFallbackPayload() {
-    return {
-      items: [
-        {
-          id: "fallback-gaza-1",
-          title: {
-            en: "Gaza Structural Pressure",
-            ar: "ضغط بنيوي في غزة"
-          },
-          summary: {
-            en: "Fallback sovereign signal generated to keep the intelligence chain alive.",
-            ar: "إشارة سيادية احتياطية تم توليدها للحفاظ على بقاء السلسلة الاستخبارية حية."
-          },
-          source: "SOVEREIGN_FALLBACK",
-          priority: "HIGH",
-          domain: "military",
-          region: "gaza",
-          country: "gaza",
-          severity: 8,
-          impact: 7,
-          urgency: 7,
-          confidence: 8,
-          publishedAt: nowIso(),
-          tags: ["gaza", "structural", "fallback"]
-        },
-        {
-          id: "fallback-gaza-2",
-          title: {
-            en: "Live Monitoring Detects Renewed Structural Pressure",
-            ar: "الرصد الحي يلتقط تجدد الضغط البنيوي"
-          },
-          summary: {
-            en: "Fallback monitoring line sustaining ticker and feed continuity.",
-            ar: "سطر مراقبة احتياطي يحافظ على استمرارية الشريط والتغذية."
-          },
-          source: "SOVEREIGN_FALLBACK",
-          priority: "MEDIUM",
-          domain: "security",
-          region: "gaza",
-          country: "gaza",
-          severity: 6,
-          impact: 6,
-          urgency: 6,
-          confidence: 7,
-          publishedAt: nowIso(),
-          tags: ["monitoring", "gaza"]
-        }
-      ]
-    };
+  function loadWindowNewsArray() {
+    return asArray(window.IBSS_NEWS).length
+      ? { items: deepClone(window.IBSS_NEWS) }
+      : null;
   }
 
   async function resolvePayload() {
+    const sources = [];
+
     try {
-      const primary = await tryPrimaryFeed();
-      const primarySources = extractSourcesFromPayload(primary);
-      if (primarySources.length) return primarySources;
+      const primary = await tryLoadPrimaryFeed();
+      if (primary) sources.push({ payload: primary, channel: "primary" });
     } catch (error) {
       console.warn("IBSS_INGESTION primary feed unavailable:", error);
     }
 
-    try {
-      const fallback = await tryFallbackFeed();
-      const fallbackSources = extractSourcesFromPayload(fallback);
-      if (fallbackSources.length) return fallbackSources;
-    } catch (error) {
-      console.warn("IBSS_INGESTION fallback feed unavailable:", error);
+    if (!sources.length) {
+      try {
+        const fallback = await tryLoadFallbackFeed();
+        if (fallback) sources.push({ payload: fallback, channel: "fallback-feed" });
+      } catch (error) {
+        console.warn("IBSS_INGESTION fallback feed unavailable:", error);
+      }
     }
 
-    const windowNews = tryWindowNews();
-    if (windowNews) {
-      const localSources = extractSourcesFromPayload(windowNews);
-      if (localSources.length) return localSources;
+    if (!sources.length) {
+      const windowSources = loadWindowSources();
+      if (windowSources) sources.push({ payload: windowSources, channel: "window-sources" });
     }
 
-    return extractSourcesFromPayload(buildSovereignFallbackPayload());
+    if (!sources.length) {
+      const windowNews = loadWindowNewsArray();
+      if (windowNews) sources.push({ payload: windowNews, channel: "window-news" });
+    }
+
+    if (!sources.length) {
+      sources.push({
+        payload: { items: buildSovereignFallbackSeed() },
+        channel: "sovereign-seed"
+      });
+    }
+
+    const mergedSources = sources.flatMap(sourceRef => {
+      return extractSourcesFromPayload(sourceRef.payload).map(source => ({
+        ...source,
+        channel: sourceRef.channel
+      }));
+    });
+
+    return {
+      sources: mergedSources,
+      channel: sources[0]?.channel || "empty"
+    };
   }
+
+  /* =========================
+     STORAGE
+  ========================= */
 
   function saveState() {
     try {
       localStorage.setItem(CONFIG.storageKey, JSON.stringify({
-        raw: STATE.raw,
         normalized: STATE.normalized,
+        raw: STATE.raw,
         sources: STATE.sources,
         lastUpdate: STATE.lastUpdate,
         lastError: STATE.lastError
@@ -549,8 +776,8 @@ window.IBSS_INGESTION = (function () {
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") return;
 
-      STATE.raw = asArray(parsed.raw);
       STATE.normalized = asArray(parsed.normalized);
+      STATE.raw = asArray(parsed.raw);
       STATE.sources = asArray(parsed.sources);
       STATE.lastUpdate = safeText(parsed.lastUpdate, null);
       STATE.lastError = parsed.lastError || null;
@@ -559,28 +786,34 @@ window.IBSS_INGESTION = (function () {
     }
   }
 
-  function emitUpdate() {
-    const detail = {
-      count: STATE.normalized.length,
-      updatedAt: STATE.lastUpdate,
-      sources: STATE.sources
-    };
+  /* =========================
+     COMMIT / EVENTS
+  ========================= */
 
+  function emitUpdate() {
     try {
-      window.dispatchEvent(new CustomEvent("ibss:ingestion", { detail }));
-      window.dispatchEvent(new CustomEvent("ibss:ingestion-updated", { detail }));
+      window.dispatchEvent(new CustomEvent("ibss:ingestion-updated", {
+        detail: {
+          count: STATE.normalized.length,
+          lastUpdate: STATE.lastUpdate,
+          sources: STATE.sources
+        }
+      }));
     } catch (error) {
       console.error("IBSS_INGESTION emitUpdate error:", error);
     }
   }
 
   function commitSources(rawSources) {
-    const normalizedSources = asArray(rawSources)
+    const normalizedSources = rawSources
       .map(normalizeSourcePayload)
       .filter(source => source.items.length > 0);
 
-    const flatItems = normalizedSources.flatMap(source => source.items);
-    const finalItems = sortItems(dedupeItems(flatItems)).slice(0, CONFIG.maxItems);
+    const normalizedItems = normalizedSources.flatMap(source => source.items);
+
+    const finalItems = sortItems(
+      dedupeItems(normalizedItems)
+    ).slice(0, CONFIG.maxItems);
 
     STATE.sources = normalizedSources.map(source => ({
       id: source.id,
@@ -589,7 +822,7 @@ window.IBSS_INGESTION = (function () {
       count: source.items.length
     }));
 
-    STATE.raw = flatItems;
+    STATE.raw = normalizedItems;
     STATE.normalized = finalItems;
     STATE.lastUpdate = nowIso();
     STATE.lastError = null;
@@ -597,8 +830,12 @@ window.IBSS_INGESTION = (function () {
     saveState();
     emitUpdate();
 
-    return deepClone(finalItems);
+    return finalItems;
   }
+
+  /* =========================
+     PUBLIC PIPELINE
+  ========================= */
 
   async function refresh() {
     ensureInit();
@@ -609,18 +846,23 @@ window.IBSS_INGESTION = (function () {
 
     STATE.activeRequest = (async () => {
       try {
-        const sources = await resolvePayload();
-        return commitSources(sources);
+        const resolved = await resolvePayload();
+        return commitSources(resolved.sources);
       } catch (error) {
         STATE.lastError = safeText(error?.message, "INGESTION_REFRESH_FAILED");
         saveState();
         console.error("IBSS_INGESTION refresh error:", error);
 
         if (!STATE.normalized.length) {
-          return commitSources(extractSourcesFromPayload(buildSovereignFallbackPayload()));
+          return commitSources([{
+            id: "seed-source",
+            name: "Sovereign Seed",
+            type: "seed",
+            items: buildSovereignFallbackSeed()
+          }]);
         }
 
-        return deepClone(STATE.normalized);
+        return STATE.normalized;
       } finally {
         STATE.activeRequest = null;
       }
@@ -632,26 +874,29 @@ window.IBSS_INGESTION = (function () {
   function injectItems(items, sourceMeta = {}) {
     ensureInit();
 
-    const syntheticSource = {
+    const source = {
       id: safeText(sourceMeta.id, buildId("manual")),
       name: safeText(sourceMeta.name, "Manual Intake"),
       type: safeText(sourceMeta.type, "manual"),
       items: asArray(items)
     };
 
-    return commitSources([syntheticSource]);
+    return commitSources([source]);
   }
 
   function clear() {
-    STATE.raw = [];
     STATE.normalized = [];
+    STATE.raw = [];
     STATE.sources = [];
     STATE.lastUpdate = null;
     STATE.lastError = null;
-
     saveState();
     emitUpdate();
   }
+
+  /* =========================
+     READ API
+  ========================= */
 
   function getAllNormalized() {
     return deepClone(STATE.normalized);
@@ -659,10 +904,6 @@ window.IBSS_INGESTION = (function () {
 
   function getAllRaw() {
     return deepClone(STATE.raw);
-  }
-
-  function getAll() {
-    return getAllNormalized();
   }
 
   function getLatest(limit = 20) {
@@ -694,6 +935,16 @@ window.IBSS_INGESTION = (function () {
     };
   }
 
+  /* =========================
+     INIT / AUTO REFRESH
+  ========================= */
+
+  function ensureInit() {
+    if (STATE.initialized) return;
+    loadState();
+    STATE.initialized = true;
+  }
+
   function startAutoRefresh() {
     ensureInit();
 
@@ -714,22 +965,15 @@ window.IBSS_INGESTION = (function () {
     }
   }
 
-  function ensureInit() {
-    if (STATE.initialized) return;
+  ensureInit();
 
-    loadState();
-    STATE.initialized = true;
-
-    if (!STATE.normalized.length) {
-      commitSources(extractSourcesFromPayload(buildSovereignFallbackPayload()));
-    }
-
-    if (CONFIG.enableAutoRefresh) {
-      startAutoRefresh();
-    }
+  if (!STATE.normalized.length) {
+    refresh();
   }
 
-  ensureInit();
+  if (CONFIG.enableAutoRefresh) {
+    startAutoRefresh();
+  }
 
   return {
     CONFIG,
@@ -737,9 +981,8 @@ window.IBSS_INGESTION = (function () {
     injectItems,
     clear,
 
-    getAll,
-    getAllRaw,
     getAllNormalized,
+    getAllRaw,
     getLatest,
     getByPriority,
     getByCountry,
@@ -750,4 +993,3 @@ window.IBSS_INGESTION = (function () {
     stopAutoRefresh
   };
 })();
- تم  هل هناك شيء اخر؟؟
