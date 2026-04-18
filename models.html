@@ -10,29 +10,36 @@
   --bg:#040404;
   --panel:#0d0d0d;
   --panel2:#121212;
+  --panel3:#171717;
   --gold:#d4af37;
   --text:#e8e8e8;
   --muted:#9d9d9d;
   --border:rgba(212,175,55,.28);
+  --soft-border:rgba(255,255,255,.08);
+  --soft-border-2:rgba(255,255,255,.06);
   --green:#00d084;
   --orange:#ff9f1a;
+  --red:#ff4d4f;
+  --blue:#5a8cff;
+  --shadow:0 10px 24px rgba(0,0,0,.18);
 }
 
 *{box-sizing:border-box}
-
-body{
+html,body{
   margin:0;
+  padding:0;
   font-family:Arial,sans-serif;
   background:
     radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
     var(--bg);
   color:var(--text);
 }
+body{min-height:100vh}
 
 .wrap{
-  width:min(1100px,92%);
+  width:min(1240px,92%);
   margin:auto;
-  padding:20px 0 60px;
+  padding:20px 0 50px;
 }
 
 .topbar{
@@ -47,15 +54,25 @@ body{
 
 .brand{
   color:var(--gold);
-  font-size:28px;
-  font-weight:800;
+  font-size:30px;
+  font-weight:900;
   text-decoration:none;
+  letter-spacing:1px;
+}
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
 }
 
 .nav{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
+  justify-content:center;
 }
 
 .nav a{
@@ -63,13 +80,16 @@ body{
   text-decoration:none;
   border:1px solid rgba(255,255,255,.08);
   padding:10px 14px;
-  border-radius:10px;
+  border-radius:12px;
+  font-size:14px;
+  transition:.2s ease;
 }
 
 .nav a.active,
 .nav a:hover{
   color:var(--gold);
   border-color:var(--border);
+  box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
 }
 
 .controls{
@@ -82,10 +102,13 @@ body{
   background:none;
   color:#ccc;
   padding:8px 10px;
-  border-radius:8px;
+  border-radius:10px;
   cursor:pointer;
+  transition:.2s ease;
+  font-size:13px;
 }
 
+.controls button:hover,
 .controls button.active{
   color:var(--gold);
   border-color:var(--gold);
@@ -93,47 +116,338 @@ body{
 
 .hero{
   text-align:center;
-  padding:40px 0;
+  padding:32px 0 20px;
 }
 
 .hero h1{
-  margin:0;
-  font-size:38px;
+  margin:0 0 10px;
+  font-size:44px;
+  color:var(--gold);
+  font-weight:900;
 }
 
 .hero p{
   color:var(--muted);
-  max-width:700px;
-  margin:12px auto 0;
+  max-width:780px;
+  margin:0 auto;
+  line-height:1.85;
+  font-size:16px;
+}
+
+.meta-line{
+  margin-top:10px;
+  color:#8a8a8a;
+  font-size:13px;
 }
 
 .meta{
   display:flex;
   justify-content:center;
   gap:10px;
-  margin-top:12px;
+  margin-top:14px;
   flex-wrap:wrap;
 }
 
 .badge{
-  padding:6px 10px;
+  padding:8px 12px;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.1);
   font-size:12px;
+  font-weight:700;
+  background:rgba(255,255,255,.03);
+  color:#ddd;
 }
 
-.badge.live{color:var(--green)}
-.badge.fallback{color:var(--orange)}
+.badge.live{
+  color:var(--green);
+  border-color:rgba(0,208,132,.25);
+  background:rgba(0,208,132,.08);
+}
+
+.badge.fallback{
+  color:var(--orange);
+  border-color:rgba(255,159,26,.25);
+  background:rgba(255,159,26,.08);
+}
+
+.alert{
+  display:none;
+  margin:18px 0 0;
+  text-align:center;
+  padding:14px;
+  border-radius:14px;
+  background:rgba(255,77,79,.14);
+  border:1px solid rgba(255,77,79,.40);
+  color:#ffd1d1;
+  font-weight:800;
+  line-height:1.7;
+}
+
+.section{
+  margin-top:20px;
+}
+
+.title{
+  color:var(--gold);
+  font-size:24px;
+  font-weight:900;
+  margin-bottom:16px;
+}
+
+.sub-title{
+  color:#b8b8b8;
+  font-size:13px;
+  margin-top:-8px;
+  margin-bottom:16px;
+  line-height:1.7;
+}
+
+.ticker-shell{
+  border:1px solid rgba(212,175,55,.18);
+  border-radius:18px;
+  background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
+  overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+  position:relative;
+}
+
+.ticker-track{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  direction:ltr;
+  white-space:nowrap;
+  scroll-behavior:auto;
+  min-height:72px;
+}
+
+.ticker-track::-webkit-scrollbar{display:none}
+
+.ticker-item{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  min-height:44px;
+  max-width:min(82vw,540px);
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.05);
+  color:#f0f0f0;
+  font-size:13px;
+  line-height:1.6;
+  white-space:normal;
+}
+
+.ticker-item-text{
+  display:block;
+  unicode-bidi:plaintext;
+}
+
+.ticker-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  flex:0 0 8px;
+}
+
+.ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
+.ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
+.ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
+
+.mini-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+
+.mini-card{
+  background:var(--panel);
+  border:1px solid var(--soft-border);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:var(--shadow);
+}
+
+.mini-card .mini-title{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:10px;
+}
+
+.mini-card .mini-value{
+  font-size:28px;
+  font-weight:900;
+  color:#fff;
+}
+
+.mini-card .mini-value.high{color:var(--red)}
+.mini-card .mini-value.medium{color:var(--orange)}
+.mini-card .mini-value.low{color:var(--green)}
+.mini-card .mini-value.gold{color:var(--gold)}
+.mini-card .mini-value.blue{color:var(--blue)}
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:1.05fr .95fr;
   gap:18px;
-  margin-top:24px;
+  margin-top:18px;
+}
+
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  margin-top:18px;
 }
 
 .card{
   background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:var(--shadow);
+}
+
+.feature-box,
+.publication-box,
+.snapshot-item,
+.metric-row,
+.feed-item,
+.arch-row{
+  background:var(--panel2);
+  border:1px solid var(--soft-border-2);
+  border-radius:16px;
+}
+
+.feature-box,
+.publication-box{
+  padding:18px;
+}
+
+.feature-box h3,
+.publication-box h3{
+  margin:0 0 10px;
+  font-size:28px;
+  line-height:1.35;
+  color:#fff;
+}
+
+.feature-box p,
+.publication-box p{
+  margin:0;
+  color:#ddd;
+  line-height:1.9;
+  font-size:15px;
+}
+
+.mini-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+
+.mini-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:7px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+  color:#ddd;
+}
+
+.mini-badge.high{
+  color:#ffd7d7;
+  background:rgba(255,77,79,.12);
+  border-color:rgba(255,77,79,.28);
+}
+
+.mini-badge.medium{
+  color:#ffe2b8;
+  background:rgba(255,159,26,.12);
+  border-color:rgba(255,159,26,.28);
+}
+
+.mini-badge.low{
+  color:#d6fff1;
+  background:rgba(0,208,132,.12);
+  border-color:rgba(0,208,132,.28);
+}
+
+.snapshot-box,
+.metrics-box,
+.feed-box,
+.arch-box{
+  display:grid;
+  gap:12px;
+}
+
+.snapshot-item,
+.metric-row,
+.feed-item,
+.arch-row{
+  padding:14px 15px;
+}
+
+.snapshot-item strong,
+.metric-name,
+.arch-name{
+  display:block;
+  color:#fff;
+  margin-bottom:6px;
+  font-size:15px;
+}
+
+.snapshot-meta,
+.metric-sub,
+.publication-meta,
+.arch-sub{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.7;
+}
+
+.metric-row,
+.arch-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+
+.metric-score,
+.arch-score{
+  color:var(--gold);
+  font-size:21px;
+  font-weight:900;
+  flex:0 0 auto;
+}
+
+.metric-score.high,
+.arch-score.high{color:var(--red)}
+.metric-score.medium,
+.arch-score.medium{color:var(--orange)}
+.metric-score.low,
+.arch-score.low{color:var(--green)}
+
+.models-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+}
+
+.model-card{
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
   border:1px solid rgba(255,255,255,.08);
   border-radius:18px;
   padding:22px;
@@ -141,37 +455,103 @@ body{
 
 .model-code{
   color:var(--gold);
-  font-size:26px;
-  font-weight:800;
+  font-size:28px;
+  font-weight:900;
+  margin-bottom:8px;
 }
 
 .model-title{
-  font-size:18px;
-  margin:8px 0;
+  font-size:19px;
+  font-weight:800;
+  margin:0 0 10px;
+  color:#fff;
 }
 
 .model-text{
   color:var(--muted);
   line-height:1.8;
+  font-size:14px;
 }
 
-.section{
-  margin-top:24px;
-  background:var(--panel2);
-  padding:20px;
-  border-radius:16px;
+.model-metrics{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-top:14px;
+}
+
+.model-metric{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;
+  padding:12px;
+}
+
+.model-metric span{
+  display:block;
+  font-size:11px;
+  color:#8f8f8f;
+  margin-bottom:6px;
+}
+
+.model-metric strong{
+  display:block;
+  color:#fff;
+  font-size:15px;
+}
+
+.publication-kicker{
+  color:var(--gold);
+  font-size:12px;
+  letter-spacing:.08em;
+  margin-bottom:8px;
+  font-weight:800;
+}
+
+.publication-summary{
+  color:#ddd;
+  line-height:1.85;
+  font-size:14px;
+  margin-bottom:12px;
 }
 
 .footer{
-  margin-top:30px;
+  margin-top:26px;
   text-align:center;
   color:#777;
+  font-size:14px;
   border-top:1px solid rgba(255,255,255,.05);
-  padding-top:20px;
+  padding-top:22px;
 }
 
-@media(max-width:900px){
-  .grid{grid-template-columns:1fr}
+html[dir="rtl"] body{text-align:right}
+html[dir="rtl"] .topbar,
+html[dir="rtl"] .top-actions,
+html[dir="rtl"] .nav,
+html[dir="rtl"] .metric-row,
+html[dir="rtl"] .arch-row{
+  direction:rtl;
+}
+html[dir="rtl"] .hero,
+html[dir="rtl"] .footer,
+html[dir="rtl"] .alert{
+  text-align:center;
+}
+
+@media(max-width:1100px){
+  .mini-grid,
+  .grid,
+  .grid-3,
+  .models-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:640px){
+  .hero h1{font-size:34px}
+  .topbar{flex-direction:column}
+  .nav{justify-content:center}
+  .brand{text-align:center}
 }
 </style>
 </head>
@@ -179,138 +559,868 @@ body{
 <body>
 <div class="wrap">
 
-<div class="topbar">
-  <a class="brand" href="index.html">IBSS</a>
+  <div class="topbar">
+    <a class="brand" href="index.html">IBSS</a>
 
-  <div class="nav">
-    <a href="index.html">Home</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="signals.html">Signals</a>
-    <a href="reports.html">Reports</a>
-    <a href="countries.html">Countries</a>
-    <a href="models.html" class="active">Models</a>
+    <div class="top-actions">
+      <div class="nav">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
+        <a href="signals.html" data-i18n="nav_signals">Signals</a>
+        <a href="reports.html" data-i18n="nav_reports">Reports</a>
+        <a href="countries.html" data-i18n="nav_countries">Countries</a>
+        <a href="models.html" class="active" data-i18n="nav_models">Models</a>
+        <a href="about.html" data-i18n="nav_about">About</a>
+      </div>
+
+      <div class="controls">
+        <button id="btn-en" type="button">EN</button>
+        <button id="btn-ar" type="button">AR</button>
+        <button id="audioBtn" type="button">AUDIO</button>
+      </div>
+    </div>
   </div>
 
-  <div class="controls">
-    <button id="btn-en">EN</button>
-    <button id="btn-ar">AR</button>
-    <button id="audioBtn">AUDIO</button>
+  <div class="hero">
+    <h1 id="pageTitle">IBSS Models Layer</h1>
+    <p id="pageSub">Conceptual engines transforming signals into sovereign decision logic.</p>
+    <div id="metaLine" class="meta-line">Source: -</div>
+
+    <div class="meta">
+      <span id="sourceBadge" class="badge fallback">SOURCE</span>
+      <span id="metricsBadge" class="badge fallback">METRICS</span>
+      <span id="audioBadge" class="badge fallback">AUDIO</span>
+    </div>
   </div>
-</div>
 
-<div class="hero">
-  <h1>IBSS Models Layer</h1>
-  <p>Conceptual engines transforming signals into sovereign decision logic.</p>
+  <div id="alertBox" class="alert"></div>
 
-  <div class="meta">
-    <span id="sourceBadge" class="badge fallback">SOURCE</span>
-    <span id="audioBadge" class="badge fallback">AUDIO</span>
+  <div class="section">
+    <div class="title" id="tickerTitle">Live Intelligence Strip</div>
+    <div class="ticker-shell">
+      <div id="tickerTrack" class="ticker-track"></div>
+    </div>
   </div>
+
+  <div class="mini-grid section">
+    <div class="mini-card">
+      <div class="mini-title" id="miniSystemPressureLabel">System Stress</div>
+      <div id="miniSystemPressure" class="mini-value high">0</div>
+    </div>
+
+    <div class="mini-card">
+      <div class="mini-title" id="miniConfidenceLabel">Confidence</div>
+      <div id="miniConfidence" class="mini-value blue">0</div>
+    </div>
+
+    <div class="mini-card">
+      <div class="mini-title" id="miniLiveSignalsLabel">Live Signals</div>
+      <div id="miniLiveSignals" class="mini-value low">0</div>
+    </div>
+
+    <div class="mini-card">
+      <div class="mini-title" id="miniReportsLabel">Auto Reports</div>
+      <div id="miniReports" class="mini-value gold">0</div>
+    </div>
+  </div>
+
+  <div class="grid section">
+    <div class="card">
+      <div class="title" id="architectureTitle">Decision Architecture</div>
+      <div class="feature-box">
+        <h3 id="featureHeading">-</h3>
+        <p id="featureText">-</p>
+        <div id="featureBadges" class="mini-badges"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title" id="publicationTitle">Featured Doctrine</div>
+      <div id="publicationBox" class="publication-box">
+        <div class="publication-kicker" id="publicationKicker">Publication Context</div>
+        <h3 id="publicationHeading">-</h3>
+        <p id="publicationSummary" class="publication-summary">-</p>
+        <div id="publicationMeta" class="publication-meta">-</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-3 section">
+    <div class="card">
+      <div class="title" id="snapshotTitle">Model Snapshot</div>
+      <div id="snapshotBox" class="snapshot-box"></div>
+    </div>
+
+    <div class="card">
+      <div class="title" id="metricsTitle">Model Metrics</div>
+      <div class="sub-title" id="metricsSub">System / Theater / File / Signal / Confidence</div>
+      <div id="metricsBox" class="metrics-box"></div>
+    </div>
+
+    <div class="card">
+      <div class="title" id="feedTitle">Model Feed</div>
+      <div id="feedBox" class="feed-box"></div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <div class="title" id="modelsMatrixTitle">Active Model Matrix</div>
+    <div class="models-grid" id="modelsGrid"></div>
+  </div>
+
+  <div class="card section">
+    <div class="title" id="architectureMapTitle">Model Architecture Map</div>
+    <div class="arch-box" id="archBox"></div>
+  </div>
+
+  <div class="footer" id="footerText">© 2026 IBSS — Models Layer</div>
 </div>
 
-<div class="grid">
-
-<div class="card">
-  <div class="model-code">Σ-9X</div>
-  <div class="model-title">Signal → Decision Engine</div>
-  <div class="model-text">Transforms signals into structured decision outputs.</div>
-</div>
-
-<div class="card">
-  <div class="model-code">WAAD</div>
-  <div class="model-title">War Acceptance Architecture</div>
-  <div class="model-text">Tracks legitimacy construction before conflict activation.</div>
-</div>
-
-<div class="card">
-  <div class="model-code">DLM</div>
-  <div class="model-title">Diplomatic Legitimacy Matrix</div>
-  <div class="model-text">Measures diplomatic pressure and negotiation legitimacy.</div>
-</div>
-
-<div class="card">
-  <div class="model-code">LDE</div>
-  <div class="model-title">Leader Decision Engine</div>
-  <div class="model-text">Models leadership behavior under crisis pressure.</div>
-</div>
-
-</div>
-
-<div class="section">
-  Models operate together inside the IBSS engine — not as isolated concepts but as layered decision logic.
-</div>
-
-<div class="footer">
-© 2026 IBSS — Models Layer
-</div>
-
-</div>
-
+<script src="data.js"></script>
+<script src="sources.js"></script>
+<script src="content.js"></script>
+<script src="ingestion.js"></script>
+<script src="news.js"></script>
+<script src="analysis.js"></script>
+<script src="metrics-engine.js"></script>
+<script src="cluster-engine.js"></script>
 <script src="engine.js"></script>
-<script src="runtime-engine.js"></script>
 <script src="audio-engine.js"></script>
+<script src="runtime-engine.js"></script>
+<script src="publisher.js"></script>
 
 <script>
-let lang = localStorage.getItem("ibss_lang") || "en";
+(function () {
+  "use strict";
 
-function applyLang(){
-  document.documentElement.lang = lang;
-  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  const UI = {
+    en: {
+      nav_home: "Home",
+      nav_dashboard: "Dashboard",
+      nav_signals: "Signals",
+      nav_reports: "Reports",
+      nav_countries: "Countries",
+      nav_models: "Models",
+      nav_about: "About",
 
-  document.getElementById("btn-en").classList.toggle("active", lang==="en");
-  document.getElementById("btn-ar").classList.toggle("active", lang==="ar");
-}
+      title: "IBSS Models Layer",
+      sub: "Conceptual engines transforming signals into sovereign decision logic.",
 
-function getSystem(){
-  try{
-    return window.IBSS_ENGINE?.getSystemState?.() || null;
-  }catch{
-    return null;
+      ticker: "Live Intelligence Strip",
+      architectureTitle: "Decision Architecture",
+      publicationTitle: "Featured Doctrine",
+      publicationKicker: "Publication Context",
+      snapshotTitle: "Model Snapshot",
+      metricsTitle: "Model Metrics",
+      metricsSub: "System / Theater / File / Signal / Confidence",
+      feedTitle: "Model Feed",
+      modelsMatrixTitle: "Active Model Matrix",
+      architectureMapTitle: "Model Architecture Map",
+
+      miniSystemPressure: "System Stress",
+      miniConfidence: "Confidence",
+      miniLiveSignals: "Live Signals",
+      miniReports: "Auto Reports",
+
+      sourceLabel: "Source",
+      updatedAt: "Updated",
+      sourceLive: "SOURCE — ENGINE",
+      sourceFallback: "SOURCE — FALLBACK",
+      metricsOn: "METRICS — INTEGRATED",
+      metricsOff: "METRICS — OFF",
+      audioOn: "AUDIO — ON",
+      audioOff: "AUDIO — OFF",
+      audioButtonOn: "AUDIO ON",
+      audioButtonOff: "AUDIO OFF",
+
+      alertHigh: "⚠ HIGH ESCALATION — MODEL LAYER TRACKS ACTIVE RESPONSE CONDITIONS",
+      alertMed: "⚠ STRUCTURED PRESSURE — MODEL LAYER TRACKS PREPARATION CONDITIONS",
+      alertLow: "✓ LOW PRESSURE — MODEL LAYER TRACKS MONITORING CONDITIONS",
+
+      noData: "No data available.",
+      noFeed: "No live feed available.",
+
+      systemStress: "System Stress",
+      confidence: "Confidence",
+      topTheater: "Top Theater",
+      topCluster: "Top Strategic File",
+      topSignal: "Top Signal",
+      reportsCount: "Reports",
+      band: "Band",
+      decision: "Decision",
+      mode: "Mode",
+      publicationType: "Type",
+      publicationUnit: "Unit",
+      publicationEdition: "Edition",
+      influence: "Influence",
+      scope: "Scope",
+      role: "Role",
+      layer: "Layer"
+    },
+
+    ar: {
+      nav_home: "الرئيسية",
+      nav_dashboard: "لوحة التحكم",
+      nav_signals: "الإشارات",
+      nav_reports: "التقارير",
+      nav_countries: "الدول",
+      nav_models: "النماذج",
+      nav_about: "حول",
+
+      title: "طبقة النماذج",
+      sub: "محركات مفاهيمية تحول الإشارات إلى منطق قرار سيادي.",
+
+      ticker: "الشريط الاستخباري الحي",
+      architectureTitle: "هندسة القرار",
+      publicationTitle: "العقيدة المميزة",
+      publicationKicker: "سياق المنشور",
+      snapshotTitle: "لقطة النماذج",
+      metricsTitle: "مقاييس النماذج",
+      metricsSub: "System / Theater / File / Signal / Confidence",
+      feedTitle: "تغذية النماذج",
+      modelsMatrixTitle: "مصفوفة النماذج النشطة",
+      architectureMapTitle: "خريطة هندسة النماذج",
+
+      miniSystemPressure: "ضغط النظام",
+      miniConfidence: "الثقة",
+      miniLiveSignals: "الإشارات الحية",
+      miniReports: "التقارير الآلية",
+
+      sourceLabel: "المصدر",
+      updatedAt: "آخر تحديث",
+      sourceLive: "المصدر — المحرك",
+      sourceFallback: "المصدر — الاحتياطي",
+      metricsOn: "القياس — مدمج",
+      metricsOff: "القياس — غير مفعل",
+      audioOn: "الصوت — يعمل",
+      audioOff: "الصوت — متوقف",
+      audioButtonOn: "تشغيل الصوت",
+      audioButtonOff: "إيقاف الصوت",
+
+      alertHigh: "⚠ تصعيد مرتفع — طبقة النماذج تتبع ظروف استجابة نشطة",
+      alertMed: "⚠ ضغط بنيوي — طبقة النماذج تتبع ظروف التحضير",
+      alertLow: "✓ ضغط منخفض — طبقة النماذج تتبع ظروف المراقبة",
+
+      noData: "لا توجد بيانات.",
+      noFeed: "لا توجد تغذية حية.",
+
+      systemStress: "ضغط النظام",
+      confidence: "الثقة",
+      topTheater: "المسرح الأعلى",
+      topCluster: "الملف الاستراتيجي الأعلى",
+      topSignal: "الإشارة الأعلى",
+      reportsCount: "التقارير",
+      band: "الحزمة",
+      decision: "القرار",
+      mode: "الوضع",
+      publicationType: "النوع",
+      publicationUnit: "الوحدة",
+      publicationEdition: "الإصدار",
+      influence: "التأثير",
+      scope: "النطاق",
+      role: "الدور",
+      layer: "الطبقة"
+    }
+  };
+
+  let lang = localStorage.getItem("ibss_lang") || "en";
+  let currentSystem = null;
+
+  const MODELS = [
+    {
+      code: "Σ-9X",
+      title: {
+        en: "Signal → Decision Engine",
+        ar: "محرك الإشارة إلى القرار"
+      },
+      text: {
+        en: "Transforms structured signals into calibrated sovereign decision outputs.",
+        ar: "يحوّل الإشارات المنظمة إلى مخرجات قرار سيادي معايرة."
+      },
+      role: {
+        en: "Core decision translation",
+        ar: "الترجمة المركزية للقرار"
+      },
+      scope: {
+        en: "System-wide",
+        ar: "على مستوى النظام"
+      },
+      layer: {
+        en: "Operational Logic",
+        ar: "المنطق التشغيلي"
+      }
+    },
+    {
+      code: "WAAD",
+      title: {
+        en: "War Acceptance Architecture",
+        ar: "هندسة قبول الحرب"
+      },
+      text: {
+        en: "Tracks legitimacy, acceptance thresholds, and activation pathways before conflict normalization.",
+        ar: "يتتبع الشرعية وعتبات القبول ومسارات التفعيل قبل تطبيع الصراع."
+      },
+      role: {
+        en: "Conflict legitimacy layer",
+        ar: "طبقة شرعية الصراع"
+      },
+      scope: {
+        en: "Escalation environments",
+        ar: "بيئات التصعيد"
+      },
+      layer: {
+        en: "Strategic Doctrine",
+        ar: "العقيدة الاستراتيجية"
+      }
+    },
+    {
+      code: "DLM",
+      title: {
+        en: "Diplomatic Legitimacy Matrix",
+        ar: "مصفوفة الشرعية الدبلوماسية"
+      },
+      text: {
+        en: "Measures diplomatic pressure, mediation viability, and negotiation legitimacy under stress.",
+        ar: "تقيس الضغط الدبلوماسي وإمكانية الوساطة وشرعية التفاوض تحت الضغط."
+      },
+      role: {
+        en: "Diplomatic calibration",
+        ar: "معايرة دبلوماسية"
+      },
+      scope: {
+        en: "Negotiation theaters",
+        ar: "مسارح التفاوض"
+      },
+      layer: {
+        en: "External Interface",
+        ar: "الواجهة الخارجية"
+      }
+    },
+    {
+      code: "LDE",
+      title: {
+        en: "Leader Decision Engine",
+        ar: "محرك قرار القيادة"
+      },
+      text: {
+        en: "Models leader behavior, hesitation bands, and response volatility under crisis pressure.",
+        ar: "ينمذج سلوك القيادة وحيز التردد وتقلبات الاستجابة تحت ضغط الأزمة."
+      },
+      role: {
+        en: "Leadership response model",
+        ar: "نموذج استجابة القيادة"
+      },
+      scope: {
+        en: "Crisis command",
+        ar: "قيادة الأزمات"
+      },
+      layer: {
+        en: "Behavioral Logic",
+        ar: "المنطق السلوكي"
+      }
+    }
+  ];
+
+  function t(key){
+    return UI[lang]?.[key] || key;
   }
-}
 
-function renderMeta(system){
-  const sourceBadge = document.getElementById("sourceBadge");
-  const audioBadge = document.getElementById("audioBadge");
-
-  if(system?.source === "engine"){
-    sourceBadge.textContent="SOURCE — ENGINE";
-    sourceBadge.className="badge live";
-  }else{
-    sourceBadge.textContent="SOURCE — FALLBACK";
-    sourceBadge.className="badge fallback";
+  function safeText(value, fallback = "-"){
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
   }
 
-  if(window.IBSS_AUDIO?.isEnabled?.()){
-    audioBadge.textContent="AUDIO — ON";
-    audioBadge.className="badge live";
-  }else{
-    audioBadge.textContent="AUDIO — OFF";
-    audioBadge.className="badge fallback";
+  function safeNumber(value, fallback = 0){
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
   }
-}
 
-function start(){
-  applyLang();
+  function getLocalizedText(value){
+    if (!value) return "-";
+    if (typeof value === "string" || typeof value === "number") return String(value);
+    return value[lang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
+  }
 
-  const system = getSystem();
-  if(system) renderMeta(system);
-}
+  function escapeHtml(text){
+    const div = document.createElement("div");
+    div.textContent = text ?? "";
+    return div.innerHTML;
+  }
 
-document.getElementById("btn-en").onclick=()=>{
-  lang="en"; localStorage.setItem("ibss_lang","en"); start();
-};
+  function formatDateTime(value){
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
 
-document.getElementById("btn-ar").onclick=()=>{
-  lang="ar"; localStorage.setItem("ibss_lang","ar"); start();
-};
+    return date.toLocaleString(lang === "ar" ? "ar-EG" : "en-US", {
+      year:"numeric",
+      month:"short",
+      day:"2-digit",
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+  }
 
-document.getElementById("audioBtn").onclick=()=>{
-  window.IBSS_AUDIO?.toggle?.();
-  start();
-};
+  function getBandLabel(score){
+    if (window.IBSS_METRICS?.classifyBand) {
+      const band = window.IBSS_METRICS.classifyBand(Number(score || 0));
+      return lang === "ar" ? band?.ar || "-" : band?.en || "-";
+    }
+    return "-";
+  }
 
-window.addEventListener("load",start);
+  function scoreClass(score){
+    const n = Number(score || 0);
+    if (n >= 70) return "high";
+    if (n >= 35) return "medium";
+    return "low";
+  }
+
+  function getSystem(){
+    try{
+      let system = null;
+
+      if (window.IBSS_ENGINE?.getSystemState) {
+        system = window.IBSS_ENGINE.getSystemState();
+      } else if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+        system = window.IBSS_ENGINE.getStaticSystemFallback();
+      }
+
+      if (!system) return null;
+
+      if (window.IBSS_PUBLISHER?.orchestrateSystem) {
+        return window.IBSS_PUBLISHER.orchestrateSystem(system) || system;
+      }
+
+      return system;
+    }catch(error){
+      console.error("Models getSystem error:", error);
+      return null;
+    }
+  }
+
+  function buildFallbackTickerItems(system){
+    const items = [];
+    const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
+
+    tickerNews.forEach(item => {
+      const severity = String(item.severity || item.priority || "LOW").toLowerCase();
+      items.push({
+        level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
+        text: getLocalizedText(item.title)
+      });
+    });
+
+    if (!items.length) {
+      (system?.publisherFeed || system?.feed || []).slice(0, 8).forEach(line => {
+        items.push({
+          level:
+            system?.level === "HIGH"
+              ? "high"
+              : system?.level === "MEDIUM"
+                ? "medium"
+                : "low",
+          text: typeof line === "string" ? line : getLocalizedText(line?.text)
+        });
+      });
+    }
+
+    return items;
+  }
+
+  function renderFallbackTicker(system){
+    const track = document.getElementById("tickerTrack");
+    if (!track) return;
+
+    const items = buildFallbackTickerItems(system);
+    const duplicated = [];
+    const base = items.length ? items : [{ level: "low", text: t("noData") }];
+
+    for (let i = 0; i < 3; i += 1) duplicated.push(...base);
+
+    track.innerHTML = duplicated.map(item => `
+      <div class="ticker-item">
+        <span class="ticker-dot ${escapeHtml(item.level)}"></span>
+        <span class="ticker-item-text" dir="${lang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
+      </div>
+    `).join("");
+  }
+
+  function updateAudioBadge(){
+    const btn = document.getElementById("audioBtn");
+    if (!btn) return;
+    const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
+    btn.textContent = enabled ? t("audioButtonOff") : t("audioButtonOn");
+    btn.classList.toggle("active", enabled);
+  }
+
+  function applyLang(){
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      el.textContent = t(key);
+    });
+
+    document.getElementById("pageTitle").textContent = t("title");
+    document.getElementById("pageSub").textContent = t("sub");
+    document.getElementById("tickerTitle").textContent = t("ticker");
+    document.getElementById("architectureTitle").textContent = t("architectureTitle");
+    document.getElementById("publicationTitle").textContent = t("publicationTitle");
+    document.getElementById("publicationKicker").textContent = t("publicationKicker");
+    document.getElementById("snapshotTitle").textContent = t("snapshotTitle");
+    document.getElementById("metricsTitle").textContent = t("metricsTitle");
+    document.getElementById("metricsSub").textContent = t("metricsSub");
+    document.getElementById("feedTitle").textContent = t("feedTitle");
+    document.getElementById("modelsMatrixTitle").textContent = t("modelsMatrixTitle");
+    document.getElementById("architectureMapTitle").textContent = t("architectureMapTitle");
+    document.getElementById("miniSystemPressureLabel").textContent = t("miniSystemPressure");
+    document.getElementById("miniConfidenceLabel").textContent = t("miniConfidence");
+    document.getElementById("miniLiveSignalsLabel").textContent = t("miniLiveSignals");
+    document.getElementById("miniReportsLabel").textContent = t("miniReports");
+    document.getElementById("footerText").textContent = lang === "ar" ? "© 2026 IBSS — طبقة النماذج" : "© 2026 IBSS — Models Layer";
+
+    document.getElementById("btn-en").classList.toggle("active", lang==="en");
+    document.getElementById("btn-ar").classList.toggle("active", lang==="ar");
+
+    updateAudioBadge();
+  }
+
+  function renderMeta(system){
+    const sourceBadge = document.getElementById("sourceBadge");
+    const metricsBadge = document.getElementById("metricsBadge");
+    const audioBadge = document.getElementById("audioBadge");
+    const metaLine = document.getElementById("metaLine");
+
+    metaLine.textContent = `${t("sourceLabel")}: ${safeText(system?.source, "-")} | ${t("updatedAt")}: ${formatDateTime(system?.updatedAt)}`;
+
+    if(system?.source === "engine"){
+      sourceBadge.textContent = t("sourceLive");
+      sourceBadge.className = "badge live";
+    }else{
+      sourceBadge.textContent = t("sourceFallback");
+      sourceBadge.className = "badge fallback";
+    }
+
+    if(system?.metricsReference){
+      metricsBadge.textContent = t("metricsOn");
+      metricsBadge.className = "badge live";
+    }else{
+      metricsBadge.textContent = t("metricsOff");
+      metricsBadge.className = "badge fallback";
+    }
+
+    if(window.IBSS_AUDIO?.isEnabled?.()){
+      audioBadge.textContent = t("audioOn");
+      audioBadge.className = "badge live";
+    }else{
+      audioBadge.textContent = t("audioOff");
+      audioBadge.className = "badge fallback";
+    }
+  }
+
+  function renderAlert(system){
+    const alertBox = document.getElementById("alertBox");
+    alertBox.style.display = "block";
+
+    if (system?.level === "HIGH") {
+      alertBox.textContent = t("alertHigh");
+    } else if (system?.level === "MEDIUM") {
+      alertBox.textContent = t("alertMed");
+    } else {
+      alertBox.textContent = t("alertLow");
+    }
+  }
+
+  function renderMiniCards(system){
+    const reports = window.IBSS_ENGINE?.getReports?.() || [];
+    document.getElementById("miniSystemPressure").textContent = Number(system?.systemPressure || 0);
+    document.getElementById("miniSystemPressure").className = `mini-value ${scoreClass(Number(system?.systemPressure || 0))}`;
+
+    document.getElementById("miniConfidence").textContent = Number(system?.confidenceScore || 0);
+    document.getElementById("miniConfidence").className = `mini-value ${scoreClass(Number(system?.confidenceScore || 0))}`;
+
+    document.getElementById("miniLiveSignals").textContent = Number(system?.liveSignalsCount || 0);
+    document.getElementById("miniLiveSignals").className = `mini-value ${scoreClass(Number(system?.liveSignalsCount || 0) * 8)}`;
+
+    document.getElementById("miniReports").textContent = reports.length;
+    document.getElementById("miniReports").className = `mini-value gold`;
+  }
+
+  function renderFeature(system){
+    const topSignal = system?.topSignal || null;
+    const topCluster = system?.topCluster || null;
+    const topTheater = system?.topTheater || null;
+
+    document.getElementById("featureHeading").textContent =
+      topSignal ? getLocalizedText(topSignal.title) : "Σ-9X";
+
+    document.getElementById("featureText").textContent =
+      topSignal
+        ? `${getLocalizedText(topSignal.description)}`
+        : (lang === "ar"
+            ? "تعمل النماذج معًا داخل IBSS كبنية قرار مترابطة تبدأ من الإشارة ثم الملف ثم المسرح ثم القرار."
+            : "Models operate together inside IBSS as an integrated decision architecture moving from signal to file to theater to decision.");
+
+    const score = Number(topSignal?.balancedScore100 || 0);
+    document.getElementById("featureBadges").innerHTML = `
+      <span class="mini-badge ${scoreClass(score)}">${escapeHtml(t("signalScore"))}: ${score}</span>
+      <span class="mini-badge">${escapeHtml(t("topCluster"))}: ${escapeHtml(topCluster ? getLocalizedText(topCluster.name) : "-")}</span>
+      <span class="mini-badge">${escapeHtml(t("topTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</span>
+    `;
+  }
+
+  function renderPublication(system){
+    const publication =
+      system?.featuredPublication ||
+      system?.publicationContext?.featuredPublication ||
+      window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
+      null;
+
+    const heading = document.getElementById("publicationHeading");
+    const summary = document.getElementById("publicationSummary");
+    const meta = document.getElementById("publicationMeta");
+
+    if (!publication) {
+      heading.textContent = "-";
+      summary.textContent = t("noData");
+      meta.textContent = "-";
+      return;
+    }
+
+    heading.textContent = getLocalizedText(publication.title);
+    summary.textContent = getLocalizedText(publication.summary);
+    meta.textContent =
+      `${t("publicationType")}: ${safeText(publication.type, "-")} | ` +
+      `${t("publicationUnit")}: ${safeText(publication.unit, "-")} | ` +
+      `${t("publicationEdition")}: ${safeText(publication.edition, "-")}`;
+  }
+
+  function renderSnapshot(system){
+    const topTheater = system?.topTheater || null;
+    const topCluster = system?.topCluster || null;
+    const topSignal = system?.topSignal || null;
+    const box = document.getElementById("snapshotBox");
+
+    box.innerHTML = `
+      <div class="snapshot-item">
+        <strong>${escapeHtml(t("topTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
+        <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("systemStress")}: ${Number(topTheater.avgRisk || 0)} | ${t("band")}: ${getBandLabel(Number(topTheater.avgRisk || 0))}` : t("noData"))}</div>
+      </div>
+
+      <div class="snapshot-item">
+        <strong>${escapeHtml(t("topCluster"))}: ${escapeHtml(topCluster ? getLocalizedText(topCluster.name) : "-")}</strong>
+        <div class="snapshot-meta">${escapeHtml(topCluster ? `${t("systemStress")}: ${Number(topCluster.avgRisk || 0)} | ${t("band")}: ${getBandLabel(Number(topCluster.avgRisk || 0))}` : t("noData"))}</div>
+      </div>
+
+      <div class="snapshot-item">
+        <strong>${escapeHtml(t("topSignal"))}: ${escapeHtml(topSignal ? getLocalizedText(topSignal.title) : "-")}</strong>
+        <div class="snapshot-meta">${escapeHtml(topSignal ? `${t("signalScore")}: ${Number(topSignal.balancedScore100 || 0)} | ${t("band")}: ${getBandLabel(Number(topSignal.balancedScore100 || 0))}` : t("noData"))}</div>
+      </div>
+
+      <div class="snapshot-item">
+        <strong>${escapeHtml(t("reportsCount"))}: ${escapeHtml(String((window.IBSS_ENGINE?.getReports?.() || []).length))}</strong>
+        <div class="snapshot-meta">${escapeHtml(`${t("decision")}: ${safeText(system?.decision, "-")} | ${t("mode")}: ${safeText(system?.mode, "-")}`)}</div>
+      </div>
+    `;
+  }
+
+  function renderMetrics(system){
+    const box = document.getElementById("metricsBox");
+    const topSignal = system?.topSignal || null;
+    const topCluster = system?.topCluster || null;
+    const topTheater = system?.topTheater || null;
+
+    const rows = [
+      { label: t("systemStress"), value: Number(system?.systemPressure || 0) },
+      { label: t("confidence"), value: Number(system?.confidenceScore || 0) },
+      { label: t("topTheater"), value: Number(topTheater?.avgRisk || 0) },
+      { label: t("topCluster"), value: Number(topCluster?.avgRisk || 0) },
+      { label: t("signalScore"), value: Number(topSignal?.balancedScore100 || 0) }
+    ];
+
+    box.innerHTML = rows.map(row => `
+      <div class="metric-row">
+        <div>
+          <div class="metric-name">${escapeHtml(row.label)}</div>
+          <div class="metric-sub">${escapeHtml(`${t("band")}: ${getBandLabel(row.value)}`)}</div>
+        </div>
+        <div class="metric-score ${scoreClass(row.value)}">${row.value}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderFeed(system){
+    const box = document.getElementById("feedBox");
+    const lines = Array.isArray(system?.publisherFeed)
+      ? system.publisherFeed.slice(0, 8)
+      : Array.isArray(system?.feed)
+        ? system.feed.slice(0, 8)
+        : [];
+
+    if (!lines.length) {
+      box.innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
+      return;
+    }
+
+    box.innerHTML = lines.map(line => {
+      const text = typeof line === "string" ? line : getLocalizedText(line?.text);
+      return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
+    }).join("");
+  }
+
+  function renderModelsGrid(system){
+    const grid = document.getElementById("modelsGrid");
+    const pressure = Number(system?.systemPressure || 0);
+    const confidence = Number(system?.confidenceScore || 0);
+    const liveSignals = Number(system?.liveSignalsCount || 0);
+
+    grid.innerHTML = MODELS.map((model, index) => {
+      const influence = index === 0 ? pressure : index === 1 ? confidence : index === 2 ? Math.round((pressure + confidence) / 2) : liveSignals * 10;
+      return `
+        <div class="model-card">
+          <div class="model-code">${escapeHtml(model.code)}</div>
+          <div class="model-title">${escapeHtml(getLocalizedText(model.title))}</div>
+          <div class="model-text">${escapeHtml(getLocalizedText(model.text))}</div>
+
+          <div class="model-metrics">
+            <div class="model-metric">
+              <span>${escapeHtml(t("role"))}</span>
+              <strong>${escapeHtml(getLocalizedText(model.role))}</strong>
+            </div>
+            <div class="model-metric">
+              <span>${escapeHtml(t("scope"))}</span>
+              <strong>${escapeHtml(getLocalizedText(model.scope))}</strong>
+            </div>
+            <div class="model-metric">
+              <span>${escapeHtml(t("layer"))}</span>
+              <strong>${escapeHtml(getLocalizedText(model.layer))}</strong>
+            </div>
+            <div class="model-metric">
+              <span>${escapeHtml(t("influence"))}</span>
+              <strong>${Math.max(0, Math.min(100, influence))}</strong>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderArchitectureMap(system){
+    const box = document.getElementById("archBox");
+    const topSignal = system?.topSignal || null;
+    const topCluster = system?.topCluster || null;
+    const topTheater = system?.topTheater || null;
+
+    const rows = [
+      {
+        name: lang === "ar" ? "طبقة الإشارة" : "Signal Layer",
+        sub: topSignal ? getLocalizedText(topSignal.title) : t("noData"),
+        score: Number(topSignal?.balancedScore100 || 0)
+      },
+      {
+        name: lang === "ar" ? "طبقة الملف" : "Strategic File Layer",
+        sub: topCluster ? getLocalizedText(topCluster.name) : t("noData"),
+        score: Number(topCluster?.avgRisk || 0)
+      },
+      {
+        name: lang === "ar" ? "طبقة المسرح" : "Theater Layer",
+        sub: topTheater ? getLocalizedText(topTheater.name) : t("noData"),
+        score: Number(topTheater?.avgRisk || 0)
+      },
+      {
+        name: lang === "ar" ? "طبقة القرار" : "Decision Layer",
+        sub: `${t("decision")}: ${safeText(system?.decision, "-")} | ${t("mode")}: ${safeText(system?.mode, "-")}`,
+        score: Number(system?.systemPressure || 0)
+      }
+    ];
+
+    box.innerHTML = rows.map(row => `
+      <div class="arch-row">
+        <div>
+          <div class="arch-name">${escapeHtml(row.name)}</div>
+          <div class="arch-sub">${escapeHtml(row.sub)}</div>
+        </div>
+        <div class="arch-score ${scoreClass(row.score)}">${row.score}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderTicker(system){
+    const track = document.getElementById("tickerTrack");
+    if (!track) return;
+    if (!track.children.length || !track.textContent.trim()) {
+      renderFallbackTicker(system);
+    }
+  }
+
+  function renderPage(system){
+    if (!system) return;
+    currentSystem = system;
+
+    applyLang();
+    renderMeta(system);
+    renderAlert(system);
+    renderMiniCards(system);
+    renderFeature(system);
+    renderPublication(system);
+    renderSnapshot(system);
+    renderMetrics(system);
+    renderFeed(system);
+    renderModelsGrid(system);
+    renderArchitectureMap(system);
+    renderTicker(system);
+  }
+
+  function start(){
+    if (!window.IBSS_RUNTIME?.start) {
+      const system = getSystem();
+      if (system) renderPage(system);
+      return;
+    }
+
+    window.IBSS_RUNTIME.start({
+      pageId: "models",
+      lang,
+      tickerTrackEl: document.getElementById("tickerTrack"),
+      refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+      systemProvider: getSystem,
+      afterRender: function(system){
+        renderPage(system);
+      }
+    });
+
+    setTimeout(() => {
+      const track = document.getElementById("tickerTrack");
+      if (!track || !track.textContent.trim()) {
+        const system = getSystem();
+        if (system) renderPage(system);
+      }
+    }, 800);
+  }
+
+  document.getElementById("btn-en").onclick=()=>{
+    lang="en";
+    localStorage.setItem("ibss_lang","en");
+    if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(lang);
+    if (currentSystem) renderPage(currentSystem);
+  };
+
+  document.getElementById("btn-ar").onclick=()=>{
+    lang="ar";
+    localStorage.setItem("ibss_lang","ar");
+    if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(lang);
+    if (currentSystem) renderPage(currentSystem);
+  };
+
+  document.getElementById("audioBtn").onclick=()=>{
+    window.IBSS_AUDIO?.toggle?.();
+    updateAudioBadge();
+    if (currentSystem) renderMeta(currentSystem);
+  };
+
+  window.addEventListener("load", start);
+})();
 </script>
 
 </body>
