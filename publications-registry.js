@@ -15,9 +15,28 @@ window.IBSS_PUBLICATIONS = (function () {
       getByType: function () { return []; },
       getByCountry: function () { return []; },
       getByRegion: function () { return []; },
+      getByDomain: function () { return []; },
       getFeatured: function () { return []; },
       getPinned: function () { return []; },
-      getRegistryState: function () { return { total: 0, published: 0, drafts: 0 }; }
+      getCanonical: function () { return []; },
+      getRegistryState: function () {
+        return {
+          total: 0,
+          published: 0,
+          drafts: 0,
+          invalid: 0,
+          invalidItems: []
+        };
+      },
+      debugPrintRegistryState: function () {
+        return {
+          total: 0,
+          published: 0,
+          drafts: 0,
+          invalid: 0,
+          invalidItems: []
+        };
+      }
     };
   }
 
@@ -30,7 +49,131 @@ window.IBSS_PUBLICATIONS = (function () {
     validatePublication
   } = Factory;
 
-  const REGISTRY = [
+  /* =========================================
+     Utilities
+  ========================================= */
+
+  function safeText(value, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+  }
+
+  function asArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function normalizeText(value) {
+    return safeText(String(value || ""))
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getLocalizedText(value, lang = "en") {
+    if (!value) return "";
+    if (typeof value === "string" || typeof value === "number") return String(value);
+
+    return (
+      value?.[lang] ||
+      value?.en ||
+      value?.ar ||
+      value?.name ||
+      value?.title ||
+      value?.label ||
+      value?.text ||
+      ""
+    );
+  }
+
+  function clone(value) {
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      console.error("IBSS_PUBLICATIONS clone error:", error);
+      return null;
+    }
+  }
+
+  function sortRegistry(list) {
+    return asArray(list).slice().sort((a, b) => {
+      const aPinned = a?.meta?.pinned ? 1 : 0;
+      const bPinned = b?.meta?.pinned ? 1 : 0;
+      if (bPinned !== aPinned) return bPinned - aPinned;
+
+      const aFeatured = a?.meta?.featured ? 1 : 0;
+      const bFeatured = b?.meta?.featured ? 1 : 0;
+      if (bFeatured !== aFeatured) return bFeatured - aFeatured;
+
+      const aCanonical = a?.meta?.canonical ? 1 : 0;
+      const bCanonical = b?.meta?.canonical ? 1 : 0;
+      if (bCanonical !== aCanonical) return bCanonical - aCanonical;
+
+      const aTime = new Date(a?.publishedAt || a?.updatedAt || 0).getTime();
+      const bTime = new Date(b?.publishedAt || b?.updatedAt || 0).getTime();
+      return bTime - aTime;
+    });
+  }
+
+  function buildDedupKey(item) {
+    return [
+      normalizeText(item?.id || ""),
+      normalizeText(item?.slug || ""),
+      normalizeText(getLocalizedText(item?.title, "en")),
+      normalizeText(item?.region || ""),
+      normalizeText(item?.country || ""),
+      normalizeText(item?.type || "")
+    ].join("|");
+  }
+
+  function mergeRegistries(staticItems, intakeItems) {
+    const map = new Map();
+
+    sortRegistry([...asArray(staticItems), ...asArray(intakeItems)]).forEach(item => {
+      const primaryKey = safeText(item?.id, "");
+      const secondaryKey = buildDedupKey(item);
+
+      if (primaryKey && !map.has(primaryKey)) {
+        map.set(primaryKey, item);
+        return;
+      }
+
+      if (!primaryKey && !map.has(secondaryKey)) {
+        map.set(secondaryKey, item);
+        return;
+      }
+
+      if (primaryKey && map.has(primaryKey)) {
+        const existing = map.get(primaryKey);
+        const existingTime = new Date(existing?.updatedAt || existing?.publishedAt || 0).getTime();
+        const incomingTime = new Date(item?.updatedAt || item?.publishedAt || 0).getTime();
+
+        if (incomingTime >= existingTime) {
+          map.set(primaryKey, item);
+        }
+        return;
+      }
+
+      if (map.has(secondaryKey)) {
+        const existing = map.get(secondaryKey);
+        const existingTime = new Date(existing?.updatedAt || existing?.publishedAt || 0).getTime();
+        const incomingTime = new Date(item?.updatedAt || item?.publishedAt || 0).getTime();
+
+        if (incomingTime >= existingTime) {
+          map.set(secondaryKey, item);
+        }
+        return;
+      }
+
+      map.set(secondaryKey, item);
+    });
+
+    return sortRegistry([...map.values()]);
+  }
+
+  /* =========================================
+     Static Registry
+  ========================================= */
+
+  const STATIC_REGISTRY = [
     createPolicyPaper({
       id: "pp-gaza-monopoly-of-force-2026-04",
       slug: "gaza-after-war-monopoly-of-force-day-after",
@@ -178,15 +321,33 @@ Policy Paper Edition`
     })
   ];
 
+  /* =========================================
+     Intake Registry
+  ========================================= */
+
+  function getIntakePublications() {
+    try {
+      if (window.IBSS_PUBLICATION_INTAKE?.getAll) {
+        return asArray(window.IBSS_PUBLICATION_INTAKE.getAll())
+          .map(item => createPublication(item));
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLICATIONS intake read error:", error);
+    }
+
+    return [];
+  }
+
+  function getMergedRegistry() {
+    return mergeRegistries(STATIC_REGISTRY, getIntakePublications());
+  }
+
+  /* =========================================
+     Public Readers
+  ========================================= */
+
   function getAll() {
-    return [...REGISTRY].sort((a, b) => {
-      const aPinned = a?.meta?.pinned ? 1 : 0;
-      const bPinned = b?.meta?.pinned ? 1 : 0;
-
-      if (bPinned !== aPinned) return bPinned - aPinned;
-
-      return new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime();
-    });
+    return clone(getMergedRegistry()) || [];
   }
 
   function getPublished() {
@@ -202,7 +363,8 @@ Policy Paper Edition`
   }
 
   function getBySlug(slug) {
-    return getAll().find(item => item.slug === slug) || null;
+    const target = normalizeText(slug);
+    return getAll().find(item => normalizeText(item.slug) === target) || null;
   }
 
   function getLatest() {
@@ -210,22 +372,23 @@ Policy Paper Edition`
   }
 
   function getByType(type) {
-    return getPublished().filter(item => item.type === type);
+    const target = normalizeText(type);
+    return getPublished().filter(item => normalizeText(item.type) === target);
   }
 
   function getByCountry(country) {
-    const target = String(country || "").toLowerCase().trim();
-    return getPublished().filter(item => String(item.country || "").toLowerCase().trim() === target);
+    const target = normalizeText(country);
+    return getPublished().filter(item => normalizeText(item.country) === target);
   }
 
   function getByRegion(region) {
-    const target = String(region || "").toLowerCase().trim();
-    return getPublished().filter(item => String(item.region || "").toLowerCase().trim() === target);
+    const target = normalizeText(region);
+    return getPublished().filter(item => normalizeText(item.region) === target);
   }
 
   function getByDomain(domain) {
-    const target = String(domain || "").toLowerCase().trim();
-    return getPublished().filter(item => String(item.domain || "").toLowerCase().trim() === target);
+    const target = normalizeText(domain);
+    return getPublished().filter(item => normalizeText(item.domain) === target);
   }
 
   function getFeatured() {
@@ -234,6 +397,10 @@ Policy Paper Edition`
 
   function getPinned() {
     return getPublished().filter(item => !!item?.meta?.pinned);
+  }
+
+  function getCanonical() {
+    return getPublished().filter(item => !!item?.meta?.canonical);
   }
 
   function getRegistryState() {
@@ -263,6 +430,20 @@ Policy Paper Edition`
     return state;
   }
 
+  /* =========================================
+     Live Sync Hook
+  ========================================= */
+
+  window.addEventListener("ibss:publication-intake-updated", function () {
+    try {
+      if (window.IBSS_CONTENT_API?.reloadFromIntake) {
+        window.IBSS_CONTENT_API.reloadFromIntake();
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLICATIONS live sync error:", error);
+    }
+  });
+
   return {
     getAll,
     getPublished,
@@ -276,6 +457,7 @@ Policy Paper Edition`
     getByDomain,
     getFeatured,
     getPinned,
+    getCanonical,
     getRegistryState,
     debugPrintRegistryState
   };
