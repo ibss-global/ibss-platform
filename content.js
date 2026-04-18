@@ -1,5 +1,5 @@
 // IBSS CONTENT REGISTRY — Unified Sovereign Content Layer
-// Version: v3.0 Engine-Integrated Clean Edition
+// Version: v4.0 Intake-Integrated Dynamic Edition
 
 (function () {
   "use strict";
@@ -33,7 +33,12 @@
   }
 
   function clone(value) {
-    return JSON.parse(JSON.stringify(value));
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      console.error("IBSS_CONTENT clone error:", error);
+      return null;
+    }
   }
 
   function normalizeLocalized(value, fallback = "-") {
@@ -91,9 +96,10 @@
       t === "brief" ||
       t === "news" ||
       t === "policy_paper" ||
-      t === "analysis"
+      t === "analysis" ||
+      t === "paper"
     ) {
-      return t;
+      return t === "paper" ? "study" : t;
     }
 
     return "report";
@@ -128,14 +134,6 @@
       comments: safeNumber(engagement?.comments, 0),
       shares: safeNumber(engagement?.shares, 0)
     };
-  }
-
-  function titleCase(text) {
-    return safeText(text)
-      .split(" ")
-      .filter(Boolean)
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
   }
 
   /* =========================================
@@ -234,7 +232,7 @@
     };
   }
 
-  function normalizeLegacyContentItem(item) {
+  function normalizeContentItem(item, sourcePlatformFallback = "internal") {
     return {
       id: safeText(item?.id, `CNT-${Date.now()}`),
 
@@ -252,46 +250,11 @@
       country: normalizeCountryAlias(item?.country || item?.countryId || item?.region || "global"),
       countryId: safeText(item?.countryId, ""),
       signalIds: normalizeStringArray(item?.signalIds),
+      clusterKeys: normalizeStringArray(item?.clusterKeys),
+      theaterKeys: normalizeStringArray(item?.theaterKeys),
 
       priority: normalizePriority(item?.priority),
-      sourcePlatform: safeText(item?.sourcePlatform, "internal"),
-      sourceUrl: safeText(item?.sourceUrl, ""),
-      publishedAt: normalizeDate(item?.publishedAt),
-
-      tags: normalizeTags(item?.tags),
-      author: safeText(item?.author, "IBSS"),
-      authors: normalizeStringArray(item?.authors?.length ? item.authors : [item?.author || "IBSS"]),
-
-      unit: safeText(item?.unit, "SSU"),
-      metrics: normalizeMetrics(item?.metrics),
-
-      engagement: normalizeEngagement(item?.engagement),
-      links: asArray(item?.links),
-      meta: normalizeContentMeta(item?.meta)
-    };
-  }
-
-  function normalizePublicationItem(item) {
-    return {
-      id: safeText(item?.id, `PUB-${Date.now()}`),
-
-      title: normalizeLocalized(item?.title, "Untitled Publication"),
-      summary: normalizeLocalized(item?.summary, "No summary available."),
-      body: normalizeLocalized(item?.body, "No body available."),
-
-      type: normalizeType(item?.type),
-      classification: safeText(item?.classification, normalizeType(item?.type)),
-      edition: safeText(item?.edition, "Publication Edition"),
-      status: normalizeStatus(item?.status),
-
-      domain: normalizeDomain(item?.domain || "general"),
-      region: normalizeCountryAlias(item?.region || item?.country || item?.countryId || "global"),
-      country: normalizeCountryAlias(item?.country || item?.countryId || item?.region || "global"),
-      countryId: safeText(item?.countryId, ""),
-      signalIds: normalizeStringArray(item?.signalIds),
-
-      priority: normalizePriority(item?.priority),
-      sourcePlatform: safeText(item?.sourcePlatform, "ibss_publications"),
+      sourcePlatform: safeText(item?.sourcePlatform, sourcePlatformFallback),
       sourceUrl: safeText(item?.sourceUrl, ""),
       publishedAt: normalizeDate(item?.publishedAt),
 
@@ -306,6 +269,18 @@
       links: asArray(item?.links),
       meta: normalizeContentMeta(item?.meta)
     };
+  }
+
+  function normalizeLegacyContentItem(item) {
+    return normalizeContentItem(item, "internal");
+  }
+
+  function normalizePublicationItem(item) {
+    return normalizeContentItem(item, "ibss_publications");
+  }
+
+  function normalizeIntakePublicationItem(item) {
+    return normalizeContentItem(item, "ibss_intake");
   }
 
   /* =========================================
@@ -478,13 +453,32 @@
   ].map(normalizeLegacyContentItem);
 
   /* =========================================
-     External Publications Integration
+     Dynamic External Sources
   ========================================= */
 
-  const PUBLICATIONS_CONTENT =
-    globalThis.IBSS_PUBLICATIONS && typeof globalThis.IBSS_PUBLICATIONS.getAll === "function"
-      ? asArray(globalThis.IBSS_PUBLICATIONS.getAll()).map(normalizePublicationItem)
-      : [];
+  function getStaticPublications() {
+    try {
+      if (globalThis.IBSS_PUBLICATIONS && typeof globalThis.IBSS_PUBLICATIONS.getAll === "function") {
+        return asArray(globalThis.IBSS_PUBLICATIONS.getAll()).map(normalizePublicationItem);
+      }
+    } catch (error) {
+      console.error("IBSS_CONTENT getStaticPublications error:", error);
+    }
+
+    return [];
+  }
+
+  function getIntakePublications() {
+    try {
+      if (globalThis.IBSS_PUBLICATION_INTAKE && typeof globalThis.IBSS_PUBLICATION_INTAKE.getAll === "function") {
+        return asArray(globalThis.IBSS_PUBLICATION_INTAKE.getAll()).map(normalizeIntakePublicationItem);
+      }
+    } catch (error) {
+      console.error("IBSS_CONTENT getIntakePublications error:", error);
+    }
+
+    return [];
+  }
 
   function buildContentKey(item) {
     return safeText(
@@ -493,10 +487,10 @@
     );
   }
 
-  function mergeContent(baseContent, publications) {
+  function mergeContent(baseContent, staticPublications, intakePublications) {
     const map = new Map();
 
-    [...asArray(baseContent), ...asArray(publications)].forEach(item => {
+    [...asArray(baseContent), ...asArray(staticPublications), ...asArray(intakePublications)].forEach(item => {
       const key = buildContentKey(item);
 
       if (!map.has(key)) {
@@ -505,10 +499,10 @@
       }
 
       const existing = map.get(key);
-      const existingPublished = new Date(existing?.publishedAt || 0).getTime();
-      const currentPublished = new Date(item?.publishedAt || 0).getTime();
+      const existingUpdated = new Date(existing?.updatedAt || existing?.publishedAt || 0).getTime();
+      const currentUpdated = new Date(item?.updatedAt || item?.publishedAt || 0).getTime();
 
-      if (currentPublished > existingPublished) {
+      if (currentUpdated >= existingUpdated) {
         map.set(key, item);
       }
     });
@@ -516,19 +510,27 @@
     return [...map.values()].sort((a, b) => {
       const aPinned = a?.meta?.pinned ? 1 : 0;
       const bPinned = b?.meta?.pinned ? 1 : 0;
-
       if (bPinned !== aPinned) return bPinned - aPinned;
 
       const aFeatured = a?.meta?.featured ? 1 : 0;
       const bFeatured = b?.meta?.featured ? 1 : 0;
-
       if (bFeatured !== aFeatured) return bFeatured - aFeatured;
 
-      return new Date(b?.publishedAt || 0).getTime() - new Date(a?.publishedAt || 0).getTime();
+      const aCanonical = a?.meta?.canonical ? 1 : 0;
+      const bCanonical = b?.meta?.canonical ? 1 : 0;
+      if (bCanonical !== aCanonical) return bCanonical - aCanonical;
+
+      return new Date(b?.publishedAt || b?.updatedAt || 0).getTime() - new Date(a?.publishedAt || a?.updatedAt || 0).getTime();
     });
   }
 
-  const UNIFIED_CONTENT = mergeContent(BASE_CONTENT, PUBLICATIONS_CONTENT);
+  function buildUnifiedContent() {
+    return mergeContent(
+      BASE_CONTENT,
+      getStaticPublications(),
+      getIntakePublications()
+    );
+  }
 
   function buildIndex(list) {
     return asArray(list).reduce((acc, item) => {
@@ -537,12 +539,19 @@
     }, {});
   }
 
+  function refreshGlobals() {
+    const unified = buildUnifiedContent();
+    globalThis.IBSS_CONTENT = unified;
+    globalThis.IBSS_CONTENT_INDEX = buildIndex(unified);
+    return unified;
+  }
+
   /* =========================================
      Filters
   ========================================= */
 
   function getAll() {
-    return clone(UNIFIED_CONTENT);
+    return clone(refreshGlobals()) || [];
   }
 
   function getPublished() {
@@ -550,7 +559,7 @@
   }
 
   function getPending() {
-    return getAll().filter(item => item.status === "pending");
+    return getAll().filter(item => item.status === "pending" || item.status === "draft");
   }
 
   function getArchived() {
@@ -571,7 +580,13 @@
     return getAll().filter(item => {
       const itemCountry = normalizeCountryAlias(item.country);
       const itemCountryId = normalizeCountryAlias(item.countryId);
-      return aliases.includes(itemCountry) || aliases.includes(itemCountryId);
+      const itemRegion = normalizeCountryAlias(item.region);
+
+      return (
+        aliases.includes(itemCountry) ||
+        aliases.includes(itemCountryId) ||
+        aliases.includes(itemRegion)
+      );
     });
   }
 
@@ -597,14 +612,20 @@
   }
 
   function getContentState() {
+    const unified = getAll();
+    const staticPublications = getStaticPublications();
+    const intakePublications = getIntakePublications();
+
     return {
-      total: UNIFIED_CONTENT.length,
-      published: getPublished().length,
-      pending: getPending().length,
-      archived: getArchived().length,
-      featured: getFeatured().length,
-      pinned: getPinned().length,
-      publicationsIntegrated: PUBLICATIONS_CONTENT.length
+      total: unified.length,
+      published: unified.filter(item => item.status === "published").length,
+      pending: unified.filter(item => item.status === "pending" || item.status === "draft").length,
+      archived: unified.filter(item => item.status === "archived").length,
+      featured: unified.filter(item => !!item?.meta?.featured).length,
+      pinned: unified.filter(item => !!item?.meta?.pinned).length,
+      canonical: unified.filter(item => !!item?.meta?.canonical).length,
+      staticPublicationsIntegrated: staticPublications.length,
+      intakePublicationsIntegrated: intakePublications.length
     };
   }
 
@@ -739,8 +760,13 @@
     return getEngineEligibleContent().filter(item => {
       const itemCountry = normalizeCountryAlias(item.country);
       const itemCountryId = normalizeCountryAlias(item.countryId);
+      const itemRegion = normalizeCountryAlias(item.region);
 
-      return aliases.includes(itemCountry) || aliases.includes(itemCountryId);
+      return (
+        aliases.includes(itemCountry) ||
+        aliases.includes(itemCountryId) ||
+        aliases.includes(itemRegion)
+      );
     });
   }
 
@@ -769,18 +795,18 @@
   function getLatestFeaturedContent() {
     const featured = getFeatured()
       .filter(item => item.status === "published")
-      .sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime());
+      .sort((a, b) => new Date(b.publishedAt || b.updatedAt || 0).getTime() - new Date(a.publishedAt || a.updatedAt || 0).getTime());
 
     if (featured.length) return clone(featured[0]);
 
     const pinned = getPinned()
       .filter(item => item.status === "published")
-      .sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime());
+      .sort((a, b) => new Date(b.publishedAt || b.updatedAt || 0).getTime() - new Date(a.publishedAt || a.updatedAt || 0).getTime());
 
     if (pinned.length) return clone(pinned[0]);
 
     const latestPolicyLike = getEngineEligibleContent()
-      .sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime());
+      .sort((a, b) => new Date(b.publishedAt || b.updatedAt || 0).getTime() - new Date(a.publishedAt || a.updatedAt || 0).getTime());
 
     return latestPolicyLike[0] ? clone(latestPolicyLike[0]) : null;
   }
@@ -817,11 +843,18 @@
   }
 
   /* =========================================
-     Exports
+     Intake Reload Hook
   ========================================= */
 
-  globalThis.IBSS_CONTENT = UNIFIED_CONTENT;
-  globalThis.IBSS_CONTENT_INDEX = buildIndex(UNIFIED_CONTENT);
+  function reloadFromIntake() {
+    return refreshGlobals();
+  }
+
+  /* =========================================
+     Global Exports
+  ========================================= */
+
+  refreshGlobals();
 
   globalThis.IBSS_CONTENT_UTILS = {
     getAll,
@@ -860,6 +893,11 @@
     computeContentImpact,
     getPublicationPreviewList,
     buildPreviewCard,
-    getContentState
+    getContentState,
+    reloadFromIntake
   };
+
+  window.addEventListener("ibss:publication-intake-updated", function () {
+    reloadFromIntake();
+  });
 })();
