@@ -38,7 +38,7 @@
     body{min-height:100vh}
 
     .wrap{
-      width:min(1220px,92%);
+      width:min(1180px,92%);
       margin:auto;
       padding:20px 0 42px;
     }
@@ -209,13 +209,6 @@
       margin-top:18px;
     }
 
-    .grid-2{
-      display:grid;
-      grid-template-columns:1.08fr .92fr;
-      gap:18px;
-      margin-top:18px;
-    }
-
     .card{
       background:var(--panel);
       border:1px solid var(--soft-border);
@@ -254,10 +247,7 @@
     .country-row,
     .metric-row,
     .snapshot-item,
-    .ticker-item,
-    .pub-box,
-    .pub-preview,
-    .pub-context-item{
+    .ticker-item{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -319,7 +309,7 @@
 
     .signal-box h3{
       margin:0 0 10px;
-      font-size:28px;
+      font-size:30px;
       color:#fff;
       line-height:1.35;
     }
@@ -429,8 +419,7 @@
     .scenario-box,
     .country-box,
     .metrics-box,
-    .snapshot-box,
-    .pub-context-box{
+    .snapshot-box{
       display:grid;
       gap:12px;
     }
@@ -476,7 +465,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      max-width:240px;
+      max-width:230px;
     }
 
     .legend-sub{
@@ -529,8 +518,7 @@
     .scenario-row,
     .country-row,
     .metric-row,
-    .snapshot-item,
-    .pub-context-item{
+    .snapshot-item{
       padding:13px 15px;
       color:#e3e3e3;
       line-height:1.7;
@@ -556,8 +544,7 @@
 
     .snapshot-meta,
     .country-meta,
-    .metric-sub,
-    .pub-context-meta{
+    .metric-sub{
       color:var(--muted);
       font-size:12px;
       line-height:1.7;
@@ -585,16 +572,10 @@
       align-items:center;
       gap:14px;
       padding:14px 16px;
-      overflow-x:auto;
-      overflow-y:hidden;
-      scrollbar-width:none;
-      direction:ltr;
       white-space:nowrap;
-      scroll-behavior:auto;
+      will-change:transform;
       min-height:72px;
     }
-
-    .ticker-track::-webkit-scrollbar{display:none}
 
     .ticker-item{
       flex:0 0 auto;
@@ -628,63 +609,6 @@
     .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
     .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
     .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
-
-    .pub-box{
-      border-color:rgba(212,175,55,.24);
-      padding:18px;
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 35%),
-        var(--panel2);
-    }
-
-    .pub-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:12px;
-      flex-wrap:wrap;
-    }
-
-    .pub-title{
-      margin:0;
-      font-size:28px;
-      line-height:1.5;
-      color:#fff;
-      font-weight:900;
-    }
-
-    .pub-text{
-      color:#ddd;
-      line-height:1.9;
-      font-size:15px;
-      margin:0;
-    }
-
-    .pub-preview{
-      margin-top:14px;
-      padding:14px 16px;
-    }
-
-    .pub-preview-label{
-      font-size:12px;
-      color:#8f8f8f;
-      margin-bottom:8px;
-    }
-
-    .pub-preview-text{
-      font-size:14px;
-      color:#f0f0f0;
-      line-height:1.85;
-      white-space:pre-wrap;
-    }
-
-    .pub-context-item strong{
-      display:block;
-      color:#fff;
-      margin-bottom:6px;
-      font-size:15px;
-    }
 
     .publisher-actions{
       display:flex;
@@ -750,8 +674,7 @@
     html[dir="rtl"] .legend-item,
     html[dir="rtl"] .scenario-row,
     html[dir="rtl"] .country-row,
-    html[dir="rtl"] .metric-row,
-    html[dir="rtl"] .pub-top{
+    html[dir="rtl"] .metric-row{
       direction:rtl;
     }
 
@@ -764,10 +687,9 @@
 
     html[dir="rtl"] .legend-right{text-align:left}
 
-    @media (max-width:1040px){
+    @media (max-width:980px){
       .grid{grid-template-columns:1fr}
       .grid-3{grid-template-columns:1fr}
-      .grid-2{grid-template-columns:1fr}
     }
 
     @media (max-width:640px){
@@ -797,7 +719,6 @@
       .legend-right{text-align:left}
       .publisher-actions{flex-direction:column}
       .state{grid-template-columns:1fr}
-      .pub-title{font-size:24px}
     }
   </style>
 </head>
@@ -908,18 +829,6 @@
       </div>
     </div>
 
-    <div class="grid-2">
-      <div class="card">
-        <div class="title" id="featuredPubTitle">Featured Publication</div>
-        <div id="featuredPublicationBox" class="pub-box"></div>
-      </div>
-
-      <div class="card">
-        <div class="title" id="publicationContextTitle">Publication Context</div>
-        <div id="publicationContextBox" class="pub-context-box"></div>
-      </div>
-    </div>
-
     <div class="grid-3">
       <div class="card">
         <div class="title" id="snapshotTitle">Strategic Snapshot</div>
@@ -968,17 +877,16 @@
       <div class="publisher-actions">
         <button id="btnGenerateSignalPost" type="button" class="btn-primary">Generate Top Signal Post</button>
         <button id="btnGenerateBriefPost" type="button" class="btn-secondary">Generate Strategic Brief</button>
-        <button id="btnGeneratePublicationPost" type="button" class="btn-secondary">Generate Featured Publication Post</button>
+        <button id="btnGeneratePublicationPost" type="button" class="btn-secondary">Generate Featured Publication</button>
         <button id="btnCopyDraftPost" type="button" class="btn-secondary">Copy Draft</button>
       </div>
     </div>
 
-    <div class="footer">© 2026 IBSS — Dashboard Integrated Layer</div>
+    <div class="footer">© 2026 IBSS — Dashboard Layer</div>
   </div>
 
   <script src="data.js"></script>
   <script src="sources.js"></script>
-  <script src="content.js"></script>
   <script src="ingestion.js"></script>
   <script src="news.js"></script>
   <script src="analysis.js"></script>
@@ -1003,6 +911,7 @@
           nav_countries: "Countries",
           nav_models: "Models",
           nav_about: "About",
+
           title: "IBSS Dashboard",
           sub: "Unified Sovereign Metrics & Decision Layer",
           ticker: "Live Intelligence Strip",
@@ -1020,13 +929,7 @@
           metrics: "Unified Metrics",
           metricsSub: "SSI / CRI / Signal / Cluster / Theater",
           publisher: "Publishing Console",
-          featuredPublication: "Featured Publication",
-          publicationContext: "Publication Context",
-          publicationPreview: "Publication Preview",
-          linkedSignal: "Signal-linked study",
-          linkedCluster: "Strategic-file-linked study",
-          linkedCountry: "Country-linked study",
-          noLinkedPublication: "No linked publication available.",
+
           levelHigh: "HIGH",
           levelMed: "MEDIUM",
           levelLow: "LOW",
@@ -1036,12 +939,15 @@
           modeHigh: "ACTIVE RESPONSE",
           modeMed: "PREPARATION",
           modeLow: "MONITORING",
+
           noteHigh: "Critical composite pressure detected. Immediate sovereign readiness required.",
           noteMedium: "Structured pressure detected. Maintain preparation posture and monitor transition bands.",
           noteLow: "System remains inside low-stress monitoring conditions.",
+
           alertHigh: "⚠ HIGH ESCALATION — COMPOSITE SYSTEM IN ACTIVE RESPONSE BAND",
           alertMed: "⚠ STRUCTURED PRESSURE — COMPOSITE SYSTEM IN PREPARATION BAND",
           alertLow: "✓ LOW PRESSURE — COMPOSITE SYSTEM IN MONITORING BAND",
+
           scenarioA: "Scenario A",
           scenarioB: "Scenario B",
           scenarioC: "Scenario C",
@@ -1053,15 +959,19 @@
           noData: "No data available.",
           noFeed: "No live feed available.",
           newsIntake: "Live News Intake",
-          sourceLive: "SOURCE — ENGINE",
-          sourceFallback: "SOURCE — FALLBACK",
+
+          sourceLive: "SOURCE — ORCHESTRATED",
+          sourceFallback: "SOURCE — LIMITED",
           metricsOn: "METRICS — INTEGRATED",
           metricsOff: "METRICS — OFF",
+
           snapshotTheater: "Top Theater",
           snapshotCluster: "Top Strategic File",
           snapshotCountry: "Top Country Risk",
+
           latestDraftType: "Latest Draft Type",
           createdAt: "Created At",
+
           signalScore: "Signal Score",
           clusterRisk: "Strategic File Risk",
           theaterRisk: "Theater Risk",
@@ -1069,22 +979,16 @@
           systemStress: "System Stress",
           band: "Band",
           confidence: "Confidence",
+
           audioOn: "AUDIO — ON",
           audioOff: "AUDIO — OFF",
           audioButtonOn: "AUDIO ON",
           audioButtonOff: "AUDIO OFF",
+
           topLabel: "TOP",
-          type: "Type",
-          edition: "Edition",
-          domain: "Domain",
-          countryName: "Country",
-          priority: "Priority",
-          generateSignalPost: "Generate Top Signal Post",
-          generateBriefPost: "Generate Strategic Brief",
-          generatePublicationPost: "Generate Featured Publication Post",
-          copyDraft: "Copy Draft",
-          publicationReady: "Featured publication loaded from the sovereign content layer."
+          publication: "Featured Publication"
         },
+
         ar: {
           nav_home: "الرئيسية",
           nav_dashboard: "لوحة التحكم",
@@ -1093,6 +997,7 @@
           nav_countries: "الدول",
           nav_models: "النماذج",
           nav_about: "حول",
+
           title: "لوحة تحكم IBSS",
           sub: "طبقة القرار والقياس السيادي الموحد",
           ticker: "الشريط الاستخباري الحي",
@@ -1110,13 +1015,7 @@
           metrics: "المقاييس الموحدة",
           metricsSub: "SSI / CRI / Signal / Cluster / Theater",
           publisher: "وحدة النشر",
-          featuredPublication: "المنشور المميز",
-          publicationContext: "سياق المنشور",
-          publicationPreview: "معاينة المنشور",
-          linkedSignal: "دراسة مرتبطة بالإشارة",
-          linkedCluster: "دراسة مرتبطة بالملف الاستراتيجي",
-          linkedCountry: "دراسة مرتبطة بالدولة",
-          noLinkedPublication: "لا يوجد منشور مرتبط.",
+
           levelHigh: "مرتفع",
           levelMed: "متوسط",
           levelLow: "منخفض",
@@ -1126,12 +1025,15 @@
           modeHigh: "استجابة نشطة",
           modeMed: "تحضير",
           modeLow: "مراقبة",
+
           noteHigh: "تم رصد ضغط مركب حرج. الجاهزية السيادية الفورية مطلوبة.",
           noteMedium: "تم رصد ضغط بنيوي. حافظ على وضعية التحضير وراقب انتقالات الخطر.",
           noteLow: "النظام ما يزال ضمن ظروف مراقبة منخفضة الضغط.",
+
           alertHigh: "⚠ تصعيد مرتفع — النظام المركب داخل حزمة الاستجابة النشطة",
           alertMed: "⚠ ضغط بنيوي — النظام المركب داخل حزمة التحضير",
           alertLow: "✓ ضغط منخفض — النظام المركب داخل حزمة المراقبة",
+
           scenarioA: "السيناريو أ",
           scenarioB: "السيناريو ب",
           scenarioC: "السيناريو ج",
@@ -1143,15 +1045,19 @@
           noData: "لا توجد بيانات.",
           noFeed: "لا توجد تغذية حية.",
           newsIntake: "التغذية الخبرية الحية",
-          sourceLive: "المصدر — المحرك",
-          sourceFallback: "المصدر — الاحتياطي",
+
+          sourceLive: "المصدر — منسق",
+          sourceFallback: "المصدر — محدود",
           metricsOn: "القياس — مدمج",
           metricsOff: "القياس — غير مفعل",
+
           snapshotTheater: "المسرح الأعلى",
           snapshotCluster: "الملف الاستراتيجي الأعلى",
           snapshotCountry: "أعلى دولة خطرًا",
+
           latestDraftType: "نوع المسودة الأخيرة",
           createdAt: "تاريخ الإنشاء",
+
           signalScore: "درجة الإشارة",
           clusterRisk: "خطر الملف الاستراتيجي",
           theaterRisk: "خطر المسرح",
@@ -1159,21 +1065,14 @@
           systemStress: "ضغط النظام",
           band: "الحزمة",
           confidence: "الثقة",
+
           audioOn: "الصوت — يعمل",
           audioOff: "الصوت — متوقف",
           audioButtonOn: "تشغيل الصوت",
           audioButtonOff: "إيقاف الصوت",
+
           topLabel: "TOP",
-          type: "النوع",
-          edition: "النسخة",
-          domain: "المجال",
-          countryName: "الدولة",
-          priority: "الأولوية",
-          generateSignalPost: "توليد منشور الإشارة الأعلى",
-          generateBriefPost: "توليد موجز استراتيجي",
-          generatePublicationPost: "توليد منشور الدراسة المميزة",
-          copyDraft: "نسخ المسودة",
-          publicationReady: "تم تحميل المنشور المميز من طبقة المحتوى السيادي."
+          publication: "المنشور المميز"
         }
       };
 
@@ -1250,12 +1149,6 @@
         return "low";
       }
 
-      function previewBody(text, max = 560) {
-        const value = safeText(text, "");
-        if (!value) return "-";
-        return value.length > max ? value.slice(0, max).trim() + " ..." : value;
-      }
-
       function applyLanguage() {
         document.documentElement.lang = STATE.lang;
         document.documentElement.dir = STATE.lang === "ar" ? "rtl" : "ltr";
@@ -1270,8 +1163,6 @@
         qs("modeLabel").textContent = t("mode");
         qs("signalTitleLabel").textContent = t("signal");
         qs("radarTitle").textContent = t("radar");
-        qs("featuredPubTitle").textContent = t("featuredPublication");
-        qs("publicationContextTitle").textContent = t("publicationContext");
         qs("snapshotTitle").textContent = t("snapshot");
         qs("metricsTitle").textContent = t("metrics");
         qs("metricsSub").textContent = t("metricsSub");
@@ -1290,10 +1181,14 @@
         document.querySelector('[data-i18n="nav_models"]').textContent = t("nav_models");
         document.querySelector('[data-i18n="nav_about"]').textContent = t("nav_about");
 
-        qs("btnGenerateSignalPost").textContent = t("generateSignalPost");
-        qs("btnGenerateBriefPost").textContent = t("generateBriefPost");
-        qs("btnGeneratePublicationPost").textContent = t("generatePublicationPost");
-        qs("btnCopyDraftPost").textContent = t("copyDraft");
+        qs("btnGenerateSignalPost").textContent =
+          STATE.lang === "ar" ? "توليد منشور الإشارة الأعلى" : "Generate Top Signal Post";
+        qs("btnGenerateBriefPost").textContent =
+          STATE.lang === "ar" ? "توليد موجز استراتيجي" : "Generate Strategic Brief";
+        qs("btnGeneratePublicationPost").textContent =
+          STATE.lang === "ar" ? "توليد منشور مميز" : "Generate Featured Publication";
+        qs("btnCopyDraftPost").textContent =
+          STATE.lang === "ar" ? "نسخ المسودة" : "Copy Draft";
 
         qs("btn-en").classList.toggle("active", STATE.lang === "en");
         qs("btn-ar").classList.toggle("active", STATE.lang === "ar");
@@ -1303,24 +1198,28 @@
 
       function updateAudioBadge() {
         const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
-        const btn = qs("audioToggleBtn");
         const badge = qs("audioBadge");
-
-        if (btn) {
-          btn.textContent = enabled ? t("audioButtonOff") : t("audioButtonOn");
-          btn.classList.toggle("active", enabled);
-        }
+        const btn = qs("audioToggleBtn");
 
         if (badge) {
           badge.textContent = enabled ? t("audioOn") : t("audioOff");
           badge.className = enabled ? "meta-badge live" : "meta-badge fallback";
         }
+
+        if (btn) {
+          btn.textContent = enabled ? t("audioButtonOff") : t("audioButtonOn");
+          btn.classList.toggle("active", enabled);
+        }
       }
 
       function getRawSystem() {
         try {
-          if (window.IBSS_ENGINE?.getSystemState) return window.IBSS_ENGINE.getSystemState();
-          if (window.IBSS_ENGINE?.getStaticSystemFallback) return window.IBSS_ENGINE.getStaticSystemFallback();
+          if (window.IBSS_ENGINE?.getSystemState) {
+            return window.IBSS_ENGINE.getSystemState();
+          }
+          if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+            return window.IBSS_ENGINE.getStaticSystemFallback();
+          }
         } catch (error) {
           console.error("Dashboard getRawSystem error:", error);
         }
@@ -1358,7 +1257,7 @@
         const metricsBadge = qs("metricsBadge");
         const audioBadge = qs("audioBadge");
 
-        if (system?.source === "engine") {
+        if (system?.publisherDigest || system?.source === "orchestrated") {
           sourceBadge.textContent = t("sourceLive");
           sourceBadge.className = "meta-badge live";
         } else {
@@ -1455,7 +1354,7 @@
         }
 
         titleEl.textContent = getLocalizedText(signal.title);
-        descEl.textContent = getLocalizedText(signal.description);
+        descEl.textContent = getLocalizedText(signal.description || signal.summary);
 
         const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
         const priority = safeText(signal?.priority, "LOW");
@@ -1465,16 +1364,16 @@
           <span class="mini-badge ${signalClass}">${escapeHtml(t("signalScore"))}: ${score}</span>
           <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
           <span class="mini-badge">${escapeHtml(t("newsIntake"))}: ${safeNumber(system?.newsPressure?.count, 0)}</span>
-          <span class="mini-badge">${escapeHtml(t("priority"))}: ${escapeHtml(priority)}</span>
         `;
       }
 
       function renderRadar(system) {
         try {
           if (window.IBSS_GEO_RADAR?.render) {
+            const size = window.innerWidth <= 640 ? 270 : 300;
             window.IBSS_GEO_RADAR.render(qs("radar"), system, {
               lang: STATE.lang,
-              size: 300
+              size
             });
           }
         } catch (error) {
@@ -1504,7 +1403,7 @@
           const priority = safeText(signal?.priority || signal?.weight, "LOW");
           const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
           const title = getLocalizedText(signal.title);
-          const sub = getLocalizedText(signal.signalType || signal.domain);
+          const sub = getLocalizedText(signal.signalType || signal.domain || signal.region);
 
           return `
             <div class="legend-item">
@@ -1524,103 +1423,6 @@
         }).join("");
       }
 
-      function renderFeaturedPublication(system) {
-        const box = qs("featuredPublicationBox");
-        const publication =
-          system?.featuredPublication ||
-          window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
-          null;
-
-        if (!publication) {
-          box.innerHTML = `<div class="pub-text">${escapeHtml(t("noData"))}</div>`;
-          return;
-        }
-
-        const priority = safeText(publication.priority, "LOW");
-        const priorityClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
-        const title = getLocalizedText(publication.title);
-        const summary = getLocalizedText(publication.summary);
-        const body = previewBody(getLocalizedText(publication.body), 620);
-
-        box.innerHTML = `
-          <div class="pub-top">
-            <div>
-              <h3 class="pub-title">${escapeHtml(title)}</h3>
-            </div>
-            <div class="mini-badges">
-              <span class="mini-badge ${priorityClass}">${escapeHtml(t("priority"))}: ${escapeHtml(priority)}</span>
-              <span class="mini-badge">${escapeHtml(t("type"))}: ${escapeHtml(safeText(publication.type, "-").toUpperCase())}</span>
-              <span class="mini-badge">${escapeHtml(t("edition"))}: ${escapeHtml(safeText(publication.edition, "-"))}</span>
-            </div>
-          </div>
-
-          <p class="pub-text">${escapeHtml(summary)}</p>
-
-          <div class="mini-badges" style="margin-top:14px">
-            <span class="mini-badge">${escapeHtml(t("domain"))}: ${escapeHtml(safeText(publication.domain, "-"))}</span>
-            <span class="mini-badge">${escapeHtml(t("countryName"))}: ${escapeHtml(safeText(publication.country, publication.countryId || "-"))}</span>
-            <span class="mini-badge">${escapeHtml(formatDateTime(publication.publishedAt))}</span>
-          </div>
-
-          <div class="pub-preview">
-            <div class="pub-preview-label">${escapeHtml(t("publicationPreview"))}</div>
-            <div class="pub-preview-text">${escapeHtml(body)}</div>
-          </div>
-        `;
-      }
-
-      function renderPublicationContext(system) {
-        const box = qs("publicationContextBox");
-        const context =
-          system?.publicationContext ||
-          window.IBSS_PUBLISHER?.getPublicationContext?.() ||
-          null;
-
-        if (!context) {
-          box.innerHTML = `<div class="pub-context-item">${escapeHtml(t("noData"))}</div>`;
-          return;
-        }
-
-        const rows = [
-          {
-            label: t("linkedSignal"),
-            item: context.topSignalContent
-          },
-          {
-            label: t("linkedCluster"),
-            item: context.topClusterContent
-          },
-          {
-            label: t("linkedCountry"),
-            item: context.topCountryContent
-          }
-        ];
-
-        box.innerHTML = rows.map(row => {
-          if (!row.item) {
-            return `
-              <div class="pub-context-item">
-                <strong>${escapeHtml(row.label)}</strong>
-                <div class="pub-context-meta">${escapeHtml(t("noLinkedPublication"))}</div>
-              </div>
-            `;
-          }
-
-          return `
-            <div class="pub-context-item">
-              <strong>${escapeHtml(row.label)}: ${escapeHtml(getLocalizedText(row.item.title))}</strong>
-              <div class="pub-context-meta">
-                ${escapeHtml(
-                  `${t("type")}: ${safeText(row.item.type, "-").toUpperCase()} | ` +
-                  `${t("priority")}: ${safeText(row.item.priority, "-")} | ` +
-                  `${t("domain")}: ${safeText(row.item.domain, "-")}`
-                )}
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
       function renderSnapshot(system) {
         const box = qs("snapshotBox");
         const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.() || null;
@@ -1628,6 +1430,11 @@
         const topTheater = snapshot?.topTheater || system?.topTheater || null;
         const topCluster = snapshot?.topCluster || system?.topCluster || null;
         const topCountry = snapshot?.topCountry || (system?.countryRiskFeed || [])[0] || null;
+
+        const featuredPublication =
+          system?.featuredPublication ||
+          window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
+          null;
 
         box.innerHTML = `
           <div class="snapshot-item">
@@ -1644,6 +1451,11 @@
             <strong>${escapeHtml(t("snapshotCountry"))}: ${escapeHtml(topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-")}</strong>
             <div class="snapshot-meta">${escapeHtml(topCountry ? `${t("riskScore")}: ${safeNumber(topCountry.riskScore, 0)} | ${t("riskLevel")}: ${safeText(topCountry.riskLevel, "-")}` : t("noData"))}</div>
           </div>
+
+          <div class="snapshot-item">
+            <strong>${escapeHtml(t("publication"))}: ${escapeHtml(featuredPublication ? getLocalizedText(featuredPublication.title) : "-")}</strong>
+            <div class="snapshot-meta">${escapeHtml(featuredPublication ? safeText(getLocalizedText(featuredPublication.summary), "-") : t("noData"))}</div>
+          </div>
         `;
       }
 
@@ -1656,7 +1468,7 @@
 
         const rows = [
           { label: t("systemStress"), value: safeNumber(system?.systemPressure, 0), sub: `${t("band")}: ${getBandLabel(system?.systemPressure)}` },
-          { label: t("signalScore"), value: safeNumber(topSignal?.balancedScore100, 0), sub: `${t("band")}: ${getBandLabel(topSignal?.balancedScore100)}` },
+          { label: t("signalScore"), value: safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0), sub: `${t("band")}: ${getBandLabel(topSignal?.balancedScore100 || topSignal?.score100)}` },
           { label: t("clusterRisk"), value: safeNumber(topCluster?.avgRisk, 0), sub: `${t("band")}: ${getBandLabel(topCluster?.avgRisk)}` },
           { label: t("theaterRisk"), value: safeNumber(topTheater?.avgRisk, 0), sub: `${t("band")}: ${getBandLabel(topTheater?.avgRisk)}` },
           { label: t("countryRisk"), value: safeNumber(topCountry?.riskScore, 0), sub: `${t("band")}: ${getBandLabel(topCountry?.riskScore)}` },
@@ -1724,7 +1536,7 @@
           return;
         }
 
-        feed.innerHTML = unifiedFeed.slice(0, 12).map((item) => {
+        feed.innerHTML = unifiedFeed.slice(0, 10).map((item) => {
           const text = getLocalizedText(item.text || item.title);
           return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
         }).join("");
@@ -1796,7 +1608,7 @@
                 renderPublisherConsole();
               }
             } catch (error) {
-              console.error("Generate Featured Publication Post error:", error);
+              console.error("Generate Publication Post error:", error);
             }
           });
         }
@@ -1843,8 +1655,6 @@
         renderPrimarySignal(system.topSignal || system.dominantSignal || null, system);
         renderRadar(system);
         renderRadarLegend(system);
-        renderFeaturedPublication(system);
-        renderPublicationContext(system);
         renderSnapshot(system);
         renderMetrics(system);
         renderScenarios(system);
@@ -1865,14 +1675,14 @@
         window.IBSS_RUNTIME.start({
           pageId: "dashboard",
           lang: STATE.lang,
-          radarEl: qs("radar"),
           tickerTrackEl: qs("tickerTrack"),
           refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
           systemProvider: getSystem,
           tickerItemsProvider: function (system) {
             const unifiedFeed = buildUnifiedFeed(system);
-            const items = unifiedFeed.slice(0, 12).map((item) => ({
+            const items = unifiedFeed.slice(0, 10).map((item) => ({
               level: String(item.priority || "LOW").toLowerCase(),
+              priority: String(item.priority || "LOW").toUpperCase(),
               text: getLocalizedText(item.text || item.title)
             }));
             return items.length ? items : null;
