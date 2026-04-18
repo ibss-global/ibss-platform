@@ -17,6 +17,7 @@
       --red:#ff4d4f;
       --orange:#ff9f1a;
       --green:#00d084;
+      --blue:#5a8cff;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
@@ -38,7 +39,7 @@
     body{min-height:100vh}
 
     .wrap{
-      width:min(1200px,92%);
+      width:min(1240px,92%);
       margin:auto;
       padding:20px 0 42px;
     }
@@ -197,7 +198,7 @@
 
     .grid{
       display:grid;
-      grid-template-columns:1.15fr .85fr;
+      grid-template-columns:1.08fr .92fr;
       gap:18px;
       margin-top:18px;
     }
@@ -205,6 +206,13 @@
     .grid-3{
       display:grid;
       grid-template-columns:repeat(3,1fr);
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
       gap:18px;
       margin-top:18px;
     }
@@ -252,6 +260,7 @@
       direction:ltr;
       white-space:nowrap;
       scroll-behavior:auto;
+      min-height:72px;
     }
 
     .ticker-track::-webkit-scrollbar{display:none}
@@ -294,7 +303,10 @@
     .snapshot-item,
     .signal-row,
     .feed-item,
-    .filter-card{
+    .filter-card,
+    .context-item,
+    .publication-box,
+    .viewer-box{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -358,19 +370,23 @@
 
     .snapshot-box,
     .metrics-box,
-    .feed-box{
+    .feed-box,
+    .context-box,
+    .publication-list{
       display:grid;
       gap:12px;
     }
 
     .snapshot-item,
     .metric-row,
-    .feed-item{
+    .feed-item,
+    .context-item{
       padding:14px 15px;
     }
 
     .snapshot-item strong,
-    .metric-name{
+    .metric-name,
+    .context-title{
       display:block;
       color:#fff;
       margin-bottom:6px;
@@ -378,7 +394,8 @@
     }
 
     .snapshot-meta,
-    .metric-sub{
+    .metric-sub,
+    .context-meta{
       color:var(--muted);
       font-size:12px;
       line-height:1.7;
@@ -439,9 +456,21 @@
     .signal-row{
       padding:16px;
       display:grid;
-      grid-template-columns:1.4fr .8fr .7fr .8fr .7fr;
+      grid-template-columns:1.5fr .8fr .8fr .8fr .9fr;
       gap:14px;
       align-items:center;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .signal-row:hover{
+      border-color:rgba(212,175,55,.26);
+    }
+
+    .signal-row.active{
+      border-color:rgba(212,175,55,.38);
+      box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
+      background:linear-gradient(180deg, rgba(212,175,55,.06), rgba(255,255,255,.01));
     }
 
     .signal-main{
@@ -551,6 +580,91 @@
     .mini-card .mini-value.low{color:var(--green)}
     .mini-card .mini-value.gold{color:var(--gold)}
 
+    .publication-box{
+      padding:18px;
+      border-color:rgba(212,175,55,.24);
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 35%),
+        var(--panel2);
+    }
+
+    .publication-title{
+      color:#fff;
+      font-size:28px;
+      line-height:1.45;
+      font-weight:900;
+      margin:0 0 10px;
+    }
+
+    .publication-text{
+      color:#ddd;
+      line-height:1.9;
+      font-size:15px;
+      margin:0;
+    }
+
+    .viewer-box{
+      padding:16px;
+    }
+
+    .viewer-title{
+      color:#fff;
+      font-size:22px;
+      font-weight:900;
+      line-height:1.5;
+      margin:0 0 10px;
+    }
+
+    .viewer-body{
+      color:#f0f0f0;
+      line-height:1.95;
+      font-size:14px;
+      white-space:pre-wrap;
+    }
+
+    .publisher-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .publisher-actions button{
+      padding:12px 16px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:14px;
+      transition:.2s ease;
+    }
+
+    .btn-primary{
+      border:none;
+      background:#d4af37;
+      color:#000;
+    }
+
+    .btn-secondary{
+      border:1px solid rgba(255,255,255,.1);
+      background:transparent;
+      color:#ddd;
+    }
+
+    .publisher-textarea{
+      width:100%;
+      min-height:180px;
+      background:#121212;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:14px;
+      font-family:Arial,sans-serif;
+      font-size:14px;
+      line-height:1.8;
+      resize:vertical;
+      margin-top:14px;
+    }
+
     .footer{
       margin-top:26px;
       text-align:center;
@@ -581,6 +695,7 @@
     @media (max-width:1100px){
       .grid,
       .grid-3,
+      .grid-2,
       .mini-grid{
         grid-template-columns:1fr;
       }
@@ -691,6 +806,18 @@
       </div>
     </div>
 
+    <div class="grid-2 section">
+      <div class="card">
+        <div class="title" id="linkedPublicationTitle">Linked Publication</div>
+        <div id="linkedPublicationBox" class="publication-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="title" id="signalViewerTitle">Signal Viewer</div>
+        <div id="signalViewerBox" class="viewer-box"></div>
+      </div>
+    </div>
+
     <div class="grid-3 section">
       <div class="card">
         <div class="title" id="metricsTitle">Signal Metrics</div>
@@ -739,15 +866,40 @@
     </div>
 
     <div class="card section">
+      <div class="title" id="contextTitle">Signal Publication Context</div>
+      <div id="contextBox" class="context-box"></div>
+    </div>
+
+    <div class="card section">
       <div class="title" id="signalListTitle">Ranked Signal Matrix</div>
       <div id="signalList" class="signal-list"></div>
     </div>
 
-    <div class="footer">© 2026 IBSS — Signal Layer</div>
+    <div class="card section">
+      <div class="title" id="publisherTitle">Publishing Console</div>
+
+      <div class="context-box">
+        <div class="context-item">
+          <div class="context-title" id="pubDraftTypeTitle">Latest Draft</div>
+          <div class="context-meta" id="pubDraftMeta">-</div>
+        </div>
+      </div>
+
+      <textarea id="pubDraftText" class="publisher-textarea" readonly></textarea>
+
+      <div class="publisher-actions">
+        <button id="btnGenerateSignalPost" type="button" class="btn-primary">Generate Top Signal Post</button>
+        <button id="btnGenerateLinkedPublicationPost" type="button" class="btn-secondary">Generate Linked Publication Post</button>
+        <button id="btnCopyDraftPost" type="button" class="btn-secondary">Copy Draft</button>
+      </div>
+    </div>
+
+    <div class="footer">© 2026 IBSS — Signal Integrated Layer</div>
   </div>
 
   <script src="data.js"></script>
   <script src="sources.js"></script>
+  <script src="content.js"></script>
   <script src="ingestion.js"></script>
   <script src="news.js"></script>
   <script src="analysis.js"></script>
@@ -820,7 +972,22 @@
         regionField: "Region",
         sourceField: "Source",
         top: "TOP",
-        all: "ALL"
+        all: "ALL",
+        linkedPublication: "Linked Publication",
+        signalViewer: "Signal Viewer",
+        signalContext: "Signal Publication Context",
+        latestDraft: "Latest Draft",
+        generateSignalPost: "Generate Top Signal Post",
+        generateLinkedPublicationPost: "Generate Linked Publication Post",
+        copyDraft: "Copy Draft",
+        type: "Type",
+        domain: "Domain",
+        edition: "Edition",
+        countryName: "Country",
+        linkedBySignal: "Publication linked to selected signal",
+        linkedByCluster: "Publication linked to top cluster",
+        linkedByCountry: "Publication linked to top country",
+        linkedUnavailable: "No linked publication available."
       },
       ar: {
         nav_home: "الرئيسية",
@@ -882,12 +1049,28 @@
         regionField: "المنطقة",
         sourceField: "المصدر",
         top: "TOP",
-        all: "الكل"
+        all: "الكل",
+        linkedPublication: "المنشور المرتبط",
+        signalViewer: "عارض الإشارة",
+        signalContext: "سياق الإشارة والمنشورات",
+        latestDraft: "أحدث مسودة",
+        generateSignalPost: "توليد منشور الإشارة الأعلى",
+        generateLinkedPublicationPost: "توليد منشور الدراسة المرتبطة",
+        copyDraft: "نسخ المسودة",
+        type: "النوع",
+        domain: "المجال",
+        edition: "النسخة",
+        countryName: "الدولة",
+        linkedBySignal: "منشور مرتبط بالإشارة المحددة",
+        linkedByCluster: "منشور مرتبط بالملف الاستراتيجي الأعلى",
+        linkedByCountry: "منشور مرتبط بالدولة الأعلى خطراً",
+        linkedUnavailable: "لا يوجد منشور مرتبط."
       }
     };
 
     let currentLang = localStorage.getItem("ibss_lang") || "en";
     let currentSystem = null;
+    let selectedSignalId = null;
 
     function t(key){
       return UI[currentLang]?.[key] || key;
@@ -950,6 +1133,12 @@
       return "LOW";
     }
 
+    function previewText(text, max = 440){
+      const value = safeText(text, "");
+      if (!value) return "-";
+      return value.length > max ? value.slice(0, max).trim() + " ..." : value;
+    }
+
     function applyLanguage(){
       document.documentElement.lang = currentLang;
       document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
@@ -964,6 +1153,8 @@
       document.getElementById("tickerTitle").textContent = t("ticker");
       document.getElementById("highlightTitle").textContent = t("highlight");
       document.getElementById("snapshotTitle").textContent = t("snapshot");
+      document.getElementById("linkedPublicationTitle").textContent = t("linkedPublication");
+      document.getElementById("signalViewerTitle").textContent = t("signalViewer");
       document.getElementById("metricsTitle").textContent = t("metrics");
       document.getElementById("metricsSub").textContent = t("metricsSub");
       document.getElementById("feedTitle").textContent = t("feed");
@@ -972,7 +1163,10 @@
       document.getElementById("regionFilterLabel").textContent = t("region");
       document.getElementById("layerFilterLabel").textContent = t("layer");
       document.getElementById("searchFilterLabel").textContent = t("search");
+      document.getElementById("contextTitle").textContent = t("signalContext");
       document.getElementById("signalListTitle").textContent = t("signalList");
+      document.getElementById("publisherTitle").textContent = t("latestDraft");
+      document.getElementById("pubDraftTypeTitle").textContent = t("latestDraft");
       document.getElementById("miniTopSignalLabel").textContent = t("miniTopSignal");
       document.getElementById("miniLiveSignalsLabel").textContent = t("miniLiveSignals");
       document.getElementById("miniSignalPressureLabel").textContent = t("miniSignalPressure");
@@ -992,6 +1186,10 @@
         searchInput.placeholder = currentLang === "ar" ? "ابحث داخل الإشارات..." : "Search signal...";
       }
 
+      document.getElementById("btnGenerateSignalPost").textContent = t("generateSignalPost");
+      document.getElementById("btnGenerateLinkedPublicationPost").textContent = t("generateLinkedPublicationPost");
+      document.getElementById("btnCopyDraftPost").textContent = t("copyDraft");
+
       document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
       document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
 
@@ -999,7 +1197,23 @@
     }
 
     function getSystem(){
-      return window.IBSS_PUBLISHER?.getLatestOrchestratedSystem?.() || null;
+      try {
+        if (window.IBSS_PUBLISHER?.getLatestOrchestratedSystem) {
+          return window.IBSS_PUBLISHER.getLatestOrchestratedSystem();
+        }
+
+        if (window.IBSS_ENGINE?.getSystemState) {
+          const raw = window.IBSS_ENGINE.getSystemState();
+          if (window.IBSS_PUBLISHER?.orchestrateSystem) {
+            return window.IBSS_PUBLISHER.orchestrateSystem(raw);
+          }
+          return raw;
+        }
+      } catch (error) {
+        console.error("Signals getSystem error:", error);
+      }
+
+      return null;
     }
 
     function updateMeta(system){
@@ -1075,8 +1289,20 @@
       document.getElementById("miniSystemPressure").className = `mini-value ${scoreClass(safeNumber(system?.systemPressure, 0))}`;
     }
 
+    function getRankedSignals(system){
+      return Array.isArray(system?.rankedSignals) ? system.rankedSignals : [];
+    }
+
+    function getSelectedSignal(system){
+      const signals = getRankedSignals(system);
+      if (!signals.length) return null;
+
+      const match = signals.find(signal => signal.id === selectedSignalId);
+      return match || signals[0];
+    }
+
     function renderHighlight(system){
-      const signal = system?.topSignal || system?.dominantSignal || null;
+      const signal = getSelectedSignal(system);
       const titleEl = document.getElementById("highlightSignalTitle");
       const descEl = document.getElementById("highlightSignalDesc");
       const badges = document.getElementById("highlightBadges");
@@ -1098,8 +1324,9 @@
       badges.innerHTML = `
         <span class="mini-badge ${cls}">${escapeHtml(t("signalScore"))}: ${score}</span>
         <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
-        <span class="mini-badge">${escapeHtml(t("signalType"))}: ${escapeHtml(getLocalizedText(signal.signalType))}</span>
+        <span class="mini-badge">${escapeHtml(t("signalType"))}: ${escapeHtml(getLocalizedText(signal.signalType || signal.domain))}</span>
         <span class="mini-badge">${escapeHtml(t("regionField"))}: ${escapeHtml(safeText(signal.region, "-"))}</span>
+        <span class="mini-badge">${escapeHtml(t("sourceField"))}: ${escapeHtml(safeText(signal.source, signal.sourceUnit || "-"))}</span>
       `;
     }
 
@@ -1129,15 +1356,64 @@
       `;
     }
 
+    function renderLinkedPublication(system){
+      const box = document.getElementById("linkedPublicationBox");
+      const signal = getSelectedSignal(system);
+
+      const publication =
+        window.IBSS_PUBLISHER?.findPublicationForSignal?.(signal) ||
+        system?.publicationContext?.topSignalContent ||
+        null;
+
+      if (!publication) {
+        box.innerHTML = `<div class="publication-text">${escapeHtml(t("linkedUnavailable"))}</div>`;
+        return;
+      }
+
+      box.innerHTML = `
+        <h3 class="publication-title">${escapeHtml(getLocalizedText(publication.title))}</h3>
+        <p class="publication-text">${escapeHtml(getLocalizedText(publication.summary))}</p>
+        <div class="mini-badges" style="margin-top:14px">
+          <span class="mini-badge ${scoreClass(safeNumber(publication?.metrics?.strategicWeight, 0) * 10)}">${escapeHtml(t("type"))}: ${escapeHtml(safeText(publication.type, "-").toUpperCase())}</span>
+          <span class="mini-badge">${escapeHtml(t("priority"))}: ${escapeHtml(safeText(publication.priority, "-"))}</span>
+          <span class="mini-badge">${escapeHtml(t("domain"))}: ${escapeHtml(safeText(publication.domain, "-"))}</span>
+          <span class="mini-badge">${escapeHtml(t("countryName"))}: ${escapeHtml(safeText(publication.country, publication.countryId || "-"))}</span>
+          <span class="mini-badge">${escapeHtml(t("edition"))}: ${escapeHtml(safeText(publication.edition, "-"))}</span>
+        </div>
+      `;
+    }
+
+    function renderSignalViewer(system){
+      const box = document.getElementById("signalViewerBox");
+      const signal = getSelectedSignal(system);
+
+      if (!signal) {
+        box.innerHTML = `<div class="viewer-body">${escapeHtml(t("noData"))}</div>`;
+        return;
+      }
+
+      const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
+
+      box.innerHTML = `
+        <div class="mini-badges" style="margin-top:0; margin-bottom:12px;">
+          <span class="mini-badge ${scoreClass(score)}">${escapeHtml(t("signalScore"))}: ${score}</span>
+          <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
+          <span class="mini-badge">${escapeHtml(t("decisionMode"))}: ${escapeHtml(getLocalizedText(signal.decisionMode || signal.mode))}</span>
+        </div>
+        <h3 class="viewer-title">${escapeHtml(getLocalizedText(signal.title))}</h3>
+        <div class="viewer-body">${escapeHtml(getLocalizedText(signal.description))}</div>
+      `;
+    }
+
     function renderMetrics(system){
       const box = document.getElementById("metricsBox");
-      const topSignal = system?.topSignal || null;
+      const topSignal = getSelectedSignal(system) || system?.topSignal || null;
       const topCluster = system?.topCluster || null;
       const topTheater = system?.topTheater || null;
       const topCountry = (system?.countryRiskFeed || [])[0] || null;
 
       const rows = [
-        { label: t("signalScore"), value: safeNumber(topSignal?.balancedScore100, 0) },
+        { label: t("signalScore"), value: safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0) },
         { label: t("clusterRisk"), value: safeNumber(topCluster?.avgRisk, 0) },
         { label: t("theaterRisk"), value: safeNumber(topTheater?.avgRisk, 0) },
         { label: t("countryRisk"), value: safeNumber(topCountry?.riskScore, 0) },
@@ -1181,7 +1457,7 @@
     }
 
     function populateFilters(system){
-      const signals = Array.isArray(system?.rankedSignals) ? system.rankedSignals : [];
+      const signals = getRankedSignals(system);
       const regionSelect = document.getElementById("regionFilter");
       const layerSelect = document.getElementById("layerFilter");
 
@@ -1202,7 +1478,7 @@
     }
 
     function getFilteredSignals(system){
-      const signals = Array.isArray(system?.rankedSignals) ? system.rankedSignals : [];
+      const signals = getRankedSignals(system);
       const priority = document.getElementById("priorityFilter").value;
       const region = document.getElementById("regionFilter").value;
       const layer = document.getElementById("layerFilter").value;
@@ -1228,6 +1504,62 @@
       });
     }
 
+    function renderContext(system){
+      const box = document.getElementById("contextBox");
+      const signal = getSelectedSignal(system);
+      const linkedSignalPublication =
+        window.IBSS_PUBLISHER?.findPublicationForSignal?.(signal) ||
+        system?.publicationContext?.topSignalContent ||
+        null;
+
+      const linkedClusterPublication =
+        system?.publicationContext?.topClusterContent ||
+        null;
+
+      const linkedCountryPublication =
+        system?.publicationContext?.topCountryContent ||
+        null;
+
+      const rows = [
+        {
+          label: t("linkedBySignal"),
+          item: linkedSignalPublication
+        },
+        {
+          label: t("linkedByCluster"),
+          item: linkedClusterPublication
+        },
+        {
+          label: t("linkedByCountry"),
+          item: linkedCountryPublication
+        }
+      ];
+
+      box.innerHTML = rows.map(row => {
+        if (!row.item) {
+          return `
+            <div class="context-item">
+              <div class="context-title">${escapeHtml(row.label)}</div>
+              <div class="context-meta">${escapeHtml(t("linkedUnavailable"))}</div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="context-item">
+            <div class="context-title">${escapeHtml(row.label)}: ${escapeHtml(getLocalizedText(row.item.title))}</div>
+            <div class="context-meta">
+              ${escapeHtml(
+                `${t("type")}: ${safeText(row.item.type, "-").toUpperCase()} | ` +
+                `${t("priority")}: ${safeText(row.item.priority, "-")} | ` +
+                `${t("domain")}: ${safeText(row.item.domain, "-")}`
+              )}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
     function renderSignalList(system){
       const list = document.getElementById("signalList");
       const signals = getFilteredSignals(system);
@@ -1242,12 +1574,13 @@
         const cls = scoreClass(score);
         const priority = normalizePriority(signal?.priority || signal?.weight);
         const badgeClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+        const active = signal.id === (selectedSignalId || signals[0]?.id) ? "active" : "";
 
         return `
-          <div class="signal-row">
+          <div class="signal-row ${active}" data-signal-id="${escapeHtml(signal.id)}">
             <div class="signal-main">
               <div class="signal-name">${escapeHtml(getLocalizedText(signal.title))}</div>
-              <div class="signal-desc">${escapeHtml(getLocalizedText(signal.description))}</div>
+              <div class="signal-desc">${escapeHtml(previewText(getLocalizedText(signal.description), 140))}</div>
             </div>
 
             <div>
@@ -1269,27 +1602,34 @@
 
             <div>
               <div class="signal-label">${escapeHtml(t("layerField"))}</div>
-              <div class="signal-value">${escapeHtml(getLocalizedText(signal.layer))}</div>
+              <div class="signal-value">${escapeHtml(getLocalizedText(signal.layer || signal.sourceUnit))}</div>
             </div>
           </div>
         `;
       }).join("");
+
+      list.querySelectorAll("[data-signal-id]").forEach(el => {
+        el.addEventListener("click", function () {
+          selectedSignalId = this.getAttribute("data-signal-id");
+          renderSignalsCore(system);
+        });
+      });
     }
 
-    function renderSignalsCore(system){
-      if (!system) return;
-      currentSystem = system;
+    function renderPublisherConsole(){
+      if (!window.IBSS_PUBLISHER) return;
 
-      applyLanguage();
-      updateMeta(system);
-      renderAlert(system);
-      renderMiniCards(system);
-      renderHighlight(system);
-      renderSnapshot(system);
-      renderMetrics(system);
-      renderFeed(system);
-      populateFilters(system);
-      renderSignalList(system);
+      const draft = window.IBSS_PUBLISHER.getLatestDraft?.() || null;
+      const typeTitle = document.getElementById("pubDraftTypeTitle");
+      const meta = document.getElementById("pubDraftMeta");
+      const text = document.getElementById("pubDraftText");
+
+      typeTitle.textContent = draft?.type || t("latestDraft");
+      meta.textContent = draft?.createdAt ? formatDateTime(draft.createdAt) : "-";
+      text.value =
+        currentLang === "ar"
+          ? (draft?.payload?.text_ar || draft?.payload?.text_en || "")
+          : (draft?.payload?.text_en || draft?.payload?.text_ar || "");
     }
 
     function bindFilters(){
@@ -1319,6 +1659,79 @@
       });
     }
 
+    function bindPublisherButtons(){
+      const btnSignal = document.getElementById("btnGenerateSignalPost");
+      const btnPublication = document.getElementById("btnGenerateLinkedPublicationPost");
+      const btnCopy = document.getElementById("btnCopyDraftPost");
+
+      if (btnSignal && !btnSignal.dataset.bound) {
+        btnSignal.dataset.bound = "1";
+        btnSignal.addEventListener("click", function () {
+          try {
+            if (window.IBSS_PUBLISHER?.generateTopSignalPost) {
+              window.IBSS_PUBLISHER.generateTopSignalPost();
+              renderPublisherConsole();
+            }
+          } catch (error) {
+            console.error("Generate top signal post error:", error);
+          }
+        });
+      }
+
+      if (btnPublication && !btnPublication.dataset.bound) {
+        btnPublication.dataset.bound = "1";
+        btnPublication.addEventListener("click", function () {
+          try {
+            const signal = getSelectedSignal(currentSystem);
+            if (window.IBSS_PUBLISHER?.generateLinkedPublicationPost) {
+              window.IBSS_PUBLISHER.generateLinkedPublicationPost(signal);
+              renderPublisherConsole();
+            }
+          } catch (error) {
+            console.error("Generate linked publication post error:", error);
+          }
+        });
+      }
+
+      if (btnCopy && !btnCopy.dataset.bound) {
+        btnCopy.dataset.bound = "1";
+        btnCopy.addEventListener("click", async function () {
+          try {
+            const text = document.getElementById("pubDraftText")?.value || "";
+            if (!text) return;
+            await navigator.clipboard.writeText(text);
+          } catch (error) {
+            console.error("Copy draft error:", error);
+          }
+        });
+      }
+    }
+
+    function renderSignalsCore(system){
+      if (!system) return;
+      currentSystem = system;
+
+      const topSignal = getSelectedSignal(system);
+      if (!selectedSignalId && topSignal?.id) {
+        selectedSignalId = topSignal.id;
+      }
+
+      applyLanguage();
+      updateMeta(system);
+      renderAlert(system);
+      renderMiniCards(system);
+      renderHighlight(system);
+      renderSnapshot(system);
+      renderLinkedPublication(system);
+      renderSignalViewer(system);
+      renderMetrics(system);
+      renderFeed(system);
+      populateFilters(system);
+      renderContext(system);
+      renderSignalList(system);
+      renderPublisherConsole();
+    }
+
     function startRuntime(){
       if (!window.IBSS_RUNTIME?.start) {
         const system = getSystem();
@@ -1332,6 +1745,21 @@
         tickerTrackEl: document.getElementById("tickerTrack"),
         refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
         systemProvider: getSystem,
+        tickerItemsProvider: function (system) {
+          const unifiedFeed = (
+            system?.publisherFeed ||
+            system?.unifiedFeed ||
+            window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
+            []
+          );
+
+          const items = unifiedFeed.slice(0, 10).map((item) => ({
+            level: String(item.priority || "LOW").toLowerCase(),
+            text: getLocalizedText(item.text || item.title)
+          }));
+
+          return items.length ? items : null;
+        },
         afterRender: function(system) {
           renderSignalsCore(system);
         }
@@ -1355,6 +1783,7 @@
     window.addEventListener("load", function () {
       bindFilters();
       bindAudioToggle();
+      bindPublisherButtons();
       startRuntime();
     });
   </script>
