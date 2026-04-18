@@ -2,11 +2,14 @@ window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publisher_state_v3",
-    maxQueueSize: 200,
-    maxHistorySize: 300,
-    maxSnapshots: 160,
-    maxUnifiedFeed: 18,
+    storageKey: "ibss_publisher_state_v4_clean",
+    maxQueueSize: 240,
+    maxHistorySize: 320,
+    maxSnapshots: 180,
+    maxUnifiedFeed: 24,
+    maxContentFeedItems: 6,
+    maxNewsFeedItems: 6,
+    maxSystemFeedItems: 10,
     orchestrationKeyFields: [
       "updatedAt",
       "level",
@@ -28,8 +31,13 @@ window.IBSS_PUBLISHER = (function () {
     latestDigest: null,
     latestFeed: [],
     latestSnapshot: null,
+    latestFeaturedPublication: null,
     latestKey: null
   };
+
+  /* =========================================
+     Utilities
+  ========================================= */
 
   function nowIso() {
     return new Date().toISOString();
@@ -52,6 +60,13 @@ window.IBSS_PUBLISHER = (function () {
     return Math.max(min, Math.min(max, value));
   }
 
+  function normalizeText(value) {
+    return safeText(String(value || ""))
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   function clone(value) {
     try {
       return JSON.parse(JSON.stringify(value));
@@ -66,15 +81,19 @@ window.IBSS_PUBLISHER = (function () {
     if (typeof value === "string" || typeof value === "number") return String(value);
 
     return (
-      value[lang] ??
-      value.en ??
-      value.ar ??
-      value.name ??
-      value.title ??
-      value.label ??
-      value.text ??
+      value?.[lang] ??
+      value?.en ??
+      value?.ar ??
+      value?.name ??
+      value?.title ??
+      value?.label ??
+      value?.text ??
       ""
     );
+  }
+
+  function localize(en, ar) {
+    return { en, ar };
   }
 
   function normalizePriority(priority) {
@@ -95,6 +114,33 @@ window.IBSS_PUBLISHER = (function () {
     return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
   }
 
+  function sortByDateDesc(list, selector) {
+    return asArray(list)
+      .slice()
+      .sort((a, b) => {
+        const aTime = new Date(selector(a) || 0).getTime();
+        const bTime = new Date(selector(b) || 0).getTime();
+        return bTime - aTime;
+      });
+  }
+
+  function dedupeBy(list, keyBuilder) {
+    const map = new Map();
+
+    asArray(list).forEach((item, index) => {
+      const key = keyBuilder(item, index);
+      if (!map.has(key)) {
+        map.set(key, item);
+      }
+    });
+
+    return [...map.values()];
+  }
+
+  /* =========================================
+     Storage
+  ========================================= */
+
   function loadState() {
     try {
       const raw = localStorage.getItem(CONFIG.storageKey);
@@ -111,6 +157,7 @@ window.IBSS_PUBLISHER = (function () {
       STATE.latestDigest = parsed.latestDigest || null;
       STATE.latestFeed = asArray(parsed.latestFeed);
       STATE.latestSnapshot = parsed.latestSnapshot || null;
+      STATE.latestFeaturedPublication = parsed.latestFeaturedPublication || null;
       STATE.latestKey = safeText(parsed.latestKey, null);
     } catch (error) {
       console.error("IBSS_PUBLISHER loadState error:", error);
@@ -130,6 +177,7 @@ window.IBSS_PUBLISHER = (function () {
           latestDigest: STATE.latestDigest,
           latestFeed: STATE.latestFeed,
           latestSnapshot: STATE.latestSnapshot,
+          latestFeaturedPublication: STATE.latestFeaturedPublication,
           latestKey: STATE.latestKey
         })
       );
@@ -144,12 +192,149 @@ window.IBSS_PUBLISHER = (function () {
     STATE.initialized = true;
   }
 
+  /* =========================================
+     Source Readers
+  ========================================= */
+
+  function getContentApi() {
+    return window.IBSS_CONTENT_API || null;
+  }
+
+  function getPublishedContent() {
+    try {
+      const api = getContentApi();
+      if (api?.getPublished) return asArray(api.getPublished());
+    } catch (error) {
+      console.error("IBSS_PUBLISHER getPublishedContent error:", error);
+    }
+
+    return asArray(window.IBSS_CONTENT).filter(item => item?.status === "published");
+  }
+
+  function getLatestFeaturedPublication() {
+    try {
+      const api = getContentApi();
+      if (api?.getLatestFeaturedContent) {
+        return api.getLatestFeaturedContent();
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER getLatestFeaturedPublication error:", error);
+    }
+
+    const content = getPublishedContent();
+    return sortByDateDesc(content, item => item?.publishedAt)[0] || null;
+  }
+
+  function getLatestContentPreviewList(limit = 8, lang = "en") {
+    try {
+      const api = getContentApi();
+      if (api?.getPublicationPreviewList) {
+        return asArray(api.getPublicationPreviewList(limit, lang));
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER getLatestContentPreviewList error:", error);
+    }
+
+    return getPublishedContent()
+      .slice(0, Math.max(1, safeNumber(limit, 8)))
+      .map(item => ({
+        id: item.id,
+        type: item.type,
+        unit: item.unit || "SSU",
+        title: getLocalizedText(item.title, lang),
+        summary: getLocalizedText(item.summary, lang),
+        edition: item.edition || "",
+        domain: item.domain || "general",
+        country: item.country || "global",
+        priority: item.priority || "LOW",
+        publishedAt: item.publishedAt || nowIso()
+      }));
+  }
+
+  function getContentLinkedToSignal(signalId) {
+    try {
+      const api = getContentApi();
+      if (api?.getContentLinkedToSignal) {
+        return asArray(api.getContentLinkedToSignal(signalId));
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER getContentLinkedToSignal error:", error);
+    }
+
+    return [];
+  }
+
+  function getContentLinkedToCluster(clusterKey) {
+    try {
+      const api = getContentApi();
+      if (api?.getContentLinkedToCluster) {
+        return asArray(api.getContentLinkedToCluster(clusterKey));
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER getContentLinkedToCluster error:", error);
+    }
+
+    return [];
+  }
+
+  function getContentLinkedToCountry(country) {
+    try {
+      const api = getContentApi();
+      if (api?.getContentLinkedToCountry) {
+        return asArray(api.getContentLinkedToCountry(country));
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER getContentLinkedToCountry error:", error);
+    }
+
+    return [];
+  }
+
+  function resolveSourceSystem() {
+    try {
+      if (window.IBSS_ENGINE?.getLastSystemState) {
+        const last = window.IBSS_ENGINE.getLastSystemState();
+        if (last) return last;
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER resolve lastSystem error:", error);
+    }
+
+    try {
+      if (window.IBSS_ENGINE?.getSystemState) {
+        const live = window.IBSS_ENGINE.getSystemState();
+        if (live) return live;
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER resolve liveSystem error:", error);
+    }
+
+    try {
+      if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+        const fallback = window.IBSS_ENGINE.getStaticSystemFallback();
+        if (fallback) return fallback;
+      }
+    } catch (error) {
+      console.error("IBSS_PUBLISHER resolve fallbackSystem error:", error);
+    }
+
+    return null;
+  }
+
+  /* =========================================
+     Keys + Pressure
+  ========================================= */
+
   function buildSystemKey(system) {
     return CONFIG.orchestrationKeyFields
       .map(field => {
         const value = system?.[field];
         if (value == null) return "";
-        if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        if (
+          typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean"
+        ) {
           return String(value);
         }
         return JSON.stringify(value);
@@ -181,6 +366,75 @@ window.IBSS_PUBLISHER = (function () {
     };
   }
 
+  /* =========================================
+     Content Helpers
+  ========================================= */
+
+  function buildContentPreview(content) {
+    if (!content) return null;
+
+    return {
+      id: safeText(content?.id, ""),
+      type: safeText(content?.type, "report"),
+      classification: safeText(content?.classification, safeText(content?.type, "report")),
+      edition: safeText(content?.edition, ""),
+      unit: safeText(content?.unit, "SSU"),
+      domain: safeText(content?.domain, "general"),
+      country: safeText(content?.country, safeText(content?.countryId, "global")),
+      priority: normalizePriority(content?.priority),
+      publishedAt: safeText(content?.publishedAt, nowIso()),
+      title: {
+        en: getLocalizedText(content?.title, "en"),
+        ar: getLocalizedText(content?.title, "ar")
+      },
+      summary: {
+        en: getLocalizedText(content?.summary, "en"),
+        ar: getLocalizedText(content?.summary, "ar")
+      },
+      body: {
+        en: getLocalizedText(content?.body, "en"),
+        ar: getLocalizedText(content?.body, "ar")
+      },
+      tags: clone(asArray(content?.tags)),
+      meta: clone(content?.meta || {})
+    };
+  }
+
+  function chooseBestContent(list) {
+    const items = sortByDateDesc(asArray(list), item => item?.publishedAt);
+    return items[0] || null;
+  }
+
+  function buildClusterKey(cluster) {
+    const region = safeText(cluster?.region, "global");
+    const domain = safeText(cluster?.domain, "general");
+    return `${region}::${domain}`;
+  }
+
+  function buildContentContext(system) {
+    const topSignal = system?.topSignal || system?.dominantSignal || null;
+    const topCluster = system?.topCluster || null;
+    const topCountry = asArray(system?.countryRiskFeed)[0] || null;
+
+    const signalContent = topSignal ? getContentLinkedToSignal(topSignal.id) : [];
+    const clusterContent = topCluster ? getContentLinkedToCluster(buildClusterKey(topCluster)) : [];
+    const countryContent = topCountry ? getContentLinkedToCountry(topCountry.name || topCountry.id) : [];
+
+    const featuredContent = getLatestFeaturedPublication();
+
+    return {
+      featuredPublication: buildContentPreview(featuredContent),
+      topSignalContent: buildContentPreview(chooseBestContent(signalContent)),
+      topClusterContent: buildContentPreview(chooseBestContent(clusterContent)),
+      topCountryContent: buildContentPreview(chooseBestContent(countryContent)),
+      latestPublications: getLatestContentPreviewList(8, "en")
+    };
+  }
+
+  /* =========================================
+     Feed
+  ========================================= */
+
   function normalizeFeedItem(item, fallbackPriority = "LOW") {
     if (typeof item === "string") {
       return {
@@ -205,45 +459,87 @@ window.IBSS_PUBLISHER = (function () {
         en: getLocalizedText(item?.text, "en") || getLocalizedText(item?.title, "en") || "-",
         ar: getLocalizedText(item?.text, "ar") || getLocalizedText(item?.title, "ar") || "-"
       },
-      createdAt: safeText(item?.createdAt, nowIso())
+      createdAt: safeText(item?.createdAt || item?.publishedAt, nowIso())
     };
   }
 
-  function buildUnifiedFeed(system) {
-    const levelPriority = normalizePriority(system?.level || "LOW");
-    const feed = [];
+  function buildContentFeedItems(contentContext, levelPriority) {
+    const items = [];
 
-    asArray(system?.feed).forEach(item => {
-      feed.push(normalizeFeedItem(item, levelPriority));
-    });
-
-    asArray(system?.liveNews).slice(0, 6).forEach(item => {
-      feed.push({
-        id: safeText(item?.id, buildId("NEWS")),
-        type: "news",
-        priority: normalizePriority(item?.priority || item?.severity || levelPriority),
-        source: safeText(item?.source || item?.sourceName, ""),
+    if (contentContext?.featuredPublication) {
+      const featured = contentContext.featuredPublication;
+      items.push({
+        id: `CONTENT-FEATURED-${featured.id}`,
+        type: "content_featured",
+        priority: normalizePriority(featured.priority || levelPriority),
+        source: safeText(featured.unit, "SSU"),
         text: {
-          en: getLocalizedText(item?.title, "en") || getLocalizedText(item?.summary, "en") || "-",
-          ar: getLocalizedText(item?.title, "ar") || getLocalizedText(item?.summary, "ar") || "-"
+          en: `Featured publication: ${getLocalizedText(featured.title, "en")}`,
+          ar: `المنشور المميز: ${getLocalizedText(featured.title, "ar")}`
         },
-        createdAt: safeText(item?.publishedAt || item?.timestamp, nowIso())
+        createdAt: featured.publishedAt || nowIso()
+      });
+    }
+
+    [
+      contentContext?.topSignalContent,
+      contentContext?.topClusterContent,
+      contentContext?.topCountryContent
+    ].forEach(content => {
+      if (!content) return;
+
+      items.push({
+        id: `CONTENT-LINK-${content.id}`,
+        type: "content_link",
+        priority: normalizePriority(content.priority || levelPriority),
+        source: safeText(content.unit, "SSU"),
+        text: {
+          en: `${safeText(content.type, "report").toUpperCase()} linked: ${getLocalizedText(content.title, "en")}`,
+          ar: `محتوى مرتبط: ${getLocalizedText(content.title, "ar")}`
+        },
+        createdAt: content.publishedAt || nowIso()
       });
     });
 
-    const seen = new Set();
-    const deduped = [];
+    return items.slice(0, CONFIG.maxContentFeedItems);
+  }
 
-    feed.forEach(item => {
-      const key = [
+  function buildUnifiedFeed(system, contentContext) {
+    const levelPriority = normalizePriority(system?.level || "LOW");
+    const feed = [];
+
+    asArray(system?.feed)
+      .slice(0, CONFIG.maxSystemFeedItems)
+      .forEach(item => {
+        feed.push(normalizeFeedItem(item, levelPriority));
+      });
+
+    asArray(system?.liveNews)
+      .slice(0, CONFIG.maxNewsFeedItems)
+      .forEach(item => {
+        feed.push({
+          id: safeText(item?.id, buildId("NEWS")),
+          type: "news",
+          priority: normalizePriority(item?.priority || item?.severity || levelPriority),
+          source: safeText(item?.source || item?.sourceName, ""),
+          text: {
+            en: getLocalizedText(item?.title, "en") || getLocalizedText(item?.summary, "en") || "-",
+            ar: getLocalizedText(item?.title, "ar") || getLocalizedText(item?.summary, "ar") || "-"
+          },
+          createdAt: safeText(item?.publishedAt || item?.timestamp, nowIso())
+        });
+      });
+
+    buildContentFeedItems(contentContext, levelPriority).forEach(item => {
+      feed.push(item);
+    });
+
+    const deduped = dedupeBy(feed, item => {
+      return [
         normalizePriority(item.priority),
         safeText(item.source, ""),
-        getLocalizedText(item.text, "en")
+        normalizeText(getLocalizedText(item.text, "en"))
       ].join("|");
-
-      if (seen.has(key)) return;
-      seen.add(key);
-      deduped.push(item);
     });
 
     return deduped
@@ -258,7 +554,11 @@ window.IBSS_PUBLISHER = (function () {
       .slice(0, CONFIG.maxUnifiedFeed);
   }
 
-  function buildDigest(system) {
+  /* =========================================
+     Digest + Snapshot
+  ========================================= */
+
+  function buildDigest(system, contentContext) {
     const topSignal = system?.topSignal || system?.dominantSignal || null;
     const topCluster = system?.topCluster || null;
     const topTheater = system?.topTheater || null;
@@ -329,7 +629,9 @@ window.IBSS_PUBLISHER = (function () {
         score: safeNumber(topCountry?.riskScore, 0),
         riskLevel: safeText(topCountry?.riskLevel, "LOW"),
         trend: safeText(topCountry?.trend, "STABLE")
-      } : null
+      } : null,
+
+      featuredPublication: contentContext?.featuredPublication || null
     };
   }
 
@@ -348,17 +650,25 @@ window.IBSS_PUBLISHER = (function () {
       topClusterId: digest?.topCluster?.id || null,
       topTheaterId: digest?.topTheater?.id || null,
       topCountryId: digest?.topCountry?.id || null,
+      featuredPublicationId: digest?.featuredPublication?.id || null,
       feedCount: unifiedFeed.length
     };
   }
 
+  /* =========================================
+     Orchestration
+  ========================================= */
+
   function createOrchestratedSystem(system) {
-    const digest = buildDigest(system);
-    const unifiedFeed = buildUnifiedFeed(system);
+    const contentContext = buildContentContext(system);
+    const digest = buildDigest(system, contentContext);
+    const unifiedFeed = buildUnifiedFeed(system, contentContext);
     const snapshot = buildSnapshot(digest, unifiedFeed);
 
     const orchestrated = {
       ...system,
+      featuredPublication: contentContext.featuredPublication || null,
+      publicationContext: contentContext,
       publisherDigest: digest,
       publisherFeed: unifiedFeed,
       unifiedFeed,
@@ -376,7 +686,8 @@ window.IBSS_PUBLISHER = (function () {
       orchestrated,
       digest,
       unifiedFeed,
-      snapshot
+      snapshot,
+      featuredPublication: contentContext.featuredPublication || null
     };
   }
 
@@ -386,6 +697,7 @@ window.IBSS_PUBLISHER = (function () {
     STATE.latestDigest = clone(orchestratedBundle.digest);
     STATE.latestFeed = clone(orchestratedBundle.unifiedFeed);
     STATE.latestSnapshot = clone(orchestratedBundle.snapshot);
+    STATE.latestFeaturedPublication = clone(orchestratedBundle.featuredPublication);
     STATE.latestKey = safeText(orchestratedBundle.digest?.key, null);
 
     STATE.snapshots.unshift(orchestratedBundle.snapshot);
@@ -414,36 +726,9 @@ window.IBSS_PUBLISHER = (function () {
     return clone(bundle.orchestrated);
   }
 
-  function resolveSourceSystem() {
-    try {
-      if (window.IBSS_ENGINE?.getLastSystemState) {
-        const last = window.IBSS_ENGINE.getLastSystemState();
-        if (last) return last;
-      }
-    } catch (error) {
-      console.error("IBSS_PUBLISHER resolve lastSystem error:", error);
-    }
-
-    try {
-      if (window.IBSS_ENGINE?.getSystemState) {
-        const live = window.IBSS_ENGINE.getSystemState();
-        if (live) return live;
-      }
-    } catch (error) {
-      console.error("IBSS_PUBLISHER resolve liveSystem error:", error);
-    }
-
-    try {
-      if (window.IBSS_ENGINE?.getStaticSystemFallback) {
-        const fallback = window.IBSS_ENGINE.getStaticSystemFallback();
-        if (fallback) return fallback;
-      }
-    } catch (error) {
-      console.error("IBSS_PUBLISHER resolve fallbackSystem error:", error);
-    }
-
-    return null;
-  }
+  /* =========================================
+     Public Readers
+  ========================================= */
 
   function getLatestSystem() {
     ensureInit();
@@ -494,6 +779,26 @@ window.IBSS_PUBLISHER = (function () {
     ensureInit();
     return STATE.latestSnapshot ? clone(STATE.latestSnapshot) : null;
   }
+
+  function getLatestFeaturedPublicationState() {
+    ensureInit();
+
+    if (STATE.latestFeaturedPublication) {
+      return clone(STATE.latestFeaturedPublication);
+    }
+
+    const system = getLatestOrchestratedSystem();
+    return clone(system?.featuredPublication || null);
+  }
+
+  function getPublicationContext() {
+    const system = getLatestOrchestratedSystem();
+    return clone(system?.publicationContext || null);
+  }
+
+  /* =========================================
+     Draft / Queue
+  ========================================= */
 
   function createPostObject(type, payload) {
     return {
@@ -590,12 +895,16 @@ ${summary}
   }
 
   function buildSystemBrief(system, lang = "en") {
-    const digest = system?.publisherDigest || buildDigest(system || {});
+    const digest = system?.publisherDigest || buildDigest(system || {}, {});
     const topTitle = digest?.topSignal
       ? getLocalizedText(digest.topSignal.title, lang)
       : (lang === "ar" ? "لا توجد إشارة مهيمنة" : "No dominant signal");
 
-    const pressure = safeNumber(digest?.pressure?.systemPressure, safeNumber(system?.systemPressure ?? system?.ssi, 0));
+    const pressure = safeNumber(
+      digest?.pressure?.systemPressure,
+      safeNumber(system?.systemPressure ?? system?.ssi, 0)
+    );
+
     const level = safeText(digest?.level || system?.level, "LOW");
     const mode = safeText(digest?.mode || system?.mode || system?.decision, "MONITORING");
 
@@ -620,6 +929,38 @@ Decision Mode: ${mode}
 Dominant Signal: ${topTitle}
 
 #IBSS #StrategicBrief #Intelligence`;
+  }
+
+  function buildFeaturedPublicationPost(publication, lang = "en") {
+    if (!publication) return "";
+
+    const title = getLocalizedText(publication.title, lang);
+    const summary = getLocalizedText(publication.summary, lang);
+    const edition = safeText(publication.edition, "");
+    const type = safeText(publication.type, "report").toUpperCase();
+    const unit = safeText(publication.unit, "SSU");
+
+    if (lang === "ar") {
+      return `📄 ${type} • ${unit}
+
+${title}
+
+${summary}
+
+${edition}
+
+#IBSS #PolicyPaper #SovereignStudies`;
+    }
+
+    return `📄 ${type} • ${unit}
+
+${title}
+
+${summary}
+
+${edition}
+
+#IBSS #PolicyPaper #SovereignStudies`;
   }
 
   function queueSignalPost(signal) {
@@ -652,6 +993,17 @@ Dominant Signal: ${topTitle}
     return enqueue(post);
   }
 
+  function queueFeaturedPublicationPost(publication) {
+    const post = createPostObject("publication", {
+      sourceId: publication?.id || null,
+      text_en: buildFeaturedPublicationPost(publication, "en"),
+      text_ar: buildFeaturedPublicationPost(publication, "ar"),
+      publication: buildContentPreview(publication)
+    });
+
+    return enqueue(post);
+  }
+
   function queueTopSignalFromEngine() {
     const system = resolveSourceSystem() || getLatestOrchestratedSystem();
     if (!system) return null;
@@ -676,12 +1028,23 @@ Dominant Signal: ${topTitle}
     return queueSystemBrief(orchestrated || system);
   }
 
+  function queueLatestFeaturedPublication() {
+    const publication = getLatestFeaturedPublication();
+    if (!publication) return null;
+
+    return queueFeaturedPublicationPost(publication);
+  }
+
   function generateTopSignalPost() {
     return queueTopSignalFromEngine();
   }
 
   function generateStrategicBrief() {
     return queueStrategicBriefFromEngine();
+  }
+
+  function generateFeaturedPublicationPost() {
+    return queueLatestFeaturedPublication();
   }
 
   function markAsPublished(postId, meta = {}) {
@@ -749,6 +1112,8 @@ Dominant Signal: ${topTitle}
     getUnifiedFeed,
     getSnapshots,
     getLatestSnapshot,
+    getLatestFeaturedPublication: getLatestFeaturedPublicationState,
+    getPublicationContext,
 
     getQueue,
     getHistory,
@@ -758,18 +1123,22 @@ Dominant Signal: ${topTitle}
     queueSignalPost,
     queueNewsPost,
     queueSystemBrief,
+    queueFeaturedPublicationPost,
     queueTopSignalFromEngine,
     queueLatestNewsFromFeed,
     queueStrategicBriefFromEngine,
+    queueLatestFeaturedPublication,
 
     generateTopSignalPost,
     generateStrategicBrief,
+    generateFeaturedPublicationPost,
 
     markAsPublished,
     removeFromQueue,
 
     buildSignalPost,
     buildNewsPost,
-    buildSystemBrief
+    buildSystemBrief,
+    buildFeaturedPublicationPost
   };
 })();
