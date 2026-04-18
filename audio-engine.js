@@ -2,25 +2,52 @@ window.IBSS_AUDIO = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_audio_state_v3",
-    masterVolume: 0.045,
+    storageKey: "ibss_audio_state_v4_clean",
+
+    masterVolume: 0.05,
+    fadeInSec: 0.012,
+    fadeOutFloor: 0.0001,
+
     criticalCooldownMs: 9000,
     highCooldownMs: 12000,
     mediumCooldownMs: 18000,
-    lowCooldownMs: 26000
+    lowCooldownMs: 26000,
+
+    minReplayGapMs: 1800,
+    strongPressureJump: 8,
+    unlockEvents: ["click", "touchstart", "keydown"],
+
+    defaultBeepFreq: 440,
+    defaultBeepDuration: 0.16,
+    defaultBeepVolume: 0.05,
+    defaultBeepType: "sine"
   };
 
   const STATE = {
-    enabled: false,
     initialized: false,
+    enabled: false,
+
     audioContext: null,
     masterGain: null,
+
+    userUnlocked: false,
+    unlockBound: false,
+
+    isPlaying: false,
+    lastPlayAt: 0,
+    lastPatternEndedAt: 0,
+
     lastLevel: null,
     lastPressure: 0,
-    lastPlayAt: 0,
     lastSystemHash: "",
-    userUnlocked: false
+    lastDecision: "",
+
+    lastResumeAttemptAt: 0
   };
+
+  /* =========================================
+     Utilities
+  ========================================= */
 
   function safeNumber(value, fallback = 0) {
     const n = Number(value);
@@ -39,6 +66,10 @@ window.IBSS_AUDIO = (function () {
     return Date.now();
   }
 
+  /* =========================================
+     Persistence
+  ========================================= */
+
   function loadState() {
     try {
       const raw = localStorage.getItem(CONFIG.storageKey);
@@ -55,16 +86,17 @@ window.IBSS_AUDIO = (function () {
 
   function saveState() {
     try {
-      localStorage.setItem(
-        CONFIG.storageKey,
-        JSON.stringify({
-          enabled: STATE.enabled
-        })
-      );
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+        enabled: STATE.enabled
+      }));
     } catch (error) {
       console.error("IBSS_AUDIO saveState error:", error);
     }
   }
+
+  /* =========================================
+     Initialization
+  ========================================= */
 
   function ensureInitialized() {
     if (STATE.initialized) return;
@@ -72,6 +104,10 @@ window.IBSS_AUDIO = (function () {
     bindUserUnlock();
     STATE.initialized = true;
   }
+
+  /* =========================================
+     Audio Context
+  ========================================= */
 
   function ensureContext() {
     ensureInitialized();
@@ -82,10 +118,15 @@ window.IBSS_AUDIO = (function () {
     if (!AudioCtx) return null;
 
     try {
-      STATE.audioContext = new AudioCtx();
-      STATE.masterGain = STATE.audioContext.createGain();
-      STATE.masterGain.gain.value = CONFIG.masterVolume;
-      STATE.masterGain.connect(STATE.audioContext.destination);
+      const ctx = new AudioCtx();
+      const gain = ctx.createGain();
+
+      gain.gain.value = CONFIG.masterVolume;
+      gain.connect(ctx.destination);
+
+      STATE.audioContext = ctx;
+      STATE.masterGain = gain;
+
       return STATE.audioContext;
     } catch (error) {
       console.error("IBSS_AUDIO ensureContext error:", error);
@@ -95,14 +136,28 @@ window.IBSS_AUDIO = (function () {
     }
   }
 
-  async function resumeContext() {
+  function getMasterGain() {
+    ensureContext();
+    return STATE.masterGain;
+  }
+
+  async function resumeContext(force = false) {
     const ctx = ensureContext();
     if (!ctx) return false;
+
+    const now = nowMs();
+
+    if (!force && now - STATE.lastResumeAttemptAt < 300) {
+      return ctx.state === "running";
+    }
+
+    STATE.lastResumeAttemptAt = now;
 
     try {
       if (ctx.state === "suspended") {
         await ctx.resume();
       }
+
       STATE.userUnlocked = ctx.state === "running";
       return ctx.state === "running";
     } catch (error) {
@@ -111,23 +166,35 @@ window.IBSS_AUDIO = (function () {
     }
   }
 
+  /* =========================================
+     Unlock Binding
+  ========================================= */
+
   function bindUserUnlock() {
-    if (document.documentElement.dataset.ibssAudioBound === "1") return;
-    document.documentElement.dataset.ibssAudioBound = "1";
+    if (STATE.unlockBound) return;
+    STATE.unlockBound = true;
 
     const unlockHandler = async function () {
       if (!STATE.enabled) return;
-      await resumeContext();
+      await resumeContext(true);
     };
 
-    ["click", "touchstart", "keydown"].forEach(eventName => {
+    CONFIG.unlockEvents.forEach(eventName => {
       window.addEventListener(eventName, unlockHandler, { passive: true });
     });
   }
 
-  function getMasterGain() {
-    ensureContext();
-    return STATE.masterGain;
+  /* =========================================
+     Tone Engine
+  ========================================= */
+
+  function canPlay() {
+    return !!(
+      STATE.enabled &&
+      STATE.audioContext &&
+      STATE.masterGain &&
+      STATE.audioContext.state === "running"
+    );
   }
 
   function createTone(freq, startTime, duration, volume, type = "sine") {
@@ -140,54 +207,87 @@ window.IBSS_AUDIO = (function () {
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(freq, startTime);
+    const safeFreq = clamp(safeNumber(freq, CONFIG.defaultBeepFreq), 80, 2400);
+    const safeDuration = clamp(safeNumber(duration, CONFIG.defaultBeepDuration), 0.03, 2.5);
+    const safeVolume = clamp(safeNumber(volume, CONFIG.defaultBeepVolume), 0.0001, 0.25);
+    const fadeIn = Math.min(CONFIG.fadeInSec, safeDuration * 0.4);
 
-    gainNode.gain.setValueAtTime(0.0001, startTime);
-    gainNode.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume), startTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+    oscillator.type = safeText(type, CONFIG.defaultBeepType);
+    oscillator.frequency.setValueAtTime(safeFreq, startTime);
+
+    gainNode.gain.setValueAtTime(CONFIG.fadeOutFloor, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(safeVolume, startTime + fadeIn);
+    gainNode.gain.exponentialRampToValueAtTime(CONFIG.fadeOutFloor, startTime + safeDuration);
 
     oscillator.connect(gainNode);
     gainNode.connect(master);
 
     oscillator.start(startTime);
-    oscillator.stop(startTime + duration + 0.02);
+    oscillator.stop(startTime + safeDuration + 0.03);
 
     return true;
   }
 
   function playPattern(pattern) {
     const ctx = ensureContext();
-    if (!ctx || ctx.state !== "running") return false;
+    if (!ctx || ctx.state !== "running" || !STATE.enabled) return false;
+
+    const now = nowMs();
+    if (STATE.isPlaying && now < STATE.lastPatternEndedAt) return false;
+    if (now - STATE.lastPlayAt < CONFIG.minReplayGapMs) return false;
+
+    const steps = Array.isArray(pattern) ? pattern : [];
+    if (!steps.length) return false;
 
     const start = ctx.currentTime + 0.02;
+    let maxEnd = 0;
 
-    pattern.forEach(step => {
+    STATE.isPlaying = true;
+
+    steps.forEach(step => {
+      const at = Math.max(0, safeNumber(step.at, 0));
+      const duration = clamp(safeNumber(step.duration, 0.12), 0.03, 2.5);
+      const endAt = at + duration;
+
       createTone(
-        safeNumber(step.freq, 440),
-        start + safeNumber(step.at, 0),
-        safeNumber(step.duration, 0.12),
-        clamp(safeNumber(step.volume, 0.04), 0.0001, 0.2),
+        safeNumber(step.freq, CONFIG.defaultBeepFreq),
+        start + at,
+        duration,
+        clamp(safeNumber(step.volume, CONFIG.defaultBeepVolume), 0.0001, 0.25),
         safeText(step.type, "sine")
       );
+
+      if (endAt > maxEnd) {
+        maxEnd = endAt;
+      }
     });
 
-    STATE.lastPlayAt = nowMs();
+    STATE.lastPlayAt = now;
+    STATE.lastPatternEndedAt = now + Math.round(maxEnd * 1000) + 80;
+
+    setTimeout(() => {
+      STATE.isPlaying = false;
+    }, Math.max(120, Math.round(maxEnd * 1000) + 100));
+
     return true;
   }
 
+  /* =========================================
+     Patterns
+  ========================================= */
+
   function playCriticalAlert() {
     return playPattern([
-      { freq: 880, at: 0.00, duration: 0.10, volume: 0.070, type: "triangle" },
-      { freq: 660, at: 0.13, duration: 0.10, volume: 0.060, type: "triangle" },
-      { freq: 990, at: 0.28, duration: 0.12, volume: 0.075, type: "triangle" }
+      { freq: 880, at: 0.00, duration: 0.10, volume: 0.075, type: "triangle" },
+      { freq: 660, at: 0.13, duration: 0.10, volume: 0.065, type: "triangle" },
+      { freq: 990, at: 0.28, duration: 0.12, volume: 0.078, type: "triangle" }
     ]);
   }
 
   function playHighAlert() {
     return playPattern([
       { freq: 740, at: 0.00, duration: 0.10, volume: 0.060, type: "triangle" },
-      { freq: 620, at: 0.16, duration: 0.10, volume: 0.050, type: "triangle" }
+      { freq: 620, at: 0.16, duration: 0.10, volume: 0.052, type: "triangle" }
     ]);
   }
 
@@ -204,9 +304,22 @@ window.IBSS_AUDIO = (function () {
     ]);
   }
 
-  function beep(freq = 440, duration = 0.16, volume = 0.05, type = "sine") {
-    const ctx = ensureContext();
-    if (!STATE.enabled || !ctx || ctx.state !== "running") return false;
+  /* =========================================
+     Beep API
+  ========================================= */
+
+  async function beep(
+    freq = CONFIG.defaultBeepFreq,
+    duration = CONFIG.defaultBeepDuration,
+    volume = CONFIG.defaultBeepVolume,
+    type = CONFIG.defaultBeepType
+  ) {
+    ensureInitialized();
+    if (!STATE.enabled) return false;
+
+    await resumeContext();
+
+    if (!canPlay()) return false;
 
     return playPattern([
       {
@@ -219,12 +332,18 @@ window.IBSS_AUDIO = (function () {
     ]);
   }
 
+  /* =========================================
+     System Logic
+  ========================================= */
+
   function systemHash(system) {
-    const level = safeText(system?.level, "LOW");
-    const decision = safeText(system?.decision, "WATCH");
+    const level = safeText(system?.level, "LOW").toUpperCase();
+    const decision = safeText(system?.decision, "WATCH").toUpperCase();
+    const mode = safeText(system?.mode, "MONITORING").toUpperCase();
     const topSignalId = safeText(system?.topSignal?.id || system?.dominantSignal?.id, "none");
     const pressure = Math.round(safeNumber(system?.systemPressure || system?.ssi, 0) / 5) * 5;
-    return `${level}|${decision}|${topSignalId}|${pressure}`;
+
+    return `${level}|${decision}|${mode}|${topSignalId}|${pressure}`;
   }
 
   function cooldownForLevel(level, pressure) {
@@ -237,27 +356,6 @@ window.IBSS_AUDIO = (function () {
     return CONFIG.lowCooldownMs;
   }
 
-  function shouldPlayForSystem(system) {
-    if (!STATE.enabled) return false;
-    if (!STATE.audioContext || STATE.audioContext.state !== "running") return false;
-
-    const level = safeText(system?.level, "LOW").toUpperCase();
-    const pressure = safeNumber(system?.systemPressure || system?.ssi, 0);
-    const hash = systemHash(system);
-    const cooldown = cooldownForLevel(level, pressure);
-    const elapsed = nowMs() - STATE.lastPlayAt;
-
-    const levelChanged = STATE.lastLevel !== level;
-    const strongPressureJump = Math.abs(pressure - STATE.lastPressure) >= 8;
-    const systemChanged = STATE.lastSystemHash !== hash;
-
-    if (levelChanged) return true;
-    if (strongPressureJump && elapsed >= Math.floor(cooldown * 0.65)) return true;
-    if (systemChanged && elapsed >= cooldown) return true;
-
-    return false;
-  }
-
   function choosePattern(system) {
     const level = safeText(system?.level, "LOW").toUpperCase();
     const pressure = safeNumber(system?.systemPressure || system?.ssi, 0);
@@ -268,34 +366,70 @@ window.IBSS_AUDIO = (function () {
     return playLowAlert;
   }
 
+  function shouldPlayForSystem(system) {
+    if (!STATE.enabled) return false;
+    if (!canPlay()) return false;
+
+    const level = safeText(system?.level, "LOW").toUpperCase();
+    const decision = safeText(system?.decision, "WATCH").toUpperCase();
+    const pressure = safeNumber(system?.systemPressure || system?.ssi, 0);
+    const hash = systemHash(system);
+
+    const cooldown = cooldownForLevel(level, pressure);
+    const elapsed = nowMs() - STATE.lastPlayAt;
+
+    const levelChanged = STATE.lastLevel !== level;
+    const decisionChanged = STATE.lastDecision !== decision;
+    const pressureJump = Math.abs(pressure - STATE.lastPressure) >= CONFIG.strongPressureJump;
+    const systemChanged = STATE.lastSystemHash !== hash;
+
+    if (levelChanged) return true;
+    if (decisionChanged && elapsed >= Math.floor(cooldown * 0.55)) return true;
+    if (pressureJump && elapsed >= Math.floor(cooldown * 0.65)) return true;
+    if (systemChanged && elapsed >= cooldown) return true;
+
+    return false;
+  }
+
   async function updateFromSystem(system) {
     ensureInitialized();
     if (!STATE.enabled || !system) return false;
 
     await resumeContext();
 
+    const level = safeText(system?.level, "LOW").toUpperCase();
+    const pressure = safeNumber(system?.systemPressure || system?.ssi, 0);
+    const decision = safeText(system?.decision, "WATCH").toUpperCase();
+    const hash = systemHash(system);
+
     if (!shouldPlayForSystem(system)) {
-      STATE.lastLevel = safeText(system?.level, "LOW").toUpperCase();
-      STATE.lastPressure = safeNumber(system?.systemPressure || system?.ssi, 0);
-      STATE.lastSystemHash = systemHash(system);
+      STATE.lastLevel = level;
+      STATE.lastPressure = pressure;
+      STATE.lastDecision = decision;
+      STATE.lastSystemHash = hash;
       return false;
     }
 
     const playFn = choosePattern(system);
     const played = playFn();
 
-    STATE.lastLevel = safeText(system?.level, "LOW").toUpperCase();
-    STATE.lastPressure = safeNumber(system?.systemPressure || system?.ssi, 0);
-    STATE.lastSystemHash = systemHash(system);
+    STATE.lastLevel = level;
+    STATE.lastPressure = pressure;
+    STATE.lastDecision = decision;
+    STATE.lastSystemHash = hash;
 
     return played;
   }
+
+  /* =========================================
+     Enable / Disable
+  ========================================= */
 
   async function enable() {
     ensureInitialized();
     STATE.enabled = true;
     saveState();
-    await resumeContext();
+    await resumeContext(true);
     return STATE.enabled;
   }
 
@@ -325,14 +459,18 @@ window.IBSS_AUDIO = (function () {
 
   function getState() {
     ensureInitialized();
+
     return {
       enabled: STATE.enabled,
       initialized: STATE.initialized,
       hasContext: !!STATE.audioContext,
       contextState: STATE.audioContext?.state || "none",
       userUnlocked: STATE.userUnlocked,
+      isPlaying: STATE.isPlaying,
       lastLevel: STATE.lastLevel,
-      lastPressure: STATE.lastPressure
+      lastPressure: STATE.lastPressure,
+      lastDecision: STATE.lastDecision,
+      lastSystemHash: STATE.lastSystemHash
     };
   }
 
