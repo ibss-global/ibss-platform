@@ -109,17 +109,13 @@ window.IBSS_RUNTIME = (function () {
     return div.innerHTML;
   }
 
-  function nowMs() {
-    return Date.now();
-  }
-
   /* =========================================
      Storage
   ========================================= */
 
   function saveState() {
     try {
-      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+      localStorage.setItem(JSON.stringify(CONFIG.storageKey), JSON.stringify({
         pageId: STATE.pageId,
         lang: STATE.lang,
         refreshMs: STATE.refreshMs
@@ -131,7 +127,7 @@ window.IBSS_RUNTIME = (function () {
 
   function loadState() {
     try {
-      const raw = localStorage.getItem(CONFIG.storageKey);
+      const raw = localStorage.getItem(JSON.stringify(CONFIG.storageKey)) || localStorage.getItem(CONFIG.storageKey);
       if (!raw) return;
 
       const parsed = JSON.parse(raw);
@@ -287,8 +283,7 @@ window.IBSS_RUNTIME = (function () {
 
     let width = 0;
     for (let i = 0; i < singleSetCount; i += 1) {
-      const node = children[i];
-      width += node.offsetWidth;
+      width += children[i].offsetWidth;
     }
 
     const style = getComputedStyle(STATE.tickerTrackEl);
@@ -475,6 +470,14 @@ window.IBSS_RUNTIME = (function () {
 
     STATE.system = system;
     refreshTicker(system);
+
+    try {
+      if (window.IBSS_AUDIO?.updateFromSystem) {
+        window.IBSS_AUDIO.updateFromSystem(system);
+      }
+    } catch (error) {
+      console.error("IBSS_RUNTIME audio update error:", error);
+    }
 
     if (typeof STATE.afterRender === "function") {
       try {
