@@ -2,7 +2,7 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publications_v2_full",
+    storageKey: "ibss_publications_v3_integrated",
     idPrefix: "PUB",
     maxItems: 500
   };
@@ -59,10 +59,6 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
     return `${CONFIG.idPrefix}-${type}-${stamp}-${rand}`.toUpperCase();
   }
 
-  function localize(en, ar) {
-    return { en, ar };
-  }
-
   function normalizeLocalized(value, fallback = "-") {
     if (typeof value === "string" || typeof value === "number") {
       const text = safeText(String(value), fallback);
@@ -115,7 +111,12 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
       "analysis",
       "policy_paper",
       "news",
-      "paper"
+      "paper",
+      "strategic_brief",
+      "news_analysis",
+      "sovereign_study",
+      "signal_update",
+      "platform_post"
     ];
     return allowed.includes(t) ? t : "study";
   }
@@ -295,24 +296,326 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
   }
 
   /* =========================
-     Publisher / Content Hooks
+     Content Bridge
   ========================= */
+
+  function getBaseContentWithoutIntake() {
+    const all = asArray(window.IBSS_CONTENT);
+    return all.filter(item => item?.sourcePlatform !== "ibss_intake");
+  }
+
+  function buildContentLikePublication(item) {
+    return {
+      id: item.id,
+      title: clone(item.title),
+      summary: clone(item.summary),
+      body: clone(item.body),
+      type: item.type,
+      classification: item.classification,
+      edition: item.edition,
+      status: item.status,
+      domain: item.domain,
+      region: item.region,
+      country: item.country,
+      countryId: item.countryId,
+      signalIds: clone(item.signalIds || []),
+      priority: item.priority,
+      sourcePlatform: "ibss_intake",
+      sourceUrl: item.sourceUrl,
+      publishedAt: item.publishedAt,
+      tags: clone(item.tags || []),
+      author: item.author,
+      authors: clone(item.authors || []),
+      unit: item.unit,
+      metrics: clone(item.metrics || {}),
+      engagement: {
+        reactions: 0,
+        comments: 0,
+        shares: 0
+      },
+      links: [],
+      meta: clone(item.meta || {})
+    };
+  }
+
+  function getIntegratedContent() {
+    const base = getBaseContentWithoutIntake();
+    const intake = getAll().map(buildContentLikePublication);
+    const map = new Map();
+
+    [...base, ...intake].forEach(item => {
+      const key = safeText(item?.id, "");
+      if (!key) return;
+      map.set(key, item);
+    });
+
+    return sortPublications([...map.values()]);
+  }
+
+  function countryAliases(value) {
+    const v = normalizeText(value);
+    if (!v) return ["global"];
+
+    const map = {
+      gaza: ["gaza", "ctr-gaza"],
+      lebanon: ["lebanon", "leb", "ctr-leb"],
+      iran: ["iran", "irn", "ctr-irn"],
+      redsea: ["redsea", "red sea", "rs", "ctr-rs"],
+      westbank: ["westbank", "west bank", "wb", "ctr-wb"],
+      global: ["global"]
+    };
+
+    return map[v] || [v];
+  }
+
+  function findByCountryInList(list, country) {
+    const aliases = countryAliases(country);
+    return list.filter(item => {
+      const a = normalizeText(item.country);
+      const b = normalizeText(item.countryId);
+      const c = normalizeText(item.region);
+      return aliases.includes(a) || aliases.includes(b) || aliases.includes(c);
+    });
+  }
+
+  function findByDomainInList(list, domain) {
+    const target = normalizeText(domain);
+    return list.filter(item => normalizeText(item.domain) === target);
+  }
+
+  function findByTypeInList(list, type) {
+    const target = normalizeType(type);
+    return list.filter(item => item.type === target);
+  }
+
+  function findContentLinkedToSignal(signalId) {
+    const target = safeText(signalId, "");
+    if (!target) return [];
+    return getIntegratedContent().filter(item =>
+      item.status === "published" && asArray(item.signalIds).includes(target)
+    );
+  }
+
+  function findContentLinkedToCountry(country) {
+    return findByCountryInList(
+      getIntegratedContent().filter(item => item.status === "published"),
+      country
+    );
+  }
+
+  function findContentLinkedToCluster(clusterKey) {
+    const raw = safeText(clusterKey, "");
+    if (!raw) return [];
+
+    const parts = raw.split("::");
+    const region = safeText(parts[0], "");
+    const domain = safeText(parts[1], "");
+
+    return getIntegratedContent().filter(item => {
+      if (item.status !== "published") return false;
+
+      const regionMatch =
+        normalizeText(item.region) === normalizeText(region) ||
+        normalizeText(item.country) === normalizeText(region) ||
+        normalizeText(item.countryId) === normalizeText(region);
+
+      const domainMatch = !domain || normalizeText(item.domain) === normalizeText(domain);
+
+      return regionMatch && domainMatch;
+    });
+  }
+
+  function buildPreviewCard(item, lang = "en") {
+    if (!item) return null;
+
+    return {
+      id: item.id,
+      type: item.type,
+      unit: item.unit || "SSU",
+      title: getLocalizedText(item.title, lang),
+      summary: getLocalizedText(item.summary, lang),
+      edition: item.edition || "",
+      domain: item.domain || "general",
+      country: item.country || "global",
+      countryId: item.countryId || "",
+      priority: item.priority || "LOW",
+      publishedAt: item.publishedAt || nowIso(),
+      meta: clone(item.meta || {}),
+      metrics: clone(item.metrics || {})
+    };
+  }
+
+  function patchContentLayer() {
+    const integrated = getIntegratedContent();
+
+    window.IBSS_CONTENT = integrated;
+    window.IBSS_CONTENT_INDEX = integrated.reduce((acc, item) => {
+      acc[item.id] = item;
+      return acc;
+    }, {});
+
+    if (!window.IBSS_CONTENT_UTILS) {
+      window.IBSS_CONTENT_UTILS = {};
+    }
+
+    if (!window.IBSS_CONTENT_API) {
+      window.IBSS_CONTENT_API = {};
+    }
+
+    const api = window.IBSS_CONTENT_API;
+    const utils = window.IBSS_CONTENT_UTILS;
+
+    function getAllContent() {
+      return clone(getIntegratedContent()) || [];
+    }
+
+    function getPublishedContent() {
+      return getAllContent().filter(item => item.status === "published");
+    }
+
+    function getPendingContent() {
+      return getAllContent().filter(item => item.status === "pending" || item.status === "draft");
+    }
+
+    function getArchivedContent() {
+      return getAllContent().filter(item => item.status === "archived");
+    }
+
+    function getFeaturedContent() {
+      return getAllContent().filter(item => !!item?.meta?.featured);
+    }
+
+    function getPinnedContent() {
+      return getAllContent().filter(item => !!item?.meta?.pinned);
+    }
+
+    function getCanonicalContent() {
+      return getAllContent().filter(item => !!item?.meta?.canonical);
+    }
+
+    function getLatestPublished() {
+      return getPublishedContent()[0] || null;
+    }
+
+    function getLatestFeaturedContent() {
+      const featured = getFeaturedContent().filter(item => item.status === "published");
+      if (featured.length) return featured[0];
+
+      const pinned = getPinnedContent().filter(item => item.status === "published");
+      if (pinned.length) return pinned[0];
+
+      return getLatestPublished();
+    }
+
+    function getById(id) {
+      return getAllContent().find(item => item.id === id) || null;
+    }
+
+    function getByType(type) {
+      return findByTypeInList(getAllContent(), type);
+    }
+
+    function getByCountry(country) {
+      return findByCountryInList(getAllContent(), country);
+    }
+
+    function getByDomain(domain) {
+      return findByDomainInList(getAllContent(), domain);
+    }
+
+    function getPublicationPreviewList(limit = 12, lang = "en") {
+      return getPublishedContent()
+        .slice(0, Math.max(1, safeNumber(limit, 12)))
+        .map(item => buildPreviewCard(item, lang));
+    }
+
+    function getContentState() {
+      const all = getAllContent();
+      return {
+        total: all.length,
+        published: getPublishedContent().length,
+        pending: getPendingContent().length,
+        archived: getArchivedContent().length,
+        featured: getFeaturedContent().length,
+        pinned: getPinnedContent().length,
+        canonical: getCanonicalContent().length,
+        intakeIntegrated: getAll().length
+      };
+    }
+
+    api.getAll = getAllContent;
+    api.getPublished = getPublishedContent;
+    api.getPending = getPendingContent;
+    api.getArchived = getArchivedContent;
+    api.getById = getById;
+    api.getByType = getByType;
+    api.getByCountry = getByCountry;
+    api.getByDomain = getByDomain;
+    api.getFeatured = getFeaturedContent;
+    api.getPinned = getPinnedContent;
+    api.getCanonical = getCanonicalContent;
+    api.getLatestPublished = getLatestPublished;
+    api.getLatestFeaturedContent = getLatestFeaturedContent;
+    api.getPublicationPreviewList = getPublicationPreviewList;
+    api.getContentLinkedToSignal = function (signalId) {
+      return clone(findContentLinkedToSignal(signalId)) || [];
+    };
+    api.getContentLinkedToCountry = function (country) {
+      return clone(findContentLinkedToCountry(country)) || [];
+    };
+    api.getContentLinkedToCluster = function (clusterKey) {
+      return clone(findContentLinkedToCluster(clusterKey)) || [];
+    };
+    api.buildPreviewCard = buildPreviewCard;
+    api.getContentState = getContentState;
+    api.reloadFromIntake = function () {
+      patchContentLayer();
+      return true;
+    };
+
+    utils.getAll = getAllContent;
+    utils.getPublished = getPublishedContent;
+    utils.getPending = getPendingContent;
+    utils.getArchived = getArchivedContent;
+    utils.getById = getById;
+    utils.getByType = getByType;
+    utils.getByCountry = getByCountry;
+    utils.getByDomain = getByDomain;
+    utils.getFeatured = getFeaturedContent;
+    utils.getPinned = getPinnedContent;
+    utils.getCanonical = getCanonicalContent;
+    utils.getLatestPublished = getLatestPublished;
+    utils.getContentState = getContentState;
+  }
+
+  /* =========================
+     Publisher Hook
+  ========================= */
+
+  function patchPublisherLayer() {
+    if (!window.IBSS_PUBLISHER) return;
+
+    if (typeof window.IBSS_PUBLISHER.registerPublication !== "function") {
+      window.IBSS_PUBLISHER.registerPublication = function () {
+        return true;
+      };
+    }
+  }
 
   function syncExternalLayers(action, publication) {
     try {
+      patchContentLayer();
+    } catch (error) {
+      console.error("IBSS_PUBLICATION_INTAKE -> CONTENT sync error:", error);
+    }
+
+    try {
+      patchPublisherLayer();
       if (window.IBSS_PUBLISHER?.registerPublication && (action === "register" || action === "update")) {
         window.IBSS_PUBLISHER.registerPublication(publication);
       }
     } catch (error) {
       console.error("IBSS_PUBLICATION_INTAKE -> PUBLISHER sync error:", error);
-    }
-
-    try {
-      if (window.IBSS_CONTENT_API?.reloadFromIntake) {
-        window.IBSS_CONTENT_API.reloadFromIntake();
-      }
-    } catch (error) {
-      console.error("IBSS_PUBLICATION_INTAKE -> CONTENT sync error:", error);
     }
   }
 
@@ -370,6 +673,7 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
 
     STATE.registry.delete(id);
     saveState();
+    patchContentLayer();
     dispatchChange({ action: "remove", publication: clone(existing) });
     return true;
   }
@@ -378,6 +682,7 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
     ensureInit();
     STATE.registry.clear();
     saveState();
+    patchContentLayer();
     dispatchChange({ action: "clear-all" });
     return true;
   }
@@ -425,7 +730,9 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
   }
 
   function getLatestFeatured() {
-    return getFeatured()[0] || null;
+    const featured = getFeatured().filter(item => item.status === "published");
+    if (featured.length) return featured[0];
+    return getPublished()[0] || null;
   }
 
   /* =========================
@@ -494,6 +801,18 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
       canonical: getCanonical().length
     };
   }
+
+  /* =========================
+     Init
+  ========================= */
+
+  ensureInit();
+  patchPublisherLayer();
+  patchContentLayer();
+
+  window.addEventListener("ibss:publication-intake-updated", function () {
+    patchContentLayer();
+  });
 
   return {
     CONFIG,
