@@ -2,12 +2,16 @@ window.IBSS_RUNTIME = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_runtime_state_v4",
+    storageKey: "ibss_runtime_state_v5_clean",
     defaultRefreshMs: 4000,
-    tickerStepPx: 1,
-    tickerFrameMs: 22,
+    minRefreshMs: 1000,
+    maxRefreshMs: 60000,
+
+    tickerStepPx: 0.7,
+    tickerFrameThrottleMs: 20,
     minTickerCopies: 3,
-    deadTickerRetryEvery: 10
+    deadTickerRetryEvery: 18,
+    resizeDebounceMs: 180
   };
 
   const STATE = {
@@ -22,14 +26,26 @@ window.IBSS_RUNTIME = (function () {
     tickerTrackEl: null,
     tickerAnimationId: null,
     tickerItems: [],
+    tickerSignature: "",
     tickerCopies: CONFIG.minTickerCopies,
     tickerOffset: 0,
     tickerFrameCounter: 0,
     tickerFrozenChecks: 0,
+    tickerLastFrameAt: 0,
+    tickerCycleWidth: 0,
 
     afterRender: null,
-    systemProvider: null
+    beforeResolve: null,
+    afterResolve: null,
+    systemProvider: null,
+    tickerItemsProvider: null,
+
+    resizeTimer: null
   };
+
+  /* =========================================
+     Utilities
+  ========================================= */
 
   function safeText(value, fallback = "") {
     return typeof value === "string" && value.trim() ? value.trim() : fallback;
@@ -49,7 +65,12 @@ window.IBSS_RUNTIME = (function () {
   }
 
   function deepClone(value) {
-    return JSON.parse(JSON.stringify(value));
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      console.error("IBSS_RUNTIME deepClone error:", error);
+      return null;
+    }
   }
 
   function getLocalizedText(value, lang = "en") {
@@ -69,7 +90,7 @@ window.IBSS_RUNTIME = (function () {
   }
 
   function normalizePriority(value) {
-    const p = String(value || "LOW").toUpperCase();
+    const p = String(value || "LOW").toUpperCase().trim();
     if (p === "HIGH") return "HIGH";
     if (p === "MEDIUM") return "MEDIUM";
     return "LOW";
@@ -87,6 +108,14 @@ window.IBSS_RUNTIME = (function () {
     div.textContent = text ?? "";
     return div.innerHTML;
   }
+
+  function nowMs() {
+    return Date.now();
+  }
+
+  /* =========================================
+     Storage
+  ========================================= */
 
   function saveState() {
     try {
@@ -110,11 +139,19 @@ window.IBSS_RUNTIME = (function () {
 
       STATE.pageId = parsed.pageId || null;
       STATE.lang = parsed.lang || "en";
-      STATE.refreshMs = safeNumber(parsed.refreshMs, CONFIG.defaultRefreshMs);
+      STATE.refreshMs = clamp(
+        safeNumber(parsed.refreshMs, CONFIG.defaultRefreshMs),
+        CONFIG.minRefreshMs,
+        CONFIG.maxRefreshMs
+      );
     } catch (error) {
       console.error("IBSS_RUNTIME loadState error:", error);
     }
   }
+
+  /* =========================================
+     Ticker Core
+  ========================================= */
 
   function stopTicker() {
     if (STATE.tickerAnimationId) {
@@ -125,6 +162,12 @@ window.IBSS_RUNTIME = (function () {
     STATE.tickerOffset = 0;
     STATE.tickerFrameCounter = 0;
     STATE.tickerFrozenChecks = 0;
+    STATE.tickerLastFrameAt = 0;
+    STATE.tickerCycleWidth = 0;
+
+    if (STATE.tickerTrackEl) {
+      STATE.tickerTrackEl.style.transform = "translateX(0px)";
+    }
   }
 
   function clearTicker() {
@@ -132,43 +175,64 @@ window.IBSS_RUNTIME = (function () {
 
     if (STATE.tickerTrackEl) {
       STATE.tickerTrackEl.innerHTML = "";
-      STATE.tickerTrackEl.scrollLeft = 0;
+      STATE.tickerTrackEl.style.transform = "translateX(0px)";
     }
 
     STATE.tickerItems = [];
+    STATE.tickerSignature = "";
   }
 
-  function destroyRefreshTimer() {
-    if (STATE.refreshTimer) {
-      clearInterval(STATE.refreshTimer);
-      STATE.refreshTimer = null;
-    }
+  function normalizeTickerItems(items) {
+    const base = asArray(items).length ? asArray(items) : [{
+      priority: "LOW",
+      text: STATE.lang === "ar" ? "لا توجد بيانات." : "No data available."
+    }];
+
+    return base.map(item => ({
+      priority: normalizePriority(item?.priority || "LOW"),
+      text: safeText(item?.text, STATE.lang === "ar" ? "لا توجد بيانات." : "No data available.")
+    }));
   }
 
   function buildTickerItemsFromSystem(system) {
+    try {
+      if (typeof STATE.tickerItemsProvider === "function") {
+        const custom = STATE.tickerItemsProvider(system);
+        if (Array.isArray(custom) && custom.length) {
+          return normalizeTickerItems(custom);
+        }
+      }
+    } catch (error) {
+      console.error("IBSS_RUNTIME tickerItemsProvider error:", error);
+    }
+
     const unifiedFeed = asArray(system?.publisherFeed || system?.unifiedFeed);
     if (unifiedFeed.length) {
-      return unifiedFeed.map(item => ({
-        priority: normalizePriority(item?.priority || system?.level || "LOW"),
-        text: getLocalizedText(item?.text, STATE.lang) || "-"
-      }));
+      return normalizeTickerItems(
+        unifiedFeed.map(item => ({
+          priority: normalizePriority(item?.priority || system?.level || "LOW"),
+          text: getLocalizedText(item?.text, STATE.lang) || "-"
+        }))
+      );
     }
 
     const feed = asArray(system?.feed);
     if (feed.length) {
-      return feed.map(item => {
-        if (typeof item === "string") {
-          return {
-            priority: normalizePriority(system?.level || "LOW"),
-            text: item
-          };
-        }
+      return normalizeTickerItems(
+        feed.map(item => {
+          if (typeof item === "string") {
+            return {
+              priority: normalizePriority(system?.level || "LOW"),
+              text: item
+            };
+          }
 
-        return {
-          priority: normalizePriority(item?.priority || system?.level || "LOW"),
-          text: getLocalizedText(item?.text, STATE.lang) || "-"
-        };
-      });
+          return {
+            priority: normalizePriority(item?.priority || system?.level || "LOW"),
+            text: getLocalizedText(item?.text, STATE.lang) || "-"
+          };
+        })
+      );
     }
 
     const synthetic = [];
@@ -209,29 +273,42 @@ window.IBSS_RUNTIME = (function () {
       });
     }
 
-    if (!synthetic.length) {
-      synthetic.push({
-        priority: "LOW",
-        text: STATE.lang === "ar"
-          ? "النظام في وضع المراقبة."
-          : "System remains in monitoring mode."
-      });
+    return normalizeTickerItems(synthetic);
+  }
+
+  function measureSingleCycleWidth() {
+    if (!STATE.tickerTrackEl) return 0;
+
+    const children = Array.from(STATE.tickerTrackEl.children);
+    if (!children.length) return 0;
+
+    const singleSetCount = Math.floor(children.length / STATE.tickerCopies);
+    if (!singleSetCount) return 0;
+
+    let width = 0;
+    for (let i = 0; i < singleSetCount; i += 1) {
+      const node = children[i];
+      width += node.offsetWidth;
     }
 
-    return synthetic;
+    const style = getComputedStyle(STATE.tickerTrackEl);
+    const gap = safeNumber(parseFloat(style.columnGap || style.gap || "0"), 0);
+
+    if (singleSetCount > 1) {
+      width += gap * (singleSetCount - 1);
+    }
+
+    return width;
   }
 
   function renderTickerMarkup(items) {
     if (!STATE.tickerTrackEl) return;
 
-    const base = asArray(items).length ? asArray(items) : [{
-      priority: "LOW",
-      text: STATE.lang === "ar" ? "لا توجد بيانات." : "No data available."
-    }];
-
+    const normalizedItems = normalizeTickerItems(items);
     const repeated = [];
+
     for (let i = 0; i < STATE.tickerCopies; i += 1) {
-      repeated.push(...base);
+      repeated.push(...normalizedItems);
     }
 
     STATE.tickerTrackEl.innerHTML = repeated.map(item => `
@@ -241,47 +318,72 @@ window.IBSS_RUNTIME = (function () {
       </div>
     `).join("");
 
-    STATE.tickerTrackEl.scrollLeft = 0;
+    STATE.tickerTrackEl.style.willChange = "transform";
+    STATE.tickerTrackEl.style.transform = "translateX(0px)";
     STATE.tickerOffset = 0;
+
+    requestAnimationFrame(() => {
+      STATE.tickerCycleWidth = measureSingleCycleWidth();
+    });
   }
 
-  function tickerContentWidth() {
-    if (!STATE.tickerTrackEl) return 0;
-    return Math.max(0, STATE.tickerTrackEl.scrollWidth / STATE.tickerCopies);
-  }
-
-  function animateTicker() {
+  function animateTicker(ts) {
     if (!STATE.tickerTrackEl) return;
 
-    const fullCycleWidth = tickerContentWidth();
-    if (fullCycleWidth <= 0) {
+    if (!STATE.tickerLastFrameAt) {
+      STATE.tickerLastFrameAt = ts;
+    }
+
+    const elapsed = ts - STATE.tickerLastFrameAt;
+    if (elapsed < CONFIG.tickerFrameThrottleMs) {
+      STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
+      return;
+    }
+
+    STATE.tickerLastFrameAt = ts;
+
+    if (STATE.tickerCycleWidth <= 0) {
+      STATE.tickerCycleWidth = measureSingleCycleWidth();
       STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
       return;
     }
 
     STATE.tickerOffset += CONFIG.tickerStepPx;
 
-    if (STATE.tickerOffset >= fullCycleWidth) {
+    if (STATE.tickerOffset >= STATE.tickerCycleWidth) {
       STATE.tickerOffset = 0;
     }
 
-    STATE.tickerTrackEl.scrollLeft = STATE.tickerOffset;
+    const translateX = STATE.lang === "ar" ? STATE.tickerOffset : -STATE.tickerOffset;
+    STATE.tickerTrackEl.style.transform = `translateX(${translateX}px)`;
     STATE.tickerFrameCounter += 1;
 
     if (STATE.tickerFrameCounter % CONFIG.deadTickerRetryEvery === 0) {
-      const actual = safeNumber(STATE.tickerTrackEl.scrollLeft, 0);
-      if (Math.abs(actual - STATE.tickerOffset) > 8) {
+      const transform = STATE.tickerTrackEl.style.transform || "";
+      if (!transform.includes("translateX")) {
         STATE.tickerFrozenChecks += 1;
       } else {
         STATE.tickerFrozenChecks = 0;
       }
 
       if (STATE.tickerFrozenChecks >= 2) {
-        STATE.tickerTrackEl.scrollLeft = STATE.tickerOffset;
+        STATE.tickerTrackEl.style.transform = `translateX(${translateX}px)`;
         STATE.tickerFrozenChecks = 0;
       }
     }
 
+    STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
+  }
+
+  function restartTicker() {
+    if (!STATE.tickerTrackEl || !STATE.system) return;
+
+    const items = buildTickerItemsFromSystem(STATE.system);
+    STATE.tickerItems = deepClone(items);
+    STATE.tickerSignature = JSON.stringify(items);
+
+    renderTickerMarkup(items);
+    stopTicker();
     STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
   }
 
@@ -291,8 +393,10 @@ window.IBSS_RUNTIME = (function () {
     const items = buildTickerItemsFromSystem(system);
     const signature = JSON.stringify(items);
 
-    if (JSON.stringify(STATE.tickerItems) !== signature) {
+    if (signature !== STATE.tickerSignature) {
       STATE.tickerItems = deepClone(items);
+      STATE.tickerSignature = signature;
+
       renderTickerMarkup(items);
       stopTicker();
       STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
@@ -305,8 +409,23 @@ window.IBSS_RUNTIME = (function () {
     }
   }
 
+  /* =========================================
+     Refresh Loop
+  ========================================= */
+
+  function destroyRefreshTimer() {
+    if (STATE.refreshTimer) {
+      clearInterval(STATE.refreshTimer);
+      STATE.refreshTimer = null;
+    }
+  }
+
   function getRawSystem() {
     try {
+      if (typeof STATE.beforeResolve === "function") {
+        STATE.beforeResolve();
+      }
+
       if (typeof STATE.systemProvider === "function") {
         return STATE.systemProvider();
       }
@@ -329,15 +448,26 @@ window.IBSS_RUNTIME = (function () {
     const rawSystem = getRawSystem();
     if (!rawSystem) return null;
 
+    let resolved = rawSystem;
+
     try {
       if (window.IBSS_PUBLISHER?.orchestrateSystem) {
-        return window.IBSS_PUBLISHER.orchestrateSystem(rawSystem);
+        resolved = window.IBSS_PUBLISHER.orchestrateSystem(rawSystem) || rawSystem;
       }
     } catch (error) {
       console.error("IBSS_RUNTIME publisher orchestration error:", error);
+      resolved = rawSystem;
     }
 
-    return rawSystem;
+    try {
+      if (typeof STATE.afterResolve === "function") {
+        STATE.afterResolve(resolved);
+      }
+    } catch (error) {
+      console.error("IBSS_RUNTIME afterResolve error:", error);
+    }
+
+    return resolved;
   }
 
   function render(system) {
@@ -368,8 +498,12 @@ window.IBSS_RUNTIME = (function () {
 
     STATE.refreshTimer = setInterval(() => {
       runFrame();
-    }, clamp(STATE.refreshMs, 1000, 60000));
+    }, clamp(STATE.refreshMs, CONFIG.minRefreshMs, CONFIG.maxRefreshMs));
   }
+
+  /* =========================================
+     Global Events
+  ========================================= */
 
   function bindGlobalEvents() {
     if (window.__IBSS_RUNTIME_EVENTS_BOUND__) return;
@@ -384,8 +518,10 @@ window.IBSS_RUNTIME = (function () {
     });
 
     window.addEventListener("resize", function () {
-      if (!STATE.tickerTrackEl || !STATE.system) return;
-      renderTickerMarkup(buildTickerItemsFromSystem(STATE.system));
+      clearTimeout(STATE.resizeTimer);
+      STATE.resizeTimer = setTimeout(() => {
+        restartTicker();
+      }, CONFIG.resizeDebounceMs);
     });
   }
 
@@ -403,17 +539,28 @@ window.IBSS_RUNTIME = (function () {
     }
   }
 
+  /* =========================================
+     Public API
+  ========================================= */
+
   function start(options = {}) {
     loadState();
 
     STATE.started = true;
     STATE.pageId = safeText(options.pageId, STATE.pageId || "unknown");
     STATE.lang = safeText(options.lang, STATE.lang || "en");
-    STATE.refreshMs = safeNumber(options.refreshMs, CONFIG.defaultRefreshMs);
+    STATE.refreshMs = clamp(
+      safeNumber(options.refreshMs, CONFIG.defaultRefreshMs),
+      CONFIG.minRefreshMs,
+      CONFIG.maxRefreshMs
+    );
 
     STATE.tickerTrackEl = options.tickerTrackEl || null;
     STATE.afterRender = typeof options.afterRender === "function" ? options.afterRender : null;
+    STATE.beforeResolve = typeof options.beforeResolve === "function" ? options.beforeResolve : null;
+    STATE.afterResolve = typeof options.afterResolve === "function" ? options.afterResolve : null;
     STATE.systemProvider = typeof options.systemProvider === "function" ? options.systemProvider : null;
+    STATE.tickerItemsProvider = typeof options.tickerItemsProvider === "function" ? options.tickerItemsProvider : null;
 
     saveState();
     bindGlobalEvents();
@@ -428,7 +575,7 @@ window.IBSS_RUNTIME = (function () {
     saveState();
 
     if (STATE.system) {
-      refreshTicker(STATE.system);
+      restartTicker();
     }
   }
 
@@ -438,6 +585,10 @@ window.IBSS_RUNTIME = (function () {
     clearTicker();
   }
 
+  function forceRender() {
+    return runFrame();
+  }
+
   function getState() {
     return {
       started: STATE.started,
@@ -445,7 +596,9 @@ window.IBSS_RUNTIME = (function () {
       lang: STATE.lang,
       refreshMs: STATE.refreshMs,
       hasTicker: !!STATE.tickerTrackEl,
-      hasSystem: !!STATE.system
+      hasSystem: !!STATE.system,
+      tickerItemsCount: STATE.tickerItems.length,
+      tickerCycleWidth: STATE.tickerCycleWidth
     };
   }
 
@@ -454,6 +607,8 @@ window.IBSS_RUNTIME = (function () {
     start,
     stop,
     setLanguage,
+    forceRender,
+    restartTicker,
     getState
   };
 })();
