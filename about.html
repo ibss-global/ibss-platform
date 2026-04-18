@@ -9,16 +9,26 @@
 :root{
   --bg:#040404;
   --panel:#0d0d0d;
+  --panel2:#121212;
+  --panel3:#171717;
   --gold:#d4af37;
   --text:#e8e8e8;
   --muted:#9d9d9d;
   --border:rgba(212,175,55,.28);
+  --soft-border:rgba(255,255,255,.08);
+  --soft-border-2:rgba(255,255,255,.06);
+  --green:#00d084;
+  --orange:#ff9f1a;
+  --red:#ff4d4f;
+  --blue:#5a8cff;
+  --shadow:0 10px 24px rgba(0,0,0,.18);
 }
 
 *{box-sizing:border-box}
 
-body{
+html,body{
   margin:0;
+  padding:0;
   font-family:Arial,sans-serif;
   background:
     radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
@@ -26,8 +36,10 @@ body{
   color:var(--text);
 }
 
+body{min-height:100vh}
+
 .wrap{
-  width:min(1000px,92%);
+  width:min(1180px,92%);
   margin:auto;
   padding:20px 0 60px;
 }
@@ -44,8 +56,8 @@ body{
 
 .brand{
   color:var(--gold);
-  font-size:28px;
-  font-weight:800;
+  font-size:30px;
+  font-weight:900;
   text-decoration:none;
   letter-spacing:1px;
 }
@@ -70,7 +82,7 @@ body{
   text-decoration:none;
   border:1px solid rgba(255,255,255,.08);
   padding:10px 14px;
-  border-radius:10px;
+  border-radius:12px;
   font-size:14px;
   transition:.2s ease;
 }
@@ -79,80 +91,326 @@ body{
 .nav a:hover{
   color:var(--gold);
   border-color:var(--border);
+  box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
 }
 
-.lang-switch{
+.lang-switch,
+.audio-switch{
   display:flex;
   gap:6px;
 }
 
-.lang-switch button{
+.lang-switch button,
+.audio-switch button{
   background:none;
   border:1px solid rgba(255,255,255,.1);
   color:#ccc;
   padding:8px 10px;
-  border-radius:8px;
+  border-radius:10px;
   cursor:pointer;
   transition:.2s ease;
   font-size:13px;
 }
 
 .lang-switch button:hover,
-.lang-switch button.active{
+.lang-switch button.active,
+.audio-switch button:hover,
+.audio-switch button.active{
   color:var(--gold);
   border-color:var(--gold);
 }
 
 .hero{
   text-align:center;
-  padding:40px 0 30px;
+  padding:40px 0 24px;
 }
 
 .hero h1{
-  font-size:38px;
+  font-size:42px;
   margin:0;
   color:#fff;
+  font-weight:900;
 }
 
 .hero p{
   color:var(--muted);
+  margin:14px auto 0;
+  line-height:1.9;
+  max-width:840px;
+  font-size:16px;
+}
+
+.meta-line{
   margin-top:12px;
-  line-height:1.8;
-  max-width:760px;
-  margin-inline:auto;
+  color:#8a8a8a;
+  font-size:13px;
+}
+
+.hero-badges{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+
+.meta-badge{
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+  color:#ddd;
+}
+
+.meta-badge.live{
+  color:var(--green);
+  border-color:rgba(0,208,132,.25);
+  background:rgba(0,208,132,.08);
+}
+
+.meta-badge.fallback{
+  color:var(--orange);
+  border-color:rgba(255,159,26,.25);
+  background:rgba(255,159,26,.08);
+}
+
+.alert{
+  display:none;
+  margin:18px 0 0;
+  text-align:center;
+  padding:14px;
+  border-radius:14px;
+  background:rgba(255,77,79,.14);
+  border:1px solid rgba(255,77,79,.40);
+  color:#ffd1d1;
+  font-weight:800;
+  line-height:1.7;
 }
 
 .section{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:18px;
-  padding:24px;
-  margin:20px 0;
+  margin-top:20px;
 }
 
 .title{
   color:var(--gold);
-  font-size:22px;
+  font-size:24px;
+  margin-bottom:16px;
+  font-weight:900;
+}
+
+.ticker-shell{
+  border:1px solid rgba(212,175,55,.18);
+  border-radius:18px;
+  background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
+  overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+  position:relative;
+}
+
+.ticker-track{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  direction:ltr;
+  white-space:nowrap;
+  scroll-behavior:auto;
+  min-height:72px;
+}
+
+.ticker-track::-webkit-scrollbar{display:none}
+
+.ticker-item{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  min-height:44px;
+  max-width:min(82vw,540px);
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.05);
+  color:#f0f0f0;
+  font-size:13px;
+  line-height:1.6;
+  white-space:normal;
+}
+
+.ticker-item-text{
+  display:block;
+  unicode-bidi:plaintext;
+}
+
+.ticker-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  flex:0 0 8px;
+}
+
+.ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
+.ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
+.ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
+
+.mini-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+
+.mini-card{
+  background:var(--panel);
+  border:1px solid var(--soft-border);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:var(--shadow);
+}
+
+.mini-card .mini-title{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:10px;
+}
+
+.mini-card .mini-value{
+  font-size:28px;
+  font-weight:900;
+  color:#fff;
+}
+
+.mini-card .mini-value.high{color:var(--red)}
+.mini-card .mini-value.medium{color:var(--orange)}
+.mini-card .mini-value.low{color:var(--green)}
+.mini-card .mini-value.gold{color:var(--gold)}
+.mini-card .mini-value.blue{color:var(--blue)}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-top:18px;
+}
+
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  margin-top:18px;
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:var(--shadow);
+}
+
+.section-box,
+.publication-box,
+.snapshot-item,
+.feed-item,
+.metric-row{
+  background:var(--panel2);
+  border:1px solid var(--soft-border-2);
+  border-radius:16px;
+}
+
+.section-box,
+.publication-box{
+  padding:18px;
+}
+
+.section-box p,
+.publication-box p{
+  margin:0;
+  line-height:1.9;
+  color:#ddd;
+  font-size:15px;
+}
+
+.section-box h3,
+.publication-box h3{
+  margin:0 0 10px;
+  font-size:26px;
+  color:#fff;
+  line-height:1.35;
+}
+
+.section-kicker,
+.publication-kicker{
+  color:var(--gold);
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.08em;
+  margin-bottom:8px;
+}
+
+.founder-name{
+  font-size:28px;
+  font-weight:900;
+  color:#fff;
+  margin-bottom:6px;
+}
+
+.founder-role{
+  color:var(--gold);
   margin-bottom:12px;
   font-weight:700;
 }
 
-.text{
-  line-height:1.9;
-  color:#ddd;
+.snapshot-box,
+.feed-box,
+.metrics-box{
+  display:grid;
+  gap:12px;
 }
 
-.founder{
-  font-size:26px;
-  font-weight:700;
+.snapshot-item,
+.feed-item,
+.metric-row{
+  padding:14px 15px;
+}
+
+.snapshot-item strong,
+.metric-name{
+  display:block;
   color:#fff;
+  margin-bottom:6px;
+  font-size:15px;
 }
 
-.role{
-  color:var(--gold);
-  margin-top:6px;
-  margin-bottom:14px;
+.snapshot-meta,
+.metric-sub,
+.publication-meta{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.7;
 }
+
+.metric-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+
+.metric-score{
+  color:var(--gold);
+  font-size:21px;
+  font-weight:900;
+  flex:0 0 auto;
+}
+
+.metric-score.high{color:var(--red)}
+.metric-score.medium{color:var(--orange)}
+.metric-score.low{color:var(--green)}
 
 .footer{
   margin-top:30px;
@@ -169,13 +427,23 @@ html[dir="rtl"] body{
 
 html[dir="rtl"] .topbar,
 html[dir="rtl"] .top-actions,
-html[dir="rtl"] .nav{
+html[dir="rtl"] .nav,
+html[dir="rtl"] .metric-row{
   direction:rtl;
 }
 
 html[dir="rtl"] .hero,
-html[dir="rtl"] .footer{
+html[dir="rtl"] .footer,
+html[dir="rtl"] .alert{
   text-align:center;
+}
+
+@media(max-width:1100px){
+  .mini-grid,
+  .grid,
+  .grid-3{
+    grid-template-columns:1fr;
+  }
 }
 
 @media(max-width:700px){
@@ -184,7 +452,7 @@ html[dir="rtl"] .footer{
   }
 
   .hero h1{
-    font-size:30px;
+    font-size:34px;
   }
 }
 </style>
@@ -208,148 +476,698 @@ html[dir="rtl"] .footer{
       </div>
 
       <div class="lang-switch">
-        <button id="btn-en" onclick="setLang('en')">EN</button>
-        <button id="btn-ar" onclick="setLang('ar')">AR</button>
+        <button id="btn-en" type="button">EN</button>
+        <button id="btn-ar" type="button">AR</button>
+      </div>
+
+      <div class="audio-switch">
+        <button id="audioBtn" type="button">AUDIO</button>
       </div>
     </div>
   </div>
 
   <div class="hero">
-    <h1 data-i18n="page_title">About IBSS</h1>
-    <p data-i18n="page_subtitle">
+    <h1 id="pageTitle">About IBSS</h1>
+    <p id="pageSubtitle">
       International Bureau of Sovereign Studies — a strategic platform for structured signal interpretation and sovereign decision analysis.
     </p>
-  </div>
+    <div id="metaLine" class="meta-line">Source: -</div>
 
-  <div class="section">
-    <div class="title" data-i18n="what_title">What is IBSS?</div>
-    <div class="text" data-i18n="what_text">
-      IBSS is a sovereign intelligence platform designed to transform raw signals into structured strategic understanding.
-      It operates beyond traditional analysis by focusing on systems, patterns, and decision dynamics rather than isolated events.
-      IBSS is built on the principle that modern conflicts are not defined by single actions, but by layered interactions
-      across military, political, and narrative domains.
+    <div class="hero-badges">
+      <span id="sourceBadge" class="meta-badge fallback">SOURCE</span>
+      <span id="metricsBadge" class="meta-badge fallback">METRICS</span>
+      <span id="audioBadge" class="meta-badge fallback">AUDIO</span>
     </div>
   </div>
 
+  <div id="alertBox" class="alert"></div>
+
   <div class="section">
-    <div class="title" data-i18n="philosophy_title">Core Philosophy</div>
-    <div class="text" data-i18n="philosophy_text">
-      Structure over opinion. Signals over noise. Probability over certainty. Systems over events.
-      IBSS does not predict the future in a simplistic way — it models the space in which the future becomes possible.
+    <div class="title" id="tickerTitle">Live Intelligence Strip</div>
+    <div class="ticker-shell">
+      <div id="tickerTrack" class="ticker-track"></div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="title" data-i18n="founder_title">Founder</div>
+  <div class="mini-grid section">
+    <div class="mini-card">
+      <div class="mini-title" id="miniSystemPressureLabel">System Stress</div>
+      <div id="miniSystemPressure" class="mini-value high">0</div>
+    </div>
 
-    <div class="founder">Naeem M. Dahalan</div>
-    <div class="role" data-i18n="founder_role">Founder & Sovereign Systems Architect — IBSS</div>
+    <div class="mini-card">
+      <div class="mini-title" id="miniConfidenceLabel">Confidence</div>
+      <div id="miniConfidence" class="mini-value blue">0</div>
+    </div>
 
-    <div class="text" data-i18n="founder_text">
-      Naeem M. Dahalan is the architect behind the IBSS Sovereign Intelligence Framework.
-      His work focuses on designing structured analytical systems capable of interpreting complex geopolitical environments
-      through signal-based modeling and decision-layer construction.
-      IBSS reflects a shift from traditional commentary to engineered analysis — where insight is not merely expressed, but built.
+    <div class="mini-card">
+      <div class="mini-title" id="miniLiveSignalsLabel">Live Signals</div>
+      <div id="miniLiveSignals" class="mini-value low">0</div>
+    </div>
+
+    <div class="mini-card">
+      <div class="mini-title" id="miniReportsLabel">Auto Reports</div>
+      <div id="miniReports" class="mini-value gold">0</div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="title" data-i18n="mission_title">Mission</div>
-    <div class="text" data-i18n="mission_text">
-      To build a sovereign analytical system capable of understanding emerging conflict structures,
-      mapping decision spaces, and supporting high-level strategic awareness in an increasingly complex world.
+  <div class="grid section">
+    <div class="card">
+      <div class="title" id="whatTitle">What is IBSS?</div>
+      <div class="section-box">
+        <div class="section-kicker" id="whatKicker">Institutional Identity</div>
+        <h3 id="whatHeading">IBSS</h3>
+        <p id="whatText">-</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title" id="publicationTitle">Featured Publication</div>
+      <div class="publication-box">
+        <div class="publication-kicker" id="publicationKicker">Publication Context</div>
+        <h3 id="publicationHeading">-</h3>
+        <p id="publicationSummary">-</p>
+        <div id="publicationMeta" class="publication-meta">-</div>
+      </div>
     </div>
   </div>
 
-  <div class="footer" data-i18n="footer_text">
+  <div class="grid-3 section">
+    <div class="card">
+      <div class="title" id="philosophyTitle">Core Philosophy</div>
+      <div class="section-box">
+        <p id="philosophyText">-</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title" id="missionTitle">Mission</div>
+      <div class="section-box">
+        <p id="missionText">-</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title" id="snapshotTitle">Institutional Snapshot</div>
+      <div id="snapshotBox" class="snapshot-box"></div>
+    </div>
+  </div>
+
+  <div class="grid section">
+    <div class="card">
+      <div class="title" id="founderTitle">Founder</div>
+      <div class="section-box">
+        <div class="founder-name">Naeem M. Dahalan</div>
+        <div class="founder-role" id="founderRole">Founder & Sovereign Systems Architect — IBSS</div>
+        <p id="founderText">-</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title" id="metricsTitle">Institutional Metrics</div>
+      <div id="metricsBox" class="metrics-box"></div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <div class="title" id="feedTitle">Institutional Feed</div>
+    <div id="feedBox" class="feed-box"></div>
+  </div>
+
+  <div class="footer" id="footerText">
     © 2026 IBSS — Founded by Naeem M. Dahalan
   </div>
 
 </div>
 
+<script src="data.js"></script>
+<script src="sources.js"></script>
+<script src="content.js"></script>
+<script src="ingestion.js"></script>
+<script src="news.js"></script>
+<script src="analysis.js"></script>
+<script src="metrics-engine.js"></script>
+<script src="cluster-engine.js"></script>
+<script src="engine.js"></script>
+<script src="audio-engine.js"></script>
+<script src="runtime-engine.js"></script>
+<script src="publisher.js"></script>
+
 <script>
-const translations = {
-  en: {
-    nav_home: "Home",
-    nav_dashboard: "Dashboard",
-    nav_signals: "Signals",
-    nav_reports: "Reports",
-    nav_models: "Models",
-    nav_about: "About",
+(function () {
+  "use strict";
 
-    page_title: "About IBSS",
-    page_subtitle: "International Bureau of Sovereign Studies — a strategic platform for structured signal interpretation and sovereign decision analysis.",
+  const translations = {
+    en: {
+      nav_home: "Home",
+      nav_dashboard: "Dashboard",
+      nav_signals: "Signals",
+      nav_reports: "Reports",
+      nav_countries: "Countries",
+      nav_models: "Models",
+      nav_about: "About",
 
-    what_title: "What is IBSS?",
-    what_text: "IBSS is a sovereign intelligence platform designed to transform raw signals into structured strategic understanding. It operates beyond traditional analysis by focusing on systems, patterns, and decision dynamics rather than isolated events. IBSS is built on the principle that modern conflicts are not defined by single actions, but by layered interactions across military, political, and narrative domains.",
+      page_title: "About IBSS",
+      page_subtitle: "International Bureau of Sovereign Studies — a strategic platform for structured signal interpretation and sovereign decision analysis.",
 
-    philosophy_title: "Core Philosophy",
-    philosophy_text: "Structure over opinion. Signals over noise. Probability over certainty. Systems over events. IBSS does not predict the future in a simplistic way — it models the space in which the future becomes possible.",
+      ticker: "Live Intelligence Strip",
 
-    founder_title: "Founder",
-    founder_role: "Founder & Sovereign Systems Architect — IBSS",
-    founder_text: "Naeem M. Dahalan is the architect behind the IBSS Sovereign Intelligence Framework. His work focuses on designing structured analytical systems capable of interpreting complex geopolitical environments through signal-based modeling and decision-layer construction. IBSS reflects a shift from traditional commentary to engineered analysis — where insight is not merely expressed, but built.",
+      what_title: "What is IBSS?",
+      what_kicker: "Institutional Identity",
+      what_heading: "IBSS",
+      what_text: "IBSS is a sovereign intelligence platform designed to transform raw signals into structured strategic understanding. It operates beyond traditional analysis by focusing on systems, patterns, and decision dynamics rather than isolated events. IBSS is built on the principle that modern conflicts are not defined by single actions, but by layered interactions across military, political, and narrative domains.",
 
-    mission_title: "Mission",
-    mission_text: "To build a sovereign analytical system capable of understanding emerging conflict structures, mapping decision spaces, and supporting high-level strategic awareness in an increasingly complex world.",
+      philosophy_title: "Core Philosophy",
+      philosophy_text: "Structure over opinion. Signals over noise. Probability over certainty. Systems over events. IBSS does not predict the future in a simplistic way — it models the space in which the future becomes possible.",
 
-    footer_text: "© 2026 IBSS — Founded by Naeem M. Dahalan"
-  },
+      founder_title: "Founder",
+      founder_role: "Founder & Sovereign Systems Architect — IBSS",
+      founder_text: "Naeem M. Dahalan is the architect behind the IBSS Sovereign Intelligence Framework. His work focuses on designing structured analytical systems capable of interpreting complex geopolitical environments through signal-based modeling and decision-layer construction. IBSS reflects a shift from traditional commentary to engineered analysis — where insight is not merely expressed, but built.",
 
-  ar: {
-    nav_home: "الرئيسية",
-    nav_dashboard: "لوحة التحكم",
-    nav_signals: "الإشارات",
-    nav_reports: "التقارير",
-    nav_models: "النماذج",
-    nav_about: "حول",
+      mission_title: "Mission",
+      mission_text: "To build a sovereign analytical system capable of understanding emerging conflict structures, mapping decision spaces, and supporting high-level strategic awareness in an increasingly complex world.",
 
-    page_title: "حول IBSS",
-    page_subtitle: "المكتب الدولي للدراسات السيادية — منصة استراتيجية لتفسير الإشارات المنظمة وتحليل القرار السيادي.",
+      publication_title: "Featured Publication",
+      publication_kicker: "Publication Context",
+      snapshot_title: "Institutional Snapshot",
+      metrics_title: "Institutional Metrics",
+      feed_title: "Institutional Feed",
 
-    what_title: "ما هو IBSS؟",
-    what_text: "IBSS منصة استخبارات سيادية صُممت لتحويل الإشارات الخام إلى فهم استراتيجي منظم. تتجاوز التحليل التقليدي بالتركيز على الأنظمة والأنماط وديناميكيات القرار بدلًا من الأحداث المعزولة. يقوم IBSS على مبدأ أن الصراعات الحديثة لا تُعرَّف بفعل واحد، بل بتفاعلات متداخلة عبر المجالات العسكرية والسياسية والسردية.",
+      system_stress: "System Stress",
+      confidence: "Confidence",
+      live_signals: "Live Signals",
+      reports: "Auto Reports",
+      top_theater: "Top Theater",
+      top_cluster: "Top Strategic File",
+      top_signal: "Top Signal",
+      band: "Band",
+      decision: "Decision",
+      mode: "Mode",
+      source: "Source",
+      updated_at: "Updated",
+      publication_type: "Type",
+      publication_unit: "Unit",
+      publication_edition: "Edition",
 
-    philosophy_title: "الفلسفة الأساسية",
-    philosophy_text: "البنية فوق الرأي. الإشارات فوق الضجيج. الاحتمال فوق اليقين. الأنظمة فوق الأحداث. IBSS لا يتنبأ بالمستقبل بشكل سطحي، بل يبني نموذجًا للمجال الذي يصبح فيه المستقبل ممكنًا.",
+      source_live: "SOURCE — ENGINE",
+      source_fallback: "SOURCE — FALLBACK",
+      metrics_on: "METRICS — INTEGRATED",
+      metrics_off: "METRICS — OFF",
+      audio_on: "AUDIO — ON",
+      audio_off: "AUDIO — OFF",
+      audio_button_on: "AUDIO ON",
+      audio_button_off: "AUDIO OFF",
 
-    founder_title: "المؤسس",
-    founder_role: "المؤسس ومهندس الأنظمة السيادية — IBSS",
-    founder_text: "نعيم م. دحلان هو المعماري الذي يقف خلف الإطار السيادي للاستخبارات في IBSS. يركز عمله على تصميم أنظمة تحليلية منظمة قادرة على تفسير البيئات الجيوسياسية المعقدة عبر النمذجة القائمة على الإشارات وبناء طبقات القرار. ويعكس IBSS انتقالًا من التعليق التقليدي إلى التحليل المُهندس — حيث لا تُقال الرؤية فقط، بل تُبنى.",
+      alert_high: "⚠ HIGH ESCALATION — INSTITUTIONAL LAYER TRACKS ACTIVE RESPONSE CONDITIONS",
+      alert_medium: "⚠ STRUCTURED PRESSURE — INSTITUTIONAL LAYER TRACKS PREPARATION CONDITIONS",
+      alert_low: "✓ LOW PRESSURE — INSTITUTIONAL LAYER TRACKS MONITORING CONDITIONS",
 
-    mission_title: "الرسالة",
-    mission_text: "بناء نظام تحليلي سيادي قادر على فهم البنى الصراعية الناشئة، ورسم فضاءات القرار، ودعم الوعي الاستراتيجي عالي المستوى في عالم يزداد تعقيدًا.",
+      no_data: "No data available.",
+      no_feed: "No live feed available.",
 
-    footer_text: "© 2026 IBSS — تأسس بواسطة نعيم م. دحلان"
+      footer_text: "© 2026 IBSS — Founded by Naeem M. Dahalan"
+    },
+
+    ar: {
+      nav_home: "الرئيسية",
+      nav_dashboard: "لوحة التحكم",
+      nav_signals: "الإشارات",
+      nav_reports: "التقارير",
+      nav_countries: "الدول",
+      nav_models: "النماذج",
+      nav_about: "حول",
+
+      page_title: "حول IBSS",
+      page_subtitle: "المكتب الدولي للدراسات السيادية — منصة استراتيجية لتفسير الإشارات المنظمة وتحليل القرار السيادي.",
+
+      ticker: "الشريط الاستخباري الحي",
+
+      what_title: "ما هو IBSS؟",
+      what_kicker: "الهوية المؤسسية",
+      what_heading: "IBSS",
+      what_text: "IBSS منصة استخبارات سيادية صُممت لتحويل الإشارات الخام إلى فهم استراتيجي منظم. تتجاوز التحليل التقليدي بالتركيز على الأنظمة والأنماط وديناميكيات القرار بدلًا من الأحداث المعزولة. يقوم IBSS على مبدأ أن الصراعات الحديثة لا تُعرَّف بفعل واحد، بل بتفاعلات متداخلة عبر المجالات العسكرية والسياسية والسردية.",
+
+      philosophy_title: "الفلسفة الأساسية",
+      philosophy_text: "البنية فوق الرأي. الإشارات فوق الضجيج. الاحتمال فوق اليقين. الأنظمة فوق الأحداث. IBSS لا يتنبأ بالمستقبل بشكل سطحي، بل يبني نموذجًا للمجال الذي يصبح فيه المستقبل ممكنًا.",
+
+      founder_title: "المؤسس",
+      founder_role: "المؤسس ومهندس الأنظمة السيادية — IBSS",
+      founder_text: "نعيم م. دحلان هو المعماري الذي يقف خلف الإطار السيادي للاستخبارات في IBSS. يركز عمله على تصميم أنظمة تحليلية منظمة قادرة على تفسير البيئات الجيوسياسية المعقدة عبر النمذجة القائمة على الإشارات وبناء طبقات القرار. ويعكس IBSS انتقالًا من التعليق التقليدي إلى التحليل المُهندس — حيث لا تُقال الرؤية فقط، بل تُبنى.",
+
+      mission_title: "الرسالة",
+      mission_text: "بناء نظام تحليلي سيادي قادر على فهم البنى الصراعية الناشئة، ورسم فضاءات القرار، ودعم الوعي الاستراتيجي عالي المستوى في عالم يزداد تعقيدًا.",
+
+      publication_title: "المنشور المميز",
+      publication_kicker: "سياق المنشور",
+      snapshot_title: "اللقطة المؤسسية",
+      metrics_title: "المقاييس المؤسسية",
+      feed_title: "التغذية المؤسسية",
+
+      system_stress: "ضغط النظام",
+      confidence: "الثقة",
+      live_signals: "الإشارات الحية",
+      reports: "التقارير الآلية",
+      top_theater: "المسرح الأعلى",
+      top_cluster: "الملف الاستراتيجي الأعلى",
+      top_signal: "الإشارة الأعلى",
+      band: "الحزمة",
+      decision: "القرار",
+      mode: "الوضع",
+      source: "المصدر",
+      updated_at: "آخر تحديث",
+      publication_type: "النوع",
+      publication_unit: "الوحدة",
+      publication_edition: "الإصدار",
+
+      source_live: "المصدر — المحرك",
+      source_fallback: "المصدر — الاحتياطي",
+      metrics_on: "القياس — مدمج",
+      metrics_off: "القياس — غير مفعل",
+      audio_on: "الصوت — يعمل",
+      audio_off: "الصوت — متوقف",
+      audio_button_on: "تشغيل الصوت",
+      audio_button_off: "إيقاف الصوت",
+
+      alert_high: "⚠ تصعيد مرتفع — الطبقة المؤسسية تتبع ظروف استجابة نشطة",
+      alert_medium: "⚠ ضغط بنيوي — الطبقة المؤسسية تتبع ظروف التحضير",
+      alert_low: "✓ ضغط منخفض — الطبقة المؤسسية تتبع ظروف المراقبة",
+
+      no_data: "لا توجد بيانات.",
+      no_feed: "لا توجد تغذية حية.",
+
+      footer_text: "© 2026 IBSS — تأسس بواسطة نعيم م. دحلان"
+    }
+  };
+
+  let currentLang = localStorage.getItem("ibss_lang") || "en";
+  let currentSystem = null;
+
+  function t(key){
+    return translations[currentLang]?.[key] || key;
   }
-};
 
-let currentLang = localStorage.getItem("ibss_lang") || "en";
+  function safeText(value, fallback = "-"){
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+  }
 
-function t(key){
-  return translations[currentLang][key] || key;
-}
+  function safeNumber(value, fallback = 0){
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
 
-function applyTranslations(){
-  document.documentElement.lang = currentLang;
-  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+  function getLocalizedText(value){
+    if (!value) return "-";
+    if (typeof value === "string" || typeof value === "number") return String(value);
+    return value[currentLang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
+  }
 
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.getAttribute("data-i18n");
-    el.textContent = t(key);
+  function escapeHtml(text){
+    const div = document.createElement("div");
+    div.textContent = text ?? "";
+    return div.innerHTML;
+  }
+
+  function formatDateTime(value){
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+
+    return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
+      year:"numeric",
+      month:"short",
+      day:"2-digit",
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+  }
+
+  function getBandLabel(score){
+    if (window.IBSS_METRICS?.classifyBand) {
+      const band = window.IBSS_METRICS.classifyBand(Number(score || 0));
+      return currentLang === "ar" ? band?.ar || "-" : band?.en || "-";
+    }
+    return "-";
+  }
+
+  function scoreClass(score){
+    const n = Number(score || 0);
+    if (n >= 70) return "high";
+    if (n >= 35) return "medium";
+    return "low";
+  }
+
+  function getSystem(){
+    try{
+      let system = null;
+
+      if (window.IBSS_ENGINE?.getSystemState) {
+        system = window.IBSS_ENGINE.getSystemState();
+      } else if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+        system = window.IBSS_ENGINE.getStaticSystemFallback();
+      }
+
+      if (!system) return null;
+
+      if (window.IBSS_PUBLISHER?.orchestrateSystem) {
+        return window.IBSS_PUBLISHER.orchestrateSystem(system) || system;
+      }
+
+      return system;
+    }catch(error){
+      console.error("About getSystem error:", error);
+      return null;
+    }
+  }
+
+  function buildFallbackTickerItems(system){
+    const items = [];
+    const tickerNews = window.IBSS_NEWS_UTILS?.getTickerNews?.(10) || [];
+
+    tickerNews.forEach(item => {
+      const severity = String(item.severity || item.priority || "LOW").toLowerCase();
+      items.push({
+        level: severity === "high" ? "high" : severity === "medium" ? "medium" : "low",
+        text: getLocalizedText(item.title)
+      });
+    });
+
+    if (!items.length) {
+      (system?.publisherFeed || system?.feed || []).slice(0, 8).forEach(line => {
+        items.push({
+          level:
+            system?.level === "HIGH"
+              ? "high"
+              : system?.level === "MEDIUM"
+                ? "medium"
+                : "low",
+          text: typeof line === "string" ? line : getLocalizedText(line?.text)
+        });
+      });
+    }
+
+    return items;
+  }
+
+  function renderFallbackTicker(system){
+    const track = document.getElementById("tickerTrack");
+    if (!track) return;
+
+    const items = buildFallbackTickerItems(system);
+    const duplicated = [];
+    const base = items.length ? items : [{ level: "low", text: t("no_data") }];
+
+    for (let i = 0; i < 3; i += 1) duplicated.push(...base);
+
+    track.innerHTML = duplicated.map(item => `
+      <div class="ticker-item">
+        <span class="ticker-dot ${escapeHtml(item.level)}"></span>
+        <span class="ticker-item-text" dir="${currentLang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
+      </div>
+    `).join("");
+  }
+
+  function updateAudioBadge(){
+    const btn = document.getElementById("audioBtn");
+    if (!btn) return;
+    const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
+    btn.textContent = enabled ? t("audio_button_off") : t("audio_button_on");
+    btn.classList.toggle("active", enabled);
+  }
+
+  function applyTranslations(){
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      el.textContent = t(key);
+    });
+
+    document.getElementById("pageTitle").textContent = t("page_title");
+    document.getElementById("pageSubtitle").textContent = t("page_subtitle");
+    document.getElementById("tickerTitle").textContent = t("ticker");
+    document.getElementById("whatTitle").textContent = t("what_title");
+    document.getElementById("whatKicker").textContent = t("what_kicker");
+    document.getElementById("whatHeading").textContent = t("what_heading");
+    document.getElementById("whatText").textContent = t("what_text");
+    document.getElementById("philosophyTitle").textContent = t("philosophy_title");
+    document.getElementById("philosophyText").textContent = t("philosophy_text");
+    document.getElementById("missionTitle").textContent = t("mission_title");
+    document.getElementById("missionText").textContent = t("mission_text");
+    document.getElementById("publicationTitle").textContent = t("publication_title");
+    document.getElementById("publicationKicker").textContent = t("publication_kicker");
+    document.getElementById("snapshotTitle").textContent = t("snapshot_title");
+    document.getElementById("founderTitle").textContent = t("founder_title");
+    document.getElementById("founderRole").textContent = t("founder_role");
+    document.getElementById("founderText").textContent = t("founder_text");
+    document.getElementById("metricsTitle").textContent = t("metrics_title");
+    document.getElementById("feedTitle").textContent = t("feed_title");
+    document.getElementById("miniSystemPressureLabel").textContent = t("system_stress");
+    document.getElementById("miniConfidenceLabel").textContent = t("confidence");
+    document.getElementById("miniLiveSignalsLabel").textContent = t("live_signals");
+    document.getElementById("miniReportsLabel").textContent = t("reports");
+    document.getElementById("footerText").textContent = t("footer_text");
+
+    document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
+    document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
+
+    updateAudioBadge();
+  }
+
+  function renderMeta(system){
+    const sourceBadge = document.getElementById("sourceBadge");
+    const metricsBadge = document.getElementById("metricsBadge");
+    const audioBadge = document.getElementById("audioBadge");
+    const metaLine = document.getElementById("metaLine");
+
+    metaLine.textContent = `${t("source")}: ${safeText(system?.source, "-")} | ${t("updated_at")}: ${formatDateTime(system?.updatedAt)}`;
+
+    if(system?.source === "engine"){
+      sourceBadge.textContent = t("source_live");
+      sourceBadge.className = "meta-badge live";
+    }else{
+      sourceBadge.textContent = t("source_fallback");
+      sourceBadge.className = "meta-badge fallback";
+    }
+
+    if(system?.metricsReference){
+      metricsBadge.textContent = t("metrics_on");
+      metricsBadge.className = "meta-badge live";
+    }else{
+      metricsBadge.textContent = t("metrics_off");
+      metricsBadge.className = "meta-badge fallback";
+    }
+
+    if(window.IBSS_AUDIO?.isEnabled?.()){
+      audioBadge.textContent = t("audio_on");
+      audioBadge.className = "meta-badge live";
+    }else{
+      audioBadge.textContent = t("audio_off");
+      audioBadge.className = "meta-badge fallback";
+    }
+  }
+
+  function renderAlert(system){
+    const alertBox = document.getElementById("alertBox");
+    alertBox.style.display = "block";
+
+    if (system?.level === "HIGH") {
+      alertBox.textContent = t("alert_high");
+    } else if (system?.level === "MEDIUM") {
+      alertBox.textContent = t("alert_medium");
+    } else {
+      alertBox.textContent = t("alert_low");
+    }
+  }
+
+  function renderMiniCards(system){
+    const reports = window.IBSS_ENGINE?.getReports?.() || [];
+    document.getElementById("miniSystemPressure").textContent = Number(system?.systemPressure || 0);
+    document.getElementById("miniSystemPressure").className = `mini-value ${scoreClass(Number(system?.systemPressure || 0))}`;
+
+    document.getElementById("miniConfidence").textContent = Number(system?.confidenceScore || 0);
+    document.getElementById("miniConfidence").className = `mini-value ${scoreClass(Number(system?.confidenceScore || 0))}`;
+
+    document.getElementById("miniLiveSignals").textContent = Number(system?.liveSignalsCount || 0);
+    document.getElementById("miniLiveSignals").className = `mini-value ${scoreClass(Number(system?.liveSignalsCount || 0) * 8)}`;
+
+    document.getElementById("miniReports").textContent = reports.length;
+    document.getElementById("miniReports").className = `mini-value gold`;
+  }
+
+  function renderPublication(system){
+    const publication =
+      system?.featuredPublication ||
+      system?.publicationContext?.featuredPublication ||
+      window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
+      null;
+
+    const heading = document.getElementById("publicationHeading");
+    const summary = document.getElementById("publicationSummary");
+    const meta = document.getElementById("publicationMeta");
+
+    if (!publication) {
+      heading.textContent = "-";
+      summary.textContent = t("no_data");
+      meta.textContent = "-";
+      return;
+    }
+
+    heading.textContent = getLocalizedText(publication.title);
+    summary.textContent = getLocalizedText(publication.summary);
+    meta.textContent =
+      `${t("publication_type")}: ${safeText(publication.type, "-")} | ` +
+      `${t("publication_unit")}: ${safeText(publication.unit, "-")} | ` +
+      `${t("publication_edition")}: ${safeText(publication.edition, "-")}`;
+  }
+
+  function renderSnapshot(system){
+    const topTheater = system?.topTheater || null;
+    const topCluster = system?.topCluster || null;
+    const topSignal = system?.topSignal || null;
+    const box = document.getElementById("snapshotBox");
+
+    box.innerHTML = `
+      <div class="snapshot-item">
+        <strong>${escapeHtml(t("top_theater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
+        <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("band")}: ${getBandLabel(Number(topTheater.avgRisk || 0))}` : t("no_data"))}</div>
+      </div>
+
+      <div class="snapshot-item">
+        <strong>${escapeHtml(t("top_cluster"))}: ${escapeHtml(topCluster ? getLocalizedText(topCluster.name) : "-")}</strong>
+        <div class="snapshot-meta">${escapeHtml(topCluster ? `${t("band")}: ${getBandLabel(Number(topCluster.avgRisk || 0))}` : t("no_data"))}</div>
+      </div>
+
+      <div class="snapshot-item">
+        <strong>${escapeHtml(t("top_signal"))}: ${escapeHtml(topSignal ? getLocalizedText(topSignal.title) : "-")}</strong>
+        <div class="snapshot-meta">${escapeHtml(topSignal ? `${t("band")}: ${getBandLabel(Number(topSignal.balancedScore100 || 0))}` : t("no_data"))}</div>
+      </div>
+
+      <div class="snapshot-item">
+        <strong>${escapeHtml(t("reports"))}: ${escapeHtml(String((window.IBSS_ENGINE?.getReports?.() || []).length))}</strong>
+        <div class="snapshot-meta">${escapeHtml(`${t("decision")}: ${safeText(system?.decision, "-")} | ${t("mode")}: ${safeText(system?.mode, "-")}`)}</div>
+      </div>
+    `;
+  }
+
+  function renderMetrics(system){
+    const box = document.getElementById("metricsBox");
+    const topSignal = system?.topSignal || null;
+    const topCluster = system?.topCluster || null;
+    const topTheater = system?.topTheater || null;
+
+    const rows = [
+      { label: t("system_stress"), value: Number(system?.systemPressure || 0) },
+      { label: t("confidence"), value: Number(system?.confidenceScore || 0) },
+      { label: t("top_theater"), value: Number(topTheater?.avgRisk || 0) },
+      { label: t("top_cluster"), value: Number(topCluster?.avgRisk || 0) },
+      { label: t("top_signal"), value: Number(topSignal?.balancedScore100 || 0) }
+    ];
+
+    box.innerHTML = rows.map(row => `
+      <div class="metric-row">
+        <div>
+          <div class="metric-name">${escapeHtml(row.label)}</div>
+          <div class="metric-sub">${escapeHtml(`${t("band")}: ${getBandLabel(row.value)}`)}</div>
+        </div>
+        <div class="metric-score ${scoreClass(row.value)}">${row.value}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderFeed(system){
+    const box = document.getElementById("feedBox");
+    const lines = Array.isArray(system?.publisherFeed)
+      ? system.publisherFeed.slice(0, 8)
+      : Array.isArray(system?.feed)
+        ? system.feed.slice(0, 8)
+        : [];
+
+    if (!lines.length) {
+      box.innerHTML = `<div class="feed-item">${escapeHtml(t("no_feed"))}</div>`;
+      return;
+    }
+
+    box.innerHTML = lines.map(line => {
+      const text = typeof line === "string" ? line : getLocalizedText(line?.text);
+      return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
+    }).join("");
+  }
+
+  function renderTicker(system){
+    const track = document.getElementById("tickerTrack");
+    if (!track) return;
+    if (!track.children.length || !track.textContent.trim()) {
+      renderFallbackTicker(system);
+    }
+  }
+
+  function renderPage(system){
+    if (!system) return;
+    currentSystem = system;
+
+    applyTranslations();
+    renderMeta(system);
+    renderAlert(system);
+    renderMiniCards(system);
+    renderPublication(system);
+    renderSnapshot(system);
+    renderMetrics(system);
+    renderFeed(system);
+    renderTicker(system);
+  }
+
+  function start(){
+    applyTranslations();
+
+    if (!window.IBSS_RUNTIME?.start) {
+      const system = getSystem();
+      if (system) renderPage(system);
+      return;
+    }
+
+    window.IBSS_RUNTIME.start({
+      pageId: "about",
+      lang: currentLang,
+      tickerTrackEl: document.getElementById("tickerTrack"),
+      refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+      systemProvider: getSystem,
+      afterRender: function(system){
+        renderPage(system);
+      }
+    });
+
+    setTimeout(() => {
+      const track = document.getElementById("tickerTrack");
+      if (!track || !track.textContent.trim()) {
+        const system = getSystem();
+        if (system) renderPage(system);
+      }
+    }, 800);
+  }
+
+  document.getElementById("btn-en").addEventListener("click", function(){
+    currentLang = "en";
+    localStorage.setItem("ibss_lang", "en");
+    if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
+    if (currentSystem) renderPage(currentSystem);
   });
 
-  document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
-  document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
-}
+  document.getElementById("btn-ar").addEventListener("click", function(){
+    currentLang = "ar";
+    localStorage.setItem("ibss_lang", "ar");
+    if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
+    if (currentSystem) renderPage(currentSystem);
+  });
 
-function setLang(lang){
-  localStorage.setItem("ibss_lang", lang);
-  currentLang = lang;
-  applyTranslations();
-}
+  document.getElementById("audioBtn").addEventListener("click", function(){
+    window.IBSS_AUDIO?.toggle?.();
+    updateAudioBadge();
+    if (currentSystem) renderMeta(currentSystem);
+  });
 
-applyTranslations();
+  window.addEventListener("load", start);
+})();
 </script>
 </body>
 </html>
