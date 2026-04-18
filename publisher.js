@@ -2,7 +2,7 @@ window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publisher_state_v5_signal_publication",
+    storageKey: "ibss_publisher_state_v6_full_clean",
     maxQueueSize: 240,
     maxHistorySize: 320,
     maxSnapshots: 180,
@@ -92,12 +92,8 @@ window.IBSS_PUBLISHER = (function () {
     );
   }
 
-  function localize(en, ar) {
-    return { en, ar };
-  }
-
   function normalizePriority(priority) {
-    const p = String(priority || "LOW").toUpperCase();
+    const p = String(priority || "LOW").toUpperCase().trim();
     if (p === "HIGH") return "HIGH";
     if (p === "MEDIUM") return "MEDIUM";
     return "LOW";
@@ -135,13 +131,6 @@ window.IBSS_PUBLISHER = (function () {
     });
 
     return [...map.values()];
-  }
-
-  function average(list, selector) {
-    const arr = asArray(list);
-    if (!arr.length) return 0;
-    const sum = arr.reduce((acc, item) => acc + safeNumber(selector(item), 0), 0);
-    return sum / arr.length;
   }
 
   /* =========================================
@@ -414,8 +403,8 @@ window.IBSS_PUBLISHER = (function () {
         en: getLocalizedText(content?.body, "en"),
         ar: getLocalizedText(content?.body, "ar")
       },
-      signalIds: clone(asArray(content?.signalIds)),
-      tags: clone(asArray(content?.tags)),
+      signalIds: clone(asArray(content?.signalIds)) || [],
+      tags: clone(asArray(content?.tags)) || [],
       metrics: clone(content?.metrics || {}),
       meta: clone(content?.meta || {})
     };
@@ -478,9 +467,6 @@ window.IBSS_PUBLISHER = (function () {
 
     const strategicWeight = safeNumber(content?.metrics?.strategicWeight, 0);
     score += Math.round(strategicWeight * 1.5);
-
-    const timeBonus = Math.round(new Date(content?.publishedAt || 0).getTime() / 1000000000);
-    score += timeBonus * 0.000001;
 
     return score;
   }
@@ -1278,6 +1264,30 @@ Domain: ${domain}
     return STATE.queue[0] ? clone(STATE.queue[0]) : null;
   }
 
+  /* =========================================
+     Sync Hooks
+  ========================================= */
+
+  function rebuildFromCurrentSystem() {
+    try {
+      const system = resolveSourceSystem();
+      if (!system) return null;
+      return orchestrateSystem(system, { force: true });
+    } catch (error) {
+      console.error("IBSS_PUBLISHER rebuildFromCurrentSystem error:", error);
+      return null;
+    }
+  }
+
+  function registerPublication(publication) {
+    rebuildFromCurrentSystem();
+    return publication ? clone(publication) : null;
+  }
+
+  window.addEventListener("ibss:publication-intake-updated", function () {
+    rebuildFromCurrentSystem();
+  });
+
   ensureInit();
 
   return {
@@ -1298,6 +1308,7 @@ Domain: ${domain}
     getLatestDraft,
     clearQueue,
 
+    registerPublication,
     findPublicationForSignal,
 
     queueSignalPost,
