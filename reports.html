@@ -895,6 +895,9 @@
 
   <script src="data.js"></script>
   <script src="sources.js"></script>
+  <script src="publication-intake.js"></script>
+  <script src="publications-factory.js"></script>
+  <script src="publications-registry.js"></script>
   <script src="content.js"></script>
   <script src="ingestion.js"></script>
   <script src="news.js"></script>
@@ -1208,17 +1211,12 @@
 
       function getRawSystem(){
         try {
-          if (window.IBSS_ENGINE?.getSystemState) {
-            return window.IBSS_ENGINE.getSystemState();
-          }
-          if (window.IBSS_ENGINE?.getStaticSystemFallback) {
-            return window.IBSS_ENGINE.getStaticSystemFallback();
-          }
-          return null;
+          if (window.IBSS_ENGINE?.getSystemState) return window.IBSS_ENGINE.getSystemState();
+          if (window.IBSS_ENGINE?.getStaticSystemFallback) return window.IBSS_ENGINE.getStaticSystemFallback();
         } catch (error) {
           console.error("Reports getRawSystem error:", error);
-          return null;
         }
+        return null;
       }
 
       function getSystem(){
@@ -1248,15 +1246,84 @@
         return [];
       }
 
+      function sortByDateDesc(list){
+        return (Array.isArray(list) ? list.slice() : []).sort((a, b) => {
+          const aTime = new Date(a?.publishedAt || a?.updatedAt || a?.createdAt || 0).getTime();
+          const bTime = new Date(b?.publishedAt || b?.updatedAt || b?.createdAt || 0).getTime();
+          return bTime - aTime;
+        });
+      }
+
+      function dedupeById(list){
+        const map = new Map();
+        (Array.isArray(list) ? list : []).forEach(item => {
+          const id = safeText(item?.id, "");
+          if (!id) return;
+          if (!map.has(id)) map.set(id, item);
+        });
+        return [...map.values()];
+      }
+
       function getPublishedPublications(){
+        let intakeItems = [];
+        let registryItems = [];
+        let contentItems = [];
+
         try {
-          if (window.IBSS_CONTENT_API?.getPublished) {
-            return window.IBSS_CONTENT_API.getPublished();
+          if (window.IBSS_PUBLICATION_INTAKE?.getPublished) {
+            intakeItems = window.IBSS_PUBLICATION_INTAKE.getPublished();
+          } else if (window.IBSS_PUBLICATION_INTAKE?.getAll) {
+            intakeItems = window.IBSS_PUBLICATION_INTAKE.getAll().filter(item => item?.status === "published");
           }
         } catch (error) {
-          console.error("Reports getPublishedPublications error:", error);
+          console.error("Reports intake read error:", error);
         }
-        return Array.isArray(window.IBSS_CONTENT) ? window.IBSS_CONTENT.filter(item => item?.status === "published") : [];
+
+        try {
+          if (window.IBSS_PUBLICATIONS?.getPublished) {
+            registryItems = window.IBSS_PUBLICATIONS.getPublished();
+          }
+        } catch (error) {
+          console.error("Reports publications registry read error:", error);
+        }
+
+        try {
+          if (window.IBSS_CONTENT_API?.getPublished) {
+            contentItems = window.IBSS_CONTENT_API.getPublished();
+          } else if (Array.isArray(window.IBSS_CONTENT)) {
+            contentItems = window.IBSS_CONTENT.filter(item => item?.status === "published");
+          }
+        } catch (error) {
+          console.error("Reports content read error:", error);
+        }
+
+        const merged = dedupeById([
+          ...sortByDateDesc(intakeItems),
+          ...sortByDateDesc(registryItems),
+          ...sortByDateDesc(contentItems)
+        ]);
+
+        return sortByDateDesc(
+          merged.filter(item => String(item?.status || "published").toLowerCase() === "published")
+        );
+      }
+
+      function getFeaturedPublication(system){
+        const candidates = getPublishedPublications();
+
+        if (system?.featuredPublication?.id) {
+          const exact = candidates.find(item => item.id === system.featuredPublication.id);
+          if (exact) return exact;
+          return system.featuredPublication;
+        }
+
+        const featured = candidates.find(item => !!item?.meta?.featured);
+        if (featured) return featured;
+
+        const pinned = candidates.find(item => !!item?.meta?.pinned);
+        if (pinned) return pinned;
+
+        return candidates[0] || null;
       }
 
       function buildFallbackTickerItems(system){
@@ -1274,6 +1341,15 @@
             text: getLocalizedText(item.text || item.title)
           });
         });
+
+        if (!items.length) {
+          getPublishedPublications().slice(0, 8).forEach(item => {
+            items.push({
+              level: String(item.priority || "LOW").toLowerCase(),
+              text: getLocalizedText(item.title)
+            });
+          });
+        }
 
         return items;
       }
@@ -1343,10 +1419,7 @@
       }
 
       function renderStats(system){
-        const publication =
-          system?.featuredPublication ||
-          window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
-          null;
+        const publication = getFeaturedPublication(system);
 
         qs("statFeatured").textContent = publication ? getLocalizedText(publication.title) : "-";
 
@@ -1364,10 +1437,7 @@
       }
 
       function renderFeaturedPublication(system){
-        const publication =
-          system?.featuredPublication ||
-          window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
-          null;
+        const publication = getFeaturedPublication(system);
 
         if (!publication) {
           qs("latestReportHeading").textContent = "-";
@@ -1385,7 +1455,7 @@
         badge.className = `badge ${levelClass(priority)}`;
         badge.textContent = priority;
 
-        qs("latestReportDateBadge").textContent = `${t("generated")}: ${formatDateTime(publication.publishedAt)}`;
+        qs("latestReportDateBadge").textContent = `${t("generated")}: ${formatDateTime(publication.publishedAt || publication.updatedAt)}`;
         qs("latestReportHeading").textContent = getLocalizedText(publication.title);
         qs("latestReportSummary").textContent = getLocalizedText(publication.summary);
         qs("latestReportBody").textContent = previewText(getLocalizedText(publication.body), 950);
@@ -1524,7 +1594,7 @@
               <div class="preview-top">
                 <div>
                   <h3 class="preview-title">${escapeHtml(getLocalizedText(item.title))}</h3>
-                  <div class="preview-sub">${escapeHtml(formatDateTime(item.publishedAt))}</div>
+                  <div class="preview-sub">${escapeHtml(formatDateTime(item.publishedAt || item.updatedAt))}</div>
                 </div>
               </div>
 
@@ -1784,21 +1854,6 @@
             tickerTrackEl: qs("tickerTrack"),
             refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
             systemProvider: getSystem,
-            tickerItemsProvider: function(system) {
-              const unifiedFeed = (
-                system?.publisherFeed ||
-                system?.unifiedFeed ||
-                window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
-                []
-              );
-
-              const items = unifiedFeed.slice(0, 10).map(item => ({
-                level: String(item.priority || "LOW").toLowerCase(),
-                text: getLocalizedText(item.text || item.title)
-              }));
-
-              return items.length ? items : null;
-            },
             afterRender: function(system) {
               renderPage(system);
             }
@@ -1830,6 +1885,10 @@
         STATE.lang = "ar";
         localStorage.setItem("ibss_lang", "ar");
         if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(STATE.lang);
+        if (STATE.system) renderPage(STATE.system);
+      });
+
+      window.addEventListener("ibss:publication-intake-updated", function () {
         if (STATE.system) renderPage(STATE.system);
       });
 
