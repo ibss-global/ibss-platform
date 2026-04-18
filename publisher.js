@@ -2,7 +2,7 @@ window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publisher_state_v4_clean",
+    storageKey: "ibss_publisher_state_v5_final_lock",
     maxQueueSize: 240,
     maxHistorySize: 320,
     maxSnapshots: 180,
@@ -92,10 +92,6 @@ window.IBSS_PUBLISHER = (function () {
     );
   }
 
-  function localize(en, ar) {
-    return { en, ar };
-  }
-
   function normalizePriority(priority) {
     const p = String(priority || "LOW").toUpperCase();
     if (p === "HIGH") return "HIGH";
@@ -135,6 +131,16 @@ window.IBSS_PUBLISHER = (function () {
     });
 
     return [...map.values()];
+  }
+
+  function uniqueStrings(list) {
+    return [...new Set(asArray(list).map(v => safeText(v)).filter(Boolean))];
+  }
+
+  function previewText(text, max = 260) {
+    const value = safeText(text, "");
+    if (!value) return "";
+    return value.length > max ? value.slice(0, max).trim() + " ..." : value;
   }
 
   /* =========================================
@@ -197,7 +203,7 @@ window.IBSS_PUBLISHER = (function () {
   ========================================= */
 
   function getContentApi() {
-    return window.IBSS_CONTENT_API || null;
+    return window.IBSS_CONTENT_UTILS || window.IBSS_CONTENT_API || null;
   }
 
   function getPublishedContent() {
@@ -211,83 +217,35 @@ window.IBSS_PUBLISHER = (function () {
     return asArray(window.IBSS_CONTENT).filter(item => item?.status === "published");
   }
 
-  function getLatestFeaturedPublication() {
+  function getAllContent() {
     try {
       const api = getContentApi();
-      if (api?.getLatestFeaturedContent) {
-        return api.getLatestFeaturedContent();
+      if (api?.getAll) return asArray(api.getAll());
+      if (api?.getPublished) return asArray(api.getPublished());
+    } catch (error) {
+      console.error("IBSS_PUBLISHER getAllContent error:", error);
+    }
+
+    return asArray(window.IBSS_CONTENT);
+  }
+
+  function getLatestFeaturedPublicationRaw() {
+    try {
+      const api = getContentApi();
+      if (api?.getFeatured) {
+        const featured = sortByDateDesc(api.getFeatured(), item => item?.publishedAt);
+        if (featured.length) return featured[0];
+      }
+      if (api?.getLatestPublished) {
+        const latest = api.getLatestPublished();
+        if (latest) return latest;
       }
     } catch (error) {
-      console.error("IBSS_PUBLISHER getLatestFeaturedPublication error:", error);
+      console.error("IBSS_PUBLISHER getLatestFeaturedPublicationRaw error:", error);
     }
 
     const content = getPublishedContent();
     return sortByDateDesc(content, item => item?.publishedAt)[0] || null;
-  }
-
-  function getLatestContentPreviewList(limit = 8, lang = "en") {
-    try {
-      const api = getContentApi();
-      if (api?.getPublicationPreviewList) {
-        return asArray(api.getPublicationPreviewList(limit, lang));
-      }
-    } catch (error) {
-      console.error("IBSS_PUBLISHER getLatestContentPreviewList error:", error);
-    }
-
-    return getPublishedContent()
-      .slice(0, Math.max(1, safeNumber(limit, 8)))
-      .map(item => ({
-        id: item.id,
-        type: item.type,
-        unit: item.unit || "SSU",
-        title: getLocalizedText(item.title, lang),
-        summary: getLocalizedText(item.summary, lang),
-        edition: item.edition || "",
-        domain: item.domain || "general",
-        country: item.country || "global",
-        priority: item.priority || "LOW",
-        publishedAt: item.publishedAt || nowIso()
-      }));
-  }
-
-  function getContentLinkedToSignal(signalId) {
-    try {
-      const api = getContentApi();
-      if (api?.getContentLinkedToSignal) {
-        return asArray(api.getContentLinkedToSignal(signalId));
-      }
-    } catch (error) {
-      console.error("IBSS_PUBLISHER getContentLinkedToSignal error:", error);
-    }
-
-    return [];
-  }
-
-  function getContentLinkedToCluster(clusterKey) {
-    try {
-      const api = getContentApi();
-      if (api?.getContentLinkedToCluster) {
-        return asArray(api.getContentLinkedToCluster(clusterKey));
-      }
-    } catch (error) {
-      console.error("IBSS_PUBLISHER getContentLinkedToCluster error:", error);
-    }
-
-    return [];
-  }
-
-  function getContentLinkedToCountry(country) {
-    try {
-      const api = getContentApi();
-      if (api?.getContentLinkedToCountry) {
-        return asArray(api.getContentLinkedToCountry(country));
-      }
-    } catch (error) {
-      console.error("IBSS_PUBLISHER getContentLinkedToCountry error:", error);
-    }
-
-    return [];
   }
 
   function resolveSourceSystem() {
@@ -380,7 +338,9 @@ window.IBSS_PUBLISHER = (function () {
       edition: safeText(content?.edition, ""),
       unit: safeText(content?.unit, "SSU"),
       domain: safeText(content?.domain, "general"),
+      region: safeText(content?.region, "global"),
       country: safeText(content?.country, safeText(content?.countryId, "global")),
+      countryId: safeText(content?.countryId, ""),
       priority: normalizePriority(content?.priority),
       publishedAt: safeText(content?.publishedAt, nowIso()),
       title: {
@@ -396,6 +356,7 @@ window.IBSS_PUBLISHER = (function () {
         ar: getLocalizedText(content?.body, "ar")
       },
       tags: clone(asArray(content?.tags)),
+      signalIds: clone(asArray(content?.signalIds)),
       meta: clone(content?.meta || {})
     };
   }
@@ -411,23 +372,126 @@ window.IBSS_PUBLISHER = (function () {
     return `${region}::${domain}`;
   }
 
+  function contentMatchesSignal(content, signal) {
+    if (!content || !signal) return false;
+
+    const signalId = safeText(signal.id, "");
+    const signalTitle = normalizeText(getLocalizedText(signal.title, "en"));
+    const signalCountry = normalizeText(signal.country || signal.region || "");
+    const signalDomain = normalizeText(signal.domain || getLocalizedText(signal.signalType, "en"));
+
+    const contentSignalIds = asArray(content.signalIds).map(v => safeText(v, ""));
+    const contentTitle = normalizeText(getLocalizedText(content.title, "en"));
+    const contentSummary = normalizeText(getLocalizedText(content.summary, "en"));
+    const contentCountry = normalizeText(content.country || content.countryId || "");
+    const contentDomain = normalizeText(content.domain || "");
+
+    if (signalId && contentSignalIds.includes(signalId)) return true;
+    if (signalCountry && contentCountry && signalCountry === contentCountry && signalDomain && contentDomain && signalDomain === contentDomain) return true;
+    if (signalTitle && (contentTitle.includes(signalTitle) || contentSummary.includes(signalTitle))) return true;
+
+    return false;
+  }
+
+  function contentMatchesCluster(content, cluster) {
+    if (!content || !cluster) return false;
+
+    const clusterRegion = normalizeText(cluster.region || "");
+    const clusterDomain = normalizeText(cluster.domain || "");
+    const contentRegion = normalizeText(content.region || content.country || content.countryId || "");
+    const contentDomain = normalizeText(content.domain || "");
+
+    if (clusterRegion && contentRegion && clusterRegion === contentRegion && clusterDomain && contentDomain && clusterDomain === contentDomain) {
+      return true;
+    }
+
+    const clusterName = normalizeText(getLocalizedText(cluster.name, "en"));
+    const contentTitle = normalizeText(getLocalizedText(content.title, "en"));
+    const contentSummary = normalizeText(getLocalizedText(content.summary, "en"));
+
+    if (clusterName && (contentTitle.includes(clusterName) || contentSummary.includes(clusterName))) {
+      return true;
+    }
+
+    return false;
+  }
+
+  function contentMatchesCountry(content, country) {
+    if (!content || !country) return false;
+
+    const countryName = normalizeText(
+      typeof country === "string"
+        ? country
+        : getLocalizedText(country.nameLocalized || country.name, "en") || country.id || ""
+    );
+
+    const contentCountry = normalizeText(content.country || content.countryId || "");
+    const contentTitle = normalizeText(getLocalizedText(content.title, "en"));
+    const contentSummary = normalizeText(getLocalizedText(content.summary, "en"));
+
+    if (countryName && contentCountry && countryName === contentCountry) return true;
+    if (countryName && (contentTitle.includes(countryName) || contentSummary.includes(countryName))) return true;
+
+    return false;
+  }
+
+  function getContentLinkedToSignal(signal) {
+    const all = getPublishedContent();
+    return all.filter(content => contentMatchesSignal(content, signal));
+  }
+
+  function getContentLinkedToCluster(cluster) {
+    const all = getPublishedContent();
+    return all.filter(content => contentMatchesCluster(content, cluster));
+  }
+
+  function getContentLinkedToCountry(country) {
+    const all = getPublishedContent();
+    return all.filter(content => contentMatchesCountry(content, country));
+  }
+
+  function findPublicationForSignal(signal) {
+    return buildContentPreview(chooseBestContent(getContentLinkedToSignal(signal)));
+  }
+
+  function findPublicationForCluster(cluster) {
+    return buildContentPreview(chooseBestContent(getContentLinkedToCluster(cluster)));
+  }
+
+  function findPublicationForCountry(country) {
+    return buildContentPreview(chooseBestContent(getContentLinkedToCountry(country)));
+  }
+
+  function getPublicationPreviewList(limit = 8, lang = "en") {
+    return sortByDateDesc(getPublishedContent(), item => item?.publishedAt)
+      .slice(0, Math.max(1, safeNumber(limit, 8)))
+      .map(item => ({
+        id: item.id,
+        type: item.type,
+        unit: item.unit || "SSU",
+        title: getLocalizedText(item.title, lang),
+        summary: previewText(getLocalizedText(item.summary, lang), 240),
+        edition: item.edition || "",
+        domain: item.domain || "general",
+        country: item.country || item.countryId || "global",
+        priority: normalizePriority(item.priority),
+        publishedAt: item.publishedAt || nowIso()
+      }));
+  }
+
   function buildContentContext(system) {
     const topSignal = system?.topSignal || system?.dominantSignal || null;
     const topCluster = system?.topCluster || null;
     const topCountry = asArray(system?.countryRiskFeed)[0] || null;
 
-    const signalContent = topSignal ? getContentLinkedToSignal(topSignal.id) : [];
-    const clusterContent = topCluster ? getContentLinkedToCluster(buildClusterKey(topCluster)) : [];
-    const countryContent = topCountry ? getContentLinkedToCountry(topCountry.name || topCountry.id) : [];
-
-    const featuredContent = getLatestFeaturedPublication();
+    const featuredContent = getLatestFeaturedPublicationRaw();
 
     return {
       featuredPublication: buildContentPreview(featuredContent),
-      topSignalContent: buildContentPreview(chooseBestContent(signalContent)),
-      topClusterContent: buildContentPreview(chooseBestContent(clusterContent)),
-      topCountryContent: buildContentPreview(chooseBestContent(countryContent)),
-      latestPublications: getLatestContentPreviewList(8, "en")
+      topSignalContent: findPublicationForSignal(topSignal),
+      topClusterContent: findPublicationForCluster(topCluster),
+      topCountryContent: findPublicationForCountry(topCountry),
+      latestPublications: getPublicationPreviewList(8, "en")
     };
   }
 
@@ -866,7 +930,7 @@ Decision Mode: ${mode}
 ${description}
 
 #IBSS #Signals #StrategicIntelligence`;
-  }
+    }
 
   function buildNewsPost(newsItem, lang = "en") {
     const priority = normalizePriority(newsItem?.priority || newsItem?.severity || "LOW");
@@ -963,6 +1027,35 @@ ${edition}
 #IBSS #PolicyPaper #SovereignStudies`;
   }
 
+  function buildLinkedPublicationPost(publication, signal, lang = "en") {
+    if (!publication) return "";
+
+    const publicationTitle = getLocalizedText(publication.title, lang);
+    const publicationSummary = getLocalizedText(publication.summary, lang);
+    const signalTitle = signal ? getLocalizedText(signal.title, lang) : (lang === "ar" ? "إشارة مرتبطة" : "Linked Signal");
+    const score = signal ? getSignalScore(signal) : 0;
+
+    if (lang === "ar") {
+      return `📄 LINKED PUBLICATION — ${publicationTitle}
+
+الإشارة المرتبطة: ${signalTitle}
+درجة الإشارة: ${score}
+
+${publicationSummary}
+
+#IBSS #Signals #Publications`;
+    }
+
+    return `📄 LINKED PUBLICATION — ${publicationTitle}
+
+Linked Signal: ${signalTitle}
+Signal Score: ${score}
+
+${publicationSummary}
+
+#IBSS #Signals #Publications`;
+  }
+
   function queueSignalPost(signal) {
     const post = createPostObject("signal", {
       sourceId: signal?.id || null,
@@ -1004,6 +1097,18 @@ ${edition}
     return enqueue(post);
   }
 
+  function queueLinkedPublicationPost(publication, signal) {
+    const post = createPostObject("linked_publication", {
+      sourceId: publication?.id || null,
+      signalId: signal?.id || null,
+      text_en: buildLinkedPublicationPost(publication, signal, "en"),
+      text_ar: buildLinkedPublicationPost(publication, signal, "ar"),
+      publication: buildContentPreview(publication)
+    });
+
+    return enqueue(post);
+  }
+
   function queueTopSignalFromEngine() {
     const system = resolveSourceSystem() || getLatestOrchestratedSystem();
     if (!system) return null;
@@ -1029,7 +1134,7 @@ ${edition}
   }
 
   function queueLatestFeaturedPublication() {
-    const publication = getLatestFeaturedPublication();
+    const publication = getLatestFeaturedPublicationRaw();
     if (!publication) return null;
 
     return queueFeaturedPublicationPost(publication);
@@ -1045,6 +1150,25 @@ ${edition}
 
   function generateFeaturedPublicationPost() {
     return queueLatestFeaturedPublication();
+  }
+
+  function generateLinkedPublicationPost(signal) {
+    const system = resolveSourceSystem() || getLatestOrchestratedSystem();
+    if (!system) return null;
+
+    const orchestrated = orchestrateSystem(system);
+    const targetSignal =
+      signal ||
+      orchestrated?.topSignal ||
+      orchestrated?.dominantSignal ||
+      null;
+
+    if (!targetSignal) return null;
+
+    const publication = findPublicationForSignal(targetSignal);
+    if (!publication) return null;
+
+    return queueLinkedPublicationPost(publication, targetSignal);
   }
 
   function markAsPublished(postId, meta = {}) {
@@ -1114,6 +1238,11 @@ ${edition}
     getLatestSnapshot,
     getLatestFeaturedPublication: getLatestFeaturedPublicationState,
     getPublicationContext,
+    getPublicationPreviewList,
+
+    findPublicationForSignal,
+    findPublicationForCluster,
+    findPublicationForCountry,
 
     getQueue,
     getHistory,
@@ -1124,6 +1253,7 @@ ${edition}
     queueNewsPost,
     queueSystemBrief,
     queueFeaturedPublicationPost,
+    queueLinkedPublicationPost,
     queueTopSignalFromEngine,
     queueLatestNewsFromFeed,
     queueStrategicBriefFromEngine,
@@ -1132,6 +1262,7 @@ ${edition}
     generateTopSignalPost,
     generateStrategicBrief,
     generateFeaturedPublicationPost,
+    generateLinkedPublicationPost,
 
     markAsPublished,
     removeFromQueue,
@@ -1139,6 +1270,7 @@ ${edition}
     buildSignalPost,
     buildNewsPost,
     buildSystemBrief,
-    buildFeaturedPublicationPost
+    buildFeaturedPublicationPost,
+    buildLinkedPublicationPost
   };
 })();
