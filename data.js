@@ -1,5 +1,5 @@
 // IBSS DATA CORE — Unified Sovereign Structure
-// Version: v1.0 Foundation Layer
+// Version: v1.1 Integrated Signal Expansion Layer
 
 (function () {
   "use strict";
@@ -129,6 +129,41 @@
       publishedAt: "2026-04-13T15:30:00Z",
       linkedSignalIds: ["SIG-WB-001"],
       tags: ["الضفة الغربية", "أمني", "تصعيد", "مراقبة"],
+      engagement: {
+        reactions: 0,
+        comments: 0,
+        shares: 0
+      }
+    },
+    {
+      id: "CNT-006",
+      title: {
+        ar: "إيران: التحذير الروسي الثاني داخل بيئة تفاوض أمريكية تمويهية",
+        en: "Iran: The Second Russian Warning Within a U.S. Negotiation Masking Environment"
+      },
+      summary: {
+        ar: "دراسة سيادية تعتبر أن مسار التفاوض الأمريكي ليس مسار تسوية مستقرة، بل غطاء زمني لإعداد بيئة تصعيد أوسع ضد إيران، مع بروز التحذير الروسي الثاني كمؤشر مبكر على فقدان الثقة بالمسار الدبلوماسي الظاهر.",
+        en: "A sovereign study assessing that the U.S. negotiation track is not a stable settlement path, but a temporal masking process for preparing a wider escalation environment against Iran, with the second Russian warning emerging as an early indicator of eroding confidence in the visible diplomatic channel."
+      },
+      type: "study",
+      domain: "geo-security",
+      country: "iran",
+      region: "regional",
+      priority: "HIGH",
+      status: "published",
+      sourcePlatform: "internal",
+      publishedAt: "2026-04-19T10:30:00Z",
+      linkedSignalIds: ["SIG-IRN-002"],
+      tags: [
+        "إيران",
+        "روسيا",
+        "التحذير الروسي الثاني",
+        "تمويه تفاوضي",
+        "تصعيد",
+        "اجتياح بري",
+        "بنتاغون",
+        "جيوأمني"
+      ],
       engagement: {
         reactions: 0,
         comments: 0,
@@ -289,6 +324,57 @@
         weight: 0.56,
         volatility: 0.52,
         impact: 0.58
+      }
+    },
+    {
+      id: "SIG-IRN-002",
+      title: {
+        ar: "إيران: التحذير الروسي الثاني",
+        en: "Iran: Second Russian Warning"
+      },
+      description: {
+        ar: "إشارة سيادية عالية تعتبر أن المسار التفاوضي الأمريكي يعمل كبيئة تمويه زمني، بينما تتشكل في الخلفية بنية ضغط عسكري أوسع ضد إيران مع تنامي مؤشرات التحضير العملياتي.",
+        en: "A high-level sovereign signal assessing that the U.S. negotiation track functions as a temporal masking environment, while a broader military pressure architecture forms in the background against Iran with growing indicators of operational preparation."
+      },
+      layer: {
+        ar: "جيوأمني / بنيوي",
+        en: "Geo-Security / Structural"
+      },
+      signalType: {
+        ar: "إنذار سيادي",
+        en: "SOVEREIGN WARNING"
+      },
+      decisionMode: {
+        ar: "مراقبة / استعداد / تهيؤ تصعيد",
+        en: "WATCH / PREPARE / ESCALATION READINESS"
+      },
+      influenceBand: {
+        ar: "محوري",
+        en: "CORE"
+      },
+      countryId: "CTR-IRN",
+      linkedContentIds: ["CNT-006"],
+      reportMeta: {
+        code: "SDR-011",
+        type: "SDR",
+        priority: "HIGH",
+        status: {
+          ar: "منشور",
+          en: "Published"
+        }
+      },
+      report: {
+        ar: "التحذير الروسي الثاني لا يُقرأ كرسالة دبلوماسية عابرة، بل كإشارة مبكرة إلى إدراك دولي بأن البيئة التفاوضية قد تكون غطاءً لتحضير تصعيد عسكري أوسع ضد إيران، بما في ذلك احتمالات انتقال من الضغط المركب إلى خيار العمليات البرية واسعة النطاق.",
+        en: "The second Russian warning should not be read as a passing diplomatic message, but as an early indicator that the negotiation environment may be functioning as cover for preparing a broader military escalation against Iran, including the possibility of transition from compound pressure to large-scale ground operations."
+      },
+      region: "Iran",
+      weight: "HIGH",
+      live: true,
+      link: "signal-iran.html",
+      metrics: {
+        weight: 0.91,
+        volatility: 0.86,
+        impact: 0.92
       }
     },
     {
@@ -476,31 +562,33 @@
         en: "Iran"
       },
       region: "Regional",
-      riskScore: 58,
-      riskLevel: "MEDIUM",
-      trend: "STABLE",
+      riskScore: 84,
+      riskLevel: "HIGH",
+      trend: "RISING",
       primaryDrivers: {
         ar: [
-          "الضغط التفاوضي",
-          "غموض التنفيذ",
-          "تذبذب النفوذ"
+          "تحول التفاوض إلى بيئة تمويه",
+          "تصاعد الضغط العسكري المركب",
+          "التحذير الروسي الثاني",
+          "ارتفاع احتمالات الانزلاق إلى مواجهة أوسع"
         ],
         en: [
-          "negotiation pressure",
-          "enforcement ambiguity",
-          "unstable leverage"
+          "negotiation shifting into a masking environment",
+          "compound military pressure escalation",
+          "second Russian warning",
+          "rising probability of drift into broader confrontation"
         ]
       },
       categories: {
-        political: 62,
-        security: 53,
-        military: 48,
-        economic: 57,
-        diplomatic: 72
+        political: 79,
+        security: 84,
+        military: 81,
+        economic: 63,
+        diplomatic: 76
       },
-      linkedSignalIds: ["SIG-IRN-001"],
-      linkedContentIds: ["CNT-003"],
-      lastUpdated: "2026-04-13T12:30:00Z",
+      linkedSignalIds: ["SIG-IRN-001", "SIG-IRN-002"],
+      linkedContentIds: ["CNT-003", "CNT-006"],
+      lastUpdated: "2026-04-19T10:30:00Z",
       status: "active"
     },
     {
@@ -608,7 +696,8 @@
         .filter(item =>
           item.type === "study" ||
           item.type === "policy_paper" ||
-          item.type === "report"
+          item.type === "report" ||
+          item.type === "model"
         )
         .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))[0] || null;
     },
@@ -618,7 +707,8 @@
         .filter(item =>
           item.type === "news" ||
           item.type === "brief" ||
-          item.type === "report"
+          item.type === "report" ||
+          item.type === "study"
         )
         .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
         .slice(0, limit);
@@ -645,7 +735,8 @@
     },
 
     getContentByType(type, limit = null) {
-      const results = IBSS_CONTENT.filter(item => item.type === type)
+      const results = IBSS_CONTENT
+        .filter(item => item.type === type)
         .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 
       return limit ? results.slice(0, limit) : results;
