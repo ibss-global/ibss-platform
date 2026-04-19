@@ -102,24 +102,25 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
     return "published";
   }
 
-  function normalizeType(type) {
-    const t = normalizeText(type || "study");
-    const allowed = [
-      "study",
-      "report",
-      "brief",
-      "analysis",
-      "policy_paper",
-      "news",
-      "paper",
-      "strategic_brief",
-      "news_analysis",
-      "sovereign_study",
-      "signal_update",
-      "platform_post"
-    ];
-    return allowed.includes(t) ? t : "study";
-  }
+function normalizeType(type) {
+  const t = normalizeText(type || "study");
+  const allowed = [
+    "model",
+    "study",
+    "report",
+    "brief",
+    "analysis",
+    "policy_paper",
+    "news",
+    "paper",
+    "strategic_brief",
+    "news_analysis",
+    "sovereign_study",
+    "signal_update",
+    "platform_post"
+  ];
+  return allowed.includes(t) ? t : "study";
+}
 
   function normalizeStringArray(values) {
     return asArray(values)
