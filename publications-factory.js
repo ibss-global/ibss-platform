@@ -67,20 +67,22 @@ window.IBSS_PUBLICATIONS_FACTORY = (function () {
   }
 
   function normalizeType(type) {
-    const t = normalizeText(type || CONFIG.defaultType);
-    if (
-      t === "study" ||
-      t === "report" ||
-      t === "brief" ||
-      t === "analysis" ||
-      t === "policy_paper" ||
-      t === "policy-paper" ||
-      t === "briefing"
-    ) {
-      return t === "policy-paper" ? "policy_paper" : t;
-    }
+  const t = normalizeText(type || CONFIG.defaultType);
 
-    return CONFIG.defaultType;
+  if (
+    t === "model" ||
+    t === "study" ||
+    t === "report" ||
+    t === "brief" ||
+    t === "analysis" ||
+    t === "policy_paper" ||
+    t === "policy-paper" ||
+    t === "briefing"
+  ) {
+    return t === "policy-paper" ? "policy_paper" : t;
+  }
+
+  return CONFIG.defaultType;
   }
 
   function normalizeClassification(classification, type) {
