@@ -6,10 +6,12 @@ window.IBSS_ENGINE = (function () {
     historyLimit: 180,
     reportLimit: 80,
     archiveLimit: 120,
-    storageKey: "ibss_engine_state_v13_content_integrated",
+    storageKey: "ibss_engine_state_v14_clean_unified",
     minLiveSignalScore: 40,
     scenarioHighThreshold: 85,
-    scenarioPrepThreshold: 70
+    scenarioPrepThreshold: 70,
+    maxFeedItems: 12,
+    maxCountryRiskItems: 5
   };
 
   const STATE = {
@@ -86,6 +88,14 @@ window.IBSS_ENGINE = (function () {
     return "-";
   }
 
+  function average(list, selector) {
+    const arr = asArray(list);
+    if (!arr.length) return 0;
+
+    const sum = arr.reduce((acc, item) => acc + safeNumber(selector(item), 0), 0);
+    return sum / arr.length;
+  }
+
   function dedupeBy(list, keyBuilder) {
     const map = new Map();
 
@@ -99,12 +109,22 @@ window.IBSS_ENGINE = (function () {
     return [...map.values()];
   }
 
-  function average(list, selector) {
-    const arr = asArray(list);
-    if (!arr.length) return 0;
+  function buildId(prefix) {
+    return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+  }
 
-    const sum = arr.reduce((acc, item) => acc + safeNumber(selector(item), 0), 0);
-    return sum / arr.length;
+  function makeFeedItem(type, priority, en, ar, source = "") {
+    return {
+      id: buildId("FEED"),
+      type: safeText(type, "system"),
+      priority: normalizePriority(priority),
+      source: safeText(source, ""),
+      text: {
+        en: safeText(en, "-"),
+        ar: safeText(ar, "-")
+      },
+      createdAt: nowIso()
+    };
   }
 
   /* =========================================
@@ -116,6 +136,13 @@ window.IBSS_ENGINE = (function () {
     if (p === "HIGH") return "HIGH";
     if (p === "MEDIUM") return "MEDIUM";
     return "LOW";
+  }
+
+  function priorityWeight(priority) {
+    const p = normalizePriority(priority);
+    if (p === "HIGH") return 3;
+    if (p === "MEDIUM") return 2;
+    return 1;
   }
 
   function inferPriorityFromScore(score100) {
@@ -171,6 +198,10 @@ window.IBSS_ENGINE = (function () {
     return asArray(window.IBSS_COUNTRIES);
   }
 
+  function getSeedSignals() {
+    return asArray(window.IBSS_SIGNALS);
+  }
+
   function getPublishedContent() {
     return getContent().filter(item => item && item.status === "published");
   }
@@ -186,12 +217,14 @@ window.IBSS_ENGINE = (function () {
       total: content.length,
       published: content.filter(item => item?.status === "published").length,
       pending: content.filter(item => item?.status === "pending").length,
+      archived: content.filter(item => item?.status === "archived").length,
       reports: content.filter(item => item?.type === "report").length,
       studies: content.filter(item => item?.type === "study").length,
       briefs: content.filter(item => item?.type === "brief").length,
       news: content.filter(item => item?.type === "news").length,
       policyPapers: content.filter(item => item?.type === "policy_paper").length,
-      analyses: content.filter(item => item?.type === "analysis").length
+      analyses: content.filter(item => item?.type === "analysis").length,
+      models: content.filter(item => item?.type === "model").length
     };
   }
 
@@ -207,6 +240,39 @@ window.IBSS_ENGINE = (function () {
     return [];
   }
 
+  function getSignalsFromSeedData() {
+    return getSeedSignals().map((item, index) => ({
+      id: safeText(item?.id, `SEED-${index + 1}`),
+      title: item?.title || localize("Untitled Signal", "إشارة غير معنونة"),
+      summary: item?.report || item?.description || localize("No summary available.", "لا يوجد ملخص."),
+      description: item?.description || item?.report || localize("No description available.", "لا يوجد وصف."),
+      country: normalizeText(item?.country || item?.countryId || item?.region || "global"),
+      region: normalizeText(item?.region || item?.country || "global"),
+      domain: normalizeText(
+        getLocalizedText(item?.signalType, "en") ||
+        getLocalizedText(item?.layer, "en") ||
+        "geopolitical"
+      ),
+      priority: normalizePriority(item?.weight || item?.priority),
+      score100: clamp(
+        Math.round(
+          (
+            (safeNumber(item?.metrics?.weight, 0.5) * 35) +
+            (safeNumber(item?.metrics?.volatility, 0.5) * 25) +
+            (safeNumber(item?.metrics?.impact, 0.5) * 40)
+          )
+        ),
+        0,
+        100
+      ),
+      reliabilityScore: 72,
+      freshnessScore: item?.live ? 0.9 : 0.55,
+      timestamp: nowIso(),
+      source: "IBSS_SEED",
+      raw: item
+    }));
+  }
+
   function getFallbackSignalsFromNews() {
     const news = asArray(window.IBSS_NEWS);
 
@@ -214,6 +280,7 @@ window.IBSS_ENGINE = (function () {
       id: safeText(item?.id, `NEWS-${index + 1}`),
       title: item?.title || localize("Untitled News Signal", "إشارة خبرية غير معنونة"),
       summary: item?.summary || item?.description || localize("No summary available.", "لا يوجد ملخص."),
+      description: item?.summary || item?.description || localize("No description available.", "لا يوجد وصف."),
       country: safeText(item?.country, safeText(item?.region, "global")),
       region: safeText(item?.region, safeText(item?.country, "global")),
       domain: safeText(item?.domain, safeText(item?.category, "geopolitical")),
@@ -228,11 +295,51 @@ window.IBSS_ENGINE = (function () {
   }
 
   /* =========================================
-     Content Engine API Integration
+     Content API Integration
   ========================================= */
 
   function getContentAPI() {
-    return window.IBSS_CONTENT_API || null;
+    return window.IBSS_CONTENT_API || window.IBSS_CONTENT_UTILS || null;
+  }
+
+  function getSafeContentImpact(item) {
+    const api = getContentAPI();
+
+    if (api?.computeContentImpact) {
+      try {
+        return api.computeContentImpact(item) || {};
+      } catch (error) {
+        console.error("IBSS_ENGINE computeContentImpact error:", error);
+      }
+    }
+
+    const strategicWeight = clamp(safeNumber(item?.metrics?.strategicWeight, 0), 0, 100);
+    const featuredBoost = item?.meta?.featured ? 3 : 0;
+    const canonicalBoost = item?.meta?.canonical ? 3 : 0;
+    const pinnedBoost = item?.meta?.pinned ? 2 : 0;
+
+    return {
+      signalBoost: Math.round((strategicWeight * 0.08) + featuredBoost),
+      clusterBoost: Math.round((strategicWeight * 0.06) + canonicalBoost),
+      countryBoost: Math.round((strategicWeight * 0.07) + pinnedBoost),
+      confidenceBoost: Math.round((strategicWeight * 0.04) + featuredBoost + canonicalBoost)
+    };
+  }
+
+  function getEngineEligibleContent() {
+    const api = getContentAPI();
+
+    if (api?.getEngineEligibleContent) {
+      try {
+        return asArray(api.getEngineEligibleContent());
+      } catch (error) {
+        console.error("IBSS_ENGINE getEngineEligibleContent error:", error);
+      }
+    }
+
+    return getPublishedContent().filter(item =>
+      ["study", "report", "analysis", "brief", "policy_paper", "model"].includes(item?.type)
+    );
   }
 
   function getContentCountryAliases(countryIdOrName) {
@@ -244,32 +351,38 @@ window.IBSS_ENGINE = (function () {
     if (raw === "ctr-gaza" || raw === "gaza") {
       aliases.add("ctr-gaza");
       aliases.add("gaza");
+      aliases.add("levant");
+      aliases.add("palestine");
     }
 
-    if (raw === "ctr-leb" || raw === "lebanon") {
+    if (raw === "ctr-leb" || raw === "lebanon" || raw === "leb") {
       aliases.add("ctr-leb");
       aliases.add("lebanon");
       aliases.add("leb");
+      aliases.add("levant");
     }
 
-    if (raw === "ctr-irn" || raw === "iran") {
+    if (raw === "ctr-irn" || raw === "iran" || raw === "irn") {
       aliases.add("ctr-irn");
       aliases.add("iran");
       aliases.add("irn");
+      aliases.add("regional");
     }
 
-    if (raw === "ctr-rs" || raw === "redsea" || raw === "red sea") {
+    if (raw === "ctr-rs" || raw === "redsea" || raw === "red sea" || raw === "rs") {
       aliases.add("ctr-rs");
       aliases.add("redsea");
       aliases.add("red sea");
       aliases.add("rs");
+      aliases.add("maritime");
     }
 
-    if (raw === "ctr-wb" || raw === "westbank" || raw === "west bank") {
+    if (raw === "ctr-wb" || raw === "westbank" || raw === "west bank" || raw === "wb") {
       aliases.add("ctr-wb");
       aliases.add("westbank");
       aliases.add("west bank");
       aliases.add("wb");
+      aliases.add("palestine");
     }
 
     return [...aliases];
@@ -280,12 +393,12 @@ window.IBSS_ENGINE = (function () {
     if (!api || !signal?.id) return 0;
 
     try {
-      const linked = api.getContentLinkedToSignal(signal.id);
+      const linked = asArray(api.getContentLinkedToSignal?.(signal.id));
       if (!linked.length) return 0;
 
       return clamp(
         linked.reduce((sum, item) => {
-          const impact = api.computeContentImpact(item);
+          const impact = getSafeContentImpact(item);
           return sum + safeNumber(impact.signalBoost, 0);
         }, 0),
         0,
@@ -304,12 +417,12 @@ window.IBSS_ENGINE = (function () {
     const clusterKey = `${normalizeText(region || "global")}::${normalizeText(domain || "general")}`;
 
     try {
-      const linked = api.getContentLinkedToCluster(clusterKey);
+      const linked = asArray(api.getContentLinkedToCluster?.(clusterKey));
       if (!linked.length) return 0;
 
       return clamp(
         linked.reduce((sum, item) => {
-          const impact = api.computeContentImpact(item);
+          const impact = getSafeContentImpact(item);
           return sum + safeNumber(impact.clusterBoost, 0);
         }, 0),
         0,
@@ -329,11 +442,11 @@ window.IBSS_ENGINE = (function () {
       const aliases = getContentCountryAliases(countryIdOrName);
 
       const total = aliases.reduce((sum, alias) => {
-        const linked = api.getContentLinkedToCountry(alias);
+        const linked = asArray(api.getContentLinkedToCountry?.(alias));
         if (!linked.length) return sum;
 
         const localBoost = linked.reduce((inner, item) => {
-          const impact = api.computeContentImpact(item);
+          const impact = getSafeContentImpact(item);
           return inner + safeNumber(impact.countryBoost, 0);
         }, 0);
 
@@ -348,15 +461,12 @@ window.IBSS_ENGINE = (function () {
   }
 
   function getSystemContentConfidenceBoost() {
-    const api = getContentAPI();
-    if (!api) return 0;
-
     try {
-      const eligible = api.getEngineEligibleContent();
+      const eligible = getEngineEligibleContent();
       if (!eligible.length) return 0;
 
       const total = eligible.reduce((sum, item) => {
-        const impact = api.computeContentImpact(item);
+        const impact = getSafeContentImpact(item);
         return sum + safeNumber(impact.confidenceBoost, 0);
       }, 0);
 
@@ -368,16 +478,29 @@ window.IBSS_ENGINE = (function () {
   }
 
   function getLatestFeaturedContent() {
+    const api = getContentAPI();
+
     try {
-      const api = getContentAPI();
       if (api?.getLatestFeaturedContent) {
-        return api.getLatestFeaturedContent();
+        const featured = api.getLatestFeaturedContent();
+        if (featured) return featured;
       }
     } catch (error) {
       console.error("IBSS_ENGINE latest featured content error:", error);
     }
 
-    return null;
+    const published = getPublishedContent().slice().sort((a, b) =>
+      new Date(b?.publishedAt || 0) - new Date(a?.publishedAt || 0)
+    );
+
+    const featured = published.find(item => item?.meta?.featured);
+    if (featured) return featured;
+
+    const studyLike = published.find(item =>
+      ["study", "report", "analysis", "brief", "policy_paper", "model"].includes(item?.type)
+    );
+
+    return studyLike || published[0] || null;
   }
 
   /* =========================================
@@ -395,6 +518,7 @@ window.IBSS_ENGINE = (function () {
     const d = normalizeText(domain);
     if (d.includes("military")) return 6;
     if (d.includes("security")) return 5;
+    if (d.includes("geo-security")) return 5;
     if (d.includes("geopolitical")) return 4;
     if (d.includes("maritime")) return 3;
     if (d.includes("energy")) return 3;
@@ -432,10 +556,10 @@ window.IBSS_ENGINE = (function () {
 
   function normalizeRawSignal(signal, index = 0) {
     const title = signal?.title || localize("Untitled Signal", "إشارة غير معنونة");
-    const description = signal?.summary || signal?.description || localize("No summary available.", "لا يوجد ملخص.");
-    const country = safeText(signal?.country, "global");
-    const region = safeText(signal?.region, country || "global");
-    const domain = safeText(signal?.domain, "geopolitical");
+    const description = signal?.description || signal?.summary || localize("No summary available.", "لا يوجد ملخص.");
+    const country = normalizeText(signal?.country || "global");
+    const region = normalizeText(signal?.region || signal?.country || "global");
+    const domain = normalizeText(signal?.domain || "geopolitical");
     const reliabilityScore = clamp(safeNumber(signal?.reliabilityScore, 60), 0, 100);
     const freshnessScore = clamp(safeNumber(signal?.freshnessScore, 0.5), 0, 1);
     const baseScore = clamp(safeNumber(signal?.score100, 50), 0, 100);
@@ -475,8 +599,12 @@ window.IBSS_ENGINE = (function () {
 
   function buildRankedSignals() {
     const ingestionSignals = getSignalsFromIngestion();
-    const fallbackSignals = ingestionSignals.length ? [] : getFallbackSignalsFromNews();
-    const rawSignals = ingestionSignals.length ? ingestionSignals : fallbackSignals;
+    const seedSignals = ingestionSignals.length ? [] : getSignalsFromSeedData();
+    const fallbackSignals = ingestionSignals.length || seedSignals.length ? [] : getFallbackSignalsFromNews();
+
+    const rawSignals = ingestionSignals.length
+      ? ingestionSignals
+      : (seedSignals.length ? seedSignals : fallbackSignals);
 
     const normalized = rawSignals
       .map(normalizeRawSignal)
@@ -512,8 +640,8 @@ window.IBSS_ENGINE = (function () {
   ========================================= */
 
   function buildClusterName(region, domain) {
-    const regionNameEn = region === "global" ? "Global" : titleCase(region);
-    const domainNameEn = domain === "general" ? "Strategic File" : titleCase(domain);
+    const regionNameEn = region === "global" ? "Global" : titleCase(region.replace(/-/g, " "));
+    const domainNameEn = domain === "general" ? "Strategic File" : titleCase(domain.replace(/-/g, " "));
 
     return {
       en: `${regionNameEn} ${domainNameEn}`,
@@ -526,7 +654,10 @@ window.IBSS_ENGINE = (function () {
       return localize("Global Theater", "المسرح العالمي");
     }
 
-    return localize(`${titleCase(region)} Theater`, `مسرح ${titleCase(region)}`);
+    return localize(
+      `${titleCase(region.replace(/-/g, " "))} Theater`,
+      `مسرح ${titleCase(region.replace(/-/g, " "))}`
+    );
   }
 
   function buildClusterState(rankedSignals) {
@@ -585,6 +716,7 @@ window.IBSS_ENGINE = (function () {
 
         return {
           id: `CL-${index + 1}`,
+          key: group.key,
           name: buildClusterName(group.region, group.domain),
           avgRisk: calibratedRisk,
           maxRisk: clamp(group.maxRisk + contentBoost, 0, 100),
@@ -770,6 +902,12 @@ window.IBSS_ENGINE = (function () {
     return null;
   }
 
+  function matchesCountry(country, signalOrClusterOrTheaterText) {
+    const target = normalizeText(signalOrClusterOrTheaterText);
+    const aliases = getContentCountryAliases(country.id || getLocalizedText(country.name, "en"));
+    return aliases.some(alias => target.includes(alias));
+  }
+
   function buildCountryRiskFeed(rankedSignals, clusters, theaters, newsPressure) {
     const countries = getCountries();
 
@@ -777,21 +915,20 @@ window.IBSS_ENGINE = (function () {
       return [...countries]
         .map(country => {
           const countryName = getLocalizedText(country.name, "en");
-          const normalizedCountry = normalizeText(countryName);
 
           const relatedSignals = rankedSignals.filter(signal =>
-            normalizeText(signal.country) === normalizedCountry ||
-            normalizeText(signal.region) === normalizedCountry ||
-            normalizeText(getLocalizedText(signal.title, "en")).includes(normalizedCountry)
+            matchesCountry(country, signal.country) ||
+            matchesCountry(country, signal.region) ||
+            matchesCountry(country, getLocalizedText(signal.title, "en"))
           );
 
           const relatedClusters = clusters.filter(cluster =>
-            normalizeText(cluster.region).includes(normalizedCountry) ||
-            normalizeText(getLocalizedText(cluster.name, "en")).includes(normalizedCountry)
+            matchesCountry(country, cluster.region) ||
+            matchesCountry(country, getLocalizedText(cluster.name, "en"))
           );
 
           const relatedTheater = theaters.find(theater =>
-            normalizeText(getLocalizedText(theater.name, "en")).includes(normalizedCountry)
+            matchesCountry(country, getLocalizedText(theater.name, "en"))
           ) || null;
 
           let baseScore = safeNumber(country.riskScore, 0);
@@ -821,21 +958,22 @@ window.IBSS_ENGINE = (function () {
           const trend = detectTrend(baseScore, previous);
 
           return {
-            id: country.id || normalizedCountry,
+            id: country.id || normalizeText(countryName),
             name: countryName,
             nameLocalized: country.name,
             riskScore: baseScore,
             riskLevel: riskLevelFromScore(baseScore),
             trend,
+            band: normalizeBandCode(baseScore),
             contentBoost,
             primaryDrivers: asArray(country.primaryDrivers?.en || country.primaryDrivers || [])
           };
         })
         .sort((a, b) => b.riskScore - a.riskScore)
-        .slice(0, 5);
+        .slice(0, CONFIG.maxCountryRiskItems);
     }
 
-    return rankedSignals.slice(0, 5).map(signal => {
+    return rankedSignals.slice(0, CONFIG.maxCountryRiskItems).map(signal => {
       const name = getLocalizedText(signal.title, "en");
       const baseRisk = Math.round(safeNumber(signal.balancedScore100, 0) * 0.92);
       const contentBoost = getCountryContentBoost(signal.country || name);
@@ -850,6 +988,7 @@ window.IBSS_ENGINE = (function () {
         riskScore,
         riskLevel: riskLevelFromScore(riskScore),
         trend,
+        band: normalizeBandCode(riskScore),
         contentBoost,
         primaryDrivers: [
           getLocalizedText(signal.title, "en"),
@@ -858,6 +997,32 @@ window.IBSS_ENGINE = (function () {
         ]
       };
     });
+  }
+
+  function buildUnifiedRisk(topCountry, liveSignalsCount) {
+    if (!topCountry) {
+      return {
+        unit: "Unified Risk Unit",
+        topCountry: null,
+        riskScore: 0,
+        trend: "STABLE",
+        riskLevel: "LOW",
+        band: "LOW",
+        liveSignals: safeNumber(liveSignalsCount, 0),
+        drivers: []
+      };
+    }
+
+    return {
+      unit: "Unified Risk Unit",
+      topCountry: topCountry.name,
+      riskScore: safeNumber(topCountry.riskScore, 0),
+      trend: safeText(topCountry.trend, "STABLE"),
+      riskLevel: safeText(topCountry.riskLevel, "LOW"),
+      band: safeText(topCountry.band, normalizeBandCode(topCountry.riskScore)),
+      liveSignals: safeNumber(liveSignalsCount, 0),
+      drivers: asArray(topCountry.primaryDrivers).slice(0, 5)
+    };
   }
 
   /* =========================================
@@ -942,15 +1107,15 @@ window.IBSS_ENGINE = (function () {
   ========================================= */
 
   function rankedToFeed(rankedSignals) {
-    return rankedSignals.slice(0, 2).map(item => ({
-      type: "news",
-      priority: item.priority,
-      source: safeText(item?.source, "INTAKE"),
-      text: {
-        en: getLocalizedText(item.description, "en"),
-        ar: getLocalizedText(item.description, "ar")
-      }
-    }));
+    return rankedSignals.slice(0, 2).map(item =>
+      makeFeedItem(
+        "signal_summary",
+        item.priority,
+        getLocalizedText(item.description, "en"),
+        getLocalizedText(item.description, "ar"),
+        safeText(item?.source, "ENGINE")
+      )
+    );
   }
 
   function buildFeed(system) {
@@ -958,100 +1123,131 @@ window.IBSS_ENGINE = (function () {
 
     rankedToFeed(system.rankedSignals).forEach(item => lines.push(item));
 
-    const featuredContent = getLatestFeaturedContent();
-    if (featuredContent) {
-      lines.push({
-        type: "content",
-        priority: normalizePriority(featuredContent.priority),
-        source: safeText(featuredContent.author, "IBSS"),
-        text: {
-          en: `Featured publication: ${getLocalizedText(featuredContent.title, "en")}`,
-          ar: `المنشور المميز: ${getLocalizedText(featuredContent.title, "ar")}`
-        }
-      });
-    }
-
-    if (system.topTheater) {
-      lines.push({
-        type: "theater",
-        priority: system.level,
-        text: {
-          en: `Top theater: ${getLocalizedText(system.topTheater.name, "en")}`,
-          ar: `المسرح الأعلى: ${getLocalizedText(system.topTheater.name, "ar")}`
-        }
-      });
+    if (system.topSignal) {
+      lines.push(
+        makeFeedItem(
+          "top_signal",
+          system.topSignal.priority || system.level,
+          `Top signal: ${getLocalizedText(system.topSignal.title, "en")}`,
+          `الإشارة الأعلى: ${getLocalizedText(system.topSignal.title, "ar")}`,
+          "ENGINE"
+        )
+      );
     }
 
     if (system.topCluster) {
-      lines.push({
-        type: "cluster",
-        priority: system.level,
-        text: {
-          en: `Top strategic file: ${getLocalizedText(system.topCluster.name, "en")}`,
-          ar: `الملف الاستراتيجي الأعلى: ${getLocalizedText(system.topCluster.name, "ar")}`
-        }
-      });
+      lines.push(
+        makeFeedItem(
+          "top_cluster",
+          system.level,
+          `Top strategic file: ${getLocalizedText(system.topCluster.name, "en")}`,
+          `الملف الاستراتيجي الأعلى: ${getLocalizedText(system.topCluster.name, "ar")}`,
+          "ENGINE"
+        )
+      );
     }
 
-    if (system.topSignal) {
-      lines.push({
-        type: "signal",
-        priority: system.topSignal.priority || system.level,
-        text: {
-          en: `Top signal: ${getLocalizedText(system.topSignal.title, "en")}`,
-          ar: `الإشارة الأعلى: ${getLocalizedText(system.topSignal.title, "ar")}`
-        }
-      });
+    if (system.topTheater) {
+      lines.push(
+        makeFeedItem(
+          "top_theater",
+          system.level,
+          `Top theater: ${getLocalizedText(system.topTheater.name, "en")}`,
+          `المسرح الأعلى: ${getLocalizedText(system.topTheater.name, "ar")}`,
+          "ENGINE"
+        )
+      );
     }
 
-    lines.push({
-      type: "system",
-      priority: system.level,
-      text: {
-        en: `Signal pressure: ${system.signalPressure}`,
-        ar: `ضغط الإشارات: ${system.signalPressure}`
-      }
-    });
-
-    lines.push({
-      type: "system",
-      priority: system.level,
-      text: {
-        en: `Strategic file pressure: ${system.clusterPressure.pressure}`,
-        ar: `ضغط الملفات الاستراتيجية: ${system.clusterPressure.pressure}`
-      }
-    });
-
-    lines.push({
-      type: "system",
-      priority: system.level,
-      text: {
-        en: `Theater pressure: ${system.theaterPressure.pressure}`,
-        ar: `ضغط المسرح: ${system.theaterPressure.pressure}`
-      }
-    });
-
-    lines.push({
-      type: "newsPressure",
-      priority: system.level,
-      text: {
-        en: `Live news pressure: ${system.newsPressure.count} items`,
-        ar: `الضغط الخبري الحي: ${system.newsPressure.count} عناصر`
-      }
-    });
-
-    if (system.countryRiskFeed.length) {
-      lines.push({
-        type: "country",
-        priority: system.level,
-        text: {
-          en: `CRU synchronized with ${system.countryRiskFeed.length} country entries`,
-          ar: `تمت مزامنة وحدة المخاطر مع ${system.countryRiskFeed.length} مدخلات دول`
-        }
-      });
+    if (system.featuredPublication) {
+      lines.push(
+        makeFeedItem(
+          "featured_publication",
+          normalizePriority(system.featuredPublication.priority || system.level),
+          `Featured publication: ${getLocalizedText(system.featuredPublication.title, "en")}`,
+          `المنشور المميز: ${getLocalizedText(system.featuredPublication.title, "ar")}`,
+          safeText(system.featuredPublication.author, "IBSS")
+        )
+      );
     }
 
-    return lines;
+    lines.push(
+      makeFeedItem(
+        "system_pressure",
+        system.level,
+        `System pressure: ${system.systemPressure}`,
+        `ضغط النظام: ${system.systemPressure}`,
+        "ENGINE"
+      )
+    );
+
+    lines.push(
+      makeFeedItem(
+        "signal_pressure",
+        system.level,
+        `Signal pressure: ${system.signalPressure}`,
+        `ضغط الإشارات: ${system.signalPressure}`,
+        "ENGINE"
+      )
+    );
+
+    lines.push(
+      makeFeedItem(
+        "cluster_pressure",
+        system.level,
+        `Strategic file pressure: ${system.clusterPressure.pressure}`,
+        `ضغط الملفات الاستراتيجية: ${system.clusterPressure.pressure}`,
+        "ENGINE"
+      )
+    );
+
+    lines.push(
+      makeFeedItem(
+        "theater_pressure",
+        system.level,
+        `Theater pressure: ${system.theaterPressure.pressure}`,
+        `ضغط المسرح: ${system.theaterPressure.pressure}`,
+        "ENGINE"
+      )
+    );
+
+    lines.push(
+      makeFeedItem(
+        "news_pressure",
+        system.level,
+        `Live news pressure: ${system.newsPressure.count} items`,
+        `الضغط الخبري الحي: ${system.newsPressure.count} عناصر`,
+        "ENGINE"
+      )
+    );
+
+    if (system.unifiedRisk?.topCountry) {
+      lines.push(
+        makeFeedItem(
+          "risk_unit",
+          system.unifiedRisk.riskLevel,
+          `Unified risk unit tracks ${system.unifiedRisk.topCountry} at score ${system.unifiedRisk.riskScore}`,
+          `وحدة المخاطر الموحدة ترصد ${system.unifiedRisk.topCountry} عند درجة ${system.unifiedRisk.riskScore}`,
+          "ENGINE"
+        )
+      );
+    }
+
+    const deduped = dedupeBy(lines, item => {
+      return [
+        item.type,
+        normalizePriority(item.priority),
+        normalizeText(getLocalizedText(item.text, "en"))
+      ].join("|");
+    });
+
+    return deduped
+      .sort((a, b) => {
+        const priorityDiff = priorityWeight(b.priority) - priorityWeight(a.priority);
+        if (priorityDiff !== 0) return priorityDiff;
+        return 0;
+      })
+      .slice(0, CONFIG.maxFeedItems);
   }
 
   function getLatestStudy() {
@@ -1066,7 +1262,8 @@ window.IBSS_ENGINE = (function () {
           item.type === "report" ||
           item.type === "analysis" ||
           item.type === "brief" ||
-          item.type === "policy_paper"
+          item.type === "policy_paper" ||
+          item.type === "model"
         )
       )
       .sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
@@ -1084,7 +1281,8 @@ window.IBSS_ENGINE = (function () {
       topSignal: system?.topSignal || null,
       topCountry,
       latestStudy,
-      latestNews: system?.rankedSignals?.slice(0, 3) || []
+      latestNews: system?.rankedSignals?.slice(0, 3) || [],
+      unifiedRisk: system?.unifiedRisk || null
     };
   }
 
@@ -1119,8 +1317,8 @@ window.IBSS_ENGINE = (function () {
           `الإشارة الأعلى هي ${topSignal}. ` +
           `أحدث دراسة مؤسسية مرتبطة بالمشهد هي ${latestStudy}.`,
         recommendation: system.systemPressure >= 78
-          ? "يوصى بالتحضير ورفع الجاهزية على مستوى المسرح الأعلى وتعزيز ربط الدراسات بالملفات الميدانية."
-          : "يوصى باستمرار المراقبة وتعزيز جمع الإشارات وربطها بالإنتاج التحليلي المنشور."
+          ? "يوصى بالتحضير ورفع الجاهزية على مستوى المسرح الأعلى وتعزيز الربط بين الإشارات والدراسات والمنشورات الميدانية."
+          : "يوصى باستمرار المراقبة وتعزيز جمع الإشارات وتنظيف مسارات الربط مع الإنتاج التحليلي المنشور."
       };
     }
 
@@ -1132,8 +1330,8 @@ window.IBSS_ENGINE = (function () {
         `Top signal: ${topSignal}. ` +
         `Latest institutional publication in the scene: ${latestStudy}.`,
       recommendation: system.systemPressure >= 78
-        ? "Maintain preparation posture, raise readiness on the dominant theater, and reinforce linkage between published analysis and live files."
-        : "Continue monitoring, increase signal collection, and strengthen integration with published analytical content."
+        ? "Maintain preparation posture, raise readiness on the dominant theater, and reinforce linkage between signals, publications, and strategic files."
+        : "Continue monitoring, improve signal collection, and clean linkage between live signals and published analytical content."
     };
   }
 
@@ -1300,6 +1498,9 @@ window.IBSS_ENGINE = (function () {
     const liveSignals = rankedSignals.filter(signal => signal.live);
     const scenarios = buildScenarios(systemPressure, confidenceScore);
     const countryRiskFeed = buildCountryRiskFeed(rankedSignals, clusters, theaters, newsPressure);
+    const topCountry = countryRiskFeed[0] || null;
+    const unifiedRisk = buildUnifiedRisk(topCountry, liveSignals.length);
+    const featuredPublication = getLatestFeaturedContent();
 
     const system = {
       source: rankedSignals.length ? "engine" : "fallback",
@@ -1311,25 +1512,33 @@ window.IBSS_ENGINE = (function () {
       level,
       decision: decisionState.decision,
       mode: decisionState.mode,
+
       topTheater,
       theaters,
       theaterPressure,
+
       topCluster,
       clusters,
       clusterPressure,
+
       topSignal,
       dominantSignal: topSignal,
       rankedSignals,
       liveSignals,
       liveSignalsCount: liveSignals.length,
+
       scenarios,
       countryRiskFeed,
+      topCountry,
+      unifiedRisk,
+
       newsPressure,
       feed: [],
       contentStats: getContentStats(),
       publishedContent: getPublishedContent(),
       publishedNewsContent: getPublishedNewsContent(),
       liveNews: rankedSignals,
+      featuredPublication,
       snapshot: null,
       metricsReference: "IBSS_METRICS_V1"
     };
@@ -1339,14 +1548,18 @@ window.IBSS_ENGINE = (function () {
 
     if (shouldGenerateReport(system)) {
       const report = generateAutoReport(system);
-      system.feed.unshift({
-        type: "report",
-        priority: system.level,
-        text: {
-          en: `Auto report generated: ${report.title.en}`,
-          ar: `تم توليد تقرير تلقائي: ${report.title.ar}`
-        }
-      });
+      system.feed.unshift(
+        makeFeedItem(
+          "report",
+          system.level,
+          `Auto report generated: ${report.title.en}`,
+          `تم توليد تقرير تلقائي: ${report.title.ar}`,
+          "ENGINE"
+        )
+      );
+      system.feed = dedupeBy(system.feed, item =>
+        `${item.type}|${normalizeText(getLocalizedText(item.text, "en"))}`
+      ).slice(0, CONFIG.maxFeedItems);
     }
 
     updateHistory(system);
@@ -1378,6 +1591,11 @@ window.IBSS_ENGINE = (function () {
     return system.countryRiskFeed;
   }
 
+  function getUnifiedRiskUnit() {
+    const system = STATE.lastSystem || computeSystemState();
+    return system.unifiedRisk || null;
+  }
+
   function getReports() {
     return [...STATE.reports].reverse();
   }
@@ -1402,6 +1620,7 @@ window.IBSS_ENGINE = (function () {
     getStaticSystemFallback,
     getLastSystemState,
     getCountryRiskFeed,
+    getUnifiedRiskUnit,
     getReports,
     getLatestReport,
     getHistory,
@@ -1419,6 +1638,7 @@ window.IBSS_ENGINE = (function () {
   };
 
   window.IBSS_UTILS = {
+    ...(window.IBSS_UTILS || {}),
     getHomeSnapshot: api.getHomeSnapshot
   };
 
