@@ -956,12 +956,10 @@
 
       <div class="feature-grid">
         <div class="feature-card">
-          <div class="feature-kicker" id="featuredPublicationKicker">POLICY PAPER • SSU</div>
+          <div class="feature-kicker" id="featuredPublicationKicker">PUBLICATION • SSU</div>
           <h3 id="featuredPublicationTitle" class="feature-title">-</h3>
           <p id="featuredPublicationSummary" class="feature-summary">-</p>
-
           <div id="featuredPublicationMeta" class="feature-meta"></div>
-
           <a href="reports.html" class="unit-btn" data-i18n="btn_open_publications">Open Publications</a>
         </div>
 
@@ -1297,9 +1295,9 @@
           core_systems_desc: "طبقة المحرك السيادي التي تحول الإشارات الخام إلى تصنيف ومنطق تصعيد وبنية قرار.",
           card_sigma: "محرك من الإشارة إلى القرار",
           card_waad: "هندسة قبول الحرب",
-          card_cru: "وحدة تتبع مخاطر الدول",
+          card_cru: "وحدة مخاطر الدول",
 
-          country_unit: "وحدة تتبع مخاطر الدول",
+          country_unit: "وحدة مخاطر الدول",
           live_feed: "التغذية الحية",
 
           founder_line: "تأسس بواسطة نعيم م. دحلان",
@@ -1406,7 +1404,21 @@
           const band = window.IBSS_METRICS.classifyBand(safeNumber(score, 0));
           return STATE.lang === "ar" ? (band?.ar || "-") : (band?.en || "-");
         }
-        return "-";
+
+        const value = safeNumber(score, 0);
+        if (STATE.lang === "ar") {
+          if (value >= 85) return "حرج";
+          if (value >= 70) return "مرتفع";
+          if (value >= 55) return "ضغط";
+          if (value >= 35) return "مراقبة";
+          return "منخفض";
+        }
+
+        if (value >= 85) return "Critical";
+        if (value >= 70) return "High";
+        if (value >= 55) return "Pressure";
+        if (value >= 35) return "Watch";
+        return "Low";
       }
 
       function levelClass(level) {
@@ -1476,24 +1488,31 @@
         return raw;
       }
 
-      function getFeaturedPublication() {
-        if (window.IBSS_PUBLICATIONS?.getFeatured) {
-          const featured = asArray(window.IBSS_PUBLICATIONS.getFeatured());
-          if (featured.length) return featured[0];
-        }
+      function getUnifiedFeed(system) {
+        return asArray(
+          system?.publisherFeed ||
+          system?.unifiedFeed ||
+          window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
+          system?.feed ||
+          []
+        );
+      }
 
-        if (window.IBSS_PUBLICATIONS?.getLatest) {
-          return window.IBSS_PUBLICATIONS.getLatest();
-        }
-
-        return null;
+      function getFeaturedPublication(system) {
+        return (
+          system?.featuredPublication ||
+          system?.snapshot?.latestStudy ||
+          window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
+          window.IBSS_PUBLICATIONS?.getLatest?.() ||
+          null
+        );
       }
 
       function updateSourceBadge(system) {
         const badge = qs("systemSourceBadge");
         if (!badge) return;
 
-        if (system?.source === "engine" || system?.source === "orchestrated") {
+        if (system?.publisherFeed || system?.unifiedFeed || system?.source === "engine" || system?.source === "orchestrated") {
           badge.textContent = t("source_engine");
           badge.className = "meta-badge live";
         } else {
@@ -1562,7 +1581,7 @@
 
         const topTheater = snapshot.topTheater || system?.topTheater || null;
         const topCluster = snapshot.topCluster || system?.topCluster || null;
-        const topCountry = snapshot.topCountry || (system?.countryRiskFeed || [])[0] || null;
+        const topCountry = snapshot.topCountry || system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
 
         qs("snapshotTopTheater").textContent = topTheater ? getLocalizedText(topTheater.name) : "-";
         qs("snapshotTopTheaterMeta").textContent =
@@ -1590,7 +1609,7 @@
         const topSignal = system?.topSignal || null;
         const topCluster = system?.topCluster || null;
         const topTheater = system?.topTheater || null;
-        const topCountry = (system?.countryRiskFeed || [])[0] || null;
+        const topCountry = system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
 
         const metrics = [
           {
@@ -1636,8 +1655,8 @@
         `).join("");
       }
 
-      function renderFeaturedPublication() {
-        const item = getFeaturedPublication();
+      function renderFeaturedPublication(system) {
+        const item = getFeaturedPublication(system);
 
         qs("featuredPublicationKicker").textContent = item
           ? `${safeText(item.classification || item.type, "publication").toUpperCase()} • ${safeText(item.unit, "SSU")}`
@@ -1659,7 +1678,7 @@
 
       function renderUnitStudies(system) {
         const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.() || null;
-        const latestStudy = snapshot?.latestStudy || getFeaturedPublication() || null;
+        const latestStudy = snapshot?.latestStudy || getFeaturedPublication(system) || null;
         const contentStats = system?.contentStats || {};
 
         qs("latestStudyTitle").textContent = latestStudy ? getLocalizedText(latestStudy.title) : "-";
@@ -1671,12 +1690,7 @@
         const list = qs("latestNewsList");
         if (!list) return;
 
-        const feed =
-          window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
-          system?.publisherFeed ||
-          system?.unifiedFeed ||
-          [];
-
+        const feed = getUnifiedFeed(system);
         const newsItems = feed.filter((item) => item?.type === "news").slice(0, 3);
 
         if (!newsItems.length) {
@@ -1709,7 +1723,7 @@
       }
 
       function renderUnitPatterns(system) {
-        const topCountry = (system?.countryRiskFeed || [])[0] || null;
+        const topCountry = system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
 
         qs("unitTopCountry").textContent = topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-";
         qs("unitTopCountryScore").textContent = topCountry ? safeNumber(topCountry.riskScore, 0) : 0;
@@ -1751,11 +1765,7 @@
         const box = qs("feedBox");
         if (!box) return;
 
-        const feed =
-          window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
-          system?.publisherFeed ||
-          system?.unifiedFeed ||
-          [];
+        const feed = getUnifiedFeed(system);
 
         if (!feed.length) {
           box.innerHTML = `<div class="feed-item">${escapeHtml(t("no_feed"))}</div>`;
@@ -1786,7 +1796,7 @@
         renderStatusCards(system);
         renderSnapshot(system);
         renderMetricBox(system);
-        renderFeaturedPublication();
+        renderFeaturedPublication(system);
         renderUnitStudies(system);
         renderUnitNews(system);
         renderUnitPatterns(system);
@@ -1809,11 +1819,7 @@
           refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
           systemProvider: getSystemState,
           tickerItemsProvider: function (system) {
-            const feed =
-              system?.publisherFeed ||
-              system?.unifiedFeed ||
-              window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
-              [];
+            const feed = getUnifiedFeed(system);
 
             const items = feed.slice(0, 10).map((item) => ({
               level: String(item.priority || "LOW").toLowerCase(),
