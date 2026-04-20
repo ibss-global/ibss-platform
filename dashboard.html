@@ -1084,6 +1084,10 @@
         return Number.isFinite(n) ? n : fallback;
       }
 
+      function asArray(value) {
+        return Array.isArray(value) ? value : [];
+      }
+
       function getLocalizedText(value) {
         if (!value) return "-";
         if (typeof value === "string" || typeof value === "number") return String(value);
@@ -1241,10 +1245,6 @@
           system?.feed ||
           []
         );
-
-        function asArray(value) {
-          return Array.isArray(value) ? value : [];
-        }
       }
 
       function renderMeta(system) {
