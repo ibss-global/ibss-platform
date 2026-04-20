@@ -371,8 +371,7 @@
     .snapshot-box,
     .metrics-box,
     .feed-box,
-    .context-box,
-    .publication-list{
+    .context-box{
       display:grid;
       gap:12px;
     }
@@ -899,7 +898,6 @@
 
   <script src="data.js"></script>
   <script src="sources.js"></script>
-  <script src="content.js"></script>
   <script src="ingestion.js"></script>
   <script src="news.js"></script>
   <script src="analysis.js"></script>
@@ -1201,10 +1199,6 @@
 
       function getSystem(){
         try {
-          if (window.IBSS_PUBLISHER?.getLatestOrchestratedSystem) {
-            return window.IBSS_PUBLISHER.getLatestOrchestratedSystem();
-          }
-
           if (window.IBSS_ENGINE?.getSystemState) {
             const raw = window.IBSS_ENGINE.getSystemState();
             if (window.IBSS_PUBLISHER?.orchestrateSystem) {
@@ -1603,7 +1597,7 @@
         list.querySelectorAll("[data-signal-id]").forEach(el => {
           el.addEventListener("click", function () {
             selectedSignalId = this.getAttribute("data-signal-id");
-            renderSignalsCore(system);
+            renderSignalsCore(currentSystem);
           });
         });
       }
@@ -1633,7 +1627,8 @@
           const eventName = id === "searchFilter" ? "input" : "change";
 
           el.addEventListener(eventName, function () {
-            if (currentSystem) renderSignalList(currentSystem);
+            if (!currentSystem) return;
+            renderSignalList(currentSystem);
           });
         });
       }
