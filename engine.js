@@ -1,4 +1,4 @@
-Window.IBSS_ENGINE = (function () {
+window.IBSS_ENGINE = (function () {
   "use strict";
 
   const CONFIG = {
@@ -1644,4 +1644,3 @@ Window.IBSS_ENGINE = (function () {
 
   return api;
 })();
-
