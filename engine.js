@@ -1,3 +1,8 @@
+/* * IBSS SOVEREIGN ENGINE - FULL INTEGRATED EDITION V14.5
+ * Engineered by: IBSS Sovereign Systems Architecture
+ * Status: Ratified & Activated
+ */
+
 window.IBSS_ENGINE = (function () {
   "use strict";
 
@@ -12,7 +17,7 @@ window.IBSS_ENGINE = (function () {
     scenarioPrepThreshold: 70,
     maxFeedItems: 12,
     maxCountryRiskItems: 5,
-    // [إضافة سيادية]: رابط البيانات الحية التي سيحدثها Python
+    // نقطة جلب البيانات الحية (تغذية خارجية)
     externalSignalsUrl: "./signals.json" 
   };
 
@@ -21,12 +26,11 @@ window.IBSS_ENGINE = (function () {
     reports: [],
     archive: [],
     lastSystem: null,
-    // [إضافة سيادية]: مخزن الإشارات الحية القادمة من الخارج
-    externalSignals: [] 
+    externalSignals: [] // مخزن الإشارات الحية من المحرك الخارجي
   };
 
   /* =========================================
-     Utilities
+     Utilities (أدوات النظام الأساسية)
   ========================================= */
   function nowIso() { return new Date().toISOString(); }
   function asArray(value) { return Array.isArray(value) ? value : []; }
@@ -74,7 +78,7 @@ window.IBSS_ENGINE = (function () {
   }
 
   /* =========================================
-     Classification + Banding (Original Logic)
+     Classification & Decision Logic (المنطق السيادي)
   ========================================= */
   function normalizePriority(value) {
     const p = String(value || "LOW").toUpperCase().trim();
@@ -105,9 +109,7 @@ window.IBSS_ENGINE = (function () {
 
   function riskLevelFromScore(score) {
     const band = normalizeBandCode(score);
-    if (band === "CRITICAL" || band === "HIGH") return "HIGH";
-    if (band === "PRESSURE" || band === "WATCH") return "MEDIUM";
-    return "LOW";
+    return (band === "CRITICAL" || band === "HIGH") ? "HIGH" : ((band === "PRESSURE" || band === "WATCH") ? "MEDIUM" : "LOW");
   }
 
   function decisionFromSystem(systemPressure, confidenceScore) {
@@ -118,239 +120,164 @@ window.IBSS_ENGINE = (function () {
   }
 
   /* =========================================
-     [إضافة سيادية]: محرك المزامنة الخارجية
+     External Sync Engine (محرك المزامنة الحية)
   ========================================= */
   async function syncExternalSignals() {
     try {
-      const response = await fetch(CONFIG.externalSignalsUrl);
+      const response = await fetch(CONFIG.externalSignalsUrl + '?t=' + Date.now());
       if (response.ok) {
         const data = await response.json();
         STATE.externalSignals = asArray(data).map((item, index) => ({
-          id: `EXT-${index}`,
-          title: item.title || "External Signal",
-          summary: item.summary || item.description || "No summary available.",
-          description: item.description || item.summary || "No description available.",
+          id: `LIVE-${index}`,
+          title: item.title,
+          description: item.description || item.summary,
           country: normalizeText(item.theater || "global"),
           region: normalizeText(item.theater || "global"),
           domain: "geopolitical",
-          priority: item.pressure >= 7 ? "HIGH" : (item.pressure >= 4 ? "MEDIUM" : "LOW"),
-          score100: (item.pressure || 5) * 10,
+          priority: item.pressure >= 8 ? "HIGH" : (item.pressure >= 5 ? "MEDIUM" : "LOW"),
+          score100: clamp((item.pressure || 5) * 10, 0, 100),
           timestamp: item.timestamp || nowIso(),
           source: "LIVE_FEED_PYTHON"
         }));
       }
     } catch (e) {
-      console.warn("IBSS_ENGINE: External signals not found. Using local data.");
+      console.warn("IBSS_ENGINE: Live signals not found or CORS restriction. Using static data.");
     }
   }
 
   /* =========================================
-     Source Readers
+     Data Aggregation (تجميع وتصنيف البيانات)
   ========================================= */
-  function getContent() { return asArray(window.IBSS_CONTENT); }
-  function getCountries() { return asArray(window.IBSS_COUNTRIES); }
-  function getSeedSignals() { return asArray(window.IBSS_SIGNALS); }
-
-  function getPublishedContent() { return getContent().filter(item => item && item.status === "published"); }
-  function getPublishedNewsContent() { return getContent().filter(item => item && item.type === "news" && item.status === "published"); }
-
-  function getContentStats() {
-    const content = getContent();
-    return {
-      total: content.length,
-      published: content.filter(item => item?.status === "published").length,
-      reports: content.filter(item => item?.type === "report").length,
-      studies: content.filter(item => item?.type === "study").length,
-      news: content.filter(item => item?.type === "news").length,
-    };
-  }
-
-  function getSignalsFromIngestion() {
-    try { if (window.IBSS_INGESTION?.getAllNormalized) return asArray(window.IBSS_INGESTION.getAllNormalized()); }
-    catch (e) { console.error("Ingestion error:", e); }
-    return [];
-  }
-
-  function getSignalsFromSeedData() {
-    return getSeedSignals().map((item, index) => ({
-      id: safeText(item?.id, `SEED-${index + 1}`),
-      title: item?.title || localize("Untitled Signal", "إشارة غير معنونة"),
-      summary: item?.report || item?.description || localize("No summary available.", "لا يوجد ملخص."),
-      description: item?.description || item?.report || localize("No description available.", "لا يوجد وصف."),
-      country: normalizeText(item?.country || item?.countryId || item?.region || "global"),
-      region: normalizeText(item?.region || item?.country || "global"),
-      domain: normalizeText(getLocalizedText(item?.signalType, "en") || "geopolitical"),
-      priority: normalizePriority(item?.weight || item?.priority),
-      score100: clamp(Math.round((safeNumber(item?.metrics?.weight, 0.5) * 35) + (safeNumber(item?.metrics?.volatility, 0.5) * 25) + (safeNumber(item?.metrics?.impact, 0.5) * 40)), 0, 100),
-      reliabilityScore: 72,
-      freshnessScore: item?.live ? 0.9 : 0.55,
-      timestamp: nowIso(),
-      source: "IBSS_SEED"
-    }));
-  }
-
-  function getFallbackSignalsFromNews() {
-    const news = asArray(window.IBSS_NEWS);
-    return news.map((item, index) => ({
-      id: safeText(item?.id, `NEWS-${index + 1}`),
-      title: item?.title || "News Signal",
-      score100: clamp(safeNumber(item?.score100, 50), 0, 100),
-      reliabilityScore: 60,
-      freshnessScore: 0.5,
-      timestamp: item?.timestamp || nowIso(),
-      source: item?.source || "NEWS"
-    }));
-  }
-
-  /* =========================================
-     Content API + Impact Logic
-  ========================================= */
-  function getSafeContentImpact(item) {
-    const strategicWeight = clamp(safeNumber(item?.metrics?.strategicWeight, 0), 0, 100);
-    return {
-      signalBoost: Math.round((strategicWeight * 0.08)),
-      clusterBoost: Math.round((strategicWeight * 0.06)),
-      countryBoost: Math.round((strategicWeight * 0.07)),
-      confidenceBoost: Math.round((strategicWeight * 0.04))
-    };
-  }
-
-  function getSignalContentBoost(signal) {
-    const api = window.IBSS_CONTENT_API;
-    if (!api || !signal?.id) return 0;
-    try {
-      const linked = asArray(api.getContentLinkedToSignal?.(signal.id));
-      return clamp(linked.reduce((sum, item) => sum + getSafeContentImpact(item).signalBoost, 0), 0, 25);
-    } catch (e) { return 0; }
-  }
-
-  function getClusterContentBoost(region, domain) {
-    const api = window.IBSS_CONTENT_API;
-    if (!api) return 0;
-    try {
-      const linked = asArray(api.getContentLinkedToCluster?.(`${normalizeText(region)}::${normalizeText(domain)}`));
-      return clamp(linked.reduce((sum, item) => sum + getSafeContentImpact(item).clusterBoost, 0), 0, 20);
-    } catch (e) { return 0; }
-  }
-
-  /* =========================================
-     Normalization & Build
-  ========================================= */
-  function normalizeRawSignal(signal, index = 0) {
-    const baseScore = clamp(safeNumber(signal?.score100, 50), 0, 100);
-    const preliminaryScore = clamp(Math.round((baseScore * 0.72) + 10), 0, 100); 
-    return {
-      ...signal,
-      id: signal.id || `SIG-${index}`,
-      score: preliminaryScore / 100,
-      score100: preliminaryScore,
-      balancedScore100: preliminaryScore,
-      live: preliminaryScore >= CONFIG.minLiveSignalScore
-    };
-  }
+  function getSeeds() { return asArray(window.IBSS_SIGNALS); }
+  function getIngestion() { return window.IBSS_INGESTION?.getAllNormalized ? asArray(window.IBSS_INGESTION.getAllNormalized()) : []; }
 
   function buildRankedSignals() {
-    const ingestionSignals = getSignalsFromIngestion();
-    const seedSignals = ingestionSignals.length ? [] : getSignalsFromSeedData();
-    
-    // [دمج الإشارات]: دمج الثابت، المدمج، والخارجي (Python)
-    const combined = [...ingestionSignals, ...seedSignals, ...STATE.externalSignals];
-    const rawSignals = combined.length ? combined : getFallbackSignalsFromNews();
+    const ingestion = getIngestion();
+    const seeds = ingestion.length ? [] : getSeeds().map((s, i) => ({
+        id: s.id || `SEED-${i}`,
+        title: s.title,
+        score100: clamp(safeNumber(s.metrics?.weight, 0.5) * 100, 0, 100),
+        priority: normalizePriority(s.priority),
+        country: normalizeText(s.country),
+        source: "IBSS_SEED"
+    }));
 
-    return dedupeBy(rawSignals.map(normalizeRawSignal), item => [normalizeText(item.title), item.country].join("|"))
-      .sort((a, b) => b.balancedScore100 - a.balancedScore100);
+    // دمج الإشارات: المخزنة + القادمة من الـ Ingestion + الحية من Python
+    const combined = [...ingestion, ...seeds, ...STATE.externalSignals];
+    
+    return dedupeBy(combined.map(s => {
+      const base = clamp(safeNumber(s.score100, 50), 0, 100);
+      return {
+        ...s,
+        balancedScore100: base,
+        live: base >= CONFIG.minLiveSignalScore
+      };
+    }), item => `${normalizeText(getLocalizedText(item.title))}|${item.country}`)
+    .sort((a, b) => b.balancedScore100 - a.balancedScore100);
   }
 
   /* =========================================
-     Main Engine Computation
+     Sovereign Calculation Engines (محركات الحساب)
   ========================================= */
   function buildClusterState(rankedSignals) {
-    const liveSignals = rankedSignals.filter(s => s.live);
-    if (!liveSignals.length) return { clusters: [], theaters: [] };
+    const live = rankedSignals.filter(s => s.live);
+    const groups = new Map();
 
-    const groupMap = new Map();
-    liveSignals.forEach(s => {
-      const key = `${s.region}::${s.domain}`;
-      if (!groupMap.has(key)) groupMap.set(key, { region: s.region, domain: s.domain, signals: [], total: 0 });
-      const b = groupMap.get(key); b.signals.push(s); b.total += s.score100;
+    live.forEach(s => {
+      const region = normalizeText(s.region || s.country || "global");
+      if (!groups.has(region)) groups.set(region, { name: region, total: 0, count: 0, signals: [] });
+      const g = groups.get(region);
+      g.total += s.balancedScore100;
+      g.count++;
+      g.signals.push(s);
     });
 
-    const clusters = [...groupMap.values()].map((g, i) => ({
+    const clusters = [...groups.values()].map((g, i) => ({
       id: `CL-${i}`,
-      name: buildClusterName(g.region, g.domain),
-      avgRisk: Math.round(g.total / g.signals.length),
-      region: g.region, domain: g.domain,
+      name: { en: `${titleCase(g.name)} Strategic File`, ar: `ملف استراتيجي: ${titleCase(g.name)}` },
+      avgRisk: Math.round(g.total / g.count),
+      region: g.name,
       signals: g.signals
-    }));
+    })).sort((a, b) => b.avgRisk - a.avgRisk);
 
     const theaters = clusters.map(c => ({
-       id: `TH-${c.region}`,
-       name: buildTheaterName(c.region),
-       avgRisk: c.avgRisk,
-       clusters: [c]
+      id: `TH-${c.region}`,
+      name: { en: `${titleCase(c.region)} Theater`, ar: `مسرح ${titleCase(c.region)}` },
+      avgRisk: c.avgRisk,
+      clusters: [c]
     }));
 
     return { clusters, theaters };
   }
 
-  // [ملاحظة]: تم الإبقاء على buildClusterName, buildTheaterName, buildPressure كما هي في كودك الأصلي
-  function buildClusterName(r, d) { return { en: `${titleCase(r)} ${titleCase(d)}`, ar: `${titleCase(d)} ${titleCase(r)}` }; }
-  function buildTheaterName(r) { return { en: `${titleCase(r)} Theater`, ar: `مسرح ${titleCase(r)}` }; }
-
   /* =========================================
-     Core Logic Execution
+     Main Execution Cycle (الدورة التشغيلية)
   ========================================= */
   async function computeSystemState() {
-    // 1. مزامنة البيانات الحية من الخارج
+    // 1. المزامنة الحية أولاً
     await syncExternalSignals();
 
-    // 2. بناء الإشارات المرتبة (بما فيها بيانات Python)
+    // 2. معالجة الإشارات
     const rankedSignals = buildRankedSignals();
-    const clusterState = buildClusterState(rankedSignals);
+    const { clusters, theaters } = buildClusterState(rankedSignals);
     
-    // 3. الحسابات الضغطية (المعادلات الأصلية)
-    const signalPressure = Math.round(average(rankedSignals, s => s.score100));
-    const systemPressure = clamp(signalPressure, 0, 100);
-    const level = riskLevelFromScore(systemPressure);
+    // 3. حساب ضغط النظام (SSI)
+    const avgSignal = average(rankedSignals, s => s.balancedScore100);
+    const topClusterRisk = clusters[0]?.avgRisk || 0;
+    const systemPressure = clamp(Math.round((avgSignal * 0.6) + (topClusterRisk * 0.4)), 0, 100);
     
+    const confidenceScore = clamp(70 + (rankedSignals.length * 2), 0, 100);
+    const decisionState = decisionFromSystem(systemPressure, confidenceScore);
+
     const system = {
       updatedAt: nowIso(),
+      ssi: systemPressure,
       systemPressure,
-      level,
+      level: riskLevelFromScore(systemPressure),
+      decision: decisionState.decision,
+      mode: decisionState.mode,
+      confidenceScore,
+      topSignal: rankedSignals[0] || null,
+      topCluster: clusters[0] || null,
+      topTheater: theaters[0] || null,
       rankedSignals,
-      topSignal: rankedSignals[0],
-      topCluster: clusterState.clusters[0],
-      topTheater: clusterState.theaters[0],
-      snapshot: null
+      clusters,
+      theaters,
+      feed: []
     };
 
-    system.snapshot = getHomeSnapshot(system);
+    // بناء التغذية الإخبارية (Feed)
+    system.feed = [
+      makeFeedItem("system_state", system.level, `System SSI: ${system.ssi}`, `ضغط النظام السيادي: ${system.ssi}`, "ENGINE"),
+      ...rankedSignals.slice(0, 5).map(s => makeFeedItem("signal", s.priority, getLocalizedText(s.title, "en"), getLocalizedText(s.title, "ar"), s.source))
+    ];
+
     STATE.lastSystem = system;
     saveState();
     return system;
   }
 
-  function getHomeSnapshot(system) {
-    return {
-      topTheater: system.topTheater,
-      topCluster: system.topCluster,
-      latestNews: system.rankedSignals.slice(0, 3)
-    };
+  function saveState() {
+    try { localStorage.setItem(CONFIG.storageKey, JSON.stringify({ history: STATE.history, reports: STATE.reports })); } catch(e) {}
   }
 
-  function saveState() { localStorage.setItem(CONFIG.storageKey, JSON.stringify(STATE)); }
   function loadState() {
-    const raw = localStorage.getItem(CONFIG.storageKey);
-    if (raw) { const p = JSON.parse(raw); STATE.history = p.history || []; STATE.reports = p.reports || []; }
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      if (raw) { const parsed = JSON.parse(raw); STATE.history = parsed.history || []; STATE.reports = parsed.reports || []; }
+    } catch(e) {}
   }
 
   loadState();
 
+  // الواجهة العامة للتحكم
   return {
     getSystemState: computeSystemState,
     getLastSystemState: () => STATE.lastSystem,
-    getHistory: () => STATE.history,
-    getReports: () => STATE.reports,
+    getHistory: () => [...STATE.history],
+    getReports: () => [...STATE.reports],
+    sync: syncExternalSignals,
     CONFIG
   };
+
 })();
