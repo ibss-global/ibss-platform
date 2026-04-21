@@ -22,6 +22,7 @@
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
       --shadow:0 10px 24px rgba(0,0,0,.18);
+      --glow:0 0 18px rgba(212,175,55,.08);
     }
 
     *{box-sizing:border-box}
@@ -38,7 +39,7 @@
     body{min-height:100vh}
 
     .wrap{
-      width:min(1380px,94%);
+      width:min(1420px,94%);
       margin:auto;
       padding:20px 0 42px;
     }
@@ -174,13 +175,19 @@
       background:rgba(255,159,26,.08);
     }
 
+    .meta-badge.info{
+      color:var(--blue);
+      border-color:rgba(90,140,255,.30);
+      background:rgba(90,140,255,.08);
+    }
+
     .section{
       margin-top:18px;
     }
 
-    .grid{
+    .grid-main{
       display:grid;
-      grid-template-columns:1.15fr .85fr;
+      grid-template-columns:1.12fr .88fr;
       gap:18px;
       margin-top:18px;
     }
@@ -188,6 +195,13 @@
     .grid-2{
       display:grid;
       grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .grid-bottom{
+      display:grid;
+      grid-template-columns:.95fr 1.05fr;
       gap:18px;
       margin-top:18px;
     }
@@ -213,6 +227,109 @@
       margin-top:-8px;
       margin-bottom:16px;
       line-height:1.7;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .toolbar input,
+    .toolbar select{
+      background:#101010;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      padding:11px 12px;
+      font-size:14px;
+      outline:none;
+    }
+
+    .toolbar input{
+      flex:1 1 220px;
+    }
+
+    .mode-box{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      background:var(--panel2);
+      border:1px solid var(--soft-border-2);
+      border-radius:16px;
+      padding:14px 16px;
+      margin-bottom:16px;
+    }
+
+    .mode-title{
+      color:#fff;
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .mode-meta{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .workflow-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .workflow-chip,
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:7px 11px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
+    }
+
+    .workflow-chip.active,
+    .chip.active{
+      color:#000;
+      background:var(--gold);
+      border-color:var(--gold);
+    }
+
+    .workflow-chip.high,
+    .chip.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.28);
+    }
+
+    .workflow-chip.medium,
+    .chip.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.28);
+    }
+
+    .workflow-chip.low,
+    .chip.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
+    .workflow-chip.info,
+    .chip.info{
+      color:#d9e5ff;
+      background:rgba(90,140,255,.12);
+      border-color:rgba(90,140,255,.28);
     }
 
     .form-grid{
@@ -266,13 +383,21 @@
       margin-top:16px;
     }
 
-    .actions button{
+    .actions button,
+    .inline-actions button{
       padding:12px 16px;
       border-radius:12px;
       font-weight:700;
       cursor:pointer;
       font-size:14px;
       transition:.2s ease;
+    }
+
+    .inline-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:14px;
     }
 
     .btn-primary{
@@ -293,14 +418,32 @@
       color:#ffd4d4;
     }
 
+    .btn-soft{
+      border:1px solid rgba(90,140,255,.30);
+      background:rgba(90,140,255,.08);
+      color:#d9e5ff;
+    }
+
+    .actions button:hover,
+    .inline-actions button:hover{
+      transform:translateY(-1px);
+    }
+
+    .status-box,
     .preview-box,
     .registry-box,
-    .status-box,
-    .signals-box{
+    .signals-box,
+    .selected-box{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
       padding:16px;
+    }
+
+    .status-box{
+      color:#ddd;
+      line-height:1.8;
+      font-size:14px;
     }
 
     .preview-title{
@@ -323,44 +466,6 @@
       flex-wrap:wrap;
       gap:8px;
       margin-top:12px;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:7px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      color:#ddd;
-      cursor:pointer;
-    }
-
-    .chip.active{
-      color:#000;
-      background:var(--gold);
-      border-color:var(--gold);
-    }
-
-    .chip.high{
-      color:#ffd7d7;
-      background:rgba(255,77,79,.12);
-      border-color:rgba(255,77,79,.28);
-    }
-
-    .chip.medium{
-      color:#ffe2b8;
-      background:rgba(255,159,26,.12);
-      border-color:rgba(255,159,26,.28);
-    }
-
-    .chip.low{
-      color:#d6fff1;
-      background:rgba(0,208,132,.12);
-      border-color:rgba(0,208,132,.28);
     }
 
     .registry-list,
@@ -392,22 +497,34 @@
       box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
     }
 
+    .registry-top,
+    .signal-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      margin-bottom:6px;
+    }
+
     .registry-name,
     .signal-name{
       color:#fff;
       font-size:16px;
       font-weight:800;
       line-height:1.6;
-      margin-bottom:6px;
+      margin-bottom:4px;
     }
 
     .registry-meta,
-    .signal-meta{
+    .signal-meta,
+    .selected-meta{
       color:var(--muted);
       font-size:12px;
       line-height:1.7;
     }
 
+    .registry-actions,
     .signal-actions{
       margin-top:10px;
       display:flex;
@@ -415,6 +532,7 @@
       flex-wrap:wrap;
     }
 
+    .registry-actions button,
     .signal-actions button{
       padding:8px 12px;
       border-radius:10px;
@@ -426,20 +544,15 @@
       font-weight:700;
     }
 
+    .registry-actions button.active,
     .signal-actions button.active{
       border-color:var(--gold);
       color:var(--gold);
     }
 
-    .status-box{
-      color:#ddd;
-      line-height:1.8;
-      font-size:14px;
-    }
-
     .json-view{
       width:100%;
-      min-height:280px;
+      min-height:300px;
       background:#101010;
       color:#f3f3f3;
       border:1px solid rgba(255,255,255,.08);
@@ -451,26 +564,25 @@
       font-family:Consolas, monospace;
     }
 
-    .toolbar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-
-    .toolbar input,
-    .toolbar select{
-      background:#101010;
+    .selected-box h3{
+      margin:0 0 10px;
       color:#fff;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:12px;
-      padding:11px 12px;
-      font-size:14px;
-      outline:none;
+      font-size:24px;
+      line-height:1.45;
     }
 
-    .toolbar input{
-      flex:1 1 240px;
+    .selected-body{
+      color:#ddd;
+      font-size:14px;
+      line-height:1.9;
+      white-space:pre-wrap;
+      margin-bottom:12px;
+    }
+
+    .selected-section{
+      margin-top:14px;
+      padding-top:14px;
+      border-top:1px solid rgba(255,255,255,.05);
     }
 
     .footer{
@@ -488,7 +600,10 @@
 
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
-    html[dir="rtl"] .nav{
+    html[dir="rtl"] .nav,
+    html[dir="rtl"] .mode-box,
+    html[dir="rtl"] .registry-top,
+    html[dir="rtl"] .signal-top{
       direction:rtl;
     }
 
@@ -498,8 +613,9 @@
     }
 
     @media (max-width:1100px){
-      .grid,
+      .grid-main,
       .grid-2,
+      .grid-bottom,
       .form-grid{
         grid-template-columns:1fr;
       }
@@ -511,6 +627,7 @@
       .nav{justify-content:center}
       .brand{text-align:center}
       .actions{flex-direction:column}
+      .inline-actions{flex-direction:column}
     }
   </style>
 </head>
@@ -547,13 +664,28 @@
       <div class="hero-badges">
         <span id="registryBadge" class="meta-badge live">REGISTRY — ACTIVE</span>
         <span id="storageBadge" class="meta-badge live">STORAGE — LOCAL</span>
+        <span id="selectionBadge" class="meta-badge info">SELECTION — NONE</span>
       </div>
     </div>
 
-    <div class="grid section">
+    <div class="grid-main section">
       <div class="card">
         <div class="title" id="formTitle">Publication Intake Form</div>
         <div class="sub-title" id="formSub">Enter a publication and link it directly to existing signals from the engine.</div>
+
+        <div class="mode-box">
+          <div>
+            <div id="formModeTitle" class="mode-title">Create Mode</div>
+            <div id="formModeMeta" class="mode-meta">No selected publication loaded into the form.</div>
+          </div>
+
+          <div class="workflow-row" id="workflowRow">
+            <span class="workflow-chip active">draft</span>
+            <span class="workflow-chip">pending</span>
+            <span class="workflow-chip">published</span>
+            <span class="workflow-chip">archived</span>
+          </div>
+        </div>
 
         <div class="form-grid">
           <div class="field">
@@ -642,9 +774,9 @@
           <div class="field">
             <label for="status">Status</label>
             <select id="status">
-              <option value="published">published</option>
-              <option value="pending">pending</option>
               <option value="draft">draft</option>
+              <option value="pending">pending</option>
+              <option value="published">published</option>
               <option value="archived">archived</option>
             </select>
           </div>
@@ -760,15 +892,16 @@
 
         <div class="actions">
           <button id="btnPreview" type="button" class="btn-secondary">Preview Object</button>
-          <button id="btnRegister" type="button" class="btn-primary">Register / Update Publication</button>
+          <button id="btnSave" type="button" class="btn-primary">Register Publication</button>
+          <button id="btnSaveDraft" type="button" class="btn-soft">Save as Draft</button>
           <button id="btnLoadSample" type="button" class="btn-secondary">Load L9 Sample</button>
           <button id="btnReset" type="button" class="btn-danger">Reset Form</button>
         </div>
       </div>
 
       <div class="card">
-        <div class="title">Signal Linkage</div>
-        <div class="sub-title">Select signals from the engine and they will be saved automatically as `signalIds`.</div>
+        <div class="title" id="signalsTitle">Signal Linkage</div>
+        <div class="sub-title" id="signalsSub">Select signals from the engine. They will be stored automatically as linked `signalIds`.</div>
 
         <div class="toolbar">
           <input id="signalSearch" type="text" placeholder="Search signal..." />
@@ -811,18 +944,63 @@
 
       <div class="card">
         <div class="title" id="registryTitle">Registered Publications</div>
+
         <div class="toolbar">
           <input id="registrySearch" type="text" placeholder="Search publications..." />
+          <select id="registryStatusFilter">
+            <option value="ALL">ALL STATUS</option>
+            <option value="draft">draft</option>
+            <option value="pending">pending</option>
+            <option value="published">published</option>
+            <option value="archived">archived</option>
+          </select>
+          <select id="registryTypeFilter">
+            <option value="ALL">ALL TYPES</option>
+            <option value="model">model</option>
+            <option value="policy_paper">policy_paper</option>
+            <option value="study">study</option>
+            <option value="analysis">analysis</option>
+            <option value="report">report</option>
+            <option value="brief">brief</option>
+            <option value="news">news</option>
+          </select>
         </div>
+
         <div id="registryList" class="registry-list"></div>
       </div>
     </div>
 
-    <div class="card section">
-      <div class="title" id="selectedTitle">Selected Publication</div>
-      <div id="selectedPreview" class="preview-box">
-        <h3 class="preview-title">-</h3>
-        <div class="preview-text">-</div>
+    <div class="grid-bottom section">
+      <div class="card">
+        <div class="title" id="selectedTitle">Selected Publication</div>
+
+        <div id="selectedPreview" class="selected-box">
+          <h3>-</h3>
+          <div class="selected-body">-</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="title" id="selectedActionsTitle">Selected Publication Actions</div>
+        <div class="sub-title" id="selectedActionsSub">Load back into form, change workflow state, duplicate, archive, or delete.</div>
+
+        <div class="selected-box">
+          <div id="selectedMeta" class="selected-meta">No selected publication.</div>
+
+          <div class="inline-actions">
+            <button id="btnLoadSelected" type="button" class="btn-secondary">Load into Form</button>
+            <button id="btnMarkDraft" type="button" class="btn-soft">Mark Draft</button>
+            <button id="btnMarkPending" type="button" class="btn-soft">Mark Pending</button>
+            <button id="btnMarkPublished" type="button" class="btn-primary">Mark Published</button>
+            <button id="btnArchiveSelected" type="button" class="btn-secondary">Archive</button>
+            <button id="btnDuplicateSelected" type="button" class="btn-secondary">Duplicate</button>
+            <button id="btnDeleteSelected" type="button" class="btn-danger">Delete / Remove</button>
+          </div>
+
+          <div class="selected-section">
+            <div id="selectedSignalInfo" class="selected-meta">-</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -843,43 +1021,100 @@
           pageSub: "Structured publication entry layer with direct signal linkage from the system.",
           formTitle: "Publication Intake Form",
           formSub: "Enter a publication and link it directly to existing signals from the engine.",
+          signalsTitle: "Signal Linkage",
+          signalsSub: "Select signals from the engine. They will be stored automatically as linked signalIds.",
           previewTitle: "Live Preview",
           jsonTitle: "Normalized Object",
           registryTitle: "Registered Publications",
           selectedTitle: "Selected Publication",
+          selectedActionsTitle: "Selected Publication Actions",
+          selectedActionsSub: "Load back into form, change workflow state, duplicate, archive, or delete.",
           noPreview: "No publication preview yet.",
           noRegistry: "No registered publications yet.",
+          noSelected: "No selected publication.",
           registerOk: "Publication saved successfully.",
+          updateOk: "Publication updated successfully.",
           registerFail: "Saving failed.",
+          archiveOk: "Publication archived successfully.",
+          statusOk: "Publication status updated successfully.",
+          deleteOk: "Publication removed successfully.",
+          deleteFail: "Deletion or removal failed.",
+          duplicateOk: "Publication duplicated into form. Save to create the new copy.",
           loadSample: "L9 sample loaded into the form.",
           noSignals: "No signals available.",
-          selectedSignals: "Selected signals"
+          selectedSignals: "Selected signals",
+          createMode: "Create Mode",
+          updateMode: "Update Mode",
+          formEmpty: "No selected publication loaded into the form.",
+          loadedForm: "Selected publication has been loaded into the form for editing.",
+          storageLocal: "STORAGE — LOCAL",
+          registryActive: "REGISTRY — ACTIVE",
+          selectionNone: "SELECTION — NONE",
+          selectionActive: "SELECTION — ACTIVE",
+          saveCreate: "Register Publication",
+          saveUpdate: "Update Publication",
+          signalCount: "linked signals",
+          publicationDeletedFallback: "Direct delete API not found. Tried archive/update fallback.",
+          workflowDraft: "draft",
+          workflowPending: "pending",
+          workflowPublished: "published",
+          workflowArchived: "archived"
         },
         ar: {
           pageTitle: "وحدة إدخال الدراسات",
           pageSub: "طبقة إدخال منظمة مع ربط مباشر بالإشارات من النظام.",
           formTitle: "نموذج إدخال الدراسة",
           formSub: "أدخل الدراسة واربطها مباشرة بالإشارات الموجودة داخل النظام.",
+          signalsTitle: "ربط الإشارات",
+          signalsSub: "اختر الإشارات من المحرك وسيتم حفظها تلقائيًا داخل signalIds.",
           previewTitle: "المعاينة الحية",
           jsonTitle: "الكائن المنظم",
           registryTitle: "الدراسات المسجلة",
           selectedTitle: "الدراسة المحددة",
+          selectedActionsTitle: "إجراءات الدراسة المحددة",
+          selectedActionsSub: "تحميلها إلى النموذج، تغيير الحالة، النسخ، الأرشفة، أو الحذف.",
           noPreview: "لا توجد معاينة بعد.",
           noRegistry: "لا توجد دراسات مسجلة بعد.",
+          noSelected: "لا توجد دراسة محددة.",
           registerOk: "تم حفظ الدراسة بنجاح.",
+          updateOk: "تم تحديث الدراسة بنجاح.",
           registerFail: "فشل الحفظ.",
+          archiveOk: "تمت أرشفة الدراسة بنجاح.",
+          statusOk: "تم تحديث حالة الدراسة بنجاح.",
+          deleteOk: "تمت إزالة الدراسة بنجاح.",
+          deleteFail: "فشل الحذف أو الإزالة.",
+          duplicateOk: "تم نسخ الدراسة إلى النموذج. احفظ لإنشاء النسخة الجديدة.",
           loadSample: "تم تحميل مثال L9 داخل النموذج.",
           noSignals: "لا توجد إشارات.",
-          selectedSignals: "الإشارات المحددة"
+          selectedSignals: "الإشارات المحددة",
+          createMode: "وضع الإنشاء",
+          updateMode: "وضع التعديل",
+          formEmpty: "لا توجد دراسة محددة محمّلة داخل النموذج.",
+          loadedForm: "تم تحميل الدراسة المحددة داخل النموذج للتعديل.",
+          storageLocal: "التخزين — محلي",
+          registryActive: "السجل — نشط",
+          selectionNone: "التحديد — لا يوجد",
+          selectionActive: "التحديد — نشط",
+          saveCreate: "تسجيل الدراسة",
+          saveUpdate: "تحديث الدراسة",
+          signalCount: "إشارات مرتبطة",
+          publicationDeletedFallback: "لم يتم العثور على دالة حذف مباشرة. تم تنفيذ محاولة احتياطية عبر الأرشفة أو التحديث.",
+          workflowDraft: "مسودة",
+          workflowPending: "قيد الانتظار",
+          workflowPublished: "منشور",
+          workflowArchived: "مؤرشف"
         }
       };
 
-      let currentLang = localStorage.getItem("ibss_lang") || "en";
-      let selectedPublicationId = null;
-      let linkedSignalIds = [];
+      const STATE = {
+        lang: localStorage.getItem("ibss_lang") || "en",
+        selectedPublicationId: null,
+        linkedSignalIds: [],
+        mode: "create"
+      };
 
       function t(key){
-        return UI[currentLang]?.[key] || key;
+        return UI[STATE.lang]?.[key] || key;
       }
 
       function qs(id){
@@ -898,13 +1133,17 @@
       function getLocalizedText(value){
         if (!value) return "-";
         if (typeof value === "string" || typeof value === "number") return String(value);
-        return value[currentLang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
+        return value[STATE.lang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
       }
 
       function escapeHtml(text){
         const div = document.createElement("div");
         div.textContent = text ?? "";
         return div.innerHTML;
+      }
+
+      function asArray(value){
+        return Array.isArray(value) ? value : [];
       }
 
       function toIsoFromLocalInput(value){
@@ -921,22 +1160,147 @@
         return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
       }
 
+      function getIntakeApi(){
+        return window.IBSS_PUBLICATION_INTAKE || null;
+      }
+
+      function getAllPublications(){
+        const api = getIntakeApi();
+        if (!api) return [];
+        if (typeof api.getAll === "function") return asArray(api.getAll());
+        if (Array.isArray(api.registry)) return api.registry;
+        return [];
+      }
+
+      function getPublicationById(id){
+        const api = getIntakeApi();
+        if (!api || !id) return null;
+        if (typeof api.getById === "function") return api.getById(id);
+        return getAllPublications().find(item => item.id === id) || null;
+      }
+
+      function registerPublication(payload){
+        const api = getIntakeApi();
+        if (!api || typeof api.register !== "function") return null;
+        return api.register(payload);
+      }
+
+      function updatePublication(id, payload){
+        const api = getIntakeApi();
+        if (!api || typeof api.update !== "function") return null;
+        return api.update(id, payload);
+      }
+
+      function removePublication(id){
+        const api = getIntakeApi();
+        if (!api || !id) return { ok:false, removed:null, fallback:false };
+
+        if (typeof api.remove === "function") {
+          return { ok: !!api.remove(id), removed: id, fallback:false };
+        }
+
+        if (typeof api.delete === "function") {
+          return { ok: !!api.delete(id), removed: id, fallback:false };
+        }
+
+        if (typeof api.unregister === "function") {
+          return { ok: !!api.unregister(id), removed: id, fallback:false };
+        }
+
+        const item = getPublicationById(id);
+        if (!item) return { ok:false, removed:null, fallback:false };
+
+        if (typeof api.update === "function") {
+          const patched = api.update(id, {
+            ...item,
+            status: "archived",
+            meta: {
+              ...(item.meta || {}),
+              removedFallback: true
+            }
+          });
+          return { ok: !!patched, removed: patched, fallback:true };
+        }
+
+        return { ok:false, removed:null, fallback:false };
+      }
+
+      function duplicatePublicationToForm(item){
+        if (!item) return;
+        loadPublicationIntoForm(item.id);
+        qs("pubId").value = "";
+        STATE.selectedPublicationId = null;
+        STATE.mode = "create";
+        updateFormModeUI();
+        renderStatus(t("duplicateOk"));
+      }
+
+      function setSelectionBadge(active){
+        const badge = qs("selectionBadge");
+        badge.textContent = active ? t("selectionActive") : t("selectionNone");
+        badge.className = active ? "meta-badge info" : "meta-badge fallback";
+      }
+
       function applyLanguage(){
-        document.documentElement.lang = currentLang;
-        document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+        document.documentElement.lang = STATE.lang;
+        document.documentElement.dir = STATE.lang === "ar" ? "rtl" : "ltr";
 
         qs("pageTitle").textContent = t("pageTitle");
         qs("pageSub").textContent = t("pageSub");
         qs("formTitle").textContent = t("formTitle");
         qs("formSub").textContent = t("formSub");
+        qs("signalsTitle").textContent = t("signalsTitle");
+        qs("signalsSub").textContent = t("signalsSub");
         qs("previewTitle").textContent = t("previewTitle");
         qs("jsonTitle").textContent = t("jsonTitle");
         qs("registryTitle").textContent = t("registryTitle");
         qs("selectedTitle").textContent = t("selectedTitle");
+        qs("selectedActionsTitle").textContent = t("selectedActionsTitle");
+        qs("selectedActionsSub").textContent = t("selectedActionsSub");
         qs("selectedSignalsLabel").textContent = t("selectedSignals");
+        qs("registryBadge").textContent = t("registryActive");
+        qs("storageBadge").textContent = t("storageLocal");
 
-        qs("btn-en").classList.toggle("active", currentLang === "en");
-        qs("btn-ar").classList.toggle("active", currentLang === "ar");
+        qs("btnSaveDraft").textContent = STATE.lang === "ar" ? "حفظ كمسودة" : "Save as Draft";
+        qs("btnPreview").textContent = STATE.lang === "ar" ? "معاينة الكائن" : "Preview Object";
+        qs("btnLoadSample").textContent = STATE.lang === "ar" ? "تحميل مثال L9" : "Load L9 Sample";
+        qs("btnReset").textContent = STATE.lang === "ar" ? "إعادة ضبط النموذج" : "Reset Form";
+        qs("btnLoadSelected").textContent = STATE.lang === "ar" ? "تحميل إلى النموذج" : "Load into Form";
+        qs("btnMarkDraft").textContent = STATE.lang === "ar" ? "جعله مسودة" : "Mark Draft";
+        qs("btnMarkPending").textContent = STATE.lang === "ar" ? "جعله قيد الانتظار" : "Mark Pending";
+        qs("btnMarkPublished").textContent = STATE.lang === "ar" ? "جعله منشورًا" : "Mark Published";
+        qs("btnArchiveSelected").textContent = STATE.lang === "ar" ? "أرشفة" : "Archive";
+        qs("btnDuplicateSelected").textContent = STATE.lang === "ar" ? "نسخ" : "Duplicate";
+        qs("btnDeleteSelected").textContent = STATE.lang === "ar" ? "حذف / إزالة" : "Delete / Remove";
+
+        qs("btn-en").classList.toggle("active", STATE.lang === "en");
+        qs("btn-ar").classList.toggle("active", STATE.lang === "ar");
+
+        updateFormModeUI();
+      }
+
+      function updateWorkflowRow(){
+        const currentStatus = qs("status").value;
+        const labels = [
+          { key:"draft", label:t("workflowDraft") },
+          { key:"pending", label:t("workflowPending") },
+          { key:"published", label:t("workflowPublished") },
+          { key:"archived", label:t("workflowArchived") }
+        ];
+
+        qs("workflowRow").innerHTML = labels.map(item => `
+          <span class="workflow-chip ${item.key === currentStatus ? "active" : ""}">
+            ${escapeHtml(item.label)}
+          </span>
+        `).join("");
+      }
+
+      function updateFormModeUI(){
+        const inUpdate = STATE.mode === "update";
+        qs("formModeTitle").textContent = inUpdate ? t("updateMode") : t("createMode");
+        qs("formModeMeta").textContent = inUpdate ? t("loadedForm") : t("formEmpty");
+        qs("btnSave").textContent = inUpdate ? t("saveUpdate") : t("saveCreate");
+        updateWorkflowRow();
       }
 
       function getAllSignals(){
@@ -950,11 +1314,14 @@
           console.error("Signal read error:", error);
         }
 
+        if (Array.isArray(window.IBSS_SIGNALS)) return window.IBSS_SIGNALS;
         if (Array.isArray(window.IBSS_DATA?.signals)) return window.IBSS_DATA.signals;
         return [];
       }
 
-      function collectFormData(){
+      function collectFormData(overrideStatus = null){
+        const status = overrideStatus || qs("status").value;
+
         return {
           id: safeText(qs("pubId").value, ""),
           type: qs("pubType").value,
@@ -979,7 +1346,7 @@
           layer: qs("layer").value,
           mode: qs("mode").value,
           unit: qs("unit").value,
-          status: qs("status").value,
+          status,
 
           domain: qs("domain").value,
           region: qs("region").value,
@@ -994,7 +1361,7 @@
           sourceUrl: qs("sourceUrl").value,
           publishedAt: toIsoFromLocalInput(qs("publishedAt").value),
 
-          signalIds: [...linkedSignalIds],
+          signalIds: [...STATE.linkedSignalIds],
 
           clusterKeys: qs("clusterKeys").value
             .split(",")
@@ -1053,7 +1420,8 @@
             <span class="chip">${escapeHtml(normalized.mode || "-")}</span>
             <span class="chip">${escapeHtml(normalized.domain || "-")}</span>
             <span class="chip">${escapeHtml(normalized.region || "-")}</span>
-            <span class="chip">${escapeHtml("signals: " + (normalized.signalIds?.length || 0))}</span>
+            <span class="chip info">${escapeHtml((normalized.signalIds?.length || 0) + " " + t("signalCount"))}</span>
+            <span class="chip">${escapeHtml(normalized.status || "-")}</span>
           </div>
         `;
 
@@ -1064,16 +1432,11 @@
         qs("statusBox").textContent = message || t("noPreview");
       }
 
-      function getAllPublications(){
-        if (window.IBSS_PUBLICATION_INTAKE?.getAll) return window.IBSS_PUBLICATION_INTAKE.getAll();
-        return [];
-      }
-
       function toggleSignal(id){
-        if (linkedSignalIds.includes(id)) {
-          linkedSignalIds = linkedSignalIds.filter(x => x !== id);
+        if (STATE.linkedSignalIds.includes(id)) {
+          STATE.linkedSignalIds = STATE.linkedSignalIds.filter(x => x !== id);
         } else {
-          linkedSignalIds.push(id);
+          STATE.linkedSignalIds.push(id);
         }
         renderSelectedSignals();
         renderSignalsList();
@@ -1082,12 +1445,12 @@
       function renderSelectedSignals(){
         const container = qs("selectedSignals");
 
-        if (!linkedSignalIds.length) {
+        if (!STATE.linkedSignalIds.length) {
           container.innerHTML = `<span class="chip">${escapeHtml(t("noSignals"))}</span>`;
           return;
         }
 
-        const signals = getAllSignals().filter(signal => linkedSignalIds.includes(signal.id));
+        const signals = getAllSignals().filter(signal => STATE.linkedSignalIds.includes(signal.id));
         container.innerHTML = signals.map(signal => `
           <span class="chip active" data-remove-signal="${escapeHtml(signal.id)}">
             ${escapeHtml(getLocalizedText(signal.title) || signal.id)}
@@ -1131,18 +1494,20 @@
         }
 
         list.innerHTML = signals.map(signal => {
-          const active = linkedSignalIds.includes(signal.id);
+          const active = STATE.linkedSignalIds.includes(signal.id);
+          const p = String(signal.priority || signal.weight || "LOW").toUpperCase();
           return `
             <div class="signal-item">
-              <div class="signal-name">${escapeHtml(getLocalizedText(signal.title) || signal.id)}</div>
-              <div class="signal-meta">
-                ${escapeHtml(
-                  `ID: ${signal.id || "-"} | REGION: ${signal.region || "-"} | PRIORITY: ${String(signal.priority || signal.weight || "LOW").toUpperCase()}`
-                )}
+              <div class="signal-top">
+                <div>
+                  <div class="signal-name">${escapeHtml(getLocalizedText(signal.title) || signal.id)}</div>
+                  <div class="signal-meta">${escapeHtml(`ID: ${signal.id || "-"} | REGION: ${signal.region || "-"} | PRIORITY: ${p}`)}</div>
+                </div>
+                <div class="chip ${p === "HIGH" ? "high" : p === "MEDIUM" ? "medium" : "low"}">${escapeHtml(p)}</div>
               </div>
               <div class="signal-actions">
                 <button type="button" data-signal-id="${escapeHtml(signal.id)}" class="${active ? "active" : ""}">
-                  ${active ? "Linked" : "Link"}
+                  ${active ? (STATE.lang === "ar" ? "مرتبط" : "Linked") : (STATE.lang === "ar" ? "ربط" : "Link")}
                 </button>
               </div>
             </div>
@@ -1160,78 +1525,123 @@
       function renderRegistry(){
         const list = qs("registryList");
         const search = safeText(qs("registrySearch").value, "").toLowerCase();
-        const items = getAllPublications().filter(item => {
-          const haystack = [
-            item.id,
-            getLocalizedText(item.title),
-            getLocalizedText(item.summary),
-            item.type,
-            item.region,
-            item.country
-          ].join(" ").toLowerCase();
+        const statusFilter = qs("registryStatusFilter").value;
+        const typeFilter = qs("registryTypeFilter").value;
 
-          return !search || haystack.includes(search);
-        });
+        const items = getAllPublications()
+          .filter(item => {
+            const haystack = [
+              item.id,
+              getLocalizedText(item.title),
+              getLocalizedText(item.summary),
+              item.type,
+              item.region,
+              item.country,
+              item.status
+            ].join(" ").toLowerCase();
+
+            const matchSearch = !search || haystack.includes(search);
+            const matchStatus = statusFilter === "ALL" || item.status === statusFilter;
+            const matchType = typeFilter === "ALL" || item.type === typeFilter;
+
+            return matchSearch && matchStatus && matchType;
+          })
+          .sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
 
         if (!items.length) {
           list.innerHTML = `<div class="registry-box">${escapeHtml(t("noRegistry"))}</div>`;
           return;
         }
 
-        list.innerHTML = items.map(item => `
-          <div class="registry-item ${item.id === selectedPublicationId ? "active" : ""}" data-id="${escapeHtml(item.id)}">
-            <div class="registry-name">${escapeHtml(getLocalizedText(item.title))}</div>
-            <div class="registry-meta">
-              ${escapeHtml(
-                `${item.type || "-"} | ${item.layer || "-"} | ${item.priority || "-"} | ${item.region || "-"}`
-              )}
-            </div>
-          </div>
-        `).join("");
+        list.innerHTML = items.map(item => {
+          const priorityClass =
+            String(item.priority || "LOW").toUpperCase() === "HIGH" ? "high" :
+            String(item.priority || "LOW").toUpperCase() === "MEDIUM" ? "medium" : "low";
 
-        list.querySelectorAll("[data-id]").forEach(el => {
+          return `
+            <div class="registry-item ${item.id === STATE.selectedPublicationId ? "active" : ""}" data-id="${escapeHtml(item.id)}">
+              <div class="registry-top">
+                <div>
+                  <div class="registry-name">${escapeHtml(getLocalizedText(item.title))}</div>
+                  <div class="registry-meta">${escapeHtml(`${item.type || "-"} | ${item.layer || "-"} | ${item.status || "-"} | ${item.region || "-"}`)}</div>
+                </div>
+                <div class="chip ${priorityClass}">${escapeHtml(item.priority || "-")}</div>
+              </div>
+
+              <div class="registry-actions">
+                <button type="button" data-open-id="${escapeHtml(item.id)}" class="${item.id === STATE.selectedPublicationId ? "active" : ""}">
+                  ${STATE.lang === "ar" ? "تحديد" : "Select"}
+                </button>
+                <button type="button" data-load-id="${escapeHtml(item.id)}">
+                  ${STATE.lang === "ar" ? "تحميل" : "Load"}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        list.querySelectorAll("[data-open-id]").forEach(el => {
           el.addEventListener("click", function () {
-            selectedPublicationId = this.getAttribute("data-id");
-            loadPublicationIntoForm(selectedPublicationId);
+            STATE.selectedPublicationId = this.getAttribute("data-open-id");
             renderSelectedPublication();
             renderRegistry();
+          });
+        });
+
+        list.querySelectorAll("[data-load-id]").forEach(el => {
+          el.addEventListener("click", function () {
+            const id = this.getAttribute("data-load-id");
+            loadPublicationIntoForm(id);
+            renderRegistry();
+            renderSelectedPublication();
           });
         });
       }
 
       function renderSelectedPublication(){
         const target = qs("selectedPreview");
+        const meta = qs("selectedMeta");
+        const signalInfo = qs("selectedSignalInfo");
         const items = getAllPublications();
-        const selected = items.find(item => item.id === selectedPublicationId) || items[0] || null;
+
+        let selected = items.find(item => item.id === STATE.selectedPublicationId) || null;
+        if (!selected && items.length) {
+          selected = items[0];
+          STATE.selectedPublicationId = selected.id;
+        }
 
         if (!selected) {
           target.innerHTML = `
-            <h3 class="preview-title">-</h3>
-            <div class="preview-text">${escapeHtml(t("noRegistry"))}</div>
+            <h3>-</h3>
+            <div class="selected-body">${escapeHtml(t("noSelected"))}</div>
           `;
+          meta.textContent = t("noSelected");
+          signalInfo.textContent = "-";
+          setSelectionBadge(false);
           return;
         }
 
-        if (!selectedPublicationId) {
-          selectedPublicationId = selected.id;
-        }
+        setSelectionBadge(true);
 
         target.innerHTML = `
-          <h3 class="preview-title">${escapeHtml(getLocalizedText(selected.title))}</h3>
-          <div class="preview-text">${escapeHtml(getLocalizedText(selected.body))}</div>
+          <h3>${escapeHtml(getLocalizedText(selected.title))}</h3>
+          <div class="selected-body">${escapeHtml(getLocalizedText(selected.body))}</div>
           <div class="chip-row">
             <span class="chip">${escapeHtml(selected.type || "-")}</span>
             <span class="chip">${escapeHtml(selected.classification || "-")}</span>
             <span class="chip">${escapeHtml(selected.layer || "-")}</span>
             <span class="chip">${escapeHtml(selected.mode || "-")}</span>
-            <span class="chip">${escapeHtml(selected.region || "-")}</span>
-            <span class="chip">${escapeHtml("signals: " + (selected.signalIds?.length || 0))}</span>
+            <span class="chip">${escapeHtml(selected.status || "-")}</span>
+            <span class="chip info">${escapeHtml((selected.signalIds?.length || 0) + " " + t("signalCount"))}</span>
           </div>
         `;
+
+        meta.textContent = `${selected.id || "-"} | ${selected.type || "-"} | ${selected.status || "-"} | ${selected.region || "-"} | ${selected.country || "-"}`;
+        signalInfo.textContent = `${t("selectedSignals")}: ${(selected.signalIds || []).join(", ") || "-"}`;
       }
 
       function loadPublicationIntoForm(id){
-        const item = window.IBSS_PUBLICATION_INTAKE?.getById?.(id);
+        const item = getPublicationById(id);
         if (!item) return;
 
         qs("pubId").value = item.id || "";
@@ -1253,7 +1663,7 @@
         qs("country").value = item.country || "";
         qs("countryId").value = item.countryId || "";
         qs("priority").value = item.priority || "HIGH";
-        qs("author").value = item.author || "";
+        qs("author").value = item.author || (asArray(item.authors)[0] || "");
         qs("sourcePlatform").value = item.sourcePlatform || "internal";
         qs("sourceUrl").value = item.sourceUrl || "";
         qs("publishedAt").value = fromIsoToLocalInput(item.publishedAt);
@@ -1270,10 +1680,15 @@
         qs("pinned").value = item.meta?.pinned ? "true" : "false";
         qs("canonical").value = item.meta?.canonical ? "true" : "false";
 
-        linkedSignalIds = Array.isArray(item.signalIds) ? [...item.signalIds] : [];
+        STATE.linkedSignalIds = Array.isArray(item.signalIds) ? [...item.signalIds] : [];
+        STATE.selectedPublicationId = item.id;
+        STATE.mode = "update";
+
+        updateFormModeUI();
         renderSelectedSignals();
         renderSignalsList();
         renderPreview(item);
+        renderStatus(t("loadedForm"));
       }
 
       function loadL9Sample(){
@@ -1308,7 +1723,11 @@
         qs("featured").value = "true";
         qs("pinned").value = "true";
         qs("canonical").value = "true";
+        qs("sourceUrl").value = "";
+        qs("publishedAt").value = "";
 
+        STATE.mode = "create";
+        updateFormModeUI();
         renderStatus(t("loadSample"));
       }
 
@@ -1322,7 +1741,7 @@
         qs("pubType").value = "study";
         qs("layer").value = "L1";
         qs("unit").value = "SSU";
-        qs("status").value = "published";
+        qs("status").value = "draft";
         qs("priority").value = "HIGH";
         qs("author").value = "Naeem Dahalan";
         qs("sourcePlatform").value = "internal";
@@ -1335,52 +1754,96 @@
         qs("canonical").value = "true";
         qs("publishedAt").value = "";
 
-        linkedSignalIds = [];
-        selectedPublicationId = null;
+        STATE.linkedSignalIds = [];
+        STATE.mode = "create";
 
+        updateFormModeUI();
         renderSelectedSignals();
         renderSignalsList();
         renderPreview(null);
         renderStatus(t("noPreview"));
       }
 
-      qs("btnPreview").addEventListener("click", function () {
-        const raw = collectFormData();
-        renderPreview(raw);
-        renderStatus(t("noPreview"));
-      });
-
-      qs("btnRegister").addEventListener("click", function () {
+      function saveCurrentForm(forceStatus = null){
         try {
-          const raw = collectFormData();
+          const raw = collectFormData(forceStatus);
           const existingId = safeText(qs("pubId").value, "");
           let saved = null;
 
-          if (existingId && window.IBSS_PUBLICATION_INTAKE?.getById?.(existingId)) {
-            saved = window.IBSS_PUBLICATION_INTAKE.update(existingId, raw);
+          if (STATE.mode === "update" && existingId && getPublicationById(existingId)) {
+            saved = updatePublication(existingId, raw);
+            if (!saved) {
+              renderStatus(t("registerFail"));
+              return;
+            }
+            renderStatus(t("updateOk"));
           } else {
-            saved = window.IBSS_PUBLICATION_INTAKE.register(raw);
-          }
-
-          if (!saved) {
-            renderStatus(t("registerFail"));
-            return;
+            saved = registerPublication(raw);
+            if (!saved) {
+              renderStatus(t("registerFail"));
+              return;
+            }
+            renderStatus(t("registerOk"));
           }
 
           qs("pubId").value = saved.id || "";
-          selectedPublicationId = saved.id;
-          linkedSignalIds = Array.isArray(saved.signalIds) ? [...saved.signalIds] : [];
+          STATE.selectedPublicationId = saved.id;
+          STATE.linkedSignalIds = Array.isArray(saved.signalIds) ? [...saved.signalIds] : [];
+          STATE.mode = "update";
 
+          updateFormModeUI();
           renderSelectedSignals();
           renderSignalsList();
           renderPreview(saved);
           renderRegistry();
           renderSelectedPublication();
-          renderStatus(t("registerOk"));
         } catch (error) {
-          console.error("INTAKE register error:", error);
+          console.error("INTAKE save error:", error);
           renderStatus(`${t("registerFail")} ${error.message || ""}`);
         }
+      }
+
+      function patchSelectedStatus(status){
+        const item = getPublicationById(STATE.selectedPublicationId);
+        if (!item) {
+          renderStatus(t("noSelected"));
+          return;
+        }
+
+        const saved = updatePublication(item.id, {
+          ...item,
+          status
+        });
+
+        if (!saved) {
+          renderStatus(t("registerFail"));
+          return;
+        }
+
+        if (qs("pubId").value === item.id) {
+          qs("status").value = status;
+          updateWorkflowRow();
+        }
+
+        renderRegistry();
+        renderSelectedPublication();
+        renderPreview(saved);
+        renderStatus(status === "archived" ? t("archiveOk") : t("statusOk"));
+      }
+
+      qs("btnPreview").addEventListener("click", function () {
+        renderPreview(collectFormData());
+        renderStatus(t("noPreview"));
+      });
+
+      qs("btnSave").addEventListener("click", function () {
+        saveCurrentForm(null);
+      });
+
+      qs("btnSaveDraft").addEventListener("click", function () {
+        qs("status").value = "draft";
+        updateWorkflowRow();
+        saveCurrentForm("draft");
       });
 
       qs("btnLoadSample").addEventListener("click", function () {
@@ -1391,34 +1854,94 @@
         resetForm();
       });
 
+      qs("btnLoadSelected").addEventListener("click", function () {
+        if (!STATE.selectedPublicationId) {
+          renderStatus(t("noSelected"));
+          return;
+        }
+        loadPublicationIntoForm(STATE.selectedPublicationId);
+        renderRegistry();
+        renderSelectedPublication();
+      });
+
+      qs("btnMarkDraft").addEventListener("click", function () {
+        patchSelectedStatus("draft");
+      });
+
+      qs("btnMarkPending").addEventListener("click", function () {
+        patchSelectedStatus("pending");
+      });
+
+      qs("btnMarkPublished").addEventListener("click", function () {
+        patchSelectedStatus("published");
+      });
+
+      qs("btnArchiveSelected").addEventListener("click", function () {
+        patchSelectedStatus("archived");
+      });
+
+      qs("btnDuplicateSelected").addEventListener("click", function () {
+        const item = getPublicationById(STATE.selectedPublicationId);
+        if (!item) {
+          renderStatus(t("noSelected"));
+          return;
+        }
+        duplicatePublicationToForm(item);
+      });
+
+      qs("btnDeleteSelected").addEventListener("click", function () {
+        if (!STATE.selectedPublicationId) {
+          renderStatus(t("noSelected"));
+          return;
+        }
+
+        const result = removePublication(STATE.selectedPublicationId);
+        if (!result.ok) {
+          renderStatus(t("deleteFail"));
+          return;
+        }
+
+        const fallbackMessage = result.fallback ? ` ${t("publicationDeletedFallback")}` : "";
+        STATE.selectedPublicationId = null;
+        STATE.mode = "create";
+        updateFormModeUI();
+        renderRegistry();
+        renderSelectedPublication();
+        renderStatus(t("deleteOk") + fallbackMessage);
+      });
+
       qs("signalSearch").addEventListener("input", renderSignalsList);
       qs("signalPriorityFilter").addEventListener("change", renderSignalsList);
       qs("registrySearch").addEventListener("input", renderRegistry);
+      qs("registryStatusFilter").addEventListener("change", renderRegistry);
+      qs("registryTypeFilter").addEventListener("change", renderRegistry);
+      qs("status").addEventListener("change", updateWorkflowRow);
 
       qs("btn-en").addEventListener("click", function () {
-        currentLang = "en";
+        STATE.lang = "en";
         localStorage.setItem("ibss_lang", "en");
         applyLanguage();
         renderSignalsList();
         renderSelectedSignals();
         renderRegistry();
         renderSelectedPublication();
+        renderPreview(collectFormData());
       });
 
       qs("btn-ar").addEventListener("click", function () {
-        currentLang = "ar";
+        STATE.lang = "ar";
         localStorage.setItem("ibss_lang", "ar");
         applyLanguage();
         renderSignalsList();
         renderSelectedSignals();
         renderRegistry();
         renderSelectedPublication();
+        renderPreview(collectFormData());
       });
 
       window.addEventListener("load", function () {
         applyLanguage();
-        renderStatus(t("noPreview"));
-        renderPreview(null);
+        resetForm();
         renderSignalsList();
         renderSelectedSignals();
         renderRegistry();
