@@ -1,8 +1,73 @@
 // IBSS DATA CORE — Unified Sovereign Structure
-// Version: v1.1 Integrated Signal Expansion Layer
+// Version: v2.0 Clean Integrated Data + Content API Layer
 
 (function () {
   "use strict";
+
+  /* =========================================
+     Core Helpers
+  ========================================= */
+
+  function safeText(value, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+  }
+
+  function safeNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function asArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function normalizeText(value) {
+    return safeText(String(value || ""))
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function buildIndex(list) {
+    return asArray(list).reduce((acc, item) => {
+      if (item?.id) acc[item.id] = item;
+      return acc;
+    }, {});
+  }
+
+  function sortByPublishedAtDesc(list) {
+    return [...asArray(list)].sort((a, b) => {
+      return new Date(b?.publishedAt || 0) - new Date(a?.publishedAt || 0);
+    });
+  }
+
+  function uniqueStrings(list) {
+    return [...new Set(asArray(list).filter(Boolean).map(item => safeText(item).trim()))];
+  }
+
+  function getLocalizedText(value, lang = "en", fallback = "-") {
+    if (value == null) return fallback;
+    if (typeof value === "string" || typeof value === "number") return String(value);
+
+    return (
+      value?.[lang] ??
+      value?.en ??
+      value?.ar ??
+      value?.title ??
+      value?.name ??
+      value?.label ??
+      value?.text ??
+      fallback
+    );
+  }
+
+  function localize(en, ar) {
+    return { en, ar };
+  }
+
+  /* =========================================
+     Static Data
+  ========================================= */
 
   const IBSS_CONTENT = [
     {
@@ -25,6 +90,14 @@
       publishedAt: "2026-04-13T09:00:00Z",
       linkedSignalIds: ["SIG-GAZA-001"],
       tags: ["غزة", "ضغط بنيوي", "حرب", "حوكمة", "إنساني"],
+      metrics: {
+        strategicWeight: 82
+      },
+      meta: {
+        featured: false,
+        canonical: false,
+        pinned: false
+      },
       engagement: {
         reactions: 0,
         comments: 0,
@@ -51,6 +124,14 @@
       publishedAt: "2026-04-13T11:00:00Z",
       linkedSignalIds: ["SIG-LEB-001"],
       tags: ["لبنان", "الجبهة الشمالية", "عسكري", "هجين"],
+      metrics: {
+        strategicWeight: 78
+      },
+      meta: {
+        featured: false,
+        canonical: false,
+        pinned: false
+      },
       engagement: {
         reactions: 0,
         comments: 0,
@@ -77,6 +158,14 @@
       publishedAt: "2026-04-13T12:30:00Z",
       linkedSignalIds: ["SIG-IRN-001"],
       tags: ["إيران", "مفاوضات", "دبلوماسي", "جيوسياسي"],
+      metrics: {
+        strategicWeight: 66
+      },
+      meta: {
+        featured: false,
+        canonical: false,
+        pinned: false
+      },
       engagement: {
         reactions: 0,
         comments: 0,
@@ -103,6 +192,14 @@
       publishedAt: "2026-04-13T14:00:00Z",
       linkedSignalIds: ["SIG-RS-001"],
       tags: ["البحر الأحمر", "بحري", "ردع", "لوجستيات"],
+      metrics: {
+        strategicWeight: 48
+      },
+      meta: {
+        featured: false,
+        canonical: false,
+        pinned: false
+      },
       engagement: {
         reactions: 0,
         comments: 0,
@@ -129,6 +226,14 @@
       publishedAt: "2026-04-13T15:30:00Z",
       linkedSignalIds: ["SIG-WB-001"],
       tags: ["الضفة الغربية", "أمني", "تصعيد", "مراقبة"],
+      metrics: {
+        strategicWeight: 44
+      },
+      meta: {
+        featured: false,
+        canonical: false,
+        pinned: false
+      },
       engagement: {
         reactions: 0,
         comments: 0,
@@ -164,6 +269,14 @@
         "بنتاغون",
         "جيوأمني"
       ],
+      metrics: {
+        strategicWeight: 96
+      },
+      meta: {
+        featured: true,
+        canonical: true,
+        pinned: true
+      },
       engagement: {
         reactions: 0,
         comments: 0,
@@ -663,55 +776,258 @@
     }
   ];
 
-  function buildIndex(list) {
-    return list.reduce((acc, item) => {
-      acc[item.id] = item;
-      return acc;
-    }, {});
+  /* =========================================
+     Derived Maps + Aliases
+  ========================================= */
+
+  function getCountryAliases(countryLike) {
+    const raw = normalizeText(countryLike);
+    if (!raw) return [];
+
+    const aliases = new Set([raw]);
+
+    if (raw === "ctr-gaza" || raw === "gaza") {
+      aliases.add("ctr-gaza");
+      aliases.add("gaza");
+      aliases.add("palestine");
+      aliases.add("levant");
+    }
+
+    if (raw === "ctr-leb" || raw === "lebanon" || raw === "leb") {
+      aliases.add("ctr-leb");
+      aliases.add("lebanon");
+      aliases.add("leb");
+      aliases.add("levant");
+    }
+
+    if (raw === "ctr-irn" || raw === "iran" || raw === "irn") {
+      aliases.add("ctr-irn");
+      aliases.add("iran");
+      aliases.add("irn");
+      aliases.add("regional");
+    }
+
+    if (raw === "ctr-rs" || raw === "redsea" || raw === "red sea" || raw === "rs") {
+      aliases.add("ctr-rs");
+      aliases.add("redsea");
+      aliases.add("red sea");
+      aliases.add("rs");
+      aliases.add("maritime");
+    }
+
+    if (raw === "ctr-wb" || raw === "westbank" || raw === "west bank" || raw === "wb") {
+      aliases.add("ctr-wb");
+      aliases.add("westbank");
+      aliases.add("west bank");
+      aliases.add("wb");
+      aliases.add("palestine");
+    }
+
+    return [...aliases];
   }
 
-  globalThis.IBSS_CONTENT = IBSS_CONTENT;
-  globalThis.IBSS_SIGNALS = IBSS_SIGNALS;
-  globalThis.IBSS_COUNTRIES = IBSS_COUNTRIES;
+  const CONTENT_BY_ID = buildIndex(IBSS_CONTENT);
+  const SIGNALS_BY_ID = buildIndex(IBSS_SIGNALS);
+  const COUNTRIES_BY_ID = buildIndex(IBSS_COUNTRIES);
 
-  globalThis.IBSS_INDEX = {
-    contentById: buildIndex(IBSS_CONTENT),
-    signalsById: buildIndex(IBSS_SIGNALS),
-    countriesById: buildIndex(IBSS_COUNTRIES)
+  const CONTENT_BY_SIGNAL = {};
+  const CONTENT_BY_COUNTRY_ALIAS = {};
+  const CONTENT_BY_CLUSTER = {};
+
+  function addToMapArray(map, key, value) {
+    const normalizedKey = normalizeText(key);
+    if (!normalizedKey) return;
+    if (!map[normalizedKey]) map[normalizedKey] = [];
+    map[normalizedKey].push(value);
+  }
+
+  IBSS_CONTENT.forEach((item) => {
+    asArray(item.linkedSignalIds).forEach(signalId => {
+      addToMapArray(CONTENT_BY_SIGNAL, signalId, item);
+    });
+
+    getCountryAliases(item.country).forEach(alias => {
+      addToMapArray(CONTENT_BY_COUNTRY_ALIAS, alias, item);
+    });
+
+    const clusterKey = `${normalizeText(item.region || "global")}::${normalizeText(item.domain || "general")}`;
+    addToMapArray(CONTENT_BY_CLUSTER, clusterKey, item);
+  });
+
+  /* =========================================
+     Content Impact Model
+  ========================================= */
+
+  function priorityWeight(priority) {
+    const p = normalizeText(priority);
+    if (p === "high") return 3;
+    if (p === "medium") return 2;
+    return 1;
+  }
+
+  function typeWeight(type) {
+    const t = normalizeText(type);
+    if (t === "study") return 5;
+    if (t === "report") return 4;
+    if (t === "analysis") return 4;
+    if (t === "policy_paper") return 4;
+    if (t === "brief") return 3;
+    if (t === "model") return 4;
+    if (t === "news") return 2;
+    return 2;
+  }
+
+  function freshnessWeight(publishedAt) {
+    const ts = new Date(publishedAt || 0).getTime();
+    if (!ts) return 1;
+
+    const ageDays = (Date.now() - ts) / (1000 * 60 * 60 * 24);
+    if (ageDays <= 2) return 4;
+    if (ageDays <= 7) return 3;
+    if (ageDays <= 30) return 2;
+    return 1;
+  }
+
+  function computeContentImpact(item) {
+    const strategicWeight = safeNumber(item?.metrics?.strategicWeight, 55);
+    const pWeight = priorityWeight(item?.priority);
+    const tWeight = typeWeight(item?.type);
+    const fWeight = freshnessWeight(item?.publishedAt);
+
+    const featuredBoost = item?.meta?.featured ? 4 : 0;
+    const canonicalBoost = item?.meta?.canonical ? 4 : 0;
+    const pinnedBoost = item?.meta?.pinned ? 3 : 0;
+
+    const baseComposite =
+      (strategicWeight * 0.60) +
+      (pWeight * 6) +
+      (tWeight * 4) +
+      (fWeight * 3) +
+      featuredBoost +
+      canonicalBoost +
+      pinnedBoost;
+
+    return {
+      strategicWeight,
+      compositeScore: Math.round(baseComposite),
+      signalBoost: Math.max(0, Math.round((strategicWeight * 0.10) + featuredBoost + canonicalBoost)),
+      clusterBoost: Math.max(0, Math.round((strategicWeight * 0.08) + canonicalBoost)),
+      countryBoost: Math.max(0, Math.round((strategicWeight * 0.09) + pinnedBoost + featuredBoost)),
+      confidenceBoost: Math.max(0, Math.round((strategicWeight * 0.05) + featuredBoost + canonicalBoost))
+    };
+  }
+
+  /* =========================================
+     Content API
+  ========================================= */
+
+  const IBSS_CONTENT_API = {
+    getAllContent() {
+      return [...IBSS_CONTENT];
+    },
+
+    getPublishedContent() {
+      return IBSS_CONTENT.filter(item => item.status === "published");
+    },
+
+    getPendingContent() {
+      return IBSS_CONTENT.filter(item => item.status === "pending");
+    },
+
+    getArchivedContent() {
+      return IBSS_CONTENT.filter(item => item.status === "archived");
+    },
+
+    getLatestPublishedContent(limit = null) {
+      const results = sortByPublishedAtDesc(
+        IBSS_CONTENT.filter(item => item.status === "published")
+      );
+      return limit == null ? results : results.slice(0, limit);
+    },
+
+    getLatestFeaturedContent() {
+      const published = sortByPublishedAtDesc(
+        IBSS_CONTENT.filter(item => item.status === "published")
+      );
+
+      return (
+        published.find(item => item?.meta?.featured) ||
+        published.find(item => normalizeText(item.type) === "study") ||
+        published[0] ||
+        null
+      );
+    },
+
+    getContentById(id) {
+      return CONTENT_BY_ID[id] || null;
+    },
+
+    getContentByType(type, limit = null) {
+      const results = sortByPublishedAtDesc(
+        IBSS_CONTENT.filter(item => normalizeText(item.type) === normalizeText(type))
+      );
+      return limit == null ? results : results.slice(0, limit);
+    },
+
+    getContentLinkedToSignal(signalId) {
+      return [...asArray(CONTENT_BY_SIGNAL[signalId])];
+    },
+
+    getContentLinkedToCountry(countryLike) {
+      const aliases = getCountryAliases(countryLike);
+      const items = aliases.flatMap(alias => asArray(CONTENT_BY_COUNTRY_ALIAS[normalizeText(alias)]));
+      return sortByPublishedAtDesc(
+        items.filter((item, index, arr) => arr.findIndex(x => x.id === item.id) === index)
+      );
+    },
+
+    getContentLinkedToCluster(clusterKey) {
+      return sortByPublishedAtDesc(asArray(CONTENT_BY_CLUSTER[normalizeText(clusterKey)]));
+    },
+
+    getEngineEligibleContent() {
+      return sortByPublishedAtDesc(
+        IBSS_CONTENT.filter(item =>
+          item?.status === "published" &&
+          ["study", "report", "analysis", "brief", "policy_paper", "model"].includes(normalizeText(item?.type))
+        )
+      );
+    },
+
+    computeContentImpact
   };
 
-  globalThis.IBSS_UTILS = {
+  /* =========================================
+     Data Utilities
+  ========================================= */
+
+  const IBSS_UTILS = {
+    getLocalizedText,
+
     getPublishedContent() {
       return IBSS_CONTENT.filter(item => item.status === "published");
     },
 
     getLatestPublishedContent() {
-      return [...IBSS_CONTENT]
-        .filter(item => item.status === "published")
-        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+      return sortByPublishedAtDesc(
+        IBSS_CONTENT.filter(item => item.status === "published")
+      );
     },
 
     getLatestStudy() {
-      return [...IBSS_CONTENT]
-        .filter(item =>
-          item.type === "study" ||
-          item.type === "policy_paper" ||
-          item.type === "report" ||
-          item.type === "model"
+      return sortByPublishedAtDesc(
+        IBSS_CONTENT.filter(item =>
+          ["study", "policy_paper", "report", "model", "analysis"].includes(normalizeText(item.type))
         )
-        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))[0] || null;
+      )[0] || null;
     },
 
     getLatestNews(limit = 3) {
-      return [...IBSS_CONTENT]
-        .filter(item =>
-          item.type === "news" ||
-          item.type === "brief" ||
-          item.type === "report" ||
-          item.type === "study"
+      return sortByPublishedAtDesc(
+        IBSS_CONTENT.filter(item =>
+          ["news", "brief", "report", "study", "analysis"].includes(normalizeText(item.type))
         )
-        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-        .slice(0, limit);
+      ).slice(0, limit);
     },
 
     getLiveSignals() {
@@ -720,39 +1036,37 @@
 
     getTopSignal() {
       return [...IBSS_SIGNALS]
-        .sort((a, b) => (b.metrics?.impact || 0) - (a.metrics?.impact || 0))[0] || null;
+        .sort((a, b) => safeNumber(b?.metrics?.impact, 0) - safeNumber(a?.metrics?.impact, 0))[0] || null;
     },
 
     getTopCountry() {
       return [...IBSS_COUNTRIES]
-        .sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0))[0] || null;
+        .sort((a, b) => safeNumber(b?.riskScore, 0) - safeNumber(a?.riskScore, 0))[0] || null;
     },
 
     getHighRiskCountries(limit = 5) {
       return [...IBSS_COUNTRIES]
-        .sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0))
+        .sort((a, b) => safeNumber(b?.riskScore, 0) - safeNumber(a?.riskScore, 0))
         .slice(0, limit);
     },
 
     getContentByType(type, limit = null) {
-      const results = IBSS_CONTENT
-        .filter(item => item.type === type)
-        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-
-      return limit ? results.slice(0, limit) : results;
+      return IBSS_CONTENT_API.getContentByType(type, limit);
     },
 
     getSignalsByWeight(weight) {
-      return IBSS_SIGNALS.filter(signal => signal.weight === weight);
+      return IBSS_SIGNALS.filter(signal => normalizeText(signal.weight) === normalizeText(weight));
     },
 
     getSignalsByCountry(countryId) {
-      return IBSS_SIGNALS.filter(signal => signal.countryId === countryId);
+      return IBSS_SIGNALS.filter(signal => normalizeText(signal.countryId) === normalizeText(countryId));
     },
 
     getCountryBySlug(slug) {
-      return IBSS_COUNTRIES.find(country => country.slug === slug) || null;
+      return IBSS_COUNTRIES.find(country => normalizeText(country.slug) === normalizeText(slug)) || null;
     },
+
+    getCountryAliases,
 
     getHomeSnapshot() {
       return {
@@ -764,5 +1078,26 @@
         highRiskCountries: this.getHighRiskCountries(5)
       };
     }
+  };
+
+  /* =========================================
+     Global Exposure
+  ========================================= */
+
+  globalThis.IBSS_CONTENT = IBSS_CONTENT;
+  globalThis.IBSS_SIGNALS = IBSS_SIGNALS;
+  globalThis.IBSS_COUNTRIES = IBSS_COUNTRIES;
+
+  globalThis.IBSS_INDEX = {
+    contentById: CONTENT_BY_ID,
+    signalsById: SIGNALS_BY_ID,
+    countriesById: COUNTRIES_BY_ID
+  };
+
+  globalThis.IBSS_CONTENT_API = IBSS_CONTENT_API;
+  globalThis.IBSS_CONTENT_UTILS = IBSS_CONTENT_API;
+  globalThis.IBSS_UTILS = {
+    ...(globalThis.IBSS_UTILS || {}),
+    ...IBSS_UTILS
   };
 })();
