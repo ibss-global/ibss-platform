@@ -558,41 +558,74 @@
       flex:0 0 auto;
     }
 
-    .ticker-shell{
-      border:1px solid rgba(212,175,55,.18);
-      border-radius:18px;
-      background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
-      overflow:hidden;
-      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
-      position:relative;
-    }
+.ticker-shell{
+  border:1px solid rgba(212,175,55,.18);
+  border-radius:18px;
+  background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
+  box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+  position:relative;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
 
-    .ticker-track{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      padding:14px 16px;
-      white-space:nowrap;
-      will-change:transform;
-      min-height:72px;
-    }
+.ticker-shell::-webkit-scrollbar{
+  display:none;
+}
 
-    .ticker-item{
-      flex:0 0 auto;
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      min-height:44px;
-      max-width:min(82vw,520px);
-      padding:10px 14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.05);
-      color:#f0f0f0;
-      font-size:13px;
-      line-height:1.6;
-      white-space:normal;
-    }
+.ticker-track{
+  display:flex;
+  align-items:stretch;
+  gap:12px;
+  padding:14px 16px;
+  min-height:92px;
+  width:max-content;
+  white-space:normal;
+  will-change:auto;
+}
+
+.ticker-item{
+  flex:0 0 280px;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  min-height:72px;
+  max-width:280px;
+  padding:14px 16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.05);
+  color:#f0f0f0;
+  font-size:13px;
+  line-height:1.6;
+  white-space:normal;
+}
+
+.ticker-item-text{
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  word-break:break-word;
+  unicode-bidi:plaintext;
+}
+
+@media (max-width:640px){
+  .ticker-track{
+    min-height:88px;
+    padding:12px;
+    gap:10px;
+  }
+
+  .ticker-item{
+    flex:0 0 78vw;
+    max-width:78vw;
+    min-height:70px;
+    padding:12px 14px;
+    border-radius:16px;
+  }
+    }    
 
     .ticker-item-text{
       display:block;
