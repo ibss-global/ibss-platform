@@ -1,5 +1,5 @@
-// IBSS DATA CORE — Living Presence Structured Base
-// Version: v4.0 Living Presence Data Layer
+// IBSS DATA CORE — Full Living Presence Seed
+// Version: v4.0 Living Presence Data Foundation
 
 window.IBSS_DATA = (function () {
   "use strict";
@@ -11,7 +11,7 @@ window.IBSS_DATA = (function () {
   const CONFIG = {
     version: "v4.0-living-presence",
     generatedAt: new Date().toISOString(),
-    layer: "IBSS_DATA_CORE"
+    source: "IBSS_DATA_CORE"
   };
 
   /* =========================
@@ -38,855 +38,625 @@ window.IBSS_DATA = (function () {
     return "LOW";
   }
 
-  function localize(en, ar) {
+  function localized(en, ar) {
     return {
       en: safeText(en, "-"),
       ar: safeText(ar, en || "-")
     };
   }
 
-  function isoMinutesAgo(minutes = 0) {
-    return new Date(Date.now() - (safeNumber(minutes, 0) * 60000)).toISOString();
+  function nowIso(offsetMinutes = 0) {
+    return new Date(Date.now() - (offsetMinutes * 60 * 1000)).toISOString();
   }
 
-  function buildContentMetrics({
-    policyRisk = 0,
-    implementationDifficulty = 0,
-    regionalSensitivity = 0,
-    strategicWeight = 0
-  } = {}) {
-    return {
-      policyRisk: clamp(policyRisk),
-      implementationDifficulty: clamp(implementationDifficulty),
-      regionalSensitivity: clamp(regionalSensitivity),
-      strategicWeight: clamp(strategicWeight)
-    };
-  }
-
-  function buildEngagement({
-    reactions = 0,
-    comments = 0,
-    shares = 0
-  } = {}) {
-    return {
-      reactions: safeNumber(reactions, 0),
-      comments: safeNumber(comments, 0),
-      shares: safeNumber(shares, 0)
-    };
+  function buildSignalScore(weight, volatility, impact) {
+    return clamp(
+      Math.round(
+        (safeNumber(weight, 0.5) * 35) +
+        (safeNumber(volatility, 0.5) * 25) +
+        (safeNumber(impact, 0.5) * 40)
+      ),
+      0,
+      100
+    );
   }
 
   /* =========================
-     CONTENT
+     LIVING PRESENCE SEED
   ========================= */
 
-  const content = [
-    {
-      id: "CNT-GAZA-001",
-      title: localize(
-        "Gaza: From Battlefield to Pressure Structure",
-        "غزة: من ساحة قتال إلى بنية ضغط"
-      ),
-      summary: localize(
-        "A sovereign reading that frames Gaza as a structural pressure system where military force, governance fragility, humanitarian stress, and narrative competition intersect.",
-        "قراءة سيادية تعتبر غزة نظام ضغط بنيوي تتقاطع فيه القوة العسكرية والهشاشة الحوكمية والضغط الإنساني والتنافس السردي."
-      ),
-      body: localize(
-        "Gaza is no longer read merely as an isolated battlefield. It is assessed as a pressure structure combining military escalation, governance depletion, humanitarian overload, and narrative confrontation. The significance of the file lies in how these layers reinforce each other and raise the probability of wider regional spillover.",
-        "لم تعد غزة تُقرأ كساحة قتال منفصلة فقط، بل كبنية ضغط مركبة تجمع بين التصعيد العسكري، واستنزاف الحوكمة، والضغط الإنساني، والصراع السردي. وتكمن أهمية الملف في أن هذه الطبقات باتت تعزز بعضها بعضًا، وترفع احتمال الامتداد الإقليمي الأوسع."
-      ),
-      type: "report",
-      classification: "Sovereign Structural Reading",
-      edition: "Gaza Pressure Structure Edition",
-      layer: "L8",
-      mode: "Structural Analysis",
-      unit: "SSU",
-      status: "published",
-      domain: "geo-security",
-      region: "gaza",
-      country: "gaza",
-      countryId: "CTR-GAZA",
-      priority: "HIGH",
-      author: "Naeem Dahalan",
-      authors: ["Naeem Dahalan"],
-      sourcePlatform: "internal",
-      sourceUrl: "",
-      publishedAt: "2026-04-13T09:00:00Z",
-      signalIds: ["SIG-GAZA-001"],
-      clusterKeys: ["gaza::geo-security"],
-      theaterKeys: ["gaza"],
-      tags: ["غزة", "ضغط بنيوي", "حرب", "حوكمة", "إنساني"],
-      metrics: buildContentMetrics({
-        policyRisk: 88,
-        implementationDifficulty: 72,
-        regionalSensitivity: 95,
-        strategicWeight: 94
-      }),
-      engagement: buildEngagement(),
-      links: [],
-      meta: {
-        featured: true,
-        pinned: true,
-        canonical: true
-      }
+  const presenceSeed = {
+    identity: {
+      name: "IBSS Living Sovereign Presence",
+      codename: "LIVING PRESENCE CORE",
+      version: "LP-1.0"
     },
 
-    {
-      id: "CNT-LEB-001",
-      title: localize(
-        "Lebanon: Northern Front Pressure",
-        "لبنان: ضغط الجبهة الشمالية"
+    baselineVoice: {
+      posture: localized("MONITORING POSTURE", "وضعية مراقبة"),
+      summary: localized(
+        "The system remains active and continuously interprets incoming pressure.",
+        "يبقى النظام نشطاً ويواصل تفسير الضغط الوارد بصورة مستمرة."
       ),
-      summary: localize(
-        "An analysis tracking sustained pressure on the northern front within a hybrid military-political pattern.",
-        "تحليل يرصد استمرار الضغط على الجبهة الشمالية ضمن نمط هجين يجمع بين العسكري والسياسي."
+      explanation: localized(
+        "The platform does not behave as a static dashboard. It listens, condenses, prioritizes, and projects structured meaning.",
+        "المنصة لا تتصرف كلوحة جامدة، بل تستمع وتكثف وتُرتب الأولويات وتُسقط المعنى البنيوي."
       ),
-      body: localize(
-        "The Lebanon file is assessed through the interaction of border tension, deterrence signaling, political fragility, and the controlled instability logic governing the northern front. The pressure is not constant in form, but persistent in strategic effect.",
-        "يُقرأ ملف لبنان من خلال تفاعل توتر الحدود، وإشارات الردع، والهشاشة السياسية، ومنطق عدم الاستقرار المضبوط الذي يحكم الجبهة الشمالية. فالضغط ليس ثابتًا في شكله، لكنه مستمر في أثره الاستراتيجي."
+      intent: localized(
+        "Maintain sovereign continuity across signal intake, risk concentration, and decision support.",
+        "الحفاظ على الاستمرارية السيادية عبر استقبال الإشارات وتركيز المخاطر ودعم القرار."
       ),
-      type: "report",
-      classification: "Northern Front Strategic Reading",
-      edition: "Northern Front Pressure Edition",
-      layer: "L7",
-      mode: "Hybrid Pressure Analysis",
-      unit: "SSU",
-      status: "published",
-      domain: "military",
-      region: "levant",
-      country: "lebanon",
-      countryId: "CTR-LEB",
-      priority: "HIGH",
-      author: "Naeem Dahalan",
-      authors: ["Naeem Dahalan"],
-      sourcePlatform: "internal",
-      sourceUrl: "",
-      publishedAt: "2026-04-13T11:00:00Z",
-      signalIds: ["SIG-LEB-001"],
-      clusterKeys: ["levant::military"],
-      theaterKeys: ["levant"],
-      tags: ["لبنان", "الجبهة الشمالية", "عسكري", "هجين"],
-      metrics: buildContentMetrics({
-        policyRisk: 80,
-        implementationDifficulty: 66,
-        regionalSensitivity: 84,
-        strategicWeight: 86
-      }),
-      engagement: buildEngagement(),
-      links: [],
-      meta: {
-        featured: false,
-        pinned: false,
-        canonical: false
-      }
+      advisory: localized(
+        "Keep the dominant theater under continuous structured observation.",
+        "أبقِ المسرح المهيمن تحت المراقبة البنيوية المستمرة."
+      )
     },
 
-    {
-      id: "CNT-IRN-001",
-      title: localize(
-        "Iran: Negotiations Under Pressure",
-        "إيران: مفاوضات تحت الضغط"
-      ),
-      summary: localize(
-        "A geopolitical reading of Iran negotiations as an unstable diplomatic process under regional and international pressure.",
-        "قراءة جيوسياسية للمفاوضات الإيرانية بوصفها مسارًا دبلوماسيًا غير مستقر تحت ضغط إقليمي ودولي."
-      ),
-      body: localize(
-        "The visible negotiation track is assessed as constrained by regional pressure, enforcement ambiguity, and the possibility that diplomacy is being used as a temporal management layer rather than a settlement mechanism.",
-        "يُقرأ المسار التفاوضي الظاهر باعتباره مقيدًا بالضغط الإقليمي، وغموض آليات التنفيذ، وإمكانية استخدام الدبلوماسية كطبقة لإدارة الوقت أكثر من كونها آلية تسوية حقيقية."
-      ),
-      type: "brief",
-      classification: "Diplomatic Pressure Brief",
-      edition: "Iran Negotiation Pressure Brief",
-      layer: "L6",
-      mode: "Diplomatic Monitoring",
-      unit: "SSU",
-      status: "published",
-      domain: "geopolitical",
-      region: "regional",
-      country: "iran",
-      countryId: "CTR-IRN",
-      priority: "MEDIUM",
-      author: "Naeem Dahalan",
-      authors: ["Naeem Dahalan"],
-      sourcePlatform: "internal",
-      sourceUrl: "",
-      publishedAt: "2026-04-13T12:30:00Z",
-      signalIds: ["SIG-IRN-001"],
-      clusterKeys: ["regional::geopolitical"],
-      theaterKeys: ["regional"],
-      tags: ["إيران", "مفاوضات", "دبلوماسي", "جيوسياسي"],
-      metrics: buildContentMetrics({
-        policyRisk: 71,
-        implementationDifficulty: 58,
-        regionalSensitivity: 78,
-        strategicWeight: 75
-      }),
-      engagement: buildEngagement(),
-      links: [],
-      meta: {
-        featured: false,
-        pinned: false,
-        canonical: false
-      }
-    },
+    pressureModes: {
+      low: {
+        posture: localized("MONITORING POSTURE", "وضعية مراقبة"),
+        urgency: localized("low", "منخفض"),
+        summary: localized(
+          "The system is stable under controlled monitoring conditions.",
+          "النظام مستقر ضمن ظروف مراقبة مضبوطة."
+        ),
+        explanation: localized(
+          "No immediate escalation posture is required, but structured listening remains active.",
+          "لا توجد حاجة إلى وضعية تصعيد فورية، لكن الاستماع البنيوي يبقى فعالاً."
+        ),
+        intent: localized(
+          "Continue observation, absorb signals, and refine long-range interpretation.",
+          "الاستمرار في الرصد وامتصاص الإشارات وصقل التفسير بعيد المدى."
+        ),
+        advisory: localized(
+          "Do not force escalation assumptions while signal density remains low.",
+          "لا تفرض افتراضات تصعيدية ما دام كثافة الإشارات منخفضة."
+        )
+      },
 
-    {
-      id: "CNT-RS-001",
-      title: localize(
-        "Red Sea: Tension Below Full Disruption",
-        "البحر الأحمر: توتر دون التعطيل الكامل"
-      ),
-      summary: localize(
-        "An estimate that Red Sea indicators remain below full strategic disruption, but still require monitoring.",
-        "تقدير يعتبر أن مؤشرات البحر الأحمر ما تزال دون مستوى التعطيل الاستراتيجي الكامل لكنها تتطلب مراقبة."
-      ),
-      body: localize(
-        "The Red Sea file shows maritime stress that affects deterrence credibility, commercial confidence, and logistics continuity. It has not yet crossed the threshold of total strategic paralysis, but it continues to matter as a cumulative disruption vector.",
-        "يُظهر ملف البحر الأحمر ضغطًا بحريًا يمس مصداقية الردع والثقة التجارية واستمرارية اللوجستيات. ولم يعبر بعد عتبة الشلل الاستراتيجي الكامل، لكنه ما يزال مهمًا كمسار تعطيل تراكمي."
-      ),
-      type: "policy_paper",
-      classification: "Maritime Pressure Estimate",
-      edition: "Red Sea Monitoring Paper",
-      layer: "L5",
-      mode: "Maritime Observation",
-      unit: "SSU",
-      status: "pending",
-      domain: "geo-military",
-      region: "maritime",
-      country: "redsea",
-      countryId: "CTR-RS",
-      priority: "LOW",
-      author: "Naeem Dahalan",
-      authors: ["Naeem Dahalan"],
-      sourcePlatform: "internal",
-      sourceUrl: "",
-      publishedAt: "2026-04-13T14:00:00Z",
-      signalIds: ["SIG-RS-001"],
-      clusterKeys: ["maritime::geo-military"],
-      theaterKeys: ["maritime"],
-      tags: ["البحر الأحمر", "بحري", "ردع", "لوجستيات"],
-      metrics: buildContentMetrics({
-        policyRisk: 42,
-        implementationDifficulty: 34,
-        regionalSensitivity: 52,
-        strategicWeight: 48
-      }),
-      engagement: buildEngagement(),
-      links: [],
-      meta: {
-        featured: false,
-        pinned: false,
-        canonical: false
-      }
-    },
+      medium: {
+        posture: localized("HEIGHTENED WATCH", "مراقبة مشددة"),
+        urgency: localized("elevated", "مرتفع نسبياً"),
+        summary: localized(
+          "The system is operating under structured pressure with elevated sensitivity.",
+          "يعمل النظام تحت ضغط بنيوي مع حساسية تشغيلية مرتفعة."
+        ),
+        explanation: localized(
+          "Signals are beginning to cluster in ways that may shift the operational picture.",
+          "بدأت الإشارات تتجمع بطريقة قد تغيّر المشهد التشغيلي."
+        ),
+        intent: localized(
+          "Maintain live observation, tighten interpretation loops, and prepare escalation routing if pressure deepens.",
+          "الحفاظ على الرصد الحي وتشديد حلقات التفسير والاستعداد لتمرير التصعيد إذا تعمق الضغط."
+        ),
+        advisory: localized(
+          "Track the dominant file closely and preserve continuity between signal and publication layers.",
+          "تابع الملف المهيمن عن قرب وحافظ على الاستمرارية بين طبقة الإشارات وطبقة المنشورات."
+        )
+      },
 
-    {
-      id: "CNT-WB-001",
-      title: localize(
-        "West Bank: Localized Escalation Indicators",
-        "الضفة الغربية: مؤشرات تصعيد موضعي"
-      ),
-      summary: localize(
-        "A security analysis assessing the West Bank as remaining at a watch level, with potential for expansion under intermittent pressure.",
-        "تحليل أمني يرى أن الضفة الغربية ما تزال في مستوى مراقبة مع قابلية للتوسع ضمن بيئة ضغط متقطعة."
-      ),
-      body: localize(
-        "The West Bank file remains below dominant theater status, yet its importance lies in escalation spillover potential and its capacity to modify broader control calculations if local triggers align with regional pressure.",
-        "ما يزال ملف الضفة الغربية دون مرتبة المسرح المهيمن، إلا أن أهميته تكمن في قابلية انتقال التصعيد وقدرته على تعديل حسابات السيطرة الأوسع إذا تلاقت المحفزات المحلية مع الضغط الإقليمي."
-      ),
-      type: "brief",
-      classification: "Localized Escalation Brief",
-      edition: "West Bank Monitoring Brief",
-      layer: "L5",
-      mode: "Security Observation",
-      unit: "SSU",
-      status: "pending",
-      domain: "security",
-      region: "palestine",
-      country: "westbank",
-      countryId: "CTR-WB",
-      priority: "LOW",
-      author: "Naeem Dahalan",
-      authors: ["Naeem Dahalan"],
-      sourcePlatform: "internal",
-      sourceUrl: "",
-      publishedAt: "2026-04-13T15:30:00Z",
-      signalIds: ["SIG-WB-001"],
-      clusterKeys: ["palestine::security"],
-      theaterKeys: ["palestine"],
-      tags: ["الضفة الغربية", "أمني", "تصعيد", "مراقبة"],
-      metrics: buildContentMetrics({
-        policyRisk: 36,
-        implementationDifficulty: 28,
-        regionalSensitivity: 39,
-        strategicWeight: 34
-      }),
-      engagement: buildEngagement(),
-      links: [],
-      meta: {
-        featured: false,
-        pinned: false,
-        canonical: false
-      }
-    },
+      high: {
+        posture: localized("ACTIVE POSTURE", "وضعية نشطة"),
+        urgency: localized("high", "مرتفع"),
+        summary: localized(
+          "The system is operating in a live active posture under concentrated strategic pressure.",
+          "يعمل النظام ضمن وضعية نشطة حية تحت ضغط استراتيجي مركز."
+        ),
+        explanation: localized(
+          "The dominant theater, top file, and high-grade signals now form a coherent escalation structure.",
+          "يشكل المسرح المهيمن والملف الأعلى والإشارات عالية الكثافة بنية تصعيد متماسكة."
+        ),
+        intent: localized(
+          "Sustain readiness, maintain continuity of live interpretation, and support decision-grade transition if escalation intensifies.",
+          "الحفاظ على الجاهزية واستمرارية التفسير الحي ودعم الانتقال إلى درجة قرار إذا اشتد التصعيد."
+        ),
+        advisory: localized(
+          "Preserve direct visibility over the leading theater and avoid fragmentation of risk interpretation.",
+          "حافظ على الرؤية المباشرة للمسرح المتقدم وتجنب تفكك تفسير المخاطر."
+        )
+      },
 
-    {
-      id: "CNT-IRN-002",
-      title: localize(
-        "Iran: The Second Russian Warning Within a U.S. Negotiation Masking Environment",
-        "إيران: التحذير الروسي الثاني داخل بيئة تفاوض أمريكية تمويهية"
-      ),
-      summary: localize(
-        "A sovereign study assessing that the U.S. negotiation track is not a stable settlement path, but a temporal masking process for preparing a wider escalation environment against Iran.",
-        "دراسة سيادية تعتبر أن مسار التفاوض الأمريكي ليس مسار تسوية مستقرة، بل غطاء زمني لإعداد بيئة تصعيد أوسع ضد إيران."
-      ),
-      body: localize(
-        "The second Russian warning is assessed not as a passing diplomatic signal but as an indicator of eroding confidence in the visible negotiation channel. The study frames the diplomatic scene as a masking environment that may be enabling a deeper transition from compound pressure to wider confrontation logic.",
-        "لا يُقرأ التحذير الروسي الثاني كإشارة دبلوماسية عابرة، بل كمؤشر على تآكل الثقة في القناة التفاوضية الظاهرة. وتؤطر الدراسة المشهد الدبلوماسي بوصفه بيئة تمويه قد تُمكّن انتقالًا أعمق من الضغط المركب إلى منطق مواجهة أوسع."
-      ),
-      type: "study",
-      classification: "Sovereign Warning Study",
-      edition: "Second Russian Warning Edition",
-      layer: "L9",
-      mode: "Blueprint Deconstruction",
-      unit: "SSU",
-      status: "published",
-      domain: "geo-security",
-      region: "regional",
-      country: "iran",
-      countryId: "CTR-IRN",
-      priority: "HIGH",
-      author: "Naeem Dahalan",
-      authors: ["Naeem Dahalan"],
-      sourcePlatform: "internal",
-      sourceUrl: "",
-      publishedAt: "2026-04-19T10:30:00Z",
-      signalIds: ["SIG-IRN-002"],
-      clusterKeys: ["regional::geo-security"],
-      theaterKeys: ["regional"],
-      tags: [
-        "إيران",
-        "روسيا",
-        "التحذير الروسي الثاني",
-        "تمويه تفاوضي",
-        "تصعيد",
-        "اجتياح بري",
-        "بنتاغون",
-        "جيوأمني"
-      ],
-      metrics: buildContentMetrics({
-        policyRisk: 91,
-        implementationDifficulty: 75,
-        regionalSensitivity: 93,
-        strategicWeight: 96
-      }),
-      engagement: buildEngagement(),
-      links: [],
-      meta: {
-        featured: true,
-        pinned: true,
-        canonical: true
+      critical: {
+        posture: localized("ACTIVE RESPONSE POSTURE", "وضعية استجابة نشطة"),
+        urgency: localized("critical", "حرج"),
+        summary: localized(
+          "The system has entered a critical concentration band and is maintaining active response posture.",
+          "دخل النظام إلى حزمة تركز حرجة ويحافظ على وضعية استجابة نشطة."
+        ),
+        explanation: localized(
+          "Signals, pressure bands, and theater dominance now indicate that the system must behave as a live operational intelligence presence.",
+          "تشير الإشارات وحزم الضغط وهيمنة المسرح إلى أن النظام يجب أن يتصرف كحضور استخباري تشغيلي حي."
+        ),
+        intent: localized(
+          "Support immediate decision continuity, maintain live intake, and keep escalation logic available without delay.",
+          "دعم استمرارية القرار الفوري والحفاظ على الاستقبال الحي وإبقاء منطق التصعيد جاهزاً دون تأخير."
+        ),
+        advisory: localized(
+          "Do not dilute attention away from the primary theater while the system remains inside the critical band.",
+          "لا تُشتت الانتباه بعيداً عن المسرح الأساسي ما دام النظام داخل الحزمة الحرجة."
+        )
       }
     }
-  ];
+  };
 
   /* =========================
-     SIGNALS
+     SIGNALS — FALLBACK / SEED
   ========================= */
 
   const signals = [
     {
-      id: "SIG-GAZA-001",
-      title: localize("Gaza Structure", "بنية غزة"),
-      description: localize(
-        "A compressed structural conflict space where military, governance, humanitarian, and narrative layers intersect.",
-        "حيز صراع بنيوي مضغوط تتقاطع فيه الطبقات العسكرية والحوكمية والإنسانية والسردية."
+      id: "SIG-GAZA-ESC-001",
+      title: localized(
+        "Escalation Pressure in Gaza Theater",
+        "تصاعد الضغط في مسرح غزة"
       ),
-      summary: localize(
-        "Gaza is assessed as a structural pressure core.",
-        "تُقرأ غزة كقلب ضغط بنيوي."
+      summary: localized(
+        "Rising structured escalation indicators are converging across military and political layers.",
+        "تتقارب مؤشرات تصعيد بنيوي متصاعد عبر المستويين العسكري والسياسي."
+      ),
+      description: localized(
+        "Rising military and political pressure suggests a structured escalation trajectory rather than isolated friction.",
+        "يشير تصاعد الضغط العسكري والسياسي إلى مسار تصعيدي منظم لا إلى احتكاك معزول."
       ),
       region: "gaza",
       country: "gaza",
+      countryId: "CTR-GAZA",
       domain: "geo-security",
       priority: "HIGH",
-      signalType: localize("STRUCTURAL", "بنيوي"),
-      influenceBand: localize("CORE", "محوري"),
-      layer: "L8",
-      sourceUnit: "SSU",
-      decisionMode: localize("WATCH / PREPARE", "مراقبة / استعداد"),
-      reliabilityScore: 87,
-      freshnessScore: 0.94,
-      score100: 92,
-      balancedScore100: 92,
-      live: true,
-      source: "IBSS_SEED",
-      timestamp: isoMinutesAgo(7),
-      metrics: {
-        weight: 0.95,
-        volatility: 0.90,
-        impact: 0.94
-      }
-    },
-
-    {
-      id: "SIG-LEB-001",
-      title: localize("Lebanon Pressure", "الضغط على لبنان"),
-      description: localize(
-        "Northern front pressure remains active with hybrid escalation patterns across military and political channels.",
-        "ضغط الجبهة الشمالية ما يزال نشطًا ضمن أنماط تصعيد هجينة عسكرية وسياسية."
-      ),
-      summary: localize(
-        "Lebanon remains inside a hybrid northern-front pressure frame.",
-        "ما يزال لبنان داخل إطار ضغط هجين على الجبهة الشمالية."
-      ),
-      region: "levant",
-      country: "lebanon",
-      domain: "military",
-      priority: "HIGH",
-      signalType: localize("MILITARY", "عسكري"),
-      influenceBand: localize("CORE", "محوري"),
-      layer: "L7",
-      sourceUnit: "SSU",
-      decisionMode: localize("WATCH / ACT", "مراقبة / تحرك"),
-      reliabilityScore: 81,
-      freshnessScore: 0.88,
-      score100: 84,
-      balancedScore100: 84,
-      live: true,
-      source: "IBSS_SEED",
-      timestamp: isoMinutesAgo(18),
-      metrics: {
-        weight: 0.82,
-        volatility: 0.77,
-        impact: 0.84
-      }
-    },
-
-    {
-      id: "SIG-IRN-001",
-      title: localize("Iran Negotiations", "المفاوضات الإيرانية"),
-      description: localize(
-        "Diplomatic engagement continues under pressure with unstable leverage and contested escalation boundaries.",
-        "الانخراط الدبلوماسي مستمر تحت الضغط مع نفوذ متقلب وحدود تصعيد متنازع عليها."
-      ),
-      summary: localize(
-        "The negotiation file remains unstable but active.",
-        "يبقى الملف التفاوضي نشطًا لكنه غير مستقر."
-      ),
-      region: "regional",
-      country: "iran",
-      domain: "geopolitical",
-      priority: "MEDIUM",
-      signalType: localize("DIPLOMATIC", "دبلوماسي"),
-      influenceBand: localize("SUPPORT", "مساند"),
-      layer: "L6",
-      sourceUnit: "SSU",
-      decisionMode: localize("PREPARATION", "استعداد"),
-      reliabilityScore: 74,
-      freshnessScore: 0.80,
-      score100: 58,
-      balancedScore100: 58,
-      live: true,
-      source: "IBSS_SEED",
-      timestamp: isoMinutesAgo(24),
-      metrics: {
-        weight: 0.56,
-        volatility: 0.52,
-        impact: 0.58
-      }
-    },
-
-    {
-      id: "SIG-IRN-002",
-      title: localize("Iran: Second Russian Warning", "إيران: التحذير الروسي الثاني"),
-      description: localize(
-        "A high-level sovereign signal assessing that the U.S. negotiation track functions as a temporal masking environment while broader military pressure forms in the background.",
-        "إشارة سيادية عالية تعتبر أن المسار التفاوضي الأمريكي يعمل كبيئة تمويه زمني بينما تتشكل في الخلفية بنية ضغط عسكري أوسع."
-      ),
-      summary: localize(
-        "The diplomatic channel may be masking escalation preparation.",
-        "قد تكون القناة الدبلوماسية غطاءً لتحضير تصعيد أوسع."
-      ),
-      region: "regional",
-      country: "iran",
-      domain: "geo-security",
-      priority: "HIGH",
-      signalType: localize("SOVEREIGN WARNING", "إنذار سيادي"),
-      influenceBand: localize("CORE", "محوري"),
+      signalType: localized("escalation", "تصعيد"),
       layer: "L9",
       sourceUnit: "SSU",
-      decisionMode: localize("WATCH / PREPARE / ESCALATION READINESS", "مراقبة / استعداد / تهيؤ تصعيد"),
-      reliabilityScore: 89,
-      freshnessScore: 0.93,
-      score100: 91,
-      balancedScore100: 91,
-      live: true,
       source: "IBSS_SEED",
-      timestamp: isoMinutesAgo(11),
+      decisionMode: localized("Escalation Preparation", "تحضير للتصعيد"),
+      reliabilityScore: 88,
+      freshnessScore: 0.96,
       metrics: {
-        weight: 0.91,
+        weight: 0.94,
         volatility: 0.86,
-        impact: 0.92
-      }
+        impact: 0.95
+      },
+      score100: buildSignalScore(0.94, 0.86, 0.95),
+      balancedScore100: buildSignalScore(0.94, 0.86, 0.95),
+      timestamp: nowIso(5),
+      live: true
     },
 
     {
-      id: "SIG-RS-001",
-      title: localize("Red Sea Tension", "توتر البحر الأحمر"),
-      description: localize(
-        "Maritime pressure indicators affecting deterrence credibility, logistics confidence, and regional signaling.",
-        "مؤشرات ضغط بحري تؤثر على الردع والثقة اللوجستية والإشارات الإقليمية."
+      id: "SIG-IRAN-NUCLEAR-002",
+      title: localized(
+        "Iran Nuclear Posture Shift",
+        "تغير في الموقف النووي الإيراني"
       ),
-      summary: localize(
-        "Red Sea pressure remains relevant but below full disruption.",
-        "يبقى ضغط البحر الأحمر مهمًا لكنه دون التعطيل الكامل."
+      summary: localized(
+        "Strategic posture indicators point to recalibration with regional spillover implications.",
+        "تشير مؤشرات التموضع الاستراتيجي إلى إعادة معايرة ذات تداعيات إقليمية ممتدة."
       ),
-      region: "maritime",
+      description: localized(
+        "Strategic signals indicate recalibration of nuclear posture with direct consequences for regional security architecture.",
+        "تدل الإشارات الاستراتيجية على إعادة ضبط الموقف النووي بما ينعكس مباشرة على هندسة الأمن الإقليمي."
+      ),
+      region: "iran",
+      country: "iran",
+      countryId: "CTR-IRN",
+      domain: "geo-security",
+      priority: "HIGH",
+      signalType: localized("strategic posture", "تموضع استراتيجي"),
+      layer: "L8",
+      sourceUnit: "SSU",
+      source: "IBSS_SEED",
+      decisionMode: localized("Strategic Watch", "مراقبة استراتيجية"),
+      reliabilityScore: 84,
+      freshnessScore: 0.89,
+      metrics: {
+        weight: 0.89,
+        volatility: 0.72,
+        impact: 0.91
+      },
+      score100: buildSignalScore(0.89, 0.72, 0.91),
+      balancedScore100: buildSignalScore(0.89, 0.72, 0.91),
+      timestamp: nowIso(18),
+      live: true
+    },
+
+    {
+      id: "SIG-REDSEA-TRADE-003",
+      title: localized(
+        "Red Sea Trade Disruption Signal",
+        "إشارة اضطراب التجارة في البحر الأحمر"
+      ),
+      summary: localized(
+        "Shipping instability continues to affect strategic trade corridors.",
+        "يستمر اضطراب الملاحة في التأثير على الممرات التجارية الاستراتيجية."
+      ),
+      description: localized(
+        "Shipping instability across the Red Sea corridor is affecting trade flow reliability and pressure mapping.",
+        "يؤثر اضطراب الملاحة عبر ممر البحر الأحمر على موثوقية التدفق التجاري وخريطة الضغط."
+      ),
+      region: "redsea",
       country: "redsea",
-      domain: "geo-military",
-      priority: "LOW",
-      signalType: localize("MARITIME", "بحري"),
-      influenceBand: localize("WATCH", "مراقبة"),
+      countryId: "CTR-RS",
+      domain: "geo-economics",
+      priority: "MEDIUM",
+      signalType: localized("trade disruption", "اضطراب تجاري"),
       layer: "L5",
       sourceUnit: "CRU",
-      decisionMode: localize("PENDING", "قيد الإعداد"),
-      reliabilityScore: 68,
-      freshnessScore: 0.67,
-      score100: 31,
-      balancedScore100: 31,
-      live: false,
       source: "IBSS_SEED",
-      timestamp: isoMinutesAgo(44),
+      decisionMode: localized("Monitoring", "مراقبة"),
+      reliabilityScore: 76,
+      freshnessScore: 0.82,
       metrics: {
-        weight: 0.34,
-        volatility: 0.29,
-        impact: 0.31
-      }
+        weight: 0.66,
+        volatility: 0.61,
+        impact: 0.70
+      },
+      score100: buildSignalScore(0.66, 0.61, 0.70),
+      balancedScore100: buildSignalScore(0.66, 0.61, 0.70),
+      timestamp: nowIso(28),
+      live: true
     },
 
     {
-      id: "SIG-WB-001",
-      title: localize("West Bank Escalation", "تصعيد الضفة الغربية"),
-      description: localize(
-        "Localized pressure patterns with the capacity to alter broader conflict calculations and internal control logic.",
-        "أنماط ضغط موضعية قادرة على تعديل الحسابات الأوسع للصراع ومنطق السيطرة الداخلي."
+      id: "SIG-LEB-GOV-004",
+      title: localized(
+        "Lebanon Internal Political Friction",
+        "احتكاك سياسي داخلي في لبنان"
       ),
-      summary: localize(
-        "The West Bank remains in watch status with spillover potential.",
-        "تبقى الضفة الغربية في حالة مراقبة مع قابلية للامتداد."
+      summary: localized(
+        "Internal fragmentation is weighing on governance continuity.",
+        "يؤثر التفتت الداخلي على استمرارية الحكم."
       ),
-      region: "palestine",
-      country: "westbank",
-      domain: "security",
+      description: localized(
+        "Internal fragmentation and governance strain are weakening institutional continuity inside Lebanon.",
+        "يؤدي الانقسام الداخلي وضغط الحكم إلى إضعاف الاستمرارية المؤسسية داخل لبنان."
+      ),
+      region: "lebanon",
+      country: "lebanon",
+      countryId: "CTR-LEB",
+      domain: "geo-political",
       priority: "LOW",
-      signalType: localize("SECURITY", "أمني"),
-      influenceBand: localize("WATCH", "مراقبة"),
-      layer: "L5",
+      signalType: localized("political friction", "احتكاك سياسي"),
+      layer: "L3",
       sourceUnit: "CRU",
-      decisionMode: localize("PENDING", "قيد الإعداد"),
-      reliabilityScore: 64,
-      freshnessScore: 0.60,
-      score100: 28,
-      balancedScore100: 28,
-      live: false,
       source: "IBSS_SEED",
-      timestamp: isoMinutesAgo(52),
+      decisionMode: localized("Background Monitoring", "مراقبة خلفية"),
+      reliabilityScore: 69,
+      freshnessScore: 0.64,
       metrics: {
-        weight: 0.29,
-        volatility: 0.24,
-        impact: 0.28
-      }
+        weight: 0.38,
+        volatility: 0.42,
+        impact: 0.36
+      },
+      score100: buildSignalScore(0.38, 0.42, 0.36),
+      balancedScore100: buildSignalScore(0.38, 0.42, 0.36),
+      timestamp: nowIso(42),
+      live: false
+    },
+
+    {
+      id: "SIG-WB-SEC-005",
+      title: localized(
+        "West Bank Security Friction Accumulation",
+        "تراكم الاحتكاك الأمني في الضفة الغربية"
+      ),
+      summary: localized(
+        "Localized security incidents are accumulating into a broader stress pattern.",
+        "تتراكم الحوادث الأمنية الموضعية في صورة نمط ضغط أوسع."
+      ),
+      description: localized(
+        "Localized security pressure is accumulating into a broader field pattern with possible spillover into the wider Palestine file.",
+        "يتراكم الضغط الأمني الموضعي ليتحول إلى نمط ميداني أوسع مع احتمال امتداده إلى الملف الفلسطيني الأشمل."
+      ),
+      region: "westbank",
+      country: "westbank",
+      countryId: "CTR-WB",
+      domain: "geo-security",
+      priority: "MEDIUM",
+      signalType: localized("security friction", "احتكاك أمني"),
+      layer: "L6",
+      sourceUnit: "CRU",
+      source: "IBSS_SEED",
+      decisionMode: localized("Heightened Monitoring", "مراقبة مشددة"),
+      reliabilityScore: 78,
+      freshnessScore: 0.79,
+      metrics: {
+        weight: 0.63,
+        volatility: 0.69,
+        impact: 0.65
+      },
+      score100: buildSignalScore(0.63, 0.69, 0.65),
+      balancedScore100: buildSignalScore(0.63, 0.69, 0.65),
+      timestamp: nowIso(16),
+      live: true
     }
   ];
 
   /* =========================
-     NEWS FEED
+     NEWS FEED — FALLBACK
   ========================= */
 
   const newsFeed = [
     {
       id: "NEWS-GAZA-001",
-      title: localize(
-        "Gaza pressure remains structurally elevated",
-        "يبقى ضغط غزة مرتفعًا بنيويًا"
+      title: localized(
+        "Negotiation Track Shows Signs of Breakdown",
+        "ظهور مؤشرات تعثر في مسار التفاوض"
       ),
-      summary: localize(
-        "Indicators continue to point toward a layered conflict environment rather than isolated tactical friction.",
-        "تستمر المؤشرات في الإشارة إلى بيئة صراع طبقية لا إلى احتكاك تكتيكي معزول."
+      summary: localized(
+        "Negotiation behavior suggests movement toward a harder escalation structure.",
+        "يشير سلوك التفاوض إلى حركة باتجاه بنية تصعيد أكثر صلابة."
       ),
-      priority: "HIGH",
-      severity: "HIGH",
+      description: localized(
+        "Negotiation rhythm and field signals together indicate that diplomatic structure may be shifting toward escalation legitimation.",
+        "يشير إيقاع التفاوض مع الإشارات الميدانية إلى أن البنية الدبلوماسية قد تتحول نحو شرعنة التصعيد."
+      ),
       region: "gaza",
       country: "gaza",
       domain: "geo-security",
-      sourceName: "IBSS Live Desk",
-      timestamp: isoMinutesAgo(4),
-      publishedAt: isoMinutesAgo(4)
-    },
-
-    {
-      id: "NEWS-IRN-001",
-      title: localize(
-        "Iran file shows widening pressure window",
-        "ملف إيران يُظهر اتساع نافذة الضغط"
-      ),
-      summary: localize(
-        "The diplomatic scene remains active, but background indicators suggest broader strategic preparation.",
-        "يبقى المشهد الدبلوماسي نشطًا، لكن المؤشرات الخلفية توحي بتحضير استراتيجي أوسع."
-      ),
       priority: "HIGH",
-      severity: "HIGH",
-      region: "regional",
-      country: "iran",
-      domain: "geo-security",
-      sourceName: "IBSS Live Desk",
-      timestamp: isoMinutesAgo(9),
-      publishedAt: isoMinutesAgo(9)
+      score100: 86,
+      reliabilityScore: 81,
+      freshnessScore: 0.95,
+      source: "IBSS_NEWS_FALLBACK",
+      publishedAt: nowIso(3)
     },
 
     {
-      id: "NEWS-RS-001",
-      title: localize(
-        "Maritime pressure persists in the Red Sea corridor",
-        "يستمر الضغط البحري في ممر البحر الأحمر"
+      id: "NEWS-REDSEA-002",
+      title: localized(
+        "Shipping Delays Continue Across Red Sea Corridor",
+        "استمرار تأخيرات الشحن عبر ممر البحر الأحمر"
       ),
-      summary: localize(
-        "Disruption remains below full strategic paralysis but continues to affect logistics confidence.",
-        "يبقى التعطيل دون مستوى الشلل الاستراتيجي الكامل لكنه يواصل التأثير في الثقة اللوجستية."
+      summary: localized(
+        "Trade corridor reliability remains under sustained operational friction.",
+        "تبقى موثوقية الممر التجاري تحت احتكاك تشغيلي مستمر."
       ),
-      priority: "MEDIUM",
-      severity: "MEDIUM",
-      region: "maritime",
+      description: localized(
+        "Ongoing disruption across the corridor continues to affect route confidence and commercial timing.",
+        "يستمر الاضطراب عبر الممر في التأثير على الثقة بالمسار والتوقيت التجاري."
+      ),
+      region: "redsea",
       country: "redsea",
-      domain: "geo-military",
-      sourceName: "IBSS Maritime Desk",
-      timestamp: isoMinutesAgo(16),
-      publishedAt: isoMinutesAgo(16)
+      domain: "geo-economics",
+      priority: "MEDIUM",
+      score100: 62,
+      reliabilityScore: 73,
+      freshnessScore: 0.83,
+      source: "IBSS_NEWS_FALLBACK",
+      publishedAt: nowIso(11)
     },
 
     {
-      id: "NEWS-LEB-001",
-      title: localize(
-        "Northern front friction remains active",
-        "تبقى احتكاكات الجبهة الشمالية نشطة"
+      id: "NEWS-REGIONAL-003",
+      title: localized(
+        "Regional Diplomatic Movement Intensifies",
+        "تصاعد الحركة الدبلوماسية الإقليمية"
       ),
-      summary: localize(
-        "The Lebanon theater continues to operate inside a hybrid pressure band.",
-        "يواصل مسرح لبنان العمل داخل حزمة ضغط هجينة."
+      summary: localized(
+        "Diplomatic motion is increasing across several connected files.",
+        "تزداد الحركة الدبلوماسية عبر عدة ملفات مترابطة."
       ),
-      priority: "MEDIUM",
-      severity: "MEDIUM",
-      region: "levant",
-      country: "lebanon",
-      domain: "military",
-      sourceName: "IBSS Field Monitor",
-      timestamp: isoMinutesAgo(23),
-      publishedAt: isoMinutesAgo(23)
+      description: localized(
+        "Regional diplomatic signaling is increasing, indicating wider strategic positioning around active theaters.",
+        "تزداد الإشارات الدبلوماسية الإقليمية بما يعكس تموضعاً استراتيجياً أوسع حول المسارح النشطة."
+      ),
+      region: "regional",
+      country: "regional",
+      domain: "diplomatic",
+      priority: "LOW",
+      score100: 44,
+      reliabilityScore: 67,
+      freshnessScore: 0.74,
+      source: "IBSS_NEWS_FALLBACK",
+      publishedAt: nowIso(22)
     }
   ];
 
   /* =========================
-     COUNTRIES
+     COUNTRY BASELINES
   ========================= */
 
   const countries = [
     {
       id: "CTR-GAZA",
-      slug: "gaza",
-      name: localize("Gaza", "غزة"),
-      region: "Palestine",
-      riskScore: 91,
-      riskLevel: "HIGH",
-      trend: "RISING",
-      primaryDrivers: {
-        en: [
-          "military pressure",
-          "governance fragility",
-          "humanitarian stress",
-          "narrative competition"
-        ],
-        ar: [
-          "الضغط العسكري",
-          "الهشاشة الحوكمية",
-          "الضغط الإنساني",
-          "التنافس السردي"
-        ]
-      },
-      categories: {
-        political: 78,
-        security: 88,
-        military: 94,
-        economic: 61,
-        humanitarian: 96
-      },
-      linkedSignalIds: ["SIG-GAZA-001"],
-      linkedContentIds: ["CNT-GAZA-001"],
-      lastUpdated: "2026-04-13T09:00:00Z",
-      status: "active"
+      name: localized("Gaza", "غزة"),
+      region: "gaza",
+      riskScore: 93,
+      primaryDrivers: localized(
+        ["Escalation concentration", "Negotiation breakdown risk", "Operational pressure"],
+        ["تركز التصعيد", "خطر انهيار التفاوض", "ضغط تشغيلي"]
+      )
     },
-
-    {
-      id: "CTR-LEB",
-      slug: "lebanon",
-      name: localize("Lebanon", "لبنان"),
-      region: "Levant",
-      riskScore: 83,
-      riskLevel: "HIGH",
-      trend: "RISING",
-      primaryDrivers: {
-        en: [
-          "northern front pressure",
-          "hybrid instability",
-          "rapid-response requirement"
-        ],
-        ar: [
-          "ضغط الجبهة الشمالية",
-          "عدم الاستقرار الهجين",
-          "الحاجة لاستجابة سريعة"
-        ]
-      },
-      categories: {
-        political: 71,
-        security: 82,
-        military: 87,
-        economic: 49,
-        diplomatic: 58
-      },
-      linkedSignalIds: ["SIG-LEB-001"],
-      linkedContentIds: ["CNT-LEB-001"],
-      lastUpdated: "2026-04-13T11:00:00Z",
-      status: "active"
-    },
-
     {
       id: "CTR-IRN",
-      slug: "iran",
-      name: localize("Iran", "إيران"),
-      region: "Regional",
-      riskScore: 84,
-      riskLevel: "HIGH",
-      trend: "RISING",
-      primaryDrivers: {
-        en: [
-          "negotiation shifting into a masking environment",
-          "compound military pressure escalation",
-          "second Russian warning",
-          "rising probability of broader confrontation"
-        ],
-        ar: [
-          "تحول التفاوض إلى بيئة تمويه",
-          "تصاعد الضغط العسكري المركب",
-          "التحذير الروسي الثاني",
-          "ارتفاع احتمالات المواجهة الأوسع"
-        ]
-      },
-      categories: {
-        political: 79,
-        security: 84,
-        military: 81,
-        economic: 63,
-        diplomatic: 76
-      },
-      linkedSignalIds: ["SIG-IRN-001", "SIG-IRN-002"],
-      linkedContentIds: ["CNT-IRN-001", "CNT-IRN-002"],
-      lastUpdated: "2026-04-19T10:30:00Z",
-      status: "active"
+      name: localized("Iran", "إيران"),
+      region: "iran",
+      riskScore: 87,
+      primaryDrivers: localized(
+        ["Strategic posture shift", "Regional deterrence pressure", "Security architecture"],
+        ["تغير التموضع الاستراتيجي", "ضغط الردع الإقليمي", "هندسة الأمن"]
+      )
     },
-
     {
       id: "CTR-RS",
-      slug: "red-sea",
-      name: localize("Red Sea", "البحر الأحمر"),
-      region: "Maritime",
-      riskScore: 34,
-      riskLevel: "LOW",
-      trend: "STABLE",
-      primaryDrivers: {
-        en: [
-          "limited maritime pressure",
-          "logistics risk",
-          "deterrence signaling"
-        ],
-        ar: [
-          "ضغط بحري محدود",
-          "مخاطر لوجستية",
-          "إشارات ردع"
-        ]
-      },
-      categories: {
-        political: 22,
-        security: 35,
-        military: 38,
-        economic: 41,
-        maritime: 47
-      },
-      linkedSignalIds: ["SIG-RS-001"],
-      linkedContentIds: ["CNT-RS-001"],
-      lastUpdated: "2026-04-13T14:00:00Z",
-      status: "watch"
+      name: localized("Red Sea", "البحر الأحمر"),
+      region: "redsea",
+      riskScore: 66,
+      primaryDrivers: localized(
+        ["Trade route instability", "Maritime friction", "Supply corridor pressure"],
+        ["اضطراب المسار التجاري", "احتكاك بحري", "ضغط ممرات الإمداد"]
+      )
     },
-
+    {
+      id: "CTR-LEB",
+      name: localized("Lebanon", "لبنان"),
+      region: "lebanon",
+      riskScore: 38,
+      primaryDrivers: localized(
+        ["Governance strain", "Internal fragmentation", "Political friction"],
+        ["ضغط الحكم", "تفكك داخلي", "احتكاك سياسي"]
+      )
+    },
     {
       id: "CTR-WB",
-      slug: "west-bank",
-      name: localize("West Bank", "الضفة الغربية"),
-      region: "Palestine",
-      riskScore: 29,
-      riskLevel: "LOW",
-      trend: "STABLE",
-      primaryDrivers: {
-        en: [
-          "localized pressure",
-          "spillover potential",
-          "intermittent security tension"
-        ],
-        ar: [
-          "ضغط موضعي",
-          "قابلية التوسع",
-          "توتر أمني متقطع"
-        ]
-      },
-      categories: {
-        political: 31,
-        security: 39,
-        military: 18,
-        economic: 27,
-        social: 34
-      },
-      linkedSignalIds: ["SIG-WB-001"],
-      linkedContentIds: ["CNT-WB-001"],
-      lastUpdated: "2026-04-13T15:30:00Z",
-      status: "watch"
+      name: localized("West Bank", "الضفة الغربية"),
+      region: "westbank",
+      riskScore: 64,
+      primaryDrivers: localized(
+        ["Security friction", "Localized field stress", "Palestine file spillover"],
+        ["احتكاك أمني", "ضغط ميداني موضعي", "امتداد الملف الفلسطيني"]
+      )
     }
   ];
 
   /* =========================
-     VOICE PRESETS
+     CONTENT — BASE FALLBACK
   ========================= */
 
-  const voiceProfiles = {
-    monitoring: {
-      posture: localize("MONITORING", "مراقبة"),
-      tone: localize("Calm", "هادئ"),
-      tempo: localize("Measured", "متزن")
+  const content = [
+    {
+      id: "PUB-GAZA-L9-001",
+      type: "study",
+      classification: "L9 Blueprint Deconstruction",
+      edition: "L9-SOV Blueprint Deconstruction Edition",
+      layer: "L9",
+      mode: "Blueprint Deconstruction",
+      title: localized(
+        "Gaza — Blueprint Deconstruction: When Narrative Becomes Part of Operational War Architecture",
+        "غزة — تفكيك المخطط البنيوي: حين تتحول السردية إلى جزء من البنية القتالية"
+      ),
+      summary: localized(
+        "An L9-layer study reading negotiation failure and controlled narrative as part of a pre-operational war architecture.",
+        "دراسة من طبقة L9 تقرأ فشل التفاوض والسردية المضبوطة كجزء من بنية تمهيدية للحرب."
+      ),
+      body: localized(
+        "The visible event should not be read as a sequence of isolated headlines. The core question is structural: what architecture makes war appear as failed diplomacy rather than a pre-arranged decision? This study argues that narrative is not an explanation after the fact. It is part of the environment-building process that legitimizes escalation.",
+        "لا ينبغي قراءة الحدث الظاهر كسلسلة عناوين منفصلة. السؤال المركزي هنا بنيوي: ما هي الهندسة التي تجعل الحرب تبدو كأنها نتيجة لفشل دبلوماسي لا قراراً معداً مسبقاً؟ تجادل هذه الدراسة بأن السردية ليست شرحاً لاحقاً، بل جزء من عملية بناء البيئة التي تمنح التصعيد شرعيته."
+      ),
+      unit: "SSU",
+      status: "published",
+      priority: "HIGH",
+      domain: "geo-security",
+      region: "gaza",
+      country: "gaza",
+      countryId: "CTR-GAZA",
+      signalIds: ["SIG-GAZA-ESC-001"],
+      clusterKeys: ["gaza::geo-security"],
+      theaterKeys: ["gaza"],
+      author: "Naeem Dahalan",
+      authors: ["Naeem Dahalan"],
+      sourcePlatform: "internal",
+      sourceUrl: "",
+      publishedAt: nowIso(60),
+      tags: ["gaza", "L9", "WAAD", "blueprint deconstruction", "escalation"],
+      metrics: {
+        policyRisk: 86,
+        implementationDifficulty: 72,
+        regionalSensitivity: 91,
+        strategicWeight: 94
+      },
+      meta: {
+        featured: true,
+        pinned: true,
+        canonical: true
+      }
     },
-    heightened: {
-      posture: localize("HEIGHTENED MONITORING", "مراقبة معززة"),
-      tone: localize("Focused", "مركّز"),
-      tempo: localize("Alert", "منتبه")
+
+    {
+      id: "PUB-IRAN-STRAT-002",
+      type: "analysis",
+      classification: "Strategic Position Assessment",
+      edition: "Strategic Monitoring Edition",
+      layer: "L8",
+      mode: "Strategic Watch",
+      title: localized(
+        "Iran — Strategic Recalibration and Regional Security Echo",
+        "إيران — إعادة المعايرة الاستراتيجية وصداها الأمني الإقليمي"
+      ),
+      summary: localized(
+        "Assessment of Iranian posture shifts and their effect on regional security patterning.",
+        "تقييم لتحولات التموضع الإيراني وتأثيرها على نمط الأمن الإقليمي."
+      ),
+      body: localized(
+        "The significance of the Iranian signal does not lie only in nuclear posture itself, but in how surrounding systems reinterpret it. The signal matters because it changes deterrence reading, posture calibration, and regional expectation mapping.",
+        "لا تكمن أهمية الإشارة الإيرانية في التموضع النووي نفسه فقط، بل في كيفية إعادة تفسير الأنظمة المحيطة له. تكتسب الإشارة أهميتها لأنها تغيّر قراءة الردع ومعايرة التموضع وخريطة التوقع الإقليمي."
+      ),
+      unit: "SSU",
+      status: "published",
+      priority: "HIGH",
+      domain: "geo-security",
+      region: "iran",
+      country: "iran",
+      countryId: "CTR-IRN",
+      signalIds: ["SIG-IRAN-NUCLEAR-002"],
+      clusterKeys: ["iran::geo-security"],
+      theaterKeys: ["iran"],
+      author: "Naeem Dahalan",
+      authors: ["Naeem Dahalan"],
+      sourcePlatform: "internal",
+      sourceUrl: "",
+      publishedAt: nowIso(140),
+      tags: ["iran", "nuclear posture", "regional security", "strategic recalibration"],
+      metrics: {
+        policyRisk: 82,
+        implementationDifficulty: 68,
+        regionalSensitivity: 88,
+        strategicWeight: 89
+      },
+      meta: {
+        featured: false,
+        pinned: true,
+        canonical: false
+      }
     },
-    preparation: {
-      posture: localize("PREPARATION", "تحضير"),
-      tone: localize("Directive", "توجيهي"),
-      tempo: localize("Accelerated", "متسارع")
-    },
-    active: {
-      posture: localize("ACTIVE RESPONSE", "استجابة نشطة"),
-      tone: localize("Commanding", "حازم"),
-      tempo: localize("Immediate", "فوري")
+
+    {
+      id: "PUB-REDSEA-ECON-003",
+      type: "brief",
+      classification: "Strategic Trade Brief",
+      edition: "Maritime Stability Brief",
+      layer: "L5",
+      mode: "Trade Corridor Monitoring",
+      title: localized(
+        "Red Sea — Corridor Disruption and Supply Confidence Stress",
+        "البحر الأحمر — اضطراب الممر وضغط الثقة في الإمداد"
+      ),
+      summary: localized(
+        "Brief mapping maritime disruption into strategic trade pressure.",
+        "موجز يربط الاضطراب البحري بضغط التجارة الاستراتيجية."
+      ),
+      body: localized(
+        "The Red Sea file should not be treated only as shipping news. It is a strategic pressure file because route confidence affects timing, insurance, supply continuity, and broader risk perception.",
+        "لا ينبغي التعامل مع ملف البحر الأحمر كأخبار شحن فقط. إنه ملف ضغط استراتيجي لأن الثقة بالمسار تؤثر في التوقيت والتأمين واستمرارية الإمداد والإدراك الأوسع للمخاطر."
+      ),
+      unit: "SSU",
+      status: "published",
+      priority: "MEDIUM",
+      domain: "geo-economics",
+      region: "redsea",
+      country: "redsea",
+      countryId: "CTR-RS",
+      signalIds: ["SIG-REDSEA-TRADE-003"],
+      clusterKeys: ["redsea::geo-economics"],
+      theaterKeys: ["redsea"],
+      author: "IBSS",
+      authors: ["IBSS"],
+      sourcePlatform: "internal",
+      sourceUrl: "",
+      publishedAt: nowIso(220),
+      tags: ["red sea", "trade", "shipping", "corridor risk"],
+      metrics: {
+        policyRisk: 61,
+        implementationDifficulty: 43,
+        regionalSensitivity: 67,
+        strategicWeight: 73
+      },
+      meta: {
+        featured: false,
+        pinned: false,
+        canonical: false
+      }
     }
-  };
+  ];
 
   /* =========================
      EXPORT
@@ -894,15 +664,10 @@ window.IBSS_DATA = (function () {
 
   return {
     CONFIG,
-    content,
+    presenceSeed,
     signals,
     newsFeed,
     countries,
-    voiceProfiles
+    content
   };
 })();
-
-window.IBSS_CONTENT = window.IBSS_DATA.content;
-window.IBSS_SIGNALS = window.IBSS_DATA.signals;
-window.IBSS_COUNTRIES = window.IBSS_DATA.countries;
-window.IBSS_NEWS = window.IBSS_DATA.newsFeed;
