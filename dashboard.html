@@ -1690,7 +1690,8 @@ function renderTickerStrip(system) {
 
         applyLanguage();
         renderMeta(system);
-
+renderTickerStrip(system);
+        
         const level = renderLevel(system);
         renderDecision(level, system);
         renderPrimarySignal(system.topSignal || system.dominantSignal || null, system);
