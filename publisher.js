@@ -1,11 +1,11 @@
 // IBSS PUBLISHER CORE — Full Living Presence Rebuild
-// Version: v8.0 Living Presence Publisher
+// Version: v8.1 Living Presence Publisher Aligned
 
 window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publisher_state_v8_living_presence",
+    storageKey: "ibss_publisher_state_v81_living_presence_aligned",
     maxQueueSize: 240,
     maxHistorySize: 320,
     maxSnapshots: 180,
@@ -24,11 +24,9 @@ window.IBSS_PUBLISHER = (function () {
 
   const STATE = {
     initialized: false,
-
     queue: [],
     history: [],
     snapshots: [],
-
     latestSystem: null,
     latestOrchestrated: null,
     latestDigest: null,
@@ -64,6 +62,10 @@ window.IBSS_PUBLISHER = (function () {
       .toLowerCase()
       .replace(/\s+/g, " ")
       .trim();
+  }
+
+  function clamp(value, min = 0, max = 100) {
+    return Math.max(min, Math.min(max, value));
   }
 
   function clone(value) {
@@ -137,13 +139,19 @@ window.IBSS_PUBLISHER = (function () {
     if (!arr.length) return lang === "ar" ? "لا يوجد" : "none";
 
     if (arr.length === 1) return arr[0];
+
     if (arr.length === 2) {
-      return lang === "ar" ? `${arr[0]} و ${arr[1]}` : `${arr[0]} and ${arr[1]}`;
+      return lang === "ar"
+        ? `${arr[0]} و ${arr[1]}`
+        : `${arr[0]} and ${arr[1]}`;
     }
 
     const head = arr.slice(0, -1).join(lang === "ar" ? "، " : ", ");
     const tail = arr[arr.length - 1];
-    return lang === "ar" ? `${head}، و ${tail}` : `${head}, and ${tail}`;
+
+    return lang === "ar"
+      ? `${head}، و ${tail}`
+      : `${head}, and ${tail}`;
   }
 
   /* =========================================
@@ -386,6 +394,72 @@ window.IBSS_PUBLISHER = (function () {
       systemPressure,
       dominantPressure
     };
+  }
+
+  /* =========================================
+     Presence / Voice Fallback
+  ========================================= */
+
+  function buildVoiceFallback(system) {
+    const pressure = safeNumber(system?.systemPressure ?? system?.ssi, 0);
+    const confidence = safeNumber(system?.confidenceScore, 0);
+    const mode = safeText(system?.mode, "MONITORING");
+    const presence = system?.presence || {};
+
+    const posture =
+      presence?.posture ||
+      (mode === "ACTIVE RESPONSE"
+        ? { en: "ACTIVE POSTURE", ar: "وضعية نشطة" }
+        : mode === "PREPARATION"
+          ? { en: "PREPARATION POSTURE", ar: "وضعية تحضير" }
+          : mode === "HEIGHTENED MONITORING"
+            ? { en: "HEIGHTENED WATCH", ar: "مراقبة مشددة" }
+            : { en: "MONITORING POSTURE", ar: "وضعية مراقبة" });
+
+    const urgency =
+      pressure >= 90 ? { en: "critical", ar: "حرج" } :
+      pressure >= 78 ? { en: "high", ar: "مرتفع" } :
+      pressure >= 55 ? { en: "elevated", ar: "مرتفع نسبياً" } :
+      { en: "low", ar: "منخفض" };
+
+    const summary =
+      pressure >= 90
+        ? { en: "The system is operating in an active response posture.", ar: "النظام يعمل ضمن وضعية استجابة نشطة." }
+        : pressure >= 78
+          ? { en: "The system is holding a preparation posture under structured pressure.", ar: "النظام يحافظ على وضعية تحضير تحت ضغط بنيوي." }
+          : pressure >= 55
+            ? { en: "The system is in heightened monitoring with active sensitivity.", ar: "النظام في حالة مراقبة مشددة بحساسية تشغيلية نشطة." }
+            : { en: "The system remains in a controlled monitoring posture.", ar: "يبقى النظام ضمن وضعية مراقبة مضبوطة." };
+
+    const explanation = {
+      en: `Current pressure is ${pressure} with confidence ${confidence}.`,
+      ar: `الضغط الحالي هو ${pressure} والثقة ${confidence}.`
+    };
+
+    const intent =
+      pressure >= 78
+        ? { en: "Maintain readiness, listen continuously, and prepare immediate escalation routing if required.", ar: "الحفاظ على الجاهزية والاستماع المستمر والاستعداد لتمرير مسار التصعيد الفوري عند الحاجة." }
+        : { en: "Continue monitoring, absorb signals, and refine structured interpretation.", ar: "الاستمرار في المراقبة وامتصاص الإشارات وصقل التفسير البنيوي المنظم." };
+
+    const advisory =
+      pressure >= 78
+        ? { en: "Keep the dominant theater under direct observation and preserve escalation continuity.", ar: "أبقِ المسرح المهيمن تحت المراقبة المباشرة مع الحفاظ على استمرارية مسار التصعيد." }
+        : { en: "Preserve signal flow and avoid unnecessary escalation assumptions.", ar: "الحفاظ على تدفق الإشارات وتجنب افتراضات التصعيد غير الضرورية." };
+
+    return {
+      posture,
+      urgency,
+      summary,
+      explanation,
+      intent,
+      advisory
+    };
+  }
+
+  function getVoiceState(system) {
+    const existing = system?.voice;
+    if (existing) return existing;
+    return buildVoiceFallback(system);
   }
 
   /* =========================================
@@ -666,6 +740,7 @@ window.IBSS_PUBLISHER = (function () {
     const topTheater = system?.topTheater || null;
     const topCountry = asArray(system?.countryRiskFeed)[0] || null;
     const pressure = summarizePressure(system);
+    const voice = getVoiceState(system);
 
     return {
       key: buildSystemKey(system),
@@ -734,7 +809,7 @@ window.IBSS_PUBLISHER = (function () {
       } : null,
 
       featuredPublication: contentContext?.featuredPublication || null,
-      voice: clone(system?.voice || null),
+      voice: clone(voice),
       presence: clone(system?.presence || null),
       drivers: clone(asArray(system?.drivers).slice(0, 5))
     };
@@ -766,14 +841,21 @@ window.IBSS_PUBLISHER = (function () {
 
   function createOrchestratedSystem(system) {
     const contentContext = buildContentContext(system);
-    const digest = buildDigest(system, contentContext);
-    const unifiedFeed = buildUnifiedFeed(system, contentContext);
+    const voice = getVoiceState(system);
+
+    const enrichedSystem = {
+      ...system,
+      voice
+    };
+
+    const digest = buildDigest(enrichedSystem, contentContext);
+    const unifiedFeed = buildUnifiedFeed(enrichedSystem, contentContext);
     const snapshot = buildSnapshot(digest, unifiedFeed);
 
     const orchestrated = {
-      ...system,
+      ...enrichedSystem,
       source: "orchestrated",
-      featuredPublication: contentContext.featuredPublication || system?.featuredPublication || null,
+      featuredPublication: contentContext.featuredPublication || enrichedSystem?.featuredPublication || null,
       publicationContext: contentContext,
       publisherDigest: digest,
       publisherFeed: unifiedFeed,
@@ -941,10 +1023,10 @@ window.IBSS_PUBLISHER = (function () {
   }
 
   function buildPresenceLine(system, lang = "en") {
-    const posture = getLocalizedText(system?.voice?.posture, lang) || safeText(system?.mode, "MONITORING");
-    const summary = getLocalizedText(system?.voice?.summary, lang) || "";
-    if (!summary) return posture;
-    return lang === "ar" ? `${posture} — ${summary}` : `${posture} — ${summary}`;
+    const voice = getVoiceState(system);
+    const posture = getLocalizedText(voice?.posture, lang) || safeText(system?.mode, "MONITORING");
+    const summary = getLocalizedText(voice?.summary, lang) || "";
+    return summary ? `${posture} — ${summary}` : posture;
   }
 
   function buildSignalPost(signal, lang = "en") {
@@ -1121,12 +1203,13 @@ Domain: ${domain}
   }
 
   function buildLivingSystemPost(system, lang = "en") {
-    const voiceSummary = getLocalizedText(system?.voice?.summary, lang);
-    const voiceExplanation = getLocalizedText(system?.voice?.explanation, lang);
-    const voiceIntent = getLocalizedText(system?.voice?.intent, lang);
+    const voice = getVoiceState(system);
+    const voiceSummary = getLocalizedText(voice?.summary, lang);
+    const voiceExplanation = getLocalizedText(voice?.explanation, lang);
+    const voiceIntent = getLocalizedText(voice?.intent, lang);
     const pressure = safeNumber(system?.systemPressure ?? system?.ssi, 0);
     const confidence = safeNumber(system?.confidenceScore, 0);
-    const posture = getLocalizedText(system?.voice?.posture, lang) || safeText(system?.mode, "MONITORING");
+    const posture = getLocalizedText(voice?.posture, lang) || safeText(system?.mode, "MONITORING");
 
     if (lang === "ar") {
       return `IBSS — Living System Update
@@ -1156,9 +1239,18 @@ ${voiceIntent}
   }
 
   function buildPresenceStatement(system, lang = "en") {
-    const presenceState = safeText(system?.presence?.state, lang === "ar" ? "مراقبة" : "monitoring");
-    const urgency = safeText(system?.presence?.urgency, lang === "ar" ? "منخفض" : "low");
-    const advisory = getLocalizedText(system?.voice?.advisory, lang);
+    const voice = getVoiceState(system);
+    const presenceState =
+      getLocalizedText(system?.presence?.posture, lang) ||
+      getLocalizedText(voice?.posture, lang) ||
+      safeText(system?.mode, lang === "ar" ? "مراقبة" : "monitoring");
+
+    const urgency =
+      getLocalizedText(voice?.urgency, lang) ||
+      (lang === "ar" ? "منخفض" : "low");
+
+    const advisory = getLocalizedText(voice?.advisory, lang);
+
     const drivers = asArray(system?.drivers)
       .slice(0, 3)
       .map(item => getLocalizedText(item?.label, lang));
