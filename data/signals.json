@@ -1,0 +1,25 @@
+{
+  "updated": "auto",
+  "signals": [
+    {
+      "id": "gaza_pressure",
+      "title": {
+        "en": "Military pressure remains concentrated around Gaza",
+        "ar": "الضغط العسكري ما زال متمركزًا حول غزة"
+      },
+      "score": 83,
+      "priority": "HIGH",
+      "region": "gaza"
+    },
+    {
+      "id": "lebanon_front",
+      "title": {
+        "en": "Northern front tension sustains pressure near Lebanon",
+        "ar": "التوتر في الجبهة الشمالية مستمر قرب لبنان"
+      },
+      "score": 77,
+      "priority": "HIGH",
+      "region": "lebanon"
+    }
+  ]
+}
