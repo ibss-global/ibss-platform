@@ -520,22 +520,28 @@ window.IBSS_RUNTIME = (function () {
     return resolved;
   }
 
-  IBSS_RUNTIME.start({
-  pageId: "dashboard",
-  lang: currentLang,
+  function render(system) {
+    if (!system) return null;
 
-  tickerTrackEl: document.getElementById("tickerTrack"),
+    STATE.system = system;
+    refreshTicker(system);
 
-  afterRender: function(system) {
-    const geoContainer = document.getElementById("geoRadar");
-
-    if (geoContainer && window.IBSS_GEO_RADAR) {
-      IBSS_GEO_RADAR.render(geoContainer, system, {
-        lang: currentLang || "en"
-      });
+    if (CONFIG.autoAudio) {
+      try {
+        if (window.IBSS_AUDIO?.updateFromSystem) {
+          window.IBSS_AUDIO.updateFromSystem(system);
+        }
+      } catch (error) {
+        logError("audioUpdate", error);
+      }
     }
-  }
-});
+
+    if (typeof STATE.afterRender === "function") {
+      try {
+        STATE.afterRender(system);
+      } catch (error) {
+        logError("afterRender", error);
+      }
     }
 
     STATE.lastSuccessfulRenderAt = nowMs();
