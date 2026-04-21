@@ -2,7 +2,7 @@ window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publisher_state_v6_full_clean",
+    storageKey: "ibss_publisher_state_v7_final_unified",
     maxQueueSize: 240,
     maxHistorySize: 320,
     maxSnapshots: 180,
@@ -216,7 +216,8 @@ window.IBSS_PUBLISHER = (function () {
       const api = getContentApi();
 
       if (api?.getLatestFeaturedContent) {
-        return api.getLatestFeaturedContent();
+        const item = api.getLatestFeaturedContent();
+        if (item) return item;
       }
 
       if (api?.getFeatured) {
@@ -246,14 +247,20 @@ window.IBSS_PUBLISHER = (function () {
       .map(item => ({
         id: item.id,
         type: item.type,
+        classification: item.classification || item.type || "report",
         unit: item.unit || "SSU",
         title: getLocalizedText(item.title, lang),
         summary: getLocalizedText(item.summary, lang),
+        body: getLocalizedText(item.body, lang),
         edition: item.edition || "",
         domain: item.domain || "general",
+        region: item.region || "global",
         country: item.country || "global",
+        countryId: item.countryId || "",
         priority: item.priority || "LOW",
-        publishedAt: item.publishedAt || nowIso()
+        publishedAt: item.publishedAt || nowIso(),
+        metrics: clone(item.metrics || {}),
+        meta: clone(item.meta || {})
       }));
   }
 
@@ -403,7 +410,7 @@ window.IBSS_PUBLISHER = (function () {
         en: getLocalizedText(content?.body, "en"),
         ar: getLocalizedText(content?.body, "ar")
       },
-      signalIds: clone(asArray(content?.signalIds)) || [],
+      signalIds: clone(asArray(content?.signalIds || content?.linkedSignalIds)) || [],
       tags: clone(asArray(content?.tags)) || [],
       metrics: clone(content?.metrics || {}),
       meta: clone(content?.meta || {})
@@ -425,8 +432,12 @@ window.IBSS_PUBLISHER = (function () {
     return normalizeText(signal?.region || signal?.country || "");
   }
 
+  function getSignalCountry(signal) {
+    return normalizeText(signal?.country || signal?.countryId || "");
+  }
+
   function getSignalDomain(signal) {
-    return normalizeText(signal?.domain || signal?.layer || signal?.sourceUnit || "");
+    return normalizeText(signal?.domain || getLocalizedText(signal?.signalType, "en") || getLocalizedText(signal?.layer, "en") || "");
   }
 
   function scoreContentMatchForSignal(content, signal) {
@@ -435,22 +446,22 @@ window.IBSS_PUBLISHER = (function () {
     let score = 0;
 
     const signalId = safeText(signal?.id, "");
-    const signalIds = asArray(content?.signalIds);
+    const signalIds = asArray(content?.signalIds || content?.linkedSignalIds);
 
     if (signalId && signalIds.includes(signalId)) score += 1000;
 
     const signalRegion = getSignalRegion(signal);
-    const signalCountry = normalizeText(signal?.country || "");
+    const signalCountry = getSignalCountry(signal);
     const signalDomain = getSignalDomain(signal);
 
     const contentCountry = normalizeText(content?.country || content?.countryId || "");
     const contentRegion = normalizeText(content?.region || "");
     const contentDomain = normalizeText(content?.domain || "");
 
-    if (signalCountry && contentCountry && signalCountry === contentCountry) score += 200;
-    if (signalRegion && contentRegion && signalRegion === contentRegion) score += 160;
-    if (signalRegion && contentCountry && signalRegion === contentCountry) score += 120;
-    if (signalCountry && contentRegion && signalCountry === contentRegion) score += 120;
+    if (signalCountry && contentCountry && signalCountry === contentCountry) score += 220;
+    if (signalRegion && contentRegion && signalRegion === contentRegion) score += 180;
+    if (signalRegion && contentCountry && signalRegion === contentCountry) score += 130;
+    if (signalCountry && contentRegion && signalCountry === contentRegion) score += 130;
 
     if (signalDomain && contentDomain && signalDomain === contentDomain) score += 130;
     if (signalDomain && contentDomain && (signalDomain.includes(contentDomain) || contentDomain.includes(signalDomain))) score += 80;
@@ -467,6 +478,12 @@ window.IBSS_PUBLISHER = (function () {
 
     const strategicWeight = safeNumber(content?.metrics?.strategicWeight, 0);
     score += Math.round(strategicWeight * 1.5);
+
+    const featuredBoost = content?.meta?.featured ? 25 : 0;
+    const pinnedBoost = content?.meta?.pinned ? 15 : 0;
+    const canonicalBoost = content?.meta?.canonical ? 15 : 0;
+
+    score += featuredBoost + pinnedBoost + canonicalBoost;
 
     return score;
   }
@@ -501,7 +518,6 @@ window.IBSS_PUBLISHER = (function () {
     const signalContent = topSignal ? getContentLinkedToSignal(topSignal.id) : [];
     const clusterContent = topCluster ? getContentLinkedToCluster(buildClusterKey(topCluster)) : [];
     const countryContent = topCountry ? getContentLinkedToCountry(topCountry.name || topCountry.id) : [];
-
     const featuredContent = getLatestFeaturedPublication();
 
     return {
@@ -605,8 +621,8 @@ window.IBSS_PUBLISHER = (function () {
           priority: normalizePriority(item?.priority || item?.severity || levelPriority),
           source: safeText(item?.source || item?.sourceName, ""),
           text: {
-            en: getLocalizedText(item?.title, "en") || getLocalizedText(item?.summary, "en") || "-",
-            ar: getLocalizedText(item?.title, "ar") || getLocalizedText(item?.summary, "ar") || "-"
+            en: getLocalizedText(item?.title, "en") || getLocalizedText(item?.summary, "en") || getLocalizedText(item?.description, "en") || "-",
+            ar: getLocalizedText(item?.title, "ar") || getLocalizedText(item?.summary, "ar") || getLocalizedText(item?.description, "ar") || "-"
           },
           createdAt: safeText(item?.publishedAt || item?.timestamp, nowIso())
         });
@@ -749,8 +765,8 @@ window.IBSS_PUBLISHER = (function () {
 
     const orchestrated = {
       ...system,
-      source: "engine",
-      featuredPublication: contentContext.featuredPublication || null,
+      source: "orchestrated",
+      featuredPublication: contentContext.featuredPublication || system?.featuredPublication || null,
       publicationContext: contentContext,
       publisherDigest: digest,
       publisherFeed: unifiedFeed,
@@ -960,6 +976,7 @@ ${description}
     const summary =
       getLocalizedText(newsItem?.summary, lang) ||
       getLocalizedText(newsItem?.text, lang) ||
+      getLocalizedText(newsItem?.description, lang) ||
       (lang === "ar" ? "تم تسجيل تحديث جديد داخل وحدة الأخبار." : "A new update has been registered in the news unit.");
 
     if (lang === "ar") {
@@ -1164,7 +1181,8 @@ Domain: ${domain}
   }
 
   function queueLatestNewsFromFeed(limit = 3) {
-    const items = window.IBSS_NEWS_UTILS?.getLatestNews?.(limit) || [];
+    const system = getLatestOrchestratedSystem() || resolveSourceSystem();
+    const items = asArray(system?.liveNews).slice(0, Math.max(1, safeNumber(limit, 3)));
     return items.map(item => queueNewsPost(item));
   }
 
