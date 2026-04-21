@@ -1724,26 +1724,6 @@ function startRuntime() {
   });
 }
 
-        window.IBSS_RUNTIME.start({
-          pageId: "dashboard",
-          lang: STATE.lang,
-          tickerTrackEl: qs("tickerTrack"),
-          refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
-          systemProvider: getSystem,
-          tickerItemsProvider: function (system) {
-            const unifiedFeed = buildUnifiedFeed(system);
-            const items = unifiedFeed.slice(0, 10).map((item) => ({
-              level: String(item.priority || "LOW").toLowerCase(),
-              priority: String(item.priority || "LOW").toUpperCase(),
-              text: getLocalizedText(item.text || item.title)
-            }));
-            return items.length ? items : null;
-          },
-          afterRender: function(system) {
-            renderDashboardCore(system);
-          }
-        });
-      }
 
       qs("btn-en").addEventListener("click", function () {
         STATE.lang = "en";
