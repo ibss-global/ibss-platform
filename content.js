@@ -1,8 +1,11 @@
+// IBSS PUBLISHER CORE — Unified Publication + Orchestration Layer
+// Version: v2.0 Clean Orchestrated Publisher
+
 window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publisher_state_v6_full_clean",
+    storageKey: "ibss_publisher_state_v20_clean_orchestrated",
     maxQueueSize: 240,
     maxHistorySize: 320,
     maxSnapshots: 180,
@@ -203,7 +206,11 @@ window.IBSS_PUBLISHER = (function () {
   function getPublishedContent() {
     try {
       const api = getContentApi();
+      if (api?.getPublishedContent) return asArray(api.getPublishedContent());
       if (api?.getPublished) return asArray(api.getPublished());
+      if (api?.getAllContent) {
+        return asArray(api.getAllContent()).filter(item => item?.status === "published");
+      }
     } catch (error) {
       console.error("IBSS_PUBLISHER getPublishedContent error:", error);
     }
@@ -219,42 +226,39 @@ window.IBSS_PUBLISHER = (function () {
         return api.getLatestFeaturedContent();
       }
 
-      if (api?.getFeatured) {
-        const featured = sortByDateDesc(api.getFeatured(), item => item?.publishedAt);
-        if (featured.length) return featured[0];
-      }
+      const published = getPublishedContent();
+      return sortByDateDesc(published, item => item?.publishedAt)[0] || null;
     } catch (error) {
       console.error("IBSS_PUBLISHER getLatestFeaturedPublication error:", error);
+      return null;
     }
-
-    const content = getPublishedContent();
-    return sortByDateDesc(content, item => item?.publishedAt)[0] || null;
   }
 
   function getLatestContentPreviewList(limit = 8, lang = "en") {
     try {
       const api = getContentApi();
-      if (api?.getPublicationPreviewList) {
-        return asArray(api.getPublicationPreviewList(limit, lang));
-      }
-    } catch (error) {
-      console.error("IBSS_PUBLISHER getLatestContentPreviewList error:", error);
-    }
+      const published = api?.getLatestPublishedContent
+        ? asArray(api.getLatestPublishedContent(limit))
+        : sortByDateDesc(getPublishedContent(), item => item?.publishedAt).slice(0, Math.max(1, safeNumber(limit, 8)));
 
-    return getPublishedContent()
-      .slice(0, Math.max(1, safeNumber(limit, 8)))
-      .map(item => ({
+      return published.map(item => ({
         id: item.id,
         type: item.type,
+        classification: item.classification || item.type || "report",
         unit: item.unit || "SSU",
+        edition: item.edition || "",
         title: getLocalizedText(item.title, lang),
         summary: getLocalizedText(item.summary, lang),
-        edition: item.edition || "",
         domain: item.domain || "general",
+        region: item.region || "global",
         country: item.country || "global",
         priority: item.priority || "LOW",
         publishedAt: item.publishedAt || nowIso()
       }));
+    } catch (error) {
+      console.error("IBSS_PUBLISHER getLatestContentPreviewList error:", error);
+      return [];
+    }
   }
 
   function getContentLinkedToSignal(signalId) {
@@ -379,6 +383,8 @@ window.IBSS_PUBLISHER = (function () {
   function buildContentPreview(content) {
     if (!content) return null;
 
+    const signalIds = asArray(content?.linkedSignalIds || content?.signalIds);
+
     return {
       id: safeText(content?.id, ""),
       type: safeText(content?.type, "report"),
@@ -403,7 +409,7 @@ window.IBSS_PUBLISHER = (function () {
         en: getLocalizedText(content?.body, "en"),
         ar: getLocalizedText(content?.body, "ar")
       },
-      signalIds: clone(asArray(content?.signalIds)) || [],
+      signalIds: clone(signalIds) || [],
       tags: clone(asArray(content?.tags)) || [],
       metrics: clone(content?.metrics || {}),
       meta: clone(content?.meta || {})
@@ -418,7 +424,7 @@ window.IBSS_PUBLISHER = (function () {
   function buildClusterKey(cluster) {
     const region = safeText(cluster?.region, "global");
     const domain = safeText(cluster?.domain, "general");
-    return `${region}::${domain}`;
+    return `${normalizeText(region)}::${normalizeText(domain)}`;
   }
 
   function getSignalRegion(signal) {
@@ -426,7 +432,7 @@ window.IBSS_PUBLISHER = (function () {
   }
 
   function getSignalDomain(signal) {
-    return normalizeText(signal?.domain || signal?.layer || signal?.sourceUnit || "");
+    return normalizeText(signal?.domain || signal?.layer || signal?.sourceUnit || signal?.signalType || "");
   }
 
   function scoreContentMatchForSignal(content, signal) {
@@ -435,12 +441,12 @@ window.IBSS_PUBLISHER = (function () {
     let score = 0;
 
     const signalId = safeText(signal?.id, "");
-    const signalIds = asArray(content?.signalIds);
+    const signalIds = asArray(content?.linkedSignalIds || content?.signalIds);
 
     if (signalId && signalIds.includes(signalId)) score += 1000;
 
     const signalRegion = getSignalRegion(signal);
-    const signalCountry = normalizeText(signal?.country || "");
+    const signalCountry = normalizeText(signal?.country || signal?.countryId || "");
     const signalDomain = getSignalDomain(signal);
 
     const contentCountry = normalizeText(content?.country || content?.countryId || "");
@@ -467,6 +473,9 @@ window.IBSS_PUBLISHER = (function () {
 
     const strategicWeight = safeNumber(content?.metrics?.strategicWeight, 0);
     score += Math.round(strategicWeight * 1.5);
+
+    if (content?.meta?.featured) score += 40;
+    if (content?.meta?.canonical) score += 50;
 
     return score;
   }
