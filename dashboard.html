@@ -1634,7 +1634,39 @@
           });
         }
       }
+function renderTickerStrip(system) {
+  const track = qs("tickerTrack");
+  if (!track) return;
 
+  const unifiedFeed = buildUnifiedFeed(system);
+  const items = unifiedFeed.slice(0, 10);
+
+  if (!items.length) {
+    track.innerHTML = `
+      <div class="ticker-item">
+        <span class="ticker-item-text">${escapeHtml(t("noFeed"))}</span>
+      </div>
+    `;
+    return;
+  }
+
+  track.innerHTML = items.map((item) => {
+    const priority = String(item.priority || "LOW").toUpperCase();
+    const cls =
+      priority === "HIGH" ? "high" :
+      priority === "MEDIUM" ? "medium" :
+      "low";
+
+    const text = getLocalizedText(item.text || item.title);
+
+    return `
+      <div class="ticker-item">
+        <span class="ticker-dot ${cls}"></span>
+        <span class="ticker-item-text">${escapeHtml(String(text))}</span>
+      </div>
+    `;
+  }).join("");
+    }
       function wireAudioButton() {
         const btn = qs("audioToggleBtn");
         if (!btn || btn.dataset.bound === "1") return;
