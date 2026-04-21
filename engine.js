@@ -1,3 +1,6 @@
+// IBSS ENGINE CORE — Unified Sovereign Computation Layer
+// Version: v2.0 Clean Causality Engine
+
 window.IBSS_ENGINE = (function () {
   "use strict";
 
@@ -6,12 +9,13 @@ window.IBSS_ENGINE = (function () {
     historyLimit: 180,
     reportLimit: 80,
     archiveLimit: 120,
-    storageKey: "ibss_engine_state_v14_clean_unified",
+    storageKey: "ibss_engine_state_v20_clean_causality",
     minLiveSignalScore: 40,
     scenarioHighThreshold: 85,
     scenarioPrepThreshold: 70,
-    maxFeedItems: 12,
-    maxCountryRiskItems: 5
+    maxFeedItems: 14,
+    maxCountryRiskItems: 5,
+    maxDrivers: 5
   };
 
   const STATE = {
@@ -42,7 +46,7 @@ window.IBSS_ENGINE = (function () {
     return Number.isFinite(n) ? n : fallback;
   }
 
-  function clamp(value, min, max) {
+  function clamp(value, min = 0, max = 100) {
     return Math.max(min, Math.min(max, value));
   }
 
@@ -125,6 +129,10 @@ window.IBSS_ENGINE = (function () {
       },
       createdAt: nowIso()
     };
+  }
+
+  function sortByScoreDesc(list, selector) {
+    return asArray(list).slice().sort((a, b) => safeNumber(selector(b), 0) - safeNumber(selector(a), 0));
   }
 
   /* =========================================
@@ -256,11 +264,9 @@ window.IBSS_ENGINE = (function () {
       priority: normalizePriority(item?.weight || item?.priority),
       score100: clamp(
         Math.round(
-          (
-            (safeNumber(item?.metrics?.weight, 0.5) * 35) +
-            (safeNumber(item?.metrics?.volatility, 0.5) * 25) +
-            (safeNumber(item?.metrics?.impact, 0.5) * 40)
-          )
+          (safeNumber(item?.metrics?.weight, 0.5) * 35) +
+          (safeNumber(item?.metrics?.volatility, 0.5) * 25) +
+          (safeNumber(item?.metrics?.impact, 0.5) * 40)
         ),
         0,
         100
@@ -343,6 +349,14 @@ window.IBSS_ENGINE = (function () {
   }
 
   function getContentCountryAliases(countryIdOrName) {
+    if (window.IBSS_UTILS?.getCountryAliases) {
+      try {
+        return asArray(window.IBSS_UTILS.getCountryAliases(countryIdOrName));
+      } catch (error) {
+        console.error("IBSS_ENGINE getCountryAliases error:", error);
+      }
+    }
+
     const raw = normalizeText(countryIdOrName);
     if (!raw) return [];
 
@@ -579,6 +593,7 @@ window.IBSS_ENGINE = (function () {
     return {
       id: safeText(signal?.id, `SIG-${index + 1}`),
       title,
+      summary: signal?.summary || description,
       description,
       country,
       region,
@@ -1059,6 +1074,84 @@ window.IBSS_ENGINE = (function () {
   }
 
   /* =========================================
+     Drivers / Causality
+  ========================================= */
+
+  function buildSystemDrivers(rankedSignals, clusters, theaters, countryRiskFeed) {
+    const drivers = [];
+
+    rankedSignals.slice(0, 2).forEach(signal => {
+      drivers.push({
+        id: `DRV-SIG-${signal.id}`,
+        type: "signal",
+        priority: normalizePriority(signal.priority),
+        score: safeNumber(signal.balancedScore100, 0),
+        label: {
+          en: `${getLocalizedText(signal.title, "en")} pressure`,
+          ar: `ضغط ${getLocalizedText(signal.title, "ar")}`
+        },
+        explanation: {
+          en: `Signal score ${safeNumber(signal.balancedScore100, 0)} contributed directly to system pressure.`,
+          ar: `درجة الإشارة ${safeNumber(signal.balancedScore100, 0)} ساهمت مباشرة في ضغط النظام.`
+        }
+      });
+    });
+
+    if (clusters[0]) {
+      drivers.push({
+        id: `DRV-CL-${clusters[0].id}`,
+        type: "cluster",
+        priority: clusters[0].priority === "CORE" ? "HIGH" : "MEDIUM",
+        score: safeNumber(clusters[0].avgRisk, 0),
+        label: {
+          en: `${getLocalizedText(clusters[0].name, "en")} file pressure`,
+          ar: `ضغط ملف ${getLocalizedText(clusters[0].name, "ar")}`
+        },
+        explanation: {
+          en: `The top strategic file raised structured pressure through file concentration.`,
+          ar: `الملف الاستراتيجي الأعلى رفع الضغط البنيوي عبر تركز الملف.`
+        }
+      });
+    }
+
+    if (theaters[0]) {
+      drivers.push({
+        id: `DRV-TH-${theaters[0].id}`,
+        type: "theater",
+        priority: theaters[0].priority === "CORE" ? "HIGH" : "MEDIUM",
+        score: safeNumber(theaters[0].avgRisk, 0),
+        label: {
+          en: `${getLocalizedText(theaters[0].name, "en")} theater pressure`,
+          ar: `ضغط مسرح ${getLocalizedText(theaters[0].name, "ar")}`
+        },
+        explanation: {
+          en: `The dominant theater concentrated operational pressure across multiple files.`,
+          ar: `المسرح المهيمن ركز الضغط التشغيلي عبر عدة ملفات.`
+        }
+      });
+    }
+
+    if (countryRiskFeed[0]) {
+      drivers.push({
+        id: `DRV-CTR-${countryRiskFeed[0].id}`,
+        type: "country",
+        priority: countryRiskFeed[0].riskLevel === "HIGH" ? "HIGH" : "MEDIUM",
+        score: safeNumber(countryRiskFeed[0].riskScore, 0),
+        label: {
+          en: `${safeText(countryRiskFeed[0].name)} risk concentration`,
+          ar: `تركز المخاطر في ${safeText(countryRiskFeed[0].name)}`
+        },
+        explanation: {
+          en: `Top country risk reinforced the unified pressure profile.`,
+          ar: `أعلى خطر دولي عزز ملف الضغط الموحد.`
+        }
+      });
+    }
+
+    return sortByScoreDesc(drivers, item => item.score).slice(0, CONFIG.maxDrivers);
+  }
+
+  /* =========================================
      Scenarios
   ========================================= */
 
@@ -1166,7 +1259,7 @@ window.IBSS_ENGINE = (function () {
           normalizePriority(system.featuredPublication.priority || system.level),
           `Featured publication: ${getLocalizedText(system.featuredPublication.title, "en")}`,
           `المنشور المميز: ${getLocalizedText(system.featuredPublication.title, "ar")}`,
-          safeText(system.featuredPublication.author, "IBSS")
+          "ENGINE"
         )
       );
     }
@@ -1215,8 +1308,8 @@ window.IBSS_ENGINE = (function () {
       makeFeedItem(
         "news_pressure",
         system.level,
-        `Live news pressure: ${system.newsPressure.count} items`,
-        `الضغط الخبري الحي: ${system.newsPressure.count} عناصر`,
+        `Live pressure count: ${system.newsPressure.count} signals`,
+        `عدد عناصر الضغط الحي: ${system.newsPressure.count} إشارات`,
         "ENGINE"
       )
     );
@@ -1232,6 +1325,18 @@ window.IBSS_ENGINE = (function () {
         )
       );
     }
+
+    asArray(system.drivers).slice(0, 3).forEach(driver => {
+      lines.push(
+        makeFeedItem(
+          "driver",
+          driver.priority,
+          `Driver: ${getLocalizedText(driver.label, "en")} (${driver.score})`,
+          `المحرّك: ${getLocalizedText(driver.label, "ar")} (${driver.score})`,
+          "ENGINE"
+        )
+      );
+    });
 
     const deduped = dedupeBy(lines, item => {
       return [
@@ -1257,14 +1362,7 @@ window.IBSS_ENGINE = (function () {
     const published = getPublishedContent()
       .filter(item =>
         item &&
-        (
-          item.type === "study" ||
-          item.type === "report" ||
-          item.type === "analysis" ||
-          item.type === "brief" ||
-          item.type === "policy_paper" ||
-          item.type === "model"
-        )
+        ["study", "report", "analysis", "brief", "policy_paper", "model"].includes(item.type)
       )
       .sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
 
@@ -1282,7 +1380,8 @@ window.IBSS_ENGINE = (function () {
       topCountry,
       latestStudy,
       latestNews: system?.rankedSignals?.slice(0, 3) || [],
-      unifiedRisk: system?.unifiedRisk || null
+      unifiedRisk: system?.unifiedRisk || null,
+      drivers: system?.drivers || []
     };
   }
 
@@ -1308,6 +1407,11 @@ window.IBSS_ENGINE = (function () {
       ? getLocalizedText(system.snapshot.latestStudy.title, lang)
       : (lang === "ar" ? "لا يوجد" : "None");
 
+    const driverText = asArray(system.drivers)
+      .slice(0, 3)
+      .map(driver => getLocalizedText(driver.label, lang))
+      .join(lang === "ar" ? "، " : ", ");
+
     if (lang === "ar") {
       return {
         summary: `رصد المحرك ضغطًا مركبًا بقيمة ${system.systemPressure} مع ثقة ${system.confidenceScore}.`,
@@ -1315,7 +1419,8 @@ window.IBSS_ENGINE = (function () {
           `المسرح الأعلى هو ${topTheater}. ` +
           `الملف الاستراتيجي الأعلى هو ${topCluster}. ` +
           `الإشارة الأعلى هي ${topSignal}. ` +
-          `أحدث دراسة مؤسسية مرتبطة بالمشهد هي ${latestStudy}.`,
+          `أحدث دراسة مؤسسية مرتبطة بالمشهد هي ${latestStudy}. ` +
+          `المحرّكات الأساسية: ${driverText || "لا يوجد"}.`,
         recommendation: system.systemPressure >= 78
           ? "يوصى بالتحضير ورفع الجاهزية على مستوى المسرح الأعلى وتعزيز الربط بين الإشارات والدراسات والمنشورات الميدانية."
           : "يوصى باستمرار المراقبة وتعزيز جمع الإشارات وتنظيف مسارات الربط مع الإنتاج التحليلي المنشور."
@@ -1328,7 +1433,8 @@ window.IBSS_ENGINE = (function () {
         `Top theater: ${topTheater}. ` +
         `Top strategic file: ${topCluster}. ` +
         `Top signal: ${topSignal}. ` +
-        `Latest institutional publication in the scene: ${latestStudy}.`,
+        `Latest institutional publication in the scene: ${latestStudy}. ` +
+        `Primary drivers: ${driverText || "none"}.`,
       recommendation: system.systemPressure >= 78
         ? "Maintain preparation posture, raise readiness on the dominant theater, and reinforce linkage between signals, publications, and strategic files."
         : "Continue monitoring, improve signal collection, and clean linkage between live signals and published analytical content."
@@ -1489,7 +1595,7 @@ window.IBSS_ENGINE = (function () {
     );
 
     if (safeText(topTheater?.priority).toUpperCase() === "CORE") systemPressure += 4;
-    if (safeText(topCluster?.escalationLevel).toUpperCase() === "HIGH") systemPressure += 2;
+    if (safeText(topCluster?.priority).toUpperCase() === "CORE") systemPressure += 2;
 
     systemPressure = clamp(systemPressure, 0, 100);
 
@@ -1501,6 +1607,7 @@ window.IBSS_ENGINE = (function () {
     const topCountry = countryRiskFeed[0] || null;
     const unifiedRisk = buildUnifiedRisk(topCountry, liveSignals.length);
     const featuredPublication = getLatestFeaturedContent();
+    const drivers = buildSystemDrivers(rankedSignals, clusters, theaters, countryRiskFeed);
 
     const system = {
       source: rankedSignals.length ? "engine" : "fallback",
@@ -1533,6 +1640,7 @@ window.IBSS_ENGINE = (function () {
       unifiedRisk,
 
       newsPressure,
+      drivers,
       feed: [],
       contentStats: getContentStats(),
       publishedContent: getPublishedContent(),
@@ -1540,7 +1648,7 @@ window.IBSS_ENGINE = (function () {
       liveNews: rankedSignals,
       featuredPublication,
       snapshot: null,
-      metricsReference: "IBSS_METRICS_V1"
+      metricsReference: "IBSS_METRICS_V2"
     };
 
     system.snapshot = getHomeSnapshot(system);
