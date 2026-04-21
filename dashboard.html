@@ -1707,12 +1707,22 @@ renderTickerStrip(system);
         wireAudioButton();
       }
 
-      function startRuntime() {
-        if (!window.IBSS_RUNTIME?.start) {
-          const system = getSystem();
-          if (system) renderDashboardCore(system);
-          return;
-        }
+function startRuntime() {
+  const system = getSystem();
+  if (system) renderDashboardCore(system);
+
+  if (!window.IBSS_RUNTIME?.start) return;
+
+  window.IBSS_RUNTIME.start({
+    pageId: "dashboard",
+    lang: STATE.lang,
+    refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+    systemProvider: getSystem,
+    afterRender: function(system) {
+      renderDashboardCore(system);
+    }
+  });
+}
 
         window.IBSS_RUNTIME.start({
           pageId: "dashboard",
