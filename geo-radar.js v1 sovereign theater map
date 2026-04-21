@@ -369,7 +369,33 @@ window.IBSS_GEO_RADAR = (function () {
 
   function buildSignalEntries(system) {
     return asArray(system?.rankedSignals).map((signal, index) => {
-      const key = detectPointKeyFromSignal(signal);
+      let key = detectPointKeyFromSignal(signal);
+
+      if (!key) {
+        const rawText = [
+          safeText(signal?.country, ""),
+          safeText(signal?.region, ""),
+          safeText(signal?.domain, ""),
+          getLocalizedText(signal?.title, "en"),
+          getLocalizedText(signal?.description, "en"),
+          getLocalizedText(signal?.summary, "en")
+        ].join(" ");
+
+        const normalized = normalizeText(rawText);
+
+        if (normalized.includes("gaza")) key = "gaza";
+        else if (normalized.includes("westbank")) key = "westbank";
+        else if (normalized.includes("israel")) key = "israel";
+        else if (normalized.includes("lebanon")) key = "lebanon";
+        else if (normalized.includes("egypt")) key = "egypt";
+        else if (normalized.includes("iran")) key = "iran";
+        else if (normalized.includes("redsea")) key = "redsea";
+        else if (normalized.includes("eastmed")) key = "eastmed";
+        else if (normalized.includes("eastmediterranean")) key = "eastmed";
+        else if (normalized.includes("hornafrica")) key = "hornafrica";
+        else if (normalized.includes("hornofafrica")) key = "hornafrica";
+      }
+
       if (!key || !THEATER_POINTS[key]) return null;
 
       const score = safeNumber(signal?.balancedScore100, safeNumber(signal?.score100, 0));
