@@ -1,8 +1,11 @@
+// IBSS PUBLISHER CORE — Full Living Presence Rebuild
+// Version: v8.0 Living Presence Publisher
+
 window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publisher_state_v7_final_unified",
+    storageKey: "ibss_publisher_state_v8_living_presence",
     maxQueueSize: 240,
     maxHistorySize: 320,
     maxSnapshots: 180,
@@ -54,10 +57,6 @@ window.IBSS_PUBLISHER = (function () {
   function safeNumber(value, fallback = 0) {
     const n = Number(value);
     return Number.isFinite(n) ? n : fallback;
-  }
-
-  function clamp(value, min = 0, max = 100) {
-    return Math.max(min, Math.min(max, value));
   }
 
   function normalizeText(value) {
@@ -133,6 +132,20 @@ window.IBSS_PUBLISHER = (function () {
     return [...map.values()];
   }
 
+  function formatList(items, lang = "en") {
+    const arr = asArray(items).filter(Boolean);
+    if (!arr.length) return lang === "ar" ? "لا يوجد" : "none";
+
+    if (arr.length === 1) return arr[0];
+    if (arr.length === 2) {
+      return lang === "ar" ? `${arr[0]} و ${arr[1]}` : `${arr[0]} and ${arr[1]}`;
+    }
+
+    const head = arr.slice(0, -1).join(lang === "ar" ? "، " : ", ");
+    const tail = arr[arr.length - 1];
+    return lang === "ar" ? `${head}، و ${tail}` : `${head}, and ${tail}`;
+  }
+
   /* =========================================
      Storage
   ========================================= */
@@ -193,11 +206,7 @@ window.IBSS_PUBLISHER = (function () {
   ========================================= */
 
   function getContentApi() {
-    return (
-      window.IBSS_CONTENT_API ||
-      window.IBSS_CONTENT_UTILS ||
-      null
-    );
+    return window.IBSS_CONTENT_API || window.IBSS_CONTENT_UTILS || null;
   }
 
   function getPublishedContent() {
@@ -437,7 +446,12 @@ window.IBSS_PUBLISHER = (function () {
   }
 
   function getSignalDomain(signal) {
-    return normalizeText(signal?.domain || getLocalizedText(signal?.signalType, "en") || getLocalizedText(signal?.layer, "en") || "");
+    return normalizeText(
+      signal?.domain ||
+      getLocalizedText(signal?.signalType, "en") ||
+      getLocalizedText(signal?.layer, "en") ||
+      ""
+    );
   }
 
   function scoreContentMatchForSignal(content, signal) {
@@ -475,15 +489,10 @@ window.IBSS_PUBLISHER = (function () {
     if (signalDescription && contentSummary && (signalDescription.includes(contentSummary) || contentSummary.includes(signalDescription))) score += 50;
 
     score += Math.min(asArray(content?.tags).length, 6) * 2;
-
-    const strategicWeight = safeNumber(content?.metrics?.strategicWeight, 0);
-    score += Math.round(strategicWeight * 1.5);
-
-    const featuredBoost = content?.meta?.featured ? 25 : 0;
-    const pinnedBoost = content?.meta?.pinned ? 15 : 0;
-    const canonicalBoost = content?.meta?.canonical ? 15 : 0;
-
-    score += featuredBoost + pinnedBoost + canonicalBoost;
+    score += Math.round(safeNumber(content?.metrics?.strategicWeight, 0) * 1.5);
+    score += content?.meta?.featured ? 25 : 0;
+    score += content?.meta?.pinned ? 15 : 0;
+    score += content?.meta?.canonical ? 15 : 0;
 
     return score;
   }
@@ -540,10 +549,7 @@ window.IBSS_PUBLISHER = (function () {
         type: "text",
         priority: normalizePriority(fallbackPriority),
         source: "",
-        text: {
-          en: item,
-          ar: item
-        },
+        text: { en: item, ar: item },
         createdAt: nowIso()
       };
     }
@@ -608,9 +614,7 @@ window.IBSS_PUBLISHER = (function () {
 
     asArray(system?.feed)
       .slice(0, CONFIG.maxSystemFeedItems)
-      .forEach(item => {
-        feed.push(normalizeFeedItem(item, levelPriority));
-      });
+      .forEach(item => feed.push(normalizeFeedItem(item, levelPriority)));
 
     asArray(system?.liveNews)
       .slice(0, CONFIG.maxNewsFeedItems)
@@ -729,7 +733,10 @@ window.IBSS_PUBLISHER = (function () {
         trend: safeText(topCountry?.trend, "STABLE")
       } : null,
 
-      featuredPublication: contentContext?.featuredPublication || null
+      featuredPublication: contentContext?.featuredPublication || null,
+      voice: clone(system?.voice || null),
+      presence: clone(system?.presence || null),
+      drivers: clone(asArray(system?.drivers).slice(0, 5))
     };
   }
 
@@ -933,6 +940,13 @@ window.IBSS_PUBLISHER = (function () {
     return safeText(value, lang === "ar" ? "مراقبة" : "MONITORING");
   }
 
+  function buildPresenceLine(system, lang = "en") {
+    const posture = getLocalizedText(system?.voice?.posture, lang) || safeText(system?.mode, "MONITORING");
+    const summary = getLocalizedText(system?.voice?.summary, lang) || "";
+    if (!summary) return posture;
+    return lang === "ar" ? `${posture} — ${summary}` : `${posture} — ${summary}`;
+  }
+
   function buildSignalPost(signal, lang = "en") {
     const priority = normalizePriority(signal?.priority || signal?.weight || "LOW");
     const title =
@@ -1007,6 +1021,7 @@ ${summary}
 
     const level = safeText(digest?.level || system?.level, "LOW");
     const mode = safeText(digest?.mode || system?.mode || system?.decision, "MONITORING");
+    const voiceLine = buildPresenceLine(system, lang);
 
     if (lang === "ar") {
       return `ملخص استراتيجي — IBSS
@@ -1016,6 +1031,7 @@ ${summary}
 وضع القرار: ${mode}
 
 الإشارة المهيمنة: ${topTitle}
+الحضور التشغيلي: ${voiceLine}
 
 #IBSS #StrategicBrief #Intelligence`;
     }
@@ -1027,6 +1043,7 @@ Level: ${level}
 Decision Mode: ${mode}
 
 Dominant Signal: ${topTitle}
+Operational Presence: ${voiceLine}
 
 #IBSS #StrategicBrief #Intelligence`;
   }
@@ -1103,6 +1120,62 @@ Domain: ${domain}
 #IBSS #Signals #SovereignStudies`;
   }
 
+  function buildLivingSystemPost(system, lang = "en") {
+    const voiceSummary = getLocalizedText(system?.voice?.summary, lang);
+    const voiceExplanation = getLocalizedText(system?.voice?.explanation, lang);
+    const voiceIntent = getLocalizedText(system?.voice?.intent, lang);
+    const pressure = safeNumber(system?.systemPressure ?? system?.ssi, 0);
+    const confidence = safeNumber(system?.confidenceScore, 0);
+    const posture = getLocalizedText(system?.voice?.posture, lang) || safeText(system?.mode, "MONITORING");
+
+    if (lang === "ar") {
+      return `IBSS — Living System Update
+
+الوضعية: ${posture}
+ضغط النظام: ${pressure}
+الثقة: ${confidence}
+
+${voiceSummary}
+${voiceExplanation}
+${voiceIntent}
+
+#IBSS #LivingSystem #SovereignIntelligence`;
+    }
+
+    return `IBSS — Living System Update
+
+Posture: ${posture}
+System Pressure: ${pressure}
+Confidence: ${confidence}
+
+${voiceSummary}
+${voiceExplanation}
+${voiceIntent}
+
+#IBSS #LivingSystem #SovereignIntelligence`;
+  }
+
+  function buildPresenceStatement(system, lang = "en") {
+    const presenceState = safeText(system?.presence?.state, lang === "ar" ? "مراقبة" : "monitoring");
+    const urgency = safeText(system?.presence?.urgency, lang === "ar" ? "منخفض" : "low");
+    const advisory = getLocalizedText(system?.voice?.advisory, lang);
+    const drivers = asArray(system?.drivers)
+      .slice(0, 3)
+      .map(item => getLocalizedText(item?.label, lang));
+
+    if (lang === "ar") {
+      return `الحالة: ${presenceState}
+الاستعجال: ${urgency}
+المحرّكات: ${formatList(drivers, "ar")}
+التوجيه: ${advisory}`;
+    }
+
+    return `State: ${presenceState}
+Urgency: ${urgency}
+Drivers: ${formatList(drivers, "en")}
+Guidance: ${advisory}`;
+  }
+
   function queueSignalPost(signal) {
     const post = createPostObject("signal", {
       sourceId: signal?.id || null,
@@ -1169,6 +1242,18 @@ Domain: ${domain}
     return enqueue(post);
   }
 
+  function queueLivingSystemPost(system) {
+    const post = createPostObject("living_system", {
+      sourceId: system?.updatedAt || null,
+      text_en: buildLivingSystemPost(system, "en"),
+      text_ar: buildLivingSystemPost(system, "ar"),
+      presence_en: buildPresenceStatement(system, "en"),
+      presence_ar: buildPresenceStatement(system, "ar")
+    });
+
+    return enqueue(post);
+  }
+
   function queueTopSignalFromEngine() {
     const system = resolveSourceSystem() || getLatestOrchestratedSystem();
     if (!system) return null;
@@ -1208,6 +1293,14 @@ Domain: ${domain}
     return queueLinkedPublicationPost(publication, signal);
   }
 
+  function queueLivingPresenceFromEngine() {
+    const system = resolveSourceSystem() || getLatestOrchestratedSystem();
+    if (!system) return null;
+
+    const orchestrated = orchestrateSystem(system);
+    return queueLivingSystemPost(orchestrated || system);
+  }
+
   function generateTopSignalPost() {
     return queueTopSignalFromEngine();
   }
@@ -1227,6 +1320,10 @@ Domain: ${domain}
     }
 
     return generateFeaturedPublicationPost();
+  }
+
+  function generateLivingPresencePost() {
+    return queueLivingPresenceFromEngine();
   }
 
   function markAsPublished(postId, meta = {}) {
@@ -1339,11 +1436,14 @@ Domain: ${domain}
     queueStrategicBriefFromEngine,
     queueLatestFeaturedPublication,
     queueLinkedPublicationForSignal,
+    queueLivingSystemPost,
+    queueLivingPresenceFromEngine,
 
     generateTopSignalPost,
     generateStrategicBrief,
     generateFeaturedPublicationPost,
     generateLinkedPublicationPost,
+    generateLivingPresencePost,
 
     markAsPublished,
     removeFromQueue,
@@ -1352,6 +1452,8 @@ Domain: ${domain}
     buildNewsPost,
     buildSystemBrief,
     buildFeaturedPublicationPost,
-    buildLinkedPublicationPost
+    buildLinkedPublicationPost,
+    buildLivingSystemPost,
+    buildPresenceStatement
   };
 })();
