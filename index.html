@@ -17,6 +17,7 @@
       --green:#00d084;
       --orange:#ff9f1a;
       --red:#ff4d4f;
+      --blue:#6aa9ff;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
@@ -190,6 +191,12 @@
       background:rgba(255,159,26,.08);
     }
 
+    .meta-badge.info{
+      color:var(--blue);
+      border-color:rgba(106,169,255,.28);
+      background:rgba(106,169,255,.08);
+    }
+
     .home-alert{
       display:none;
       margin:22px auto 0;
@@ -339,7 +346,8 @@
 
     .feed-box,
     .country-box,
-    .metric-box{
+    .metric-box,
+    .driver-box{
       display:grid;
       gap:12px;
       margin-top:18px;
@@ -347,7 +355,8 @@
 
     .feed-item,
     .country-item,
-    .metric-item{
+    .metric-item,
+    .driver-item{
       border:1px solid var(--soft-border-2);
       border-radius:16px;
       background:var(--panel2);
@@ -394,6 +403,107 @@
       color:#ddd;
       line-height:1.8;
       font-size:14px;
+    }
+
+    .driver-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+    }
+
+    .driver-panel{
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.04), transparent 35%),
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
+        var(--panel);
+      border:1px solid rgba(212,175,55,.14);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.02) inset,
+        0 14px 28px rgba(0,0,0,.2);
+    }
+
+    .driver-item{
+      background:rgba(255,255,255,.025);
+    }
+
+    .driver-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+
+    .driver-label{
+      color:#fff;
+      font-weight:800;
+      line-height:1.6;
+      font-size:15px;
+    }
+
+    .driver-score{
+      color:var(--gold);
+      font-weight:900;
+      font-size:18px;
+    }
+
+    .driver-meta{
+      color:#8d8d8d;
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .driver-explanation{
+      color:#ddd;
+      font-size:14px;
+      line-height:1.8;
+    }
+
+    .driver-chip{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 11px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      color:#ddd;
+    }
+
+    .driver-summary{
+      display:grid;
+      gap:12px;
+    }
+
+    .driver-summary-card{
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.02);
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .driver-summary-card .kicker{
+      font-size:12px;
+      color:#8e8e8e;
+      margin-bottom:6px;
+    }
+
+    .driver-summary-card .big{
+      font-size:18px;
+      font-weight:800;
+      color:#fff;
+      line-height:1.6;
+      margin-bottom:6px;
+    }
+
+    .driver-summary-card .small{
+      color:#cfcfcf;
+      font-size:14px;
+      line-height:1.8;
     }
 
     .ticker-shell{
@@ -784,7 +894,8 @@
     html[dir="rtl"] .country-item,
     html[dir="rtl"] .metric-item,
     html[dir="rtl"] .unit-top,
-    html[dir="rtl"] .feature-meta{
+    html[dir="rtl"] .feature-meta,
+    html[dir="rtl"] .driver-top{
       direction:rtl;
     }
 
@@ -805,6 +916,7 @@
       .snapshot-grid{grid-template-columns:1fr}
       .grid{grid-template-columns:1fr}
       .feature-grid{grid-template-columns:1fr}
+      .driver-grid{grid-template-columns:1fr}
     }
 
     @media(max-width:700px){
@@ -873,7 +985,7 @@
       <div id="homeAlert" class="home-alert"></div>
 
       <div class="hero-buttons">
-        <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Open Dashboard</a>
+        <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Enter Decision Layer</a>
         <a href="signals.html" class="btn" data-i18n="btn_signals">Explore Signals</a>
         <a href="reports.html" class="btn" data-i18n="btn_reports">View Reports</a>
       </div>
@@ -897,6 +1009,41 @@
         <div class="status-card">
           <div class="status-label" data-i18n="active_signals">Active Signals</div>
           <div id="activeSignals" class="status-value low">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 data-i18n="decision_drivers">Why the System Reached This Reading</h2>
+      <p class="section-subtitle" data-i18n="decision_drivers_desc">
+        Causality layer showing the direct drivers behind current pressure, dominant files, and sovereign system direction.
+      </p>
+
+      <div class="driver-grid">
+        <div class="driver-panel">
+          <div id="driverBox" class="driver-box"></div>
+        </div>
+
+        <div class="driver-panel">
+          <div class="driver-summary">
+            <div class="driver-summary-card">
+              <div class="kicker" data-i18n="driver_summary_top">Dominant Driver</div>
+              <div id="dominantDriverTitle" class="big">-</div>
+              <div id="dominantDriverMeta" class="small">-</div>
+            </div>
+
+            <div class="driver-summary-card">
+              <div class="kicker" data-i18n="driver_summary_pressure">Pressure Composition</div>
+              <div id="pressureCompositionTitle" class="big">-</div>
+              <div id="pressureCompositionMeta" class="small">-</div>
+            </div>
+
+            <div class="driver-summary-card">
+              <div class="kicker" data-i18n="driver_summary_publication">Linked Publication</div>
+              <div id="driverPublicationTitle" class="big">-</div>
+              <div id="driverPublicationMeta" class="small">-</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1135,7 +1282,7 @@
           hero_desc: "A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.",
           system_line: "System Active — Monitoring Global Signals",
 
-          btn_dashboard: "Open Dashboard",
+          btn_dashboard: "Enter Decision Layer",
           btn_signals: "Explore Signals",
           btn_reports: "View Reports",
           btn_open_publications: "Open Publications",
@@ -1144,6 +1291,12 @@
           system_pressure: "System Pressure",
           decision_mode: "Decision Mode",
           active_signals: "Active Signals",
+
+          decision_drivers: "Why the System Reached This Reading",
+          decision_drivers_desc: "Causality layer showing the direct drivers behind current pressure, dominant files, and sovereign system direction.",
+          driver_summary_top: "Dominant Driver",
+          driver_summary_pressure: "Pressure Composition",
+          driver_summary_publication: "Linked Publication",
 
           live_intelligence: "Live Intelligence Strip",
           live_intelligence_desc: "Real-time signal condensation layer highlighting active pressure, dominant files, and current system movement.",
@@ -1241,7 +1394,7 @@
           hero_desc: "منصة سيادية للإشارات المنظمة والتحليل الاستراتيجي والاستخبارات بدرجة قرار.",
           system_line: "النظام فعال — يراقب الإشارات العالمية",
 
-          btn_dashboard: "فتح لوحة التحكم",
+          btn_dashboard: "الدخول إلى طبقة القرار",
           btn_signals: "استكشاف الإشارات",
           btn_reports: "عرض التقارير",
           btn_open_publications: "فتح المنشورات",
@@ -1250,6 +1403,12 @@
           system_pressure: "ضغط النظام",
           decision_mode: "وضع القرار",
           active_signals: "الإشارات النشطة",
+
+          decision_drivers: "لماذا وصل النظام إلى هذه القراءة",
+          decision_drivers_desc: "طبقة السببية التي تعرض المحركات المباشرة وراء الضغط الحالي والملفات المهيمنة واتجاه النظام السيادي.",
+          driver_summary_top: "المحرّك المهيمن",
+          driver_summary_pressure: "تركيب الضغط",
+          driver_summary_publication: "المنشور المرتبط",
 
           live_intelligence: "الشريط الاستخباري الحي",
           live_intelligence_desc: "طبقة عرض حية تضغط الإشارات النشطة والملفات المهيمنة واتجاه الحركة الحالية داخل النظام.",
@@ -1503,7 +1662,6 @@
           system?.featuredPublication ||
           system?.snapshot?.latestStudy ||
           window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
-          window.IBSS_PUBLICATIONS?.getLatest?.() ||
           null
         );
       }
@@ -1540,7 +1698,7 @@
 
         if (system?.metricsReference) {
           badge.textContent = t("metrics_on");
-          badge.className = "meta-badge live";
+          badge.className = "meta-badge info";
         } else {
           badge.textContent = t("metrics_off");
           badge.className = "meta-badge fallback";
@@ -1573,6 +1731,63 @@
         qs("systemPressure").className = `status-value ${levelClass(system?.level)}`;
         qs("decisionMode").textContent = decision;
         qs("activeSignals").textContent = liveCount;
+      }
+
+      function renderDrivers(system) {
+        const box = qs("driverBox");
+        if (!box) return;
+
+        const drivers = asArray(system?.drivers);
+
+        if (!drivers.length) {
+          box.innerHTML = `
+            <div class="driver-item">
+              <div class="driver-label">${escapeHtml(t("no_data"))}</div>
+            </div>
+          `;
+          qs("dominantDriverTitle").textContent = "-";
+          qs("dominantDriverMeta").textContent = t("no_data");
+          qs("pressureCompositionTitle").textContent = "-";
+          qs("pressureCompositionMeta").textContent = t("no_data");
+          qs("driverPublicationTitle").textContent = "-";
+          qs("driverPublicationMeta").textContent = t("no_data");
+          return;
+        }
+
+        box.innerHTML = drivers.map((driver) => `
+          <div class="driver-item">
+            <div class="driver-top">
+              <div class="driver-label">${escapeHtml(getLocalizedText(driver.label))}</div>
+              <div class="driver-score">${safeNumber(driver.score, 0)}</div>
+            </div>
+            <div class="driver-meta">
+              <span class="driver-chip">${escapeHtml(String(driver.type || "driver").toUpperCase())}</span>
+              <span class="driver-chip">${escapeHtml(String(driver.priority || "LOW").toUpperCase())}</span>
+            </div>
+            <div class="driver-explanation">${escapeHtml(getLocalizedText(driver.explanation))}</div>
+          </div>
+        `).join("");
+
+        const dominant = drivers[0];
+        qs("dominantDriverTitle").textContent = getLocalizedText(dominant.label);
+        qs("dominantDriverMeta").textContent = getLocalizedText(dominant.explanation);
+
+        const pressure = system?.unifiedPressure || system?.publisherDigest?.pressure || null;
+        qs("pressureCompositionTitle").textContent =
+          pressure
+            ? `${t("system_stress")}: ${safeNumber(pressure.systemPressure, 0)}`
+            : "-";
+
+        qs("pressureCompositionMeta").textContent =
+          pressure
+            ? `Signal ${safeNumber(pressure.signalPressure, 0)} | Cluster ${safeNumber(pressure.clusterPressure, 0)} | Theater ${safeNumber(pressure.theaterPressure, 0)} | News ${safeNumber(pressure.newsPressure, 0)}`
+            : t("no_data");
+
+        const publication = getFeaturedPublication(system);
+        qs("driverPublicationTitle").textContent = publication ? getLocalizedText(publication.title) : "-";
+        qs("driverPublicationMeta").textContent = publication
+          ? `${safeText(publication.type, "-")} • ${safeText(publication.country, "-")} • ${formatDate(publication.publishedAt)}`
+          : t("no_data");
       }
 
       function renderSnapshot(system) {
@@ -1673,7 +1888,14 @@
           <span class="feature-chip">${escapeHtml(formatDate(item.publishedAt))}</span>
         ` : `<span class="feature-chip">${escapeHtml(t("no_data"))}</span>`;
 
-        qs("featuredPublicationBody").textContent = item ? getLocalizedText(item.body) : t("no_data");
+        const bodyText =
+          item
+            ? getLocalizedText(item.body) !== "-"
+              ? getLocalizedText(item.body)
+              : getLocalizedText(item.summary)
+            : t("no_data");
+
+        qs("featuredPublicationBody").textContent = bodyText;
       }
 
       function renderUnitStudies(system) {
@@ -1691,7 +1913,7 @@
         if (!list) return;
 
         const feed = getUnifiedFeed(system);
-        const newsItems = feed.filter((item) => item?.type === "news").slice(0, 3);
+        const newsItems = feed.filter((item) => item?.type === "news" || item?.type === "signal_summary").slice(0, 3);
 
         if (!newsItems.length) {
           list.innerHTML = `
@@ -1794,6 +2016,7 @@
         updateAudioBadge();
         updateAlert(system.level);
         renderStatusCards(system);
+        renderDrivers(system);
         renderSnapshot(system);
         renderMetricBox(system);
         renderFeaturedPublication(system);
