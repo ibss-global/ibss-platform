@@ -22,6 +22,7 @@
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
       --shadow:0 10px 24px rgba(0,0,0,.18);
+      --glow:0 0 18px rgba(212,175,55,.08);
     }
 
     *{box-sizing:border-box}
@@ -178,6 +179,12 @@
       background:rgba(255,159,26,.08);
     }
 
+    .meta-badge.info{
+      color:var(--blue);
+      border-color:rgba(90,140,255,.28);
+      background:rgba(90,140,255,.08);
+    }
+
     .alert{
       display:none;
       margin:18px 0 0;
@@ -205,6 +212,13 @@
     .grid-3{
       display:grid;
       grid-template-columns:repeat(3,1fr);
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .driver-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
       gap:18px;
       margin-top:18px;
     }
@@ -247,7 +261,10 @@
     .country-row,
     .metric-row,
     .snapshot-item,
-    .ticker-item{
+    .ticker-item,
+    .driver-item,
+    .driver-summary-card,
+    .publication-box{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -419,7 +436,9 @@
     .scenario-box,
     .country-box,
     .metrics-box,
-    .snapshot-box{
+    .snapshot-box,
+    .driver-box,
+    .driver-summary{
       display:grid;
       gap:12px;
     }
@@ -558,77 +577,170 @@
       flex:0 0 auto;
     }
 
-.ticker-shell{
-  border:1px solid rgba(212,175,55,.18);
-  border-radius:18px;
-  background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
-  box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
-  position:relative;
-  overflow-x:auto;
-  overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-}
+    .driver-item{
+      padding:15px 16px;
+    }
 
-.ticker-shell::-webkit-scrollbar{
-  display:none;
-}
+    .driver-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
 
-.ticker-track{
-  display:flex;
-  align-items:stretch;
-  gap:12px;
-  padding:14px 16px;
-  min-height:92px;
-  width:max-content;
-  white-space:normal;
-  will-change:auto;
-}
+    .driver-label{
+      color:#fff;
+      font-size:15px;
+      font-weight:800;
+      line-height:1.7;
+    }
 
-.ticker-item{
-  flex:0 0 280px;
-  display:flex;
-  align-items:flex-start;
-  gap:10px;
-  min-height:72px;
-  max-width:280px;
-  padding:14px 16px;
-  border-radius:18px;
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.05);
-  color:#f0f0f0;
-  font-size:13px;
-  line-height:1.6;
-  white-space:normal;
-}
+    .driver-score{
+      color:var(--gold);
+      font-size:18px;
+      font-weight:900;
+    }
 
-.ticker-item-text{
-  display:-webkit-box;
-  -webkit-line-clamp:3;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-  word-break:break-word;
-  unicode-bidi:plaintext;
-}
+    .driver-meta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
 
-@media (max-width:640px){
-  .ticker-track{
-    min-height:88px;
-    padding:12px;
-    gap:10px;
-  }
+    .driver-chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      color:#ddd;
+    }
 
-  .ticker-item{
-    flex:0 0 78vw;
-    max-width:78vw;
-    min-height:70px;
-    padding:12px 14px;
-    border-radius:16px;
-  }
-    }    
+    .driver-explanation{
+      color:#ddd;
+      font-size:14px;
+      line-height:1.8;
+    }
+
+    .driver-summary-card{
+      padding:15px 16px;
+    }
+
+    .driver-summary-card .kicker{
+      font-size:12px;
+      color:#8c8c8c;
+      margin-bottom:8px;
+    }
+
+    .driver-summary-card .big{
+      font-size:18px;
+      font-weight:900;
+      color:#fff;
+      line-height:1.6;
+      margin-bottom:8px;
+    }
+
+    .driver-summary-card .small{
+      color:#cfcfcf;
+      font-size:14px;
+      line-height:1.8;
+    }
+
+    .publication-box{
+      padding:16px;
+    }
+
+    .publication-title{
+      color:#fff;
+      font-size:18px;
+      font-weight:900;
+      line-height:1.6;
+      margin-bottom:10px;
+    }
+
+    .publication-summary{
+      color:#ddd;
+      font-size:14px;
+      line-height:1.9;
+      margin-bottom:12px;
+    }
+
+    .publication-meta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .publication-chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      color:#ddd;
+    }
+
+    .ticker-shell{
+      border:1px solid rgba(212,175,55,.18);
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+      position:relative;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+
+    .ticker-shell::-webkit-scrollbar{
+      display:none;
+    }
+
+    .ticker-track{
+      display:flex;
+      align-items:stretch;
+      gap:12px;
+      padding:14px 16px;
+      min-height:92px;
+      width:max-content;
+      white-space:normal;
+      will-change:auto;
+    }
+
+    .ticker-item{
+      flex:0 0 280px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      min-height:72px;
+      max-width:280px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.05);
+      color:#f0f0f0;
+      font-size:13px;
+      line-height:1.6;
+      white-space:normal;
+    }
 
     .ticker-item-text{
-      display:block;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      word-break:break-word;
       unicode-bidi:plaintext;
     }
 
@@ -637,6 +749,7 @@
       height:8px;
       border-radius:50%;
       flex:0 0 8px;
+      margin-top:6px;
     }
 
     .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
@@ -669,6 +782,11 @@
       border:1px solid rgba(255,255,255,.1);
       background:transparent;
       color:#ddd;
+    }
+
+    .btn-primary:hover,
+    .btn-secondary:hover{
+      transform:translateY(-1px);
     }
 
     .publisher-textarea{
@@ -707,7 +825,8 @@
     html[dir="rtl"] .legend-item,
     html[dir="rtl"] .scenario-row,
     html[dir="rtl"] .country-row,
-    html[dir="rtl"] .metric-row{
+    html[dir="rtl"] .metric-row,
+    html[dir="rtl"] .driver-top{
       direction:rtl;
     }
 
@@ -723,6 +842,7 @@
     @media (max-width:980px){
       .grid{grid-template-columns:1fr}
       .grid-3{grid-template-columns:1fr}
+      .driver-grid{grid-template-columns:1fr}
     }
 
     @media (max-width:640px){
@@ -748,6 +868,20 @@
       .c4{width:270px;height:270px}
       .center-dot{top:126px;left:126px}
       .sweep{width:210px;height:210px;top:30px;left:30px}
+
+      .ticker-track{
+        min-height:88px;
+        padding:12px;
+        gap:10px;
+      }
+
+      .ticker-item{
+        flex:0 0 78vw;
+        max-width:78vw;
+        min-height:70px;
+        padding:12px 14px;
+        border-radius:16px;
+      }
     }
   </style>
 </head>
@@ -797,6 +931,36 @@
       <div class="title" id="tickerTitle">Live Intelligence Strip</div>
       <div class="ticker-shell">
         <div id="tickerTrack" class="ticker-track"></div>
+      </div>
+    </div>
+
+    <div class="driver-grid">
+      <div class="card">
+        <div class="title" id="driversTitle">Decision Drivers</div>
+        <div id="driverBox" class="driver-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="title" id="driverSummaryTitle">Driver Summary</div>
+        <div class="driver-summary">
+          <div class="driver-summary-card">
+            <div class="kicker" id="dominantDriverLabel">Dominant Driver</div>
+            <div id="dominantDriverTitle" class="big">-</div>
+            <div id="dominantDriverMeta" class="small">-</div>
+          </div>
+
+          <div class="driver-summary-card">
+            <div class="kicker" id="pressureCompositionLabel">Pressure Composition</div>
+            <div id="pressureCompositionTitle" class="big">-</div>
+            <div id="pressureCompositionMeta" class="small">-</div>
+          </div>
+
+          <div class="driver-summary-card">
+            <div class="kicker" id="linkedPublicationLabel">Linked Publication</div>
+            <div id="linkedPublicationTitle" class="big">-</div>
+            <div id="linkedPublicationMeta" class="small">-</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -877,6 +1041,11 @@
     </div>
 
     <div class="card section">
+      <div class="title" id="publicationTitle">Featured Publication</div>
+      <div id="publicationBox" class="publication-box"></div>
+    </div>
+
+    <div class="card section">
       <div class="title" id="countryTitle">Country Risk Unit</div>
       <div id="countryBox" class="country-box"></div>
     </div>
@@ -921,6 +1090,7 @@
   <script src="analysis.js"></script>
   <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
+  <script src="content.js"></script>
   <script src="engine.js"></script>
   <script src="audio-engine.js"></script>
   <script src="geo-radar.js"></script>
@@ -958,6 +1128,12 @@
           metrics: "Unified Metrics",
           metricsSub: "SSI / CRI / Signal / Cluster / Theater",
           publisher: "Publishing Console",
+          publication: "Featured Publication",
+          drivers: "Decision Drivers",
+          driverSummary: "Driver Summary",
+          dominantDriver: "Dominant Driver",
+          pressureComposition: "Pressure Composition",
+          linkedPublication: "Linked Publication",
 
           levelHigh: "HIGH",
           levelMed: "MEDIUM",
@@ -1008,7 +1184,7 @@
           audioButtonOff: "AUDIO OFF",
 
           topLabel: "TOP",
-          publication: "Featured Publication"
+          publicationLabel: "Featured Publication"
         },
 
         ar: {
@@ -1037,6 +1213,12 @@
           metrics: "المقاييس الموحدة",
           metricsSub: "SSI / CRI / Signal / Cluster / Theater",
           publisher: "وحدة النشر",
+          publication: "المنشور المميز",
+          drivers: "محركات القرار",
+          driverSummary: "ملخص المحركات",
+          dominantDriver: "المحرّك المهيمن",
+          pressureComposition: "تركيب الضغط",
+          linkedPublication: "المنشور المرتبط",
 
           levelHigh: "مرتفع",
           levelMed: "متوسط",
@@ -1087,7 +1269,7 @@
           audioButtonOff: "إيقاف الصوت",
 
           topLabel: "TOP",
-          publication: "المنشور المميز"
+          publicationLabel: "المنشور المميز"
         }
       };
 
@@ -1143,6 +1325,17 @@
           day:"2-digit",
           hour:"2-digit",
           minute:"2-digit"
+        });
+      }
+
+      function formatDate(value) {
+        if (!value) return "-";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "-";
+        return date.toLocaleDateString(STATE.lang === "ar" ? "ar-EG" : "en-US", {
+          year:"numeric",
+          month:"short",
+          day:"2-digit"
         });
       }
 
@@ -1203,6 +1396,12 @@
         qs("countryTitle").textContent = t("country");
         qs("feedTitle").textContent = t("feed");
         qs("publisherTitle").textContent = t("publisher");
+        qs("publicationTitle").textContent = t("publication");
+        qs("driversTitle").textContent = t("drivers");
+        qs("driverSummaryTitle").textContent = t("driverSummary");
+        qs("dominantDriverLabel").textContent = t("dominantDriver");
+        qs("pressureCompositionLabel").textContent = t("pressureComposition");
+        qs("linkedPublicationLabel").textContent = t("linkedPublication");
         qs("pubDraftTypeLabel").textContent = t("latestDraftType");
         qs("pubDraftTimeLabel").textContent = t("createdAt");
 
@@ -1280,6 +1479,15 @@
         );
       }
 
+      function getFeaturedPublication(system) {
+        return (
+          system?.featuredPublication ||
+          system?.snapshot?.latestStudy ||
+          window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
+          null
+        );
+      }
+
       function renderMeta(system) {
         qs("metaLine").textContent =
           `${t("sourceEngine")}: ${safe(system?.source, "-")} | ${t("updatedAt")}: ${formatDateTime(system?.updatedAt)}`;
@@ -1297,7 +1505,7 @@
 
         if (system?.metricsReference) {
           metricsBadge.textContent = t("metricsOn");
-          metricsBadge.className = "meta-badge live";
+          metricsBadge.className = "meta-badge info";
         } else {
           metricsBadge.textContent = t("metricsOff");
           metricsBadge.className = "meta-badge fallback";
@@ -1356,7 +1564,7 @@
         }
       }
 
-      function renderPrimarySignal(signal, system) {
+      function renderPrimarySignal(signal) {
         const titleEl = qs("signalTitle");
         const descEl = qs("signalDesc");
         const badges = qs("signalBadges");
@@ -1382,25 +1590,19 @@
         `;
       }
 
-function renderRadar(system) {
-  try {
-    console.log("RADAR CHECK", {
-      rankedSignals: system?.rankedSignals,
-      countryRiskFeed: system?.countryRiskFeed,
-      diagnostics: window.IBSS_GEO_RADAR?.getDiagnostics?.()
-    });
-
-    if (window.IBSS_GEO_RADAR?.render) {
-      const size = window.innerWidth <= 640 ? 270 : 300;
-      window.IBSS_GEO_RADAR.render(qs("radar"), system, {
-        lang: STATE.lang,
-        size
-      });
-    }
-  } catch (error) {
-    console.error("Dashboard radar render error:", error);
-  }
-}
+      function renderRadar(system) {
+        try {
+          if (window.IBSS_GEO_RADAR?.render) {
+            const size = window.innerWidth <= 640 ? 270 : 300;
+            window.IBSS_GEO_RADAR.render(qs("radar"), system, {
+              lang: STATE.lang,
+              size
+            });
+          }
+        } catch (error) {
+          console.error("Dashboard radar render error:", error);
+        }
+      }
 
       function renderRadarLegend(system) {
         const legend = qs("radarLegend");
@@ -1444,6 +1646,57 @@ function renderRadar(system) {
         }).join("");
       }
 
+      function renderDrivers(system) {
+        const box = qs("driverBox");
+        const drivers = asArray(system?.drivers);
+
+        if (!drivers.length) {
+          box.innerHTML = `<div class="driver-item">${escapeHtml(t("noData"))}</div>`;
+          qs("dominantDriverTitle").textContent = "-";
+          qs("dominantDriverMeta").textContent = t("noData");
+          qs("pressureCompositionTitle").textContent = "-";
+          qs("pressureCompositionMeta").textContent = t("noData");
+          qs("linkedPublicationTitle").textContent = "-";
+          qs("linkedPublicationMeta").textContent = t("noData");
+          return;
+        }
+
+        box.innerHTML = drivers.map((driver) => `
+          <div class="driver-item">
+            <div class="driver-top">
+              <div class="driver-label">${escapeHtml(getLocalizedText(driver.label))}</div>
+              <div class="driver-score">${safeNumber(driver.score, 0)}</div>
+            </div>
+            <div class="driver-meta">
+              <span class="driver-chip">${escapeHtml(String(driver.type || "driver").toUpperCase())}</span>
+              <span class="driver-chip">${escapeHtml(String(driver.priority || "LOW").toUpperCase())}</span>
+            </div>
+            <div class="driver-explanation">${escapeHtml(getLocalizedText(driver.explanation))}</div>
+          </div>
+        `).join("");
+
+        const dominant = drivers[0];
+        qs("dominantDriverTitle").textContent = getLocalizedText(dominant.label);
+        qs("dominantDriverMeta").textContent = getLocalizedText(dominant.explanation);
+
+        const pressure = system?.unifiedPressure || system?.publisherDigest?.pressure || null;
+        qs("pressureCompositionTitle").textContent =
+          pressure
+            ? `${t("systemStress")}: ${safeNumber(pressure.systemPressure, 0)}`
+            : "-";
+
+        qs("pressureCompositionMeta").textContent =
+          pressure
+            ? `Signal ${safeNumber(pressure.signalPressure, 0)} | Cluster ${safeNumber(pressure.clusterPressure, 0)} | Theater ${safeNumber(pressure.theaterPressure, 0)} | News ${safeNumber(pressure.newsPressure, 0)}`
+            : t("noData");
+
+        const publication = getFeaturedPublication(system);
+        qs("linkedPublicationTitle").textContent = publication ? getLocalizedText(publication.title) : "-";
+        qs("linkedPublicationMeta").textContent = publication
+          ? `${safeText(publication.type, "-")} • ${safeText(publication.country, "-")} • ${formatDate(publication.publishedAt)}`
+          : t("noData");
+      }
+
       function renderSnapshot(system) {
         const box = qs("snapshotBox");
         const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.() || null;
@@ -1451,7 +1704,7 @@ function renderRadar(system) {
         const topTheater = snapshot?.topTheater || system?.topTheater || null;
         const topCluster = snapshot?.topCluster || system?.topCluster || null;
         const topCountry = snapshot?.topCountry || system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
-        const featuredPublication = system?.featuredPublication || snapshot?.latestStudy || null;
+        const featuredPublication = getFeaturedPublication(system);
 
         box.innerHTML = `
           <div class="snapshot-item">
@@ -1470,7 +1723,7 @@ function renderRadar(system) {
           </div>
 
           <div class="snapshot-item">
-            <strong>${escapeHtml(t("publication"))}: ${escapeHtml(featuredPublication ? getLocalizedText(featuredPublication.title) : "-")}</strong>
+            <strong>${escapeHtml(t("publicationLabel"))}: ${escapeHtml(featuredPublication ? getLocalizedText(featuredPublication.title) : "-")}</strong>
             <div class="snapshot-meta">${escapeHtml(featuredPublication ? safeText(getLocalizedText(featuredPublication.summary), "-") : t("noData"))}</div>
           </div>
         `;
@@ -1519,6 +1772,27 @@ function renderRadar(system) {
             <strong>${safeNumber(item?.value, 0)}%</strong>
           </div>
         `).join("");
+      }
+
+      function renderPublication(system) {
+        const box = qs("publicationBox");
+        const publication = getFeaturedPublication(system);
+
+        if (!publication) {
+          box.innerHTML = `<div class="publication-summary">${escapeHtml(t("noData"))}</div>`;
+          return;
+        }
+
+        box.innerHTML = `
+          <div class="publication-title">${escapeHtml(getLocalizedText(publication.title))}</div>
+          <div class="publication-summary">${escapeHtml(getLocalizedText(publication.summary))}</div>
+          <div class="publication-meta">
+            <span class="publication-chip">${escapeHtml(safeText(publication.type, "-").toUpperCase())}</span>
+            <span class="publication-chip">${escapeHtml(safeText(publication.country, "-"))}</span>
+            <span class="publication-chip">${escapeHtml(safeText(publication.domain, "-"))}</span>
+            <span class="publication-chip">${escapeHtml(formatDate(publication.publishedAt))}</span>
+          </div>
+        `;
       }
 
       function renderCountries(system) {
@@ -1640,39 +1914,41 @@ function renderRadar(system) {
           });
         }
       }
-function renderTickerStrip(system) {
-  const track = qs("tickerTrack");
-  if (!track) return;
 
-  const unifiedFeed = buildUnifiedFeed(system);
-  const items = unifiedFeed.slice(0, 10);
+      function renderTickerStrip(system) {
+        const track = qs("tickerTrack");
+        if (!track) return;
 
-  if (!items.length) {
-    track.innerHTML = `
-      <div class="ticker-item">
-        <span class="ticker-item-text">${escapeHtml(t("noFeed"))}</span>
-      </div>
-    `;
-    return;
-  }
+        const unifiedFeed = buildUnifiedFeed(system);
+        const items = unifiedFeed.slice(0, 10);
 
-  track.innerHTML = items.map((item) => {
-    const priority = String(item.priority || "LOW").toUpperCase();
-    const cls =
-      priority === "HIGH" ? "high" :
-      priority === "MEDIUM" ? "medium" :
-      "low";
+        if (!items.length) {
+          track.innerHTML = `
+            <div class="ticker-item">
+              <span class="ticker-item-text">${escapeHtml(t("noFeed"))}</span>
+            </div>
+          `;
+          return;
+        }
 
-    const text = getLocalizedText(item.text || item.title);
+        track.innerHTML = items.map((item) => {
+          const priority = String(item.priority || "LOW").toUpperCase();
+          const cls =
+            priority === "HIGH" ? "high" :
+            priority === "MEDIUM" ? "medium" :
+            "low";
 
-    return `
-      <div class="ticker-item">
-        <span class="ticker-dot ${cls}"></span>
-        <span class="ticker-item-text">${escapeHtml(String(text))}</span>
-      </div>
-    `;
-  }).join("");
-    }
+          const text = getLocalizedText(item.text || item.title);
+
+          return `
+            <div class="ticker-item">
+              <span class="ticker-dot ${cls}"></span>
+              <span class="ticker-item-text">${escapeHtml(String(text))}</span>
+            </div>
+          `;
+        }).join("");
+      }
+
       function wireAudioButton() {
         const btn = qs("audioToggleBtn");
         if (!btn || btn.dataset.bound === "1") return;
@@ -1696,16 +1972,18 @@ function renderTickerStrip(system) {
 
         applyLanguage();
         renderMeta(system);
-renderTickerStrip(system);
-        
+        renderTickerStrip(system);
+
         const level = renderLevel(system);
         renderDecision(level, system);
-        renderPrimarySignal(system.topSignal || system.dominantSignal || null, system);
+        renderDrivers(system);
+        renderPrimarySignal(system.topSignal || system.dominantSignal || null);
         renderRadar(system);
         renderRadarLegend(system);
         renderSnapshot(system);
         renderMetrics(system);
         renderScenarios(system);
+        renderPublication(system);
         renderCountries(system);
         renderFeed(system);
         renderPublisherConsole();
@@ -1713,23 +1991,22 @@ renderTickerStrip(system);
         wireAudioButton();
       }
 
-function startRuntime() {
-  const system = getSystem();
-  if (system) renderDashboardCore(system);
+      function startRuntime() {
+        const system = getSystem();
+        if (system) renderDashboardCore(system);
 
-  if (!window.IBSS_RUNTIME?.start) return;
+        if (!window.IBSS_RUNTIME?.start) return;
 
-  window.IBSS_RUNTIME.start({
-    pageId: "dashboard",
-    lang: STATE.lang,
-    refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
-    systemProvider: getSystem,
-    afterRender: function(system) {
-      renderDashboardCore(system);
-    }
-  });
-}
-
+        window.IBSS_RUNTIME.start({
+          pageId: "dashboard",
+          lang: STATE.lang,
+          refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
+          systemProvider: getSystem,
+          afterRender: function(system) {
+            renderDashboardCore(system);
+          }
+        });
+      }
 
       qs("btn-en").addEventListener("click", function () {
         STATE.lang = "en";
