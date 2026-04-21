@@ -1,5 +1,5 @@
 // IBSS ENGINE CORE — Unified Sovereign Computation Layer
-// Version: v2.0 Clean Causality Engine
+// Version: v3.0 Final Unified Engine
 
 window.IBSS_ENGINE = (function () {
   "use strict";
@@ -9,7 +9,7 @@ window.IBSS_ENGINE = (function () {
     historyLimit: 180,
     reportLimit: 80,
     archiveLimit: 120,
-    storageKey: "ibss_engine_state_v20_clean_causality",
+    storageKey: "ibss_engine_state_v30_final_unified",
     minLiveSignalScore: 40,
     scenarioHighThreshold: 85,
     scenarioPrepThreshold: 70,
@@ -132,7 +132,9 @@ window.IBSS_ENGINE = (function () {
   }
 
   function sortByScoreDesc(list, selector) {
-    return asArray(list).slice().sort((a, b) => safeNumber(selector(b), 0) - safeNumber(selector(a), 0));
+    return asArray(list)
+      .slice()
+      .sort((a, b) => safeNumber(selector(b), 0) - safeNumber(selector(a), 0));
   }
 
   /* =========================================
@@ -252,16 +254,17 @@ window.IBSS_ENGINE = (function () {
     return getSeedSignals().map((item, index) => ({
       id: safeText(item?.id, `SEED-${index + 1}`),
       title: item?.title || localize("Untitled Signal", "إشارة غير معنونة"),
-      summary: item?.report || item?.description || localize("No summary available.", "لا يوجد ملخص."),
-      description: item?.description || item?.report || localize("No description available.", "لا يوجد وصف."),
+      summary: item?.summary || item?.report || item?.description || localize("No summary available.", "لا يوجد ملخص."),
+      description: item?.description || item?.report || item?.summary || localize("No description available.", "لا يوجد وصف."),
       country: normalizeText(item?.country || item?.countryId || item?.region || "global"),
       region: normalizeText(item?.region || item?.country || "global"),
       domain: normalizeText(
         getLocalizedText(item?.signalType, "en") ||
         getLocalizedText(item?.layer, "en") ||
+        item?.domain ||
         "geopolitical"
       ),
-      priority: normalizePriority(item?.weight || item?.priority),
+      priority: normalizePriority(item?.priority || item?.weight),
       score100: clamp(
         Math.round(
           (safeNumber(item?.metrics?.weight, 0.5) * 35) +
@@ -273,20 +276,26 @@ window.IBSS_ENGINE = (function () {
       ),
       reliabilityScore: 72,
       freshnessScore: item?.live ? 0.9 : 0.55,
-      timestamp: nowIso(),
-      source: "IBSS_SEED",
+      timestamp: item?.timestamp || nowIso(),
+      source: safeText(item?.source, "IBSS_SEED"),
+      sourceUnit: item?.sourceUnit || null,
+      layer: item?.layer || null,
+      signalType: item?.signalType || null,
+      decisionMode: item?.decisionMode || null,
+      influenceBand: item?.influenceBand || null,
+      linkedContentIds: asArray(item?.linkedContentIds),
       raw: item
     }));
   }
 
   function getFallbackSignalsFromNews() {
-    const news = asArray(window.IBSS_NEWS);
+    const news = asArray(window.IBSS_NEWS || window.IBSS_DATA?.newsFeed);
 
     return news.map((item, index) => ({
       id: safeText(item?.id, `NEWS-${index + 1}`),
       title: item?.title || localize("Untitled News Signal", "إشارة خبرية غير معنونة"),
-      summary: item?.summary || item?.description || localize("No summary available.", "لا يوجد ملخص."),
-      description: item?.summary || item?.description || localize("No description available.", "لا يوجد وصف."),
+      summary: item?.summary || item?.description || item?.text || localize("No summary available.", "لا يوجد ملخص."),
+      description: item?.summary || item?.description || item?.text || localize("No description available.", "لا يوجد وصف."),
       country: safeText(item?.country, safeText(item?.region, "global")),
       region: safeText(item?.region, safeText(item?.country, "global")),
       domain: safeText(item?.domain, safeText(item?.category, "geopolitical")),
@@ -539,6 +548,7 @@ window.IBSS_ENGINE = (function () {
     if (d.includes("diplomatic")) return 2;
     if (d.includes("economic")) return 2;
     if (d.includes("governance")) return 4;
+    if (d.includes("structural")) return 5;
     return 3;
   }
 
@@ -570,13 +580,14 @@ window.IBSS_ENGINE = (function () {
 
   function normalizeRawSignal(signal, index = 0) {
     const title = signal?.title || localize("Untitled Signal", "إشارة غير معنونة");
+    const summary = signal?.summary || signal?.description || localize("No summary available.", "لا يوجد ملخص.");
     const description = signal?.description || signal?.summary || localize("No summary available.", "لا يوجد ملخص.");
     const country = normalizeText(signal?.country || "global");
     const region = normalizeText(signal?.region || signal?.country || "global");
-    const domain = normalizeText(signal?.domain || "geopolitical");
+    const domain = normalizeText(signal?.domain || getLocalizedText(signal?.signalType, "en") || "geopolitical");
     const reliabilityScore = clamp(safeNumber(signal?.reliabilityScore, 60), 0, 100);
     const freshnessScore = clamp(safeNumber(signal?.freshnessScore, 0.5), 0, 1);
-    const baseScore = clamp(safeNumber(signal?.score100, 50), 0, 100);
+    const baseScore = clamp(safeNumber(signal?.score100 ?? signal?.balancedScore100 ?? signal?.score, 50), 0, 100);
 
     const preliminaryScore = clamp(
       Math.round(
@@ -593,7 +604,7 @@ window.IBSS_ENGINE = (function () {
     return {
       id: safeText(signal?.id, `SIG-${index + 1}`),
       title,
-      summary: signal?.summary || description,
+      summary,
       description,
       country,
       region,
@@ -606,6 +617,12 @@ window.IBSS_ENGINE = (function () {
       freshnessScore,
       timestamp: signal?.timestamp || nowIso(),
       source: safeText(signal?.source, "INTAKE"),
+      sourceUnit: signal?.sourceUnit || null,
+      layer: signal?.layer || null,
+      signalType: signal?.signalType || null,
+      decisionMode: signal?.decisionMode || null,
+      influenceBand: signal?.influenceBand || null,
+      linkedContentIds: asArray(signal?.linkedContentIds),
       live: preliminaryScore >= CONFIG.minLiveSignalScore,
       active: preliminaryScore >= CONFIG.minLiveSignalScore,
       raw: signal
@@ -1108,8 +1125,8 @@ window.IBSS_ENGINE = (function () {
           ar: `ضغط ملف ${getLocalizedText(clusters[0].name, "ar")}`
         },
         explanation: {
-          en: `The top strategic file raised structured pressure through file concentration.`,
-          ar: `الملف الاستراتيجي الأعلى رفع الضغط البنيوي عبر تركز الملف.`
+          en: "The top strategic file raised structured pressure through file concentration.",
+          ar: "الملف الاستراتيجي الأعلى رفع الضغط البنيوي عبر تركز الملف."
         }
       });
     }
@@ -1125,8 +1142,8 @@ window.IBSS_ENGINE = (function () {
           ar: `ضغط مسرح ${getLocalizedText(theaters[0].name, "ar")}`
         },
         explanation: {
-          en: `The dominant theater concentrated operational pressure across multiple files.`,
-          ar: `المسرح المهيمن ركز الضغط التشغيلي عبر عدة ملفات.`
+          en: "The dominant theater concentrated operational pressure across multiple files.",
+          ar: "المسرح المهيمن ركز الضغط التشغيلي عبر عدة ملفات."
         }
       });
     }
@@ -1142,8 +1159,8 @@ window.IBSS_ENGINE = (function () {
           ar: `تركز المخاطر في ${safeText(countryRiskFeed[0].name)}`
         },
         explanation: {
-          en: `Top country risk reinforced the unified pressure profile.`,
-          ar: `أعلى خطر دولي عزز ملف الضغط الموحد.`
+          en: "Top country risk reinforced the unified pressure profile.",
+          ar: "أعلى خطر دولي عزز ملف الضغط الموحد."
         }
       });
     }
@@ -1648,7 +1665,7 @@ window.IBSS_ENGINE = (function () {
       liveNews: rankedSignals,
       featuredPublication,
       snapshot: null,
-      metricsReference: "IBSS_METRICS_V2"
+      metricsReference: "IBSS_METRICS_V3"
     };
 
     system.snapshot = getHomeSnapshot(system);
