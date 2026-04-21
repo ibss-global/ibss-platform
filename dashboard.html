@@ -1382,19 +1382,25 @@
         `;
       }
 
-      function renderRadar(system) {
-        try {
-          if (window.IBSS_GEO_RADAR?.render) {
-            const size = window.innerWidth <= 640 ? 270 : 300;
-            window.IBSS_GEO_RADAR.render(qs("radar"), system, {
-              lang: STATE.lang,
-              size
-            });
-          }
-        } catch (error) {
-          console.error("Dashboard radar render error:", error);
-        }
-      }
+function renderRadar(system) {
+  try {
+    console.log("RADAR CHECK", {
+      rankedSignals: system?.rankedSignals,
+      countryRiskFeed: system?.countryRiskFeed,
+      diagnostics: window.IBSS_GEO_RADAR?.getDiagnostics?.()
+    });
+
+    if (window.IBSS_GEO_RADAR?.render) {
+      const size = window.innerWidth <= 640 ? 270 : 300;
+      window.IBSS_GEO_RADAR.render(qs("radar"), system, {
+        lang: STATE.lang,
+        size
+      });
+    }
+  } catch (error) {
+    console.error("Dashboard radar render error:", error);
+  }
+}
 
       function renderRadarLegend(system) {
         const legend = qs("radarLegend");
