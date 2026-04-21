@@ -1,5 +1,5 @@
-// IBSS ENGINE CORE — Unified Sovereign Computation Layer
-// Version: v3.0 Final Unified Engine
+// IBSS ENGINE CORE — Full Living Presence Rebuild
+// Version: v3.0 Living Presence Engine
 
 window.IBSS_ENGINE = (function () {
   "use strict";
@@ -9,11 +9,11 @@ window.IBSS_ENGINE = (function () {
     historyLimit: 180,
     reportLimit: 80,
     archiveLimit: 120,
-    storageKey: "ibss_engine_state_v30_final_unified",
+    storageKey: "ibss_engine_state_v30_living_presence",
     minLiveSignalScore: 40,
     scenarioHighThreshold: 85,
     scenarioPrepThreshold: 70,
-    maxFeedItems: 14,
+    maxFeedItems: 16,
     maxCountryRiskItems: 5,
     maxDrivers: 5
   };
@@ -117,6 +117,30 @@ window.IBSS_ENGINE = (function () {
     return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
   }
 
+  function sortByScoreDesc(list, selector) {
+    return asArray(list)
+      .slice()
+      .sort((a, b) => safeNumber(selector(b), 0) - safeNumber(selector(a), 0));
+  }
+
+  function formatList(items, lang = "en") {
+    const arr = asArray(items).filter(Boolean);
+    if (!arr.length) return lang === "ar" ? "لا يوجد" : "none";
+
+    if (arr.length === 1) return arr[0];
+    if (arr.length === 2) {
+      return lang === "ar"
+        ? `${arr[0]} و ${arr[1]}`
+        : `${arr[0]} and ${arr[1]}`;
+    }
+
+    const head = arr.slice(0, -1).join(lang === "ar" ? "، " : ", ");
+    const tail = arr[arr.length - 1];
+    return lang === "ar"
+      ? `${head}، و ${tail}`
+      : `${head}, and ${tail}`;
+  }
+
   function makeFeedItem(type, priority, en, ar, source = "") {
     return {
       id: buildId("FEED"),
@@ -129,12 +153,6 @@ window.IBSS_ENGINE = (function () {
       },
       createdAt: nowIso()
     };
-  }
-
-  function sortByScoreDesc(list, selector) {
-    return asArray(list)
-      .slice()
-      .sort((a, b) => safeNumber(selector(b), 0) - safeNumber(selector(a), 0));
   }
 
   /* =========================================
@@ -254,17 +272,16 @@ window.IBSS_ENGINE = (function () {
     return getSeedSignals().map((item, index) => ({
       id: safeText(item?.id, `SEED-${index + 1}`),
       title: item?.title || localize("Untitled Signal", "إشارة غير معنونة"),
-      summary: item?.summary || item?.report || item?.description || localize("No summary available.", "لا يوجد ملخص."),
-      description: item?.description || item?.report || item?.summary || localize("No description available.", "لا يوجد وصف."),
+      summary: item?.report || item?.description || localize("No summary available.", "لا يوجد ملخص."),
+      description: item?.description || item?.report || localize("No description available.", "لا يوجد وصف."),
       country: normalizeText(item?.country || item?.countryId || item?.region || "global"),
       region: normalizeText(item?.region || item?.country || "global"),
       domain: normalizeText(
         getLocalizedText(item?.signalType, "en") ||
         getLocalizedText(item?.layer, "en") ||
-        item?.domain ||
         "geopolitical"
       ),
-      priority: normalizePriority(item?.priority || item?.weight),
+      priority: normalizePriority(item?.weight || item?.priority),
       score100: clamp(
         Math.round(
           (safeNumber(item?.metrics?.weight, 0.5) * 35) +
@@ -276,26 +293,20 @@ window.IBSS_ENGINE = (function () {
       ),
       reliabilityScore: 72,
       freshnessScore: item?.live ? 0.9 : 0.55,
-      timestamp: item?.timestamp || nowIso(),
-      source: safeText(item?.source, "IBSS_SEED"),
-      sourceUnit: item?.sourceUnit || null,
-      layer: item?.layer || null,
-      signalType: item?.signalType || null,
-      decisionMode: item?.decisionMode || null,
-      influenceBand: item?.influenceBand || null,
-      linkedContentIds: asArray(item?.linkedContentIds),
+      timestamp: nowIso(),
+      source: "IBSS_SEED",
       raw: item
     }));
   }
 
   function getFallbackSignalsFromNews() {
-    const news = asArray(window.IBSS_NEWS || window.IBSS_DATA?.newsFeed);
+    const news = asArray(window.IBSS_NEWS);
 
     return news.map((item, index) => ({
       id: safeText(item?.id, `NEWS-${index + 1}`),
       title: item?.title || localize("Untitled News Signal", "إشارة خبرية غير معنونة"),
-      summary: item?.summary || item?.description || item?.text || localize("No summary available.", "لا يوجد ملخص."),
-      description: item?.summary || item?.description || item?.text || localize("No description available.", "لا يوجد وصف."),
+      summary: item?.summary || item?.description || localize("No summary available.", "لا يوجد ملخص."),
+      description: item?.summary || item?.description || localize("No description available.", "لا يوجد وصف."),
       country: safeText(item?.country, safeText(item?.region, "global")),
       region: safeText(item?.region, safeText(item?.country, "global")),
       domain: safeText(item?.domain, safeText(item?.category, "geopolitical")),
@@ -548,7 +559,6 @@ window.IBSS_ENGINE = (function () {
     if (d.includes("diplomatic")) return 2;
     if (d.includes("economic")) return 2;
     if (d.includes("governance")) return 4;
-    if (d.includes("structural")) return 5;
     return 3;
   }
 
@@ -580,14 +590,13 @@ window.IBSS_ENGINE = (function () {
 
   function normalizeRawSignal(signal, index = 0) {
     const title = signal?.title || localize("Untitled Signal", "إشارة غير معنونة");
-    const summary = signal?.summary || signal?.description || localize("No summary available.", "لا يوجد ملخص.");
     const description = signal?.description || signal?.summary || localize("No summary available.", "لا يوجد ملخص.");
     const country = normalizeText(signal?.country || "global");
     const region = normalizeText(signal?.region || signal?.country || "global");
-    const domain = normalizeText(signal?.domain || getLocalizedText(signal?.signalType, "en") || "geopolitical");
+    const domain = normalizeText(signal?.domain || "geopolitical");
     const reliabilityScore = clamp(safeNumber(signal?.reliabilityScore, 60), 0, 100);
     const freshnessScore = clamp(safeNumber(signal?.freshnessScore, 0.5), 0, 1);
-    const baseScore = clamp(safeNumber(signal?.score100 ?? signal?.balancedScore100 ?? signal?.score, 50), 0, 100);
+    const baseScore = clamp(safeNumber(signal?.score100, 50), 0, 100);
 
     const preliminaryScore = clamp(
       Math.round(
@@ -604,7 +613,7 @@ window.IBSS_ENGINE = (function () {
     return {
       id: safeText(signal?.id, `SIG-${index + 1}`),
       title,
-      summary,
+      summary: signal?.summary || description,
       description,
       country,
       region,
@@ -617,12 +626,6 @@ window.IBSS_ENGINE = (function () {
       freshnessScore,
       timestamp: signal?.timestamp || nowIso(),
       source: safeText(signal?.source, "INTAKE"),
-      sourceUnit: signal?.sourceUnit || null,
-      layer: signal?.layer || null,
-      signalType: signal?.signalType || null,
-      decisionMode: signal?.decisionMode || null,
-      influenceBand: signal?.influenceBand || null,
-      linkedContentIds: asArray(signal?.linkedContentIds),
       live: preliminaryScore >= CONFIG.minLiveSignalScore,
       active: preliminaryScore >= CONFIG.minLiveSignalScore,
       raw: signal
@@ -658,7 +661,7 @@ window.IBSS_ENGINE = (function () {
       })
       .sort((a, b) => safeNumber(b.balancedScore100, 0) - safeNumber(a.balancedScore100, 0));
 
-    return dedupeBy(normalized, (item) => {
+    return dedupeBy(normalized, item => {
       return [
         normalizeText(getLocalizedText(item.title, "en")),
         normalizeText(item.country),
@@ -1125,8 +1128,8 @@ window.IBSS_ENGINE = (function () {
           ar: `ضغط ملف ${getLocalizedText(clusters[0].name, "ar")}`
         },
         explanation: {
-          en: "The top strategic file raised structured pressure through file concentration.",
-          ar: "الملف الاستراتيجي الأعلى رفع الضغط البنيوي عبر تركز الملف."
+          en: `The top strategic file raised structured pressure through file concentration.`,
+          ar: `الملف الاستراتيجي الأعلى رفع الضغط البنيوي عبر تركز الملف.`
         }
       });
     }
@@ -1142,8 +1145,8 @@ window.IBSS_ENGINE = (function () {
           ar: `ضغط مسرح ${getLocalizedText(theaters[0].name, "ar")}`
         },
         explanation: {
-          en: "The dominant theater concentrated operational pressure across multiple files.",
-          ar: "المسرح المهيمن ركز الضغط التشغيلي عبر عدة ملفات."
+          en: `The dominant theater concentrated operational pressure across multiple files.`,
+          ar: `المسرح المهيمن ركز الضغط التشغيلي عبر عدة ملفات.`
         }
       });
     }
@@ -1159,13 +1162,148 @@ window.IBSS_ENGINE = (function () {
           ar: `تركز المخاطر في ${safeText(countryRiskFeed[0].name)}`
         },
         explanation: {
-          en: "Top country risk reinforced the unified pressure profile.",
-          ar: "أعلى خطر دولي عزز ملف الضغط الموحد."
+          en: `Top country risk reinforced the unified pressure profile.`,
+          ar: `أعلى خطر دولي عزز ملف الضغط الموحد.`
         }
       });
     }
 
     return sortByScoreDesc(drivers, item => item.score).slice(0, CONFIG.maxDrivers);
+  }
+
+  /* =========================================
+     Presence + Voice
+  ========================================= */
+
+  function buildPresence(system) {
+    const pressure = safeNumber(system.systemPressure, 0);
+    const confidence = safeNumber(system.confidenceScore, 0);
+    const level = safeText(system.level, "LOW");
+
+    let state = "dormant";
+    let tone = "calm";
+    let urgency = "low";
+    let narrativeMode = "monitor";
+
+    if (level === "HIGH") {
+      state = "engaged";
+      tone = pressure >= 90 ? "severe" : "tense";
+      urgency = pressure >= 90 ? "critical" : "high";
+      narrativeMode = "escalation";
+    } else if (level === "MEDIUM") {
+      state = "tracking";
+      tone = confidence >= 70 ? "focused" : "cautious";
+      urgency = pressure >= 65 ? "elevated" : "moderate";
+      narrativeMode = "watch";
+    } else {
+      state = "monitoring";
+      tone = confidence >= 70 ? "measured" : "quiet";
+      urgency = "low";
+      narrativeMode = "observation";
+    }
+
+    return {
+      state,
+      tone,
+      urgency,
+      narrativeMode
+    };
+  }
+
+  function buildPostureLabel(system, lang = "en") {
+    const decision = safeText(system.decision, "WATCH");
+    const mode = safeText(system.mode, "MONITORING");
+    const pressure = safeNumber(system.systemPressure, 0);
+
+    if (lang === "ar") {
+      if (decision === "ACT") return "وضعية استجابة نشطة";
+      if (decision === "PRD") return pressure >= 85 ? "وضعية تحضير حرج" : "وضعية تحضير";
+      if (decision === "WATCH+") return "وضعية مراقبة مشددة";
+      return `وضعية ${mode}`;
+    }
+
+    if (decision === "ACT") return "Active response posture";
+    if (decision === "PRD") return pressure >= 85 ? "Critical preparation posture" : "Preparation posture";
+    if (decision === "WATCH+") return "Heightened monitoring posture";
+    return `${titleCase(mode.toLowerCase())} posture`;
+  }
+
+  function buildVoice(system) {
+    const topSignal = system.topSignal;
+    const topCluster = system.topCluster;
+    const topTheater = system.topTheater;
+    const topCountry = system.topCountry;
+    const drivers = asArray(system.drivers).slice(0, 3);
+
+    const topSignalEn = topSignal ? getLocalizedText(topSignal.title, "en") : "No dominant signal";
+    const topSignalAr = topSignal ? getLocalizedText(topSignal.title, "ar") : "لا توجد إشارة مهيمنة";
+
+    const topClusterEn = topCluster ? getLocalizedText(topCluster.name, "en") : "No dominant strategic file";
+    const topClusterAr = topCluster ? getLocalizedText(topCluster.name, "ar") : "لا يوجد ملف استراتيجي مهيمن";
+
+    const topTheaterEn = topTheater ? getLocalizedText(topTheater.name, "en") : "No dominant theater";
+    const topTheaterAr = topTheater ? getLocalizedText(topTheater.name, "ar") : "لا يوجد مسرح مهيمن";
+
+    const topCountryEn = topCountry ? safeText(topCountry.name, "No top country risk") : "No top country risk";
+    const topCountryAr = topCountry ? safeText(topCountry.name, "لا توجد دولة خطر عليا") : "لا توجد دولة خطر عليا";
+
+    const driverNamesEn = drivers.map(driver => getLocalizedText(driver.label, "en"));
+    const driverNamesAr = drivers.map(driver => getLocalizedText(driver.label, "ar"));
+
+    let summaryEn = "";
+    let summaryAr = "";
+    let explanationEn = "";
+    let explanationAr = "";
+    let intentEn = "";
+    let intentAr = "";
+    let advisoryEn = "";
+    let advisoryAr = "";
+
+    if (system.level === "HIGH") {
+      summaryEn = `The system is operating under elevated pressure centered on ${topTheaterEn}.`;
+      summaryAr = `النظام يعمل تحت ضغط مرتفع متمركز حول ${topTheaterAr}.`;
+
+      explanationEn = `Pressure is being driven by ${topSignalEn}, reinforced by ${topClusterEn}, with ${topCountryEn} holding the highest country risk concentration.`;
+      explanationAr = `الضغط يُدفع بواسطة ${topSignalAr} ويتعزز عبر ${topClusterAr} مع بقاء ${topCountryAr} أعلى نقطة تركّز في خطر الدول.`;
+
+      intentEn = `The system is prioritizing escalation tracking, readiness alignment, and rapid interpretation of structural movement.`;
+      intentAr = `النظام يعطي الأولوية لتتبع التصعيد ومواءمة الجاهزية والتفسير السريع للحركة البنيوية.`;
+
+      advisoryEn = `Maintain decision attention on ${formatList(driverNamesEn, "en")}.`;
+      advisoryAr = `حافظ على تركيز القرار على ${formatList(driverNamesAr, "ar")}.`;
+    } else if (system.level === "MEDIUM") {
+      summaryEn = `The system is holding a heightened monitoring posture with pressure concentrated in ${topTheaterEn}.`;
+      summaryAr = `النظام يحافظ على وضعية مراقبة مشددة مع تركز الضغط في ${topTheaterAr}.`;
+
+      explanationEn = `Current pressure remains structured rather than explosive, led by ${topSignalEn} and supported by ${topClusterEn}.`;
+      explanationAr = `الضغط الحالي ما يزال بنيويًا أكثر من كونه انفجاريًا، وتقوده ${topSignalAr} ويسانده ${topClusterAr}.`;
+
+      intentEn = `The system is watching for transition from pressure accumulation into open escalation.`;
+      intentAr = `النظام يراقب احتمال انتقال تراكم الضغط إلى تصعيد مفتوح.`;
+
+      advisoryEn = `Continue monitoring ${formatList(driverNamesEn, "en")} for directional change.`;
+      advisoryAr = `استمر في مراقبة ${formatList(driverNamesAr, "ar")} لاكتشاف تغير الاتجاه.`;
+    } else {
+      summaryEn = `The system remains in a monitoring posture with no full escalation break detected.`;
+      summaryAr = `النظام ما يزال في وضعية مراقبة دون رصد كسر تصعيدي كامل.`;
+
+      explanationEn = `The dominant reading is still shaped by ${topSignalEn}, but the broader environment remains below high-pressure conversion.`;
+      explanationAr = `القراءة المهيمنة ما تزال تتشكل عبر ${topSignalAr} لكن البيئة الأوسع ما تزال دون التحول إلى ضغط مرتفع.`;
+
+      intentEn = `The system is preserving watch continuity while testing for new pressure formation.`;
+      intentAr = `النظام يحافظ على استمرارية المراقبة بينما يختبر تشكل ضغط جديد.`;
+
+      advisoryEn = `Watch ${formatList(driverNamesEn, "en")} for early movement.`;
+      advisoryAr = `راقب ${formatList(driverNamesAr, "ar")} لاكتشاف الحركة المبكرة.`;
+    }
+
+    return {
+      summary: localize(summaryEn, summaryAr),
+      explanation: localize(explanationEn, explanationAr),
+      intent: localize(intentEn, intentAr),
+      advisory: localize(advisoryEn, advisoryAr),
+      posture: localize(buildPostureLabel(system, "en"), buildPostureLabel(system, "ar"))
+    };
   }
 
   /* =========================================
@@ -1232,6 +1370,30 @@ window.IBSS_ENGINE = (function () {
     const lines = [];
 
     rankedToFeed(system.rankedSignals).forEach(item => lines.push(item));
+
+    if (system.voice?.summary) {
+      lines.push(
+        makeFeedItem(
+          "voice_summary",
+          system.level,
+          getLocalizedText(system.voice.summary, "en"),
+          getLocalizedText(system.voice.summary, "ar"),
+          "ENGINE"
+        )
+      );
+    }
+
+    if (system.voice?.intent) {
+      lines.push(
+        makeFeedItem(
+          "voice_intent",
+          system.level,
+          getLocalizedText(system.voice.intent, "en"),
+          getLocalizedText(system.voice.intent, "ar"),
+          "ENGINE"
+        )
+      );
+    }
 
     if (system.topSignal) {
       lines.push(
@@ -1398,7 +1560,9 @@ window.IBSS_ENGINE = (function () {
       latestStudy,
       latestNews: system?.rankedSignals?.slice(0, 3) || [],
       unifiedRisk: system?.unifiedRisk || null,
-      drivers: system?.drivers || []
+      drivers: system?.drivers || [],
+      voice: system?.voice || null,
+      presence: system?.presence || null
     };
   }
 
@@ -1429,6 +1593,9 @@ window.IBSS_ENGINE = (function () {
       .map(driver => getLocalizedText(driver.label, lang))
       .join(lang === "ar" ? "، " : ", ");
 
+    const voiceSummary = getLocalizedText(system.voice?.summary, lang);
+    const voiceIntent = getLocalizedText(system.voice?.intent, lang);
+
     if (lang === "ar") {
       return {
         summary: `رصد المحرك ضغطًا مركبًا بقيمة ${system.systemPressure} مع ثقة ${system.confidenceScore}.`,
@@ -1437,7 +1604,9 @@ window.IBSS_ENGINE = (function () {
           `الملف الاستراتيجي الأعلى هو ${topCluster}. ` +
           `الإشارة الأعلى هي ${topSignal}. ` +
           `أحدث دراسة مؤسسية مرتبطة بالمشهد هي ${latestStudy}. ` +
-          `المحرّكات الأساسية: ${driverText || "لا يوجد"}.`,
+          `المحرّكات الأساسية: ${driverText || "لا يوجد"}. ` +
+          `الصوت التشغيلي: ${voiceSummary}. ` +
+          `نية النظام: ${voiceIntent}.`,
         recommendation: system.systemPressure >= 78
           ? "يوصى بالتحضير ورفع الجاهزية على مستوى المسرح الأعلى وتعزيز الربط بين الإشارات والدراسات والمنشورات الميدانية."
           : "يوصى باستمرار المراقبة وتعزيز جمع الإشارات وتنظيف مسارات الربط مع الإنتاج التحليلي المنشور."
@@ -1451,7 +1620,9 @@ window.IBSS_ENGINE = (function () {
         `Top strategic file: ${topCluster}. ` +
         `Top signal: ${topSignal}. ` +
         `Latest institutional publication in the scene: ${latestStudy}. ` +
-        `Primary drivers: ${driverText || "none"}.`,
+        `Primary drivers: ${driverText || "none"}. ` +
+        `Operational voice: ${voiceSummary}. ` +
+        `System intent: ${voiceIntent}.`,
       recommendation: system.systemPressure >= 78
         ? "Maintain preparation posture, raise readiness on the dominant theater, and reinforce linkage between signals, publications, and strategic files."
         : "Continue monitoring, improve signal collection, and clean linkage between live signals and published analytical content."
@@ -1658,6 +1829,8 @@ window.IBSS_ENGINE = (function () {
 
       newsPressure,
       drivers,
+      voice: null,
+      presence: null,
       feed: [],
       contentStats: getContentStats(),
       publishedContent: getPublishedContent(),
@@ -1668,6 +1841,8 @@ window.IBSS_ENGINE = (function () {
       metricsReference: "IBSS_METRICS_V3"
     };
 
+    system.presence = buildPresence(system);
+    system.voice = buildVoice(system);
     system.snapshot = getHomeSnapshot(system);
     system.feed = buildFeed(system);
 
