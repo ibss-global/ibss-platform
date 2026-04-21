@@ -2,7 +2,7 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publications_v3_integrated",
+    storageKey: "ibss_publications_v4_final_unified",
     idPrefix: "PUB",
     maxItems: 500
   };
@@ -33,7 +33,7 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
     return Number.isFinite(n) ? n : fallback;
   }
 
-  function clamp(value, min, max) {
+  function clamp(value, min = 0, max = 100) {
     return Math.max(min, Math.min(max, value));
   }
 
@@ -102,25 +102,27 @@ window.IBSS_PUBLICATION_INTAKE = (function () {
     return "published";
   }
 
-function normalizeType(type) {
-  const t = normalizeText(type || "study");
-  const allowed = [
-    "model",
-    "study",
-    "report",
-    "brief",
-    "analysis",
-    "policy_paper",
-    "news",
-    "paper",
-    "strategic_brief",
-    "news_analysis",
-    "sovereign_study",
-    "signal_update",
-    "platform_post"
-  ];
-  return allowed.includes(t) ? t : "study";
-}
+  function normalizeType(type) {
+    const t = normalizeText(type || "study");
+
+    const allowed = [
+      "model",
+      "study",
+      "report",
+      "brief",
+      "analysis",
+      "policy_paper",
+      "news",
+      "paper",
+      "strategic_brief",
+      "news_analysis",
+      "sovereign_study",
+      "signal_update",
+      "platform_post"
+    ];
+
+    return allowed.includes(t) ? t : "study";
+  }
 
   function normalizeStringArray(values) {
     return asArray(values)
@@ -129,7 +131,7 @@ function normalizeType(type) {
   }
 
   function normalizeTags(values) {
-    return normalizeStringArray(values).slice(0, 30);
+    return normalizeStringArray(values).slice(0, 40);
   }
 
   function normalizeDate(value, fallback = null) {
@@ -140,6 +142,10 @@ function normalizeType(type) {
     if (Number.isNaN(date.getTime())) return fallback || nowIso();
 
     return date.toISOString();
+  }
+
+  function uniqueArray(values) {
+    return [...new Set(normalizeStringArray(values))];
   }
 
   function buildMetrics(rawMetrics = {}) {
@@ -207,6 +213,79 @@ function normalizeType(type) {
   }
 
   /* =========================
+     Country / Key Helpers
+  ========================= */
+
+  function countryAliases(value) {
+    const raw = normalizeText(value);
+    if (!raw) return ["global"];
+
+    const aliases = new Set([raw]);
+
+    if (raw === "ctr-gaza" || raw === "gaza") {
+      aliases.add("ctr-gaza");
+      aliases.add("gaza");
+      aliases.add("levant");
+      aliases.add("palestine");
+    }
+
+    if (raw === "ctr-leb" || raw === "lebanon" || raw === "leb") {
+      aliases.add("ctr-leb");
+      aliases.add("lebanon");
+      aliases.add("leb");
+      aliases.add("levant");
+    }
+
+    if (raw === "ctr-irn" || raw === "iran" || raw === "irn") {
+      aliases.add("ctr-irn");
+      aliases.add("iran");
+      aliases.add("irn");
+      aliases.add("regional");
+    }
+
+    if (raw === "ctr-rs" || raw === "redsea" || raw === "red sea" || raw === "rs") {
+      aliases.add("ctr-rs");
+      aliases.add("redsea");
+      aliases.add("red sea");
+      aliases.add("rs");
+      aliases.add("maritime");
+    }
+
+    if (raw === "ctr-wb" || raw === "westbank" || raw === "west bank" || raw === "wb") {
+      aliases.add("ctr-wb");
+      aliases.add("westbank");
+      aliases.add("west bank");
+      aliases.add("wb");
+      aliases.add("palestine");
+    }
+
+    return [...aliases];
+  }
+
+  function inferClusterKeys(raw, normalized) {
+    const explicit = uniqueArray(raw.clusterKeys);
+    if (explicit.length) return explicit;
+
+    const region = normalizeText(normalized.region);
+    const domain = normalizeText(normalized.domain);
+
+    if (!region) return [];
+    if (!domain) return [region];
+
+    return [`${region}::${domain}`];
+  }
+
+  function inferTheaterKeys(raw, normalized) {
+    const explicit = uniqueArray(raw.theaterKeys);
+    if (explicit.length) return explicit;
+
+    const region = normalizeText(normalized.region);
+    if (!region) return [];
+
+    return [region];
+  }
+
+  /* =========================
      Normalization
   ========================= */
 
@@ -214,7 +293,7 @@ function normalizeType(type) {
     const createdAt = existing?.createdAt || nowIso();
     const publishedAt = normalizeDate(raw.publishedAt, existing?.publishedAt || nowIso());
 
-    return {
+    const preliminary = {
       id: safeText(raw.id, existing?.id || generateId(raw.type)),
 
       type: normalizeType(raw.type || existing?.type || "study"),
@@ -236,13 +315,15 @@ function normalizeType(type) {
       country: safeText(raw.country, existing?.country || raw.region || existing?.region || "global"),
       countryId: safeText(raw.countryId, existing?.countryId || ""),
 
-      signalIds: normalizeStringArray(raw.signalIds != null ? raw.signalIds : existing?.signalIds),
-      clusterKeys: normalizeStringArray(raw.clusterKeys != null ? raw.clusterKeys : existing?.clusterKeys),
-      theaterKeys: normalizeStringArray(raw.theaterKeys != null ? raw.theaterKeys : existing?.theaterKeys),
+      signalIds: uniqueArray(raw.signalIds != null ? raw.signalIds : existing?.signalIds),
+      clusterKeys: [],
+      theaterKeys: [],
 
       author: safeText(raw.author, existing?.author || "IBSS"),
-      authors: normalizeStringArray(
-        raw.authors != null ? raw.authors : (existing?.authors?.length ? existing.authors : [raw.author || existing?.author || "IBSS"])
+      authors: uniqueArray(
+        raw.authors != null
+          ? raw.authors
+          : (existing?.authors?.length ? existing.authors : [raw.author || existing?.author || "IBSS"])
       ),
 
       sourcePlatform: safeText(raw.sourcePlatform, existing?.sourcePlatform || "internal"),
@@ -256,6 +337,11 @@ function normalizeType(type) {
       updatedAt: nowIso(),
       publishedAt
     };
+
+    preliminary.clusterKeys = inferClusterKeys(raw, preliminary);
+    preliminary.theaterKeys = inferTheaterKeys(raw, preliminary);
+
+    return preliminary;
   }
 
   function buildDedupKey(item) {
@@ -280,6 +366,10 @@ function normalizeType(type) {
       const aCanonical = a?.meta?.canonical ? 1 : 0;
       const bCanonical = b?.meta?.canonical ? 1 : 0;
       if (bCanonical !== aCanonical) return bCanonical - aCanonical;
+
+      const aWeight = safeNumber(a?.metrics?.strategicWeight, 0);
+      const bWeight = safeNumber(b?.metrics?.strategicWeight, 0);
+      if (bWeight !== aWeight) return bWeight - aWeight;
 
       const aTime = new Date(a?.publishedAt || a?.updatedAt || 0).getTime();
       const bTime = new Date(b?.publishedAt || b?.updatedAt || 0).getTime();
@@ -314,12 +404,16 @@ function normalizeType(type) {
       type: item.type,
       classification: item.classification,
       edition: item.edition,
+      layer: item.layer,
+      mode: item.mode,
       status: item.status,
       domain: item.domain,
       region: item.region,
       country: item.country,
       countryId: item.countryId,
       signalIds: clone(item.signalIds || []),
+      clusterKeys: clone(item.clusterKeys || []),
+      theaterKeys: clone(item.theaterKeys || []),
       priority: item.priority,
       sourcePlatform: "ibss_intake",
       sourceUrl: item.sourceUrl,
@@ -353,29 +447,19 @@ function normalizeType(type) {
     return sortPublications([...map.values()]);
   }
 
-  function countryAliases(value) {
-    const v = normalizeText(value);
-    if (!v) return ["global"];
-
-    const map = {
-      gaza: ["gaza", "ctr-gaza"],
-      lebanon: ["lebanon", "leb", "ctr-leb"],
-      iran: ["iran", "irn", "ctr-irn"],
-      redsea: ["redsea", "red sea", "rs", "ctr-rs"],
-      westbank: ["westbank", "west bank", "wb", "ctr-wb"],
-      global: ["global"]
-    };
-
-    return map[v] || [v];
-  }
-
   function findByCountryInList(list, country) {
     const aliases = countryAliases(country);
+
     return list.filter(item => {
-      const a = normalizeText(item.country);
-      const b = normalizeText(item.countryId);
-      const c = normalizeText(item.region);
-      return aliases.includes(a) || aliases.includes(b) || aliases.includes(c);
+      const countryValue = normalizeText(item.country);
+      const countryIdValue = normalizeText(item.countryId);
+      const regionValue = normalizeText(item.region);
+
+      return (
+        aliases.includes(countryValue) ||
+        aliases.includes(countryIdValue) ||
+        aliases.includes(regionValue)
+      );
     });
   }
 
@@ -392,6 +476,7 @@ function normalizeType(type) {
   function findContentLinkedToSignal(signalId) {
     const target = safeText(signalId, "");
     if (!target) return [];
+
     return getIntegratedContent().filter(item =>
       item.status === "published" && asArray(item.signalIds).includes(target)
     );
@@ -409,18 +494,19 @@ function normalizeType(type) {
     if (!raw) return [];
 
     const parts = raw.split("::");
-    const region = safeText(parts[0], "");
-    const domain = safeText(parts[1], "");
+    const region = normalizeText(parts[0] || "");
+    const domain = normalizeText(parts[1] || "");
 
     return getIntegratedContent().filter(item => {
       if (item.status !== "published") return false;
 
       const regionMatch =
-        normalizeText(item.region) === normalizeText(region) ||
-        normalizeText(item.country) === normalizeText(region) ||
-        normalizeText(item.countryId) === normalizeText(region);
+        normalizeText(item.region) === region ||
+        normalizeText(item.country) === region ||
+        normalizeText(item.countryId) === region ||
+        asArray(item.clusterKeys).map(normalizeText).includes(raw.toLowerCase());
 
-      const domainMatch = !domain || normalizeText(item.domain) === normalizeText(domain);
+      const domainMatch = !domain || normalizeText(item.domain) === domain;
 
       return regionMatch && domainMatch;
     });
@@ -432,11 +518,14 @@ function normalizeType(type) {
     return {
       id: item.id,
       type: item.type,
+      classification: item.classification || item.type,
       unit: item.unit || "SSU",
       title: getLocalizedText(item.title, lang),
       summary: getLocalizedText(item.summary, lang),
+      body: getLocalizedText(item.body, lang),
       edition: item.edition || "",
       domain: item.domain || "general",
+      region: item.region || "global",
       country: item.country || "global",
       countryId: item.countryId || "",
       priority: item.priority || "LOW",
@@ -530,6 +619,26 @@ function normalizeType(type) {
         .map(item => buildPreviewCard(item, lang));
     }
 
+    function getEngineEligibleContent() {
+      return getPublishedContent().filter(item =>
+        ["study", "report", "analysis", "brief", "policy_paper", "model"].includes(item.type)
+      );
+    }
+
+    function computeContentImpact(item) {
+      const strategicWeight = clamp(safeNumber(item?.metrics?.strategicWeight, 0), 0, 100);
+      const featuredBoost = item?.meta?.featured ? 3 : 0;
+      const canonicalBoost = item?.meta?.canonical ? 3 : 0;
+      const pinnedBoost = item?.meta?.pinned ? 2 : 0;
+
+      return {
+        signalBoost: Math.round((strategicWeight * 0.08) + featuredBoost),
+        clusterBoost: Math.round((strategicWeight * 0.06) + canonicalBoost),
+        countryBoost: Math.round((strategicWeight * 0.07) + pinnedBoost),
+        confidenceBoost: Math.round((strategicWeight * 0.04) + featuredBoost + canonicalBoost)
+      };
+    }
+
     function getContentState() {
       const all = getAllContent();
       return {
@@ -558,6 +667,8 @@ function normalizeType(type) {
     api.getLatestPublished = getLatestPublished;
     api.getLatestFeaturedContent = getLatestFeaturedContent;
     api.getPublicationPreviewList = getPublicationPreviewList;
+    api.getEngineEligibleContent = getEngineEligibleContent;
+    api.computeContentImpact = computeContentImpact;
     api.getContentLinkedToSignal = function (signalId) {
       return clone(findContentLinkedToSignal(signalId)) || [];
     };
@@ -628,8 +739,8 @@ function normalizeType(type) {
     ensureInit();
 
     const normalized = normalizePublication(raw);
-
     const incomingKey = buildDedupKey(normalized);
+
     const existingDuplicate = [...STATE.registry.values()].find(item =>
       item.id !== normalized.id && buildDedupKey(item) === incomingKey
     );
