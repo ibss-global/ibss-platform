@@ -25,7 +25,6 @@
     }
 
     *{box-sizing:border-box}
-
     html,body{
       margin:0;
       padding:0;
@@ -39,7 +38,7 @@
     body{min-height:100vh}
 
     .wrap{
-      width:min(1240px,92%);
+      width:min(1260px,92%);
       margin:auto;
       padding:20px 0 42px;
     }
@@ -179,6 +178,12 @@
       background:rgba(255,159,26,.08);
     }
 
+    .meta-badge.blue{
+      color:#bfd2ff;
+      border-color:rgba(90,140,255,.35);
+      background:rgba(90,140,255,.10);
+    }
+
     .alert{
       display:none;
       margin:18px 0 0;
@@ -192,30 +197,7 @@
       line-height:1.7;
     }
 
-    .section{
-      margin-top:18px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:1.08fr .92fr;
-      gap:18px;
-      margin-top:18px;
-    }
-
-    .grid-3{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:18px;
-      margin-top:18px;
-    }
-
-    .grid-2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px;
-      margin-top:18px;
-    }
+    .section{margin-top:18px}
 
     .card{
       background:var(--panel);
@@ -240,40 +222,160 @@
       line-height:1.7;
     }
 
+    .presence-grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:18px;
+      margin-top:22px;
+    }
+
+    .presence-card{
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
+        var(--panel);
+      border:1px solid rgba(212,175,55,.14);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.02) inset,
+        0 14px 28px rgba(0,0,0,.2);
+    }
+
+    .presence-kicker{
+      color:var(--gold);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      margin-bottom:10px;
+    }
+
+    .presence-title{
+      font-size:28px;
+      font-weight:900;
+      color:#fff;
+      line-height:1.4;
+      margin:0 0 12px;
+    }
+
+    .presence-summary{
+      color:#ddd;
+      font-size:15px;
+      line-height:1.9;
+      margin:0 0 12px;
+    }
+
+    .presence-explanation{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.9;
+      margin:0 0 14px;
+    }
+
+    .presence-chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .presence-chip{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 11px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      color:#ddd;
+    }
+
+    .presence-chip.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.28);
+    }
+
+    .presence-chip.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.28);
+    }
+
+    .presence-chip.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
+    .presence-side{
+      display:grid;
+      gap:18px;
+    }
+
+    .presence-mini{
+      background:var(--panel);
+      border:1px solid var(--soft-border);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .presence-mini-label{
+      color:#8f8f8f;
+      font-size:12px;
+      letter-spacing:.08em;
+      margin-bottom:10px;
+    }
+
+    .presence-mini-value{
+      color:var(--gold);
+      font-size:22px;
+      font-weight:900;
+      line-height:1.5;
+      margin-bottom:8px;
+    }
+
+    .presence-mini-sub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+    }
+
     .ticker-shell{
       border:1px solid rgba(212,175,55,.18);
       border-radius:18px;
       background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
-      overflow:hidden;
       box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
       position:relative;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+      margin-top:18px;
     }
+
+    .ticker-shell::-webkit-scrollbar{display:none}
 
     .ticker-track{
       display:flex;
-      align-items:center;
-      gap:14px;
+      align-items:stretch;
+      gap:12px;
       padding:14px 16px;
-      overflow-x:auto;
-      overflow-y:hidden;
-      scrollbar-width:none;
-      direction:ltr;
-      white-space:nowrap;
-      scroll-behavior:auto;
-      min-height:72px;
+      min-height:92px;
+      width:max-content;
+      white-space:normal;
     }
 
-    .ticker-track::-webkit-scrollbar{display:none}
-
     .ticker-item{
-      flex:0 0 auto;
-      display:inline-flex;
-      align-items:center;
+      flex:0 0 280px;
+      display:flex;
+      align-items:flex-start;
       gap:10px;
-      min-height:44px;
-      max-width:min(82vw,520px);
-      padding:10px 14px;
-      border-radius:999px;
+      min-height:72px;
+      max-width:280px;
+      padding:14px 16px;
+      border-radius:18px;
       background:rgba(255,255,255,.03);
       border:1px solid rgba(255,255,255,.05);
       color:#f0f0f0;
@@ -283,7 +385,11 @@
     }
 
     .ticker-item-text{
-      display:block;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      word-break:break-word;
       unicode-bidi:plaintext;
     }
 
@@ -292,21 +398,75 @@
       height:8px;
       border-radius:50%;
       flex:0 0 8px;
+      margin-top:5px;
     }
 
     .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
     .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
     .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
 
+    .mini-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .mini-card{
+      background:var(--panel);
+      border:1px solid var(--soft-border);
+      border-radius:20px;
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
+
+    .mini-card .mini-title{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:10px;
+    }
+
+    .mini-card .mini-value{
+      font-size:28px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .mini-card .mini-value.high{color:var(--red)}
+    .mini-card .mini-value.medium{color:var(--orange)}
+    .mini-card .mini-value.low{color:var(--green)}
+    .mini-card .mini-value.gold{color:var(--gold)}
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:18px;
+    }
+
     .highlight-box,
     .metric-row,
     .snapshot-item,
     .signal-row,
     .feed-item,
-    .filter-card,
     .context-item,
     .publication-box,
-    .viewer-box{
+    .viewer-box,
+    .driver-item{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -371,7 +531,8 @@
     .snapshot-box,
     .metrics-box,
     .feed-box,
-    .context-box{
+    .context-box,
+    .drivers-box{
       display:grid;
       gap:12px;
     }
@@ -379,13 +540,15 @@
     .snapshot-item,
     .metric-row,
     .feed-item,
-    .context-item{
+    .context-item,
+    .driver-item{
       padding:14px 15px;
     }
 
     .snapshot-item strong,
     .metric-name,
-    .context-title{
+    .context-title,
+    .driver-title{
       display:block;
       color:#fff;
       margin-bottom:6px;
@@ -394,7 +557,8 @@
 
     .snapshot-meta,
     .metric-sub,
-    .context-meta{
+    .context-meta,
+    .driver-meta{
       color:var(--muted);
       font-size:12px;
       line-height:1.7;
@@ -417,35 +581,6 @@
     .metric-score.high{color:var(--red)}
     .metric-score.medium{color:var(--orange)}
     .metric-score.low{color:var(--green)}
-
-    .filter-wrap{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-    }
-
-    .filter-card{
-      padding:14px;
-    }
-
-    .filter-card label{
-      display:block;
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:8px;
-    }
-
-    .filter-card select,
-    .filter-card input{
-      width:100%;
-      background:#101010;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:12px;
-      padding:11px 12px;
-      font-size:14px;
-      outline:none;
-    }
 
     .signal-list{
       display:grid;
@@ -472,9 +607,7 @@
       background:linear-gradient(180deg, rgba(212,175,55,.06), rgba(255,255,255,.01));
     }
 
-    .signal-main{
-      min-width:0;
-    }
+    .signal-main{min-width:0}
 
     .signal-name{
       color:#fff;
@@ -548,37 +681,6 @@
       border-color:rgba(0,208,132,.28);
     }
 
-    .mini-grid{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:18px;
-    }
-
-    .mini-card{
-      background:var(--panel);
-      border:1px solid var(--soft-border);
-      border-radius:20px;
-      padding:20px;
-      box-shadow:var(--shadow);
-    }
-
-    .mini-card .mini-title{
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:10px;
-    }
-
-    .mini-card .mini-value{
-      font-size:28px;
-      font-weight:900;
-      color:#fff;
-    }
-
-    .mini-card .mini-value.high{color:var(--red)}
-    .mini-card .mini-value.medium{color:var(--orange)}
-    .mini-card .mini-value.low{color:var(--green)}
-    .mini-card .mini-value.gold{color:var(--gold)}
-
     .publication-box{
       padding:18px;
       border-color:rgba(212,175,55,.24);
@@ -619,6 +721,39 @@
       line-height:1.95;
       font-size:14px;
       white-space:pre-wrap;
+    }
+
+    .filters-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .filter-card{
+      background:var(--panel2);
+      border:1px solid var(--soft-border-2);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .filter-card label{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .filter-card select,
+    .filter-card input{
+      width:100%;
+      background:#101010;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      padding:11px 12px;
+      font-size:14px;
+      outline:none;
     }
 
     .publisher-actions{
@@ -673,15 +808,13 @@
       padding-top:22px;
     }
 
-    html[dir="rtl"] body{
-      text-align:right;
-    }
-
+    html[dir="rtl"] body{text-align:right}
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
     html[dir="rtl"] .metric-row,
-    html[dir="rtl"] .signal-row{
+    html[dir="rtl"] .signal-row,
+    html[dir="rtl"] .presence-chips{
       direction:rtl;
     }
 
@@ -692,15 +825,13 @@
     }
 
     @media (max-width:1100px){
+      .presence-grid,
       .grid,
       .grid-3,
       .grid-2,
-      .mini-grid{
+      .mini-grid,
+      .filters-grid{
         grid-template-columns:1fr;
-      }
-
-      .filter-wrap{
-        grid-template-columns:1fr 1fr;
       }
 
       .signal-row{
@@ -713,7 +844,10 @@
       .topbar{flex-direction:column}
       .nav{justify-content:center}
       .brand{text-align:center}
-      .filter-wrap{grid-template-columns:1fr}
+      .ticker-item{
+        flex:0 0 78vw;
+        max-width:78vw;
+      }
     }
   </style>
 </head>
@@ -747,17 +881,42 @@
 
     <div class="hero">
       <h1 id="pageTitle">IBSS Signals</h1>
-      <p id="pageSub">Unified Signal Layer — Metrics / Ranking / Pressure Structure</p>
+      <p id="pageSub">Living Signal Layer — Ranking / Drivers / Presence / Publication Context</p>
       <div id="metaLine" class="meta-line">Source: -</div>
 
       <div class="hero-badges">
         <span id="sourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
         <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
+        <span id="presenceBadge" class="meta-badge blue">PRESENCE — IDLE</span>
         <span id="audioBadge" class="meta-badge fallback">AUDIO — OFF</span>
       </div>
     </div>
 
     <div id="alertBox" class="alert"></div>
+
+    <div class="presence-grid">
+      <div class="presence-card">
+        <div class="presence-kicker" id="presenceKicker">SIGNAL PRESENCE</div>
+        <h3 id="presenceTitle" class="presence-title">-</h3>
+        <p id="presenceSummary" class="presence-summary">-</p>
+        <p id="presenceExplanation" class="presence-explanation">-</p>
+        <div id="presenceChips" class="presence-chips"></div>
+      </div>
+
+      <div class="presence-side">
+        <div class="presence-mini">
+          <div class="presence-mini-label" id="advisoryLabel">ADVISORY</div>
+          <div id="presenceAdvisory" class="presence-mini-value">-</div>
+          <div id="presenceIntent" class="presence-mini-sub">-</div>
+        </div>
+
+        <div class="presence-mini">
+          <div class="presence-mini-label" id="driftLabel">PRESSURE DRIFT</div>
+          <div id="presenceDrift" class="presence-mini-value">-</div>
+          <div id="presenceDriftMeta" class="presence-mini-sub">-</div>
+        </div>
+      </div>
+    </div>
 
     <div class="section">
       <div class="title" id="tickerTitle">Live Intelligence Strip</div>
@@ -791,12 +950,14 @@
     <div class="grid section">
       <div class="card">
         <div class="title" id="highlightTitle">Primary Signal</div>
-
         <div class="highlight-box">
           <h3 id="highlightSignalTitle">-</h3>
           <p id="highlightSignalDesc">-</p>
           <div id="highlightBadges" class="mini-badges"></div>
         </div>
+
+        <div class="title" style="margin-top:18px" id="driversTitle">Signal Drivers</div>
+        <div id="driversBox" class="drivers-box"></div>
       </div>
 
       <div class="card">
@@ -820,7 +981,7 @@
     <div class="grid-3 section">
       <div class="card">
         <div class="title" id="metricsTitle">Signal Metrics</div>
-        <div class="sub-title" id="metricsSub">Signal / Cluster / Theater / Country / System</div>
+        <div class="sub-title" id="metricsSub">Signal / Cluster / Theater / Country / System / Confidence</div>
         <div id="metricsBox" class="metrics-box"></div>
       </div>
 
@@ -831,7 +992,7 @@
 
       <div class="card">
         <div class="title" id="filtersTitle">Filters</div>
-        <div class="filter-wrap">
+        <div class="filters-grid">
           <div class="filter-card">
             <label id="priorityFilterLabel" for="priorityFilter">Priority</label>
             <select id="priorityFilter">
@@ -887,13 +1048,14 @@
       <textarea id="pubDraftText" class="publisher-textarea" readonly></textarea>
 
       <div class="publisher-actions">
-        <button id="btnGenerateSignalPost" type="button" class="btn-primary">Generate Top Signal Post</button>
+        <button id="btnGenerateSignalPost" type="button" class="btn-secondary">Generate Top Signal Post</button>
         <button id="btnGenerateLinkedPublicationPost" type="button" class="btn-secondary">Generate Linked Publication Post</button>
+        <button id="btnGenerateLivingPost" type="button" class="btn-primary">Generate Living Presence Post</button>
         <button id="btnCopyDraftPost" type="button" class="btn-secondary">Copy Draft</button>
       </div>
     </div>
 
-    <div class="footer">© 2026 IBSS — Signal Integrated Layer</div>
+    <div class="footer">© 2026 IBSS — Living Signal Layer</div>
   </div>
 
   <script src="data.js"></script>
@@ -921,13 +1083,14 @@
           nav_countries: "Countries",
           nav_models: "Models",
           nav_about: "About",
+
           title: "IBSS Signals",
-          sub: "Unified Signal Layer — Metrics / Ranking / Pressure Structure",
+          sub: "Living Signal Layer — Ranking / Drivers / Presence / Publication Context",
           ticker: "Live Intelligence Strip",
           highlight: "Primary Signal",
           snapshot: "Signal Snapshot",
           metrics: "Signal Metrics",
-          metricsSub: "Signal / Cluster / Theater / Country / System",
+          metricsSub: "Signal / Cluster / Theater / Country / System / Confidence",
           feed: "Signal Feed",
           filters: "Filters",
           priority: "Priority",
@@ -935,26 +1098,34 @@
           layer: "Layer",
           search: "Search",
           signalList: "Ranked Signal Matrix",
+
           miniTopSignal: "Top Signal Score",
           miniLiveSignals: "Live Signals",
           miniSignalPressure: "Signal Pressure",
           miniSystemPressure: "System Stress",
+
           source: "Source",
           updatedAt: "Updated",
           sourceLive: "SOURCE — ORCHESTRATED",
           sourceFallback: "SOURCE — LIMITED",
           metricsOn: "METRICS — INTEGRATED",
           metricsOff: "METRICS — OFF",
+          presenceOn: "PRESENCE — ACTIVE",
+          presenceIdle: "PRESENCE — IDLE",
+
           audioOn: "AUDIO — ON",
           audioOff: "AUDIO — OFF",
           audioButtonOn: "AUDIO ON",
           audioButtonOff: "AUDIO OFF",
+
           alertHigh: "⚠ HIGH ESCALATION — SIGNAL LAYER IN CRITICAL BAND",
           alertMed: "⚠ STRUCTURED PRESSURE — SIGNAL LAYER IN ACTIVE WATCH BAND",
           alertLow: "✓ LOW PRESSURE — SIGNAL LAYER IN MONITORING BAND",
+
           noData: "No data available.",
           noFeed: "No live feed available.",
           noSignals: "No signals matched the current filters.",
+
           signalScore: "Signal Score",
           clusterRisk: "Strategic File Risk",
           theaterRisk: "Theater Risk",
@@ -962,34 +1133,48 @@
           systemStress: "System Stress",
           band: "Band",
           confidence: "Confidence",
+
           topTheater: "Top Theater",
           topCluster: "Top Strategic File",
           topCountry: "Top Country Risk",
-          liveNews: "Live News Intake",
+
           signalType: "Signal Type",
-          influenceBand: "Influence Band",
           decisionMode: "Decision Mode",
           layerField: "Layer",
           regionField: "Region",
           sourceField: "Source",
           top: "TOP",
           all: "ALL",
+
           linkedPublication: "Linked Publication",
           signalViewer: "Signal Viewer",
           signalContext: "Signal Publication Context",
+          drivers: "Signal Drivers",
           latestDraft: "Latest Draft",
           generateSignalPost: "Generate Top Signal Post",
           generateLinkedPublicationPost: "Generate Linked Publication Post",
+          generateLivingPost: "Generate Living Presence Post",
           copyDraft: "Copy Draft",
+
           type: "Type",
           domain: "Domain",
           edition: "Edition",
           countryName: "Country",
+
           linkedBySignal: "Publication linked to selected signal",
           linkedByCluster: "Publication linked to top cluster",
           linkedByCountry: "Publication linked to top country",
-          linkedUnavailable: "No linked publication available."
+          linkedUnavailable: "No linked publication available.",
+
+          presenceKicker: "SIGNAL PRESENCE",
+          advisory: "Advisory",
+          drift: "Pressure Drift",
+          intent: "Intent",
+          urgency: "Urgency",
+          persistence: "Persistence",
+          volatility: "Volatility"
         },
+
         ar: {
           nav_home: "الرئيسية",
           nav_dashboard: "لوحة التحكم",
@@ -998,13 +1183,14 @@
           nav_countries: "الدول",
           nav_models: "النماذج",
           nav_about: "حول",
+
           title: "طبقة الإشارات",
-          sub: "الطبقة الموحدة للإشارات — قياس / ترتيب / بنية الضغط",
+          sub: "طبقة الإشارات الحية — ترتيب / محرّكات / حضور / سياق منشورات",
           ticker: "الشريط الاستخباري الحي",
           highlight: "الإشارة الأساسية",
           snapshot: "اللقطة السريعة للإشارات",
           metrics: "مقاييس الإشارات",
-          metricsSub: "Signal / Cluster / Theater / Country / System",
+          metricsSub: "Signal / Cluster / Theater / Country / System / Confidence",
           feed: "تغذية الإشارات",
           filters: "الفلاتر",
           priority: "الأولوية",
@@ -1012,26 +1198,34 @@
           layer: "الطبقة",
           search: "بحث",
           signalList: "مصفوفة الإشارات المرتبة",
+
           miniTopSignal: "أعلى درجة إشارة",
           miniLiveSignals: "الإشارات الحية",
           miniSignalPressure: "ضغط الإشارات",
           miniSystemPressure: "ضغط النظام",
+
           source: "المصدر",
           updatedAt: "آخر تحديث",
           sourceLive: "المصدر — منسق",
           sourceFallback: "المصدر — محدود",
           metricsOn: "القياس — مدمج",
           metricsOff: "القياس — غير مفعل",
+          presenceOn: "الحضور — نشط",
+          presenceIdle: "الحضور — ساكن",
+
           audioOn: "الصوت — يعمل",
           audioOff: "الصوت — متوقف",
           audioButtonOn: "تشغيل الصوت",
           audioButtonOff: "إيقاف الصوت",
+
           alertHigh: "⚠ تصعيد مرتفع — طبقة الإشارات داخل الحزمة الحرجة",
           alertMed: "⚠ ضغط بنيوي — طبقة الإشارات داخل حزمة المراقبة النشطة",
           alertLow: "✓ ضغط منخفض — طبقة الإشارات داخل حزمة المراقبة",
+
           noData: "لا توجد بيانات.",
           noFeed: "لا توجد تغذية حية.",
           noSignals: "لا توجد إشارات مطابقة للفلاتر الحالية.",
+
           signalScore: "درجة الإشارة",
           clusterRisk: "خطر الملف الاستراتيجي",
           theaterRisk: "خطر المسرح",
@@ -1039,33 +1233,46 @@
           systemStress: "ضغط النظام",
           band: "الحزمة",
           confidence: "الثقة",
+
           topTheater: "المسرح الأعلى",
           topCluster: "الملف الاستراتيجي الأعلى",
           topCountry: "أعلى دولة خطرًا",
-          liveNews: "التغذية الخبرية الحية",
+
           signalType: "نوع الإشارة",
-          influenceBand: "نطاق التأثير",
           decisionMode: "وضع القرار",
           layerField: "الطبقة",
           regionField: "المنطقة",
           sourceField: "المصدر",
           top: "TOP",
           all: "الكل",
+
           linkedPublication: "المنشور المرتبط",
           signalViewer: "عارض الإشارة",
           signalContext: "سياق الإشارة والمنشورات",
+          drivers: "محرّكات الإشارة",
           latestDraft: "أحدث مسودة",
           generateSignalPost: "توليد منشور الإشارة الأعلى",
           generateLinkedPublicationPost: "توليد منشور الدراسة المرتبطة",
+          generateLivingPost: "توليد منشور الحضور الحي",
           copyDraft: "نسخ المسودة",
+
           type: "النوع",
           domain: "المجال",
           edition: "النسخة",
           countryName: "الدولة",
+
           linkedBySignal: "منشور مرتبط بالإشارة المحددة",
           linkedByCluster: "منشور مرتبط بالملف الاستراتيجي الأعلى",
           linkedByCountry: "منشور مرتبط بالدولة الأعلى خطراً",
-          linkedUnavailable: "لا يوجد منشور مرتبط."
+          linkedUnavailable: "لا يوجد منشور مرتبط.",
+
+          presenceKicker: "حضور الإشارة",
+          advisory: "التوجيه",
+          drift: "انجراف الضغط",
+          intent: "النية",
+          urgency: "الاستعجال",
+          persistence: "الاستمرار",
+          volatility: "التذبذب"
         }
       };
 
@@ -1073,18 +1280,10 @@
       let currentSystem = null;
       let selectedSignalId = null;
 
-      function t(key){
-        return UI[currentLang]?.[key] || key;
-      }
-
-      function safeText(value, fallback = "-"){
-        return typeof value === "string" && value.trim() ? value.trim() : fallback;
-      }
-
-      function safeNumber(value, fallback = 0){
-        const n = Number(value);
-        return Number.isFinite(n) ? n : fallback;
-      }
+      function t(key){ return UI[currentLang]?.[key] || key; }
+      function safeText(value, fallback = "-"){ return typeof value === "string" && value.trim() ? value.trim() : fallback; }
+      function safeNumber(value, fallback = 0){ const n = Number(value); return Number.isFinite(n) ? n : fallback; }
+      function asArray(value){ return Array.isArray(value) ? value : []; }
 
       function getLocalizedText(value){
         if (!value) return "-";
@@ -1102,13 +1301,8 @@
         if (!value) return "-";
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return "-";
-
         return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
-          year:"numeric",
-          month:"short",
-          day:"2-digit",
-          hour:"2-digit",
-          minute:"2-digit"
+          year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit"
         });
       }
 
@@ -1168,10 +1362,19 @@
         document.getElementById("signalListTitle").textContent = t("signalList");
         document.getElementById("publisherTitle").textContent = t("latestDraft");
         document.getElementById("pubDraftTypeTitle").textContent = t("latestDraft");
+        document.getElementById("driversTitle").textContent = t("drivers");
+        document.getElementById("presenceKicker").textContent = t("presenceKicker");
+        document.getElementById("advisoryLabel").textContent = t("advisory");
+        document.getElementById("driftLabel").textContent = t("drift");
         document.getElementById("miniTopSignalLabel").textContent = t("miniTopSignal");
         document.getElementById("miniLiveSignalsLabel").textContent = t("miniLiveSignals");
         document.getElementById("miniSignalPressureLabel").textContent = t("miniSignalPressure");
         document.getElementById("miniSystemPressureLabel").textContent = t("miniSystemPressure");
+
+        document.getElementById("btnGenerateSignalPost").textContent = t("generateSignalPost");
+        document.getElementById("btnGenerateLinkedPublicationPost").textContent = t("generateLinkedPublicationPost");
+        document.getElementById("btnGenerateLivingPost").textContent = t("generateLivingPost");
+        document.getElementById("btnCopyDraftPost").textContent = t("copyDraft");
 
         const prioritySelect = document.getElementById("priorityFilter");
         if (prioritySelect) prioritySelect.options[0].text = t("all");
@@ -1186,10 +1389,6 @@
         if (searchInput) {
           searchInput.placeholder = currentLang === "ar" ? "ابحث داخل الإشارات..." : "Search signal...";
         }
-
-        document.getElementById("btnGenerateSignalPost").textContent = t("generateSignalPost");
-        document.getElementById("btnGenerateLinkedPublicationPost").textContent = t("generateLinkedPublicationPost");
-        document.getElementById("btnCopyDraftPost").textContent = t("copyDraft");
 
         document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
         document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
@@ -1209,7 +1408,6 @@
         } catch (error) {
           console.error("Signals getSystem error:", error);
         }
-
         return null;
       }
 
@@ -1217,12 +1415,10 @@
         const line = document.getElementById("metaLine");
         const sourceBadge = document.getElementById("sourceBadge");
         const metricsBadge = document.getElementById("metricsBadge");
+        const presenceBadge = document.getElementById("presenceBadge");
         const audioBadge = document.getElementById("audioBadge");
-        const digest = system?.publisherDigest || null;
-        const sourceName = safeText(digest?.source || system?.source, "-");
-        const dateText = formatDateTime(digest?.updatedAt || system?.updatedAt);
 
-        line.textContent = `${t("source")}: ${sourceName} | ${t("updatedAt")}: ${dateText}`;
+        line.textContent = `${t("source")}: ${safeText(system?.source, "-")} | ${t("updatedAt")}: ${formatDateTime(system?.updatedAt)}`;
 
         if (system?.publisherDigest) {
           sourceBadge.textContent = t("sourceLive");
@@ -1238,6 +1434,14 @@
         } else {
           metricsBadge.textContent = t("metricsOff");
           metricsBadge.className = "meta-badge fallback";
+        }
+
+        if (safeText(system?.presence?.state, "")) {
+          presenceBadge.textContent = t("presenceOn");
+          presenceBadge.className = "meta-badge blue";
+        } else {
+          presenceBadge.textContent = t("presenceIdle");
+          presenceBadge.className = "meta-badge";
         }
 
         if (window.IBSS_AUDIO?.isEnabled?.()) {
@@ -1270,11 +1474,32 @@
         }
       }
 
-      function renderMiniCards(system){
-        const topSignal = system?.topSignal || system?.publisherDigest?.topSignal || null;
+      function renderPresence(system){
+        const drift = system?.drift || {};
+        const urgency = safeText(system?.presence?.urgency, "low");
+        const urgencyClass = urgency === "immediate" || urgency === "high" ? "high" : urgency === "medium" ? "medium" : "low";
 
-        document.getElementById("miniTopSignalScore").textContent = safeNumber(topSignal?.balancedScore100 || topSignal?.score100 || topSignal?.score, 0);
-        document.getElementById("miniTopSignalScore").className = `mini-value ${scoreClass(safeNumber(topSignal?.balancedScore100 || topSignal?.score100 || topSignal?.score, 0))}`;
+        document.getElementById("presenceTitle").textContent = getLocalizedText(system?.voice?.posture) || "-";
+        document.getElementById("presenceSummary").textContent = getLocalizedText(system?.voice?.summary) || t("noData");
+        document.getElementById("presenceExplanation").textContent = getLocalizedText(system?.voice?.explanation) || t("noData");
+        document.getElementById("presenceAdvisory").textContent = getLocalizedText(system?.voice?.advisory) || "-";
+        document.getElementById("presenceIntent").textContent = `${t("intent")}: ${getLocalizedText(system?.voice?.intent) || "-"}`;
+        document.getElementById("presenceDrift").textContent = safeText(drift.direction, "STABLE");
+        document.getElementById("presenceDriftMeta").textContent =
+          `${t("persistence")}: ${safeNumber(drift.persistence, 0)} | ${t("volatility")}: ${safeNumber(drift.volatility, 0)}`;
+
+        document.getElementById("presenceChips").innerHTML = `
+          <span class="presence-chip ${urgencyClass}">${escapeHtml(`${t("urgency")}: ${urgency}`)}</span>
+          <span class="presence-chip">${escapeHtml(`${t("systemStress")}: ${safeNumber(system?.systemPressure, 0)}`)}</span>
+          <span class="presence-chip">${escapeHtml(`${t("confidence")}: ${safeNumber(system?.confidenceScore, 0)}`)}</span>
+          <span class="presence-chip">${escapeHtml(`${t("drift")}: ${safeText(drift.direction, "STABLE")}`)}</span>
+        `;
+      }
+
+      function renderMiniCards(system){
+        const topSignal = system?.topSignal || null;
+        document.getElementById("miniTopSignalScore").textContent = safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0);
+        document.getElementById("miniTopSignalScore").className = `mini-value ${scoreClass(safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0))}`;
 
         document.getElementById("miniLiveSignals").textContent = safeNumber(system?.liveSignalsCount, 0);
         document.getElementById("miniLiveSignals").className = `mini-value ${scoreClass(safeNumber(system?.liveSignalsCount, 0) * 6)}`;
@@ -1293,7 +1518,6 @@
       function getSelectedSignal(system){
         const signals = getRankedSignals(system);
         if (!signals.length) return null;
-
         const match = signals.find(signal => signal.id === selectedSignalId);
         return match || signals[0];
       }
@@ -1336,15 +1560,30 @@
         `;
       }
 
-      function renderSnapshot(system){
-        const box = document.getElementById("snapshotBox");
-        const snapshot = system?.snapshot || null;
+      function renderDrivers(system){
+        const box = document.getElementById("driversBox");
+        const drivers = asArray(system?.drivers);
 
+        if (!drivers.length) {
+          box.innerHTML = `<div class="driver-item"><div class="driver-title">${escapeHtml(t("noData"))}</div></div>`;
+          return;
+        }
+
+        box.innerHTML = drivers.slice(0, 5).map((driver) => `
+          <div class="driver-item">
+            <div class="driver-title">${escapeHtml(getLocalizedText(driver.label))}</div>
+            <div class="driver-meta">${escapeHtml(getLocalizedText(driver.explanation))}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderSnapshot(system){
+        const snapshot = system?.snapshot || null;
         const topTheater = snapshot?.topTheater || system?.topTheater || null;
         const topCluster = snapshot?.topCluster || system?.topCluster || null;
         const topCountry = snapshot?.topCountry || (system?.countryRiskFeed || [])[0] || null;
 
-        box.innerHTML = `
+        document.getElementById("snapshotBox").innerHTML = `
           <div class="snapshot-item">
             <strong>${escapeHtml(t("topTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
             <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("theaterRisk")}: ${safeNumber(topTheater.avgRisk, 0)} | ${t("band")}: ${getBandLabel(safeNumber(topTheater.avgRisk, 0))}` : t("noData"))}</div>
@@ -1614,8 +1853,8 @@
         meta.textContent = draft?.createdAt ? formatDateTime(draft.createdAt) : "-";
         text.value =
           currentLang === "ar"
-            ? (draft?.payload?.text_ar || draft?.payload?.text_en || "")
-            : (draft?.payload?.text_en || draft?.payload?.text_ar || "");
+            ? (draft?.payload?.text_ar || draft?.payload?.presence_ar || draft?.payload?.text_en || "")
+            : (draft?.payload?.text_en || draft?.payload?.presence_en || draft?.payload?.text_ar || "");
       }
 
       function bindFilters(){
@@ -1649,6 +1888,7 @@
       function bindPublisherButtons(){
         const btnSignal = document.getElementById("btnGenerateSignalPost");
         const btnPublication = document.getElementById("btnGenerateLinkedPublicationPost");
+        const btnLiving = document.getElementById("btnGenerateLivingPost");
         const btnCopy = document.getElementById("btnCopyDraftPost");
 
         if (btnSignal && !btnSignal.dataset.bound) {
@@ -1673,13 +1913,25 @@
 
               if (window.IBSS_PUBLISHER?.generateLinkedPublicationPost) {
                 window.IBSS_PUBLISHER.generateLinkedPublicationPost(signal);
-              } else if (window.IBSS_PUBLISHER?.generateFeaturedPublicationPost) {
-                window.IBSS_PUBLISHER.generateFeaturedPublicationPost();
               }
 
               renderPublisherConsole();
             } catch (error) {
               console.error("Generate linked publication post error:", error);
+            }
+          });
+        }
+
+        if (btnLiving && !btnLiving.dataset.bound) {
+          btnLiving.dataset.bound = "1";
+          btnLiving.addEventListener("click", function () {
+            try {
+              if (window.IBSS_PUBLISHER?.generateLivingPresencePost) {
+                window.IBSS_PUBLISHER.generateLivingPresencePost();
+                renderPublisherConsole();
+              }
+            } catch (error) {
+              console.error("Generate living presence post error:", error);
             }
           });
         }
@@ -1698,6 +1950,40 @@
         }
       }
 
+      function renderTickerStrip(system){
+        const track = document.getElementById("tickerTrack");
+        if (!track) return;
+
+        const unifiedFeed = (
+          system?.publisherFeed ||
+          system?.unifiedFeed ||
+          window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
+          []
+        ).slice(0, 10);
+
+        if (!unifiedFeed.length) {
+          track.innerHTML = `
+            <div class="ticker-item">
+              <span class="ticker-item-text">${escapeHtml(t("noFeed"))}</span>
+            </div>
+          `;
+          return;
+        }
+
+        track.innerHTML = unifiedFeed.map((item) => {
+          const priority = String(item.priority || "LOW").toUpperCase();
+          const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+          const text = getLocalizedText(item.text || item.title);
+
+          return `
+            <div class="ticker-item">
+              <span class="ticker-dot ${cls}"></span>
+              <span class="ticker-item-text">${escapeHtml(String(text))}</span>
+            </div>
+          `;
+        }).join("");
+      }
+
       function renderSignalsCore(system){
         if (!system) return;
         currentSystem = system;
@@ -1710,8 +1996,11 @@
         applyLanguage();
         updateMeta(system);
         renderAlert(system);
+        renderPresence(system);
+        renderTickerStrip(system);
         renderMiniCards(system);
         renderHighlight(system);
+        renderDrivers(system);
         renderSnapshot(system);
         renderLinkedPublication(system);
         renderSignalViewer(system);
@@ -1744,12 +2033,10 @@
               []
             );
 
-            const items = unifiedFeed.slice(0, 10).map((item) => ({
+            return unifiedFeed.slice(0, 10).map((item) => ({
               level: String(item.priority || "LOW").toLowerCase(),
               text: getLocalizedText(item.text || item.title)
             }));
-
-            return items.length ? items : null;
           },
           afterRender: function(system) {
             renderSignalsCore(system);
