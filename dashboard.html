@@ -22,7 +22,6 @@
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
       --shadow:0 10px 24px rgba(0,0,0,.18);
-      --glow:0 0 18px rgba(212,175,55,.08);
     }
 
     *{box-sizing:border-box}
@@ -39,7 +38,7 @@
     body{min-height:100vh}
 
     .wrap{
-      width:min(1180px,92%);
+      width:min(1220px,92%);
       margin:auto;
       padding:20px 0 42px;
     }
@@ -179,10 +178,10 @@
       background:rgba(255,159,26,.08);
     }
 
-    .meta-badge.info{
-      color:var(--blue);
-      border-color:rgba(90,140,255,.28);
-      background:rgba(90,140,255,.08);
+    .meta-badge.blue{
+      color:#bfd2ff;
+      border-color:rgba(90,140,255,.35);
+      background:rgba(90,140,255,.10);
     }
 
     .alert{
@@ -198,30 +197,7 @@
       line-height:1.7;
     }
 
-    .section{
-      margin-top:18px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px;
-      margin-top:22px;
-    }
-
-    .grid-3{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:18px;
-      margin-top:18px;
-    }
-
-    .driver-grid{
-      display:grid;
-      grid-template-columns:1.15fr .85fr;
-      gap:18px;
-      margin-top:18px;
-    }
+    .section{margin-top:18px}
 
     .card{
       background:var(--panel);
@@ -246,6 +222,203 @@
       line-height:1.7;
     }
 
+    .presence-grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:18px;
+      margin-top:22px;
+    }
+
+    .presence-card{
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
+        var(--panel);
+      border:1px solid rgba(212,175,55,.14);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.02) inset,
+        0 14px 28px rgba(0,0,0,.2);
+    }
+
+    .presence-kicker{
+      color:var(--gold);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      margin-bottom:10px;
+    }
+
+    .presence-title{
+      font-size:28px;
+      font-weight:900;
+      color:#fff;
+      line-height:1.4;
+      margin:0 0 12px;
+    }
+
+    .presence-summary{
+      color:#ddd;
+      font-size:15px;
+      line-height:1.9;
+      margin:0 0 12px;
+    }
+
+    .presence-explanation{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.9;
+      margin:0 0 14px;
+    }
+
+    .presence-chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .presence-chip{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 11px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      color:#ddd;
+    }
+
+    .presence-chip.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.28);
+    }
+
+    .presence-chip.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.28);
+    }
+
+    .presence-chip.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
+    .presence-side{
+      display:grid;
+      gap:18px;
+    }
+
+    .presence-mini{
+      background:var(--panel);
+      border:1px solid var(--soft-border);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .presence-mini-label{
+      color:#8f8f8f;
+      font-size:12px;
+      letter-spacing:.08em;
+      margin-bottom:10px;
+    }
+
+    .presence-mini-value{
+      color:var(--gold);
+      font-size:22px;
+      font-weight:900;
+      line-height:1.5;
+      margin-bottom:8px;
+    }
+
+    .presence-mini-sub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+    }
+
+    .ticker-shell{
+      border:1px solid rgba(212,175,55,.18);
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
+      position:relative;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+      margin-top:18px;
+    }
+
+    .ticker-shell::-webkit-scrollbar{display:none}
+
+    .ticker-track{
+      display:flex;
+      align-items:stretch;
+      gap:12px;
+      padding:14px 16px;
+      min-height:92px;
+      width:max-content;
+      white-space:normal;
+    }
+
+    .ticker-item{
+      flex:0 0 280px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      min-height:72px;
+      max-width:280px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.05);
+      color:#f0f0f0;
+      font-size:13px;
+      line-height:1.6;
+      white-space:normal;
+    }
+
+    .ticker-item-text{
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      word-break:break-word;
+      unicode-bidi:plaintext;
+    }
+
+    .ticker-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      flex:0 0 8px;
+      margin-top:5px;
+    }
+
+    .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
+    .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
+    .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:22px;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+      margin-top:18px;
+    }
+
     .state{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -254,17 +427,15 @@
 
     .state-item,
     .signal-box,
-    .legend-item,
     .feed-item,
     .decision-box,
     .scenario-row,
     .country-row,
     .metric-row,
     .snapshot-item,
-    .ticker-item,
     .driver-item,
-    .driver-summary-card,
-    .publication-box{
+    .publication-box,
+    .viewer-box{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:16px;
@@ -376,168 +547,22 @@
       border-color:rgba(0,208,132,.28);
     }
 
-    .radar-wrap{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding:14px 0 8px;
-    }
-
-    .radar{
-      position:relative;
-      width:300px;
-      height:300px;
-      border-radius:50%;
-      filter:drop-shadow(0 0 20px rgba(212,175,55,.08));
-      overflow:hidden;
-      background:
-        radial-gradient(circle at center, rgba(212,175,55,.03), transparent 65%);
-    }
-
-    .circle{
-      position:absolute;
-      border:1px solid rgba(212,175,55,.16);
-      border-radius:50%;
-      z-index:2;
-    }
-
-    .c1{width:90px;height:90px;top:105px;left:105px}
-    .c2{width:150px;height:150px;top:75px;left:75px}
-    .c3{width:220px;height:220px;top:40px;left:40px}
-    .c4{width:300px;height:300px;top:0;left:0}
-
-    .center-dot{
-      position:absolute;
-      width:18px;
-      height:18px;
-      border-radius:50%;
-      background:var(--gold);
-      top:141px;
-      left:141px;
-      box-shadow:0 0 20px rgba(212,175,55,.8);
-      z-index:6;
-    }
-
-    .sweep{
-      position:absolute;
-      width:230px;
-      height:230px;
-      top:35px;
-      left:35px;
-      border-radius:50%;
-      background:conic-gradient(rgba(212,175,55,.26), rgba(212,175,55,.05), transparent 42%);
-      animation:spin 4s linear infinite;
-      opacity:.9;
-      z-index:3;
-    }
-
-    .legend,
+    .drivers-box,
     .feed,
     .scenario-box,
     .country-box,
     .metrics-box,
-    .snapshot-box,
-    .driver-box,
-    .driver-summary{
+    .snapshot-box{
       display:grid;
       gap:12px;
-    }
-
-    .legend{
-      margin-top:18px;
-    }
-
-    .legend-item{
-      padding:14px 16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-
-    .legend-left{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      min-width:0;
-    }
-
-    .legend-dot{
-      width:11px;
-      height:11px;
-      border-radius:50%;
-      flex:0 0 auto;
-    }
-
-    .legend-dot.high{background:var(--red)}
-    .legend-dot.medium{background:var(--orange)}
-    .legend-dot.low{background:var(--green)}
-
-    .legend-texts{
-      min-width:0;
-    }
-
-    .legend-name{
-      color:#fff;
-      font-size:15px;
-      font-weight:700;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:230px;
-    }
-
-    .legend-sub{
-      color:var(--muted);
-      font-size:12px;
-      margin-top:4px;
-    }
-
-    .legend-right{
-      text-align:right;
-      flex:0 0 auto;
-    }
-
-    .legend-score{
-      color:var(--gold);
-      font-size:20px;
-      font-weight:900;
-      line-height:1;
-    }
-
-    .legend-badge{
-      margin-top:6px;
-      display:inline-block;
-      padding:4px 8px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .legend-badge.high{
-      color:#ffd7d7;
-      background:rgba(255,77,79,.12);
-      border-color:rgba(255,77,79,.3);
-    }
-
-    .legend-badge.medium{
-      color:#ffe2b8;
-      background:rgba(255,159,26,.12);
-      border-color:rgba(255,159,26,.3);
-    }
-
-    .legend-badge.low{
-      color:#d6fff1;
-      background:rgba(0,208,132,.12);
-      border-color:rgba(0,208,132,.28);
     }
 
     .feed-item,
     .scenario-row,
     .country-row,
     .metric-row,
-    .snapshot-item{
+    .snapshot-item,
+    .driver-item{
       padding:13px 15px;
       color:#e3e3e3;
       line-height:1.7;
@@ -554,7 +579,8 @@
     }
 
     .snapshot-item strong,
-    .country-name{
+    .country-name,
+    .driver-name{
       color:#fff;
       display:block;
       margin-bottom:6px;
@@ -563,7 +589,8 @@
 
     .snapshot-meta,
     .country-meta,
-    .metric-sub{
+    .metric-sub,
+    .driver-meta{
       color:var(--muted);
       font-size:12px;
       line-height:1.7;
@@ -577,184 +604,47 @@
       flex:0 0 auto;
     }
 
-    .driver-item{
-      padding:15px 16px;
-    }
-
-    .driver-top{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-bottom:8px;
-    }
-
-    .driver-label{
-      color:#fff;
-      font-size:15px;
-      font-weight:800;
-      line-height:1.7;
-    }
-
-    .driver-score{
-      color:var(--gold);
-      font-size:18px;
-      font-weight:900;
-    }
-
-    .driver-meta{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-bottom:8px;
-    }
-
-    .driver-chip{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      color:#ddd;
-    }
-
-    .driver-explanation{
-      color:#ddd;
-      font-size:14px;
-      line-height:1.8;
-    }
-
-    .driver-summary-card{
-      padding:15px 16px;
-    }
-
-    .driver-summary-card .kicker{
-      font-size:12px;
-      color:#8c8c8c;
-      margin-bottom:8px;
-    }
-
-    .driver-summary-card .big{
-      font-size:18px;
-      font-weight:900;
-      color:#fff;
-      line-height:1.6;
-      margin-bottom:8px;
-    }
-
-    .driver-summary-card .small{
-      color:#cfcfcf;
-      font-size:14px;
-      line-height:1.8;
-    }
-
     .publication-box{
-      padding:16px;
+      padding:18px;
+      border-color:rgba(212,175,55,.24);
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 35%),
+        var(--panel2);
     }
 
     .publication-title{
       color:#fff;
-      font-size:18px;
+      font-size:28px;
+      line-height:1.45;
       font-weight:900;
-      line-height:1.6;
-      margin-bottom:10px;
+      margin:0 0 10px;
     }
 
-    .publication-summary{
+    .publication-text{
       color:#ddd;
-      font-size:14px;
       line-height:1.9;
-      margin-bottom:12px;
+      font-size:15px;
+      margin:0;
     }
 
-    .publication-meta{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
+    .viewer-box{
+      padding:16px;
     }
 
-    .publication-chip{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      color:#ddd;
+    .viewer-title{
+      color:#fff;
+      font-size:22px;
+      font-weight:900;
+      line-height:1.5;
+      margin:0 0 10px;
     }
 
-    .ticker-shell{
-      border:1px solid rgba(212,175,55,.18);
-      border-radius:18px;
-      background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
-      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
-      position:relative;
-      overflow-x:auto;
-      overflow-y:hidden;
-      -webkit-overflow-scrolling:touch;
-      scrollbar-width:none;
-    }
-
-    .ticker-shell::-webkit-scrollbar{
-      display:none;
-    }
-
-    .ticker-track{
-      display:flex;
-      align-items:stretch;
-      gap:12px;
-      padding:14px 16px;
-      min-height:92px;
-      width:max-content;
-      white-space:normal;
-      will-change:auto;
-    }
-
-    .ticker-item{
-      flex:0 0 280px;
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      min-height:72px;
-      max-width:280px;
-      padding:14px 16px;
-      border-radius:18px;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.05);
+    .viewer-body{
       color:#f0f0f0;
-      font-size:13px;
-      line-height:1.6;
-      white-space:normal;
+      line-height:1.95;
+      font-size:14px;
+      white-space:pre-wrap;
     }
-
-    .ticker-item-text{
-      display:-webkit-box;
-      -webkit-line-clamp:3;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      word-break:break-word;
-      unicode-bidi:plaintext;
-    }
-
-    .ticker-dot{
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      flex:0 0 8px;
-      margin-top:6px;
-    }
-
-    .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
-    .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
-    .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
 
     .publisher-actions{
       display:flex;
@@ -784,11 +674,6 @@
       color:#ddd;
     }
 
-    .btn-primary:hover,
-    .btn-secondary:hover{
-      transform:translateY(-1px);
-    }
-
     .publisher-textarea{
       width:100%;
       min-height:210px;
@@ -813,20 +698,14 @@
       padding-top:22px;
     }
 
-    @keyframes spin{
-      from{transform:rotate(0deg)}
-      to{transform:rotate(360deg)}
-    }
-
     html[dir="rtl"] body{text-align:right}
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
-    html[dir="rtl"] .legend-item,
     html[dir="rtl"] .scenario-row,
     html[dir="rtl"] .country-row,
     html[dir="rtl"] .metric-row,
-    html[dir="rtl"] .driver-top{
+    html[dir="rtl"] .presence-chips{
       direction:rtl;
     }
 
@@ -837,50 +716,22 @@
       text-align:center;
     }
 
-    html[dir="rtl"] .legend-right{text-align:left}
-
     @media (max-width:980px){
-      .grid{grid-template-columns:1fr}
-      .grid-3{grid-template-columns:1fr}
-      .driver-grid{grid-template-columns:1fr}
+      .presence-grid,
+      .grid,
+      .grid-3{
+        grid-template-columns:1fr;
+      }
     }
 
     @media (max-width:640px){
       .hero h1{font-size:34px}
       .topbar{flex-direction:column}
-      .nav{justify-content:center}
-      .brand{text-align:center}
       .state{grid-template-columns:1fr}
-      .legend-item{
-        align-items:flex-start;
-        flex-direction:column;
-      }
-      .legend-right{text-align:left}
       .publisher-actions{flex-direction:column}
-
-      .radar{
-        width:270px;
-        height:270px;
-      }
-      .c1{width:80px;height:80px;top:95px;left:95px}
-      .c2{width:140px;height:140px;top:65px;left:65px}
-      .c3{width:200px;height:200px;top:35px;left:35px}
-      .c4{width:270px;height:270px}
-      .center-dot{top:126px;left:126px}
-      .sweep{width:210px;height:210px;top:30px;left:30px}
-
-      .ticker-track{
-        min-height:88px;
-        padding:12px;
-        gap:10px;
-      }
-
       .ticker-item{
         flex:0 0 78vw;
         max-width:78vw;
-        min-height:70px;
-        padding:12px 14px;
-        border-radius:16px;
       }
     }
   </style>
@@ -915,52 +766,47 @@
 
     <div class="hero">
       <h1 id="pageTitle">IBSS Dashboard</h1>
-      <p id="pageSub">Unified Sovereign Metrics & Decision Layer</p>
+      <p id="pageSub">Adaptive Living Presence & Unified Sovereign Decision Layer</p>
       <div id="metaLine" class="meta-line">Engine source: -</div>
 
       <div class="hero-badges">
         <span id="sourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
         <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
+        <span id="presenceBadge" class="meta-badge blue">PRESENCE — IDLE</span>
         <span id="audioBadge" class="meta-badge fallback">AUDIO — OFF</span>
       </div>
     </div>
 
     <div id="alertBox" class="alert"></div>
 
+    <div class="presence-grid">
+      <div class="presence-card">
+        <div class="presence-kicker" id="presenceKicker">LIVING PRESENCE</div>
+        <h3 id="presenceTitle" class="presence-title">-</h3>
+        <p id="presenceSummary" class="presence-summary">-</p>
+        <p id="presenceExplanation" class="presence-explanation">-</p>
+        <div id="presenceChips" class="presence-chips"></div>
+      </div>
+
+      <div class="presence-side">
+        <div class="presence-mini">
+          <div class="presence-mini-label" id="advisoryLabel">ADVISORY</div>
+          <div id="presenceAdvisory" class="presence-mini-value">-</div>
+          <div id="presenceIntent" class="presence-mini-sub">-</div>
+        </div>
+
+        <div class="presence-mini">
+          <div class="presence-mini-label" id="driftLabel">PRESSURE DRIFT</div>
+          <div id="presenceDrift" class="presence-mini-value">-</div>
+          <div id="presenceDriftMeta" class="presence-mini-sub">-</div>
+        </div>
+      </div>
+    </div>
+
     <div class="section">
       <div class="title" id="tickerTitle">Live Intelligence Strip</div>
       <div class="ticker-shell">
         <div id="tickerTrack" class="ticker-track"></div>
-      </div>
-    </div>
-
-    <div class="driver-grid">
-      <div class="card">
-        <div class="title" id="driversTitle">Decision Drivers</div>
-        <div id="driverBox" class="driver-box"></div>
-      </div>
-
-      <div class="card">
-        <div class="title" id="driverSummaryTitle">Driver Summary</div>
-        <div class="driver-summary">
-          <div class="driver-summary-card">
-            <div class="kicker" id="dominantDriverLabel">Dominant Driver</div>
-            <div id="dominantDriverTitle" class="big">-</div>
-            <div id="dominantDriverMeta" class="small">-</div>
-          </div>
-
-          <div class="driver-summary-card">
-            <div class="kicker" id="pressureCompositionLabel">Pressure Composition</div>
-            <div id="pressureCompositionTitle" class="big">-</div>
-            <div id="pressureCompositionMeta" class="small">-</div>
-          </div>
-
-          <div class="driver-summary-card">
-            <div class="kicker" id="linkedPublicationLabel">Linked Publication</div>
-            <div id="linkedPublicationTitle" class="big">-</div>
-            <div id="linkedPublicationMeta" class="small">-</div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -1005,20 +851,8 @@
           <div id="signalBadges" class="mini-badges"></div>
         </div>
 
-        <div class="title" style="margin-top:18px" id="radarTitle">Geo Radar</div>
-
-        <div class="radar-wrap">
-          <div class="radar" id="radar">
-            <div class="circle c4"></div>
-            <div class="circle c3"></div>
-            <div class="circle c2"></div>
-            <div class="circle c1"></div>
-            <div class="sweep"></div>
-            <div class="center-dot"></div>
-          </div>
-        </div>
-
-        <div class="legend" id="radarLegend"></div>
+        <div class="title" style="margin-top:18px" id="driversTitle">Dominant Drivers</div>
+        <div id="driversBox" class="drivers-box"></div>
       </div>
     </div>
 
@@ -1030,7 +864,7 @@
 
       <div class="card">
         <div class="title" id="metricsTitle">Unified Metrics</div>
-        <div class="sub-title" id="metricsSub">SSI / CRI / Signal / Cluster / Theater</div>
+        <div class="sub-title" id="metricsSub">SSI / CRI / Signal / Cluster / Theater / Confidence</div>
         <div id="metricsBox" class="metrics-box"></div>
       </div>
 
@@ -1040,9 +874,16 @@
       </div>
     </div>
 
-    <div class="card section">
-      <div class="title" id="publicationTitle">Featured Publication</div>
-      <div id="publicationBox" class="publication-box"></div>
+    <div class="grid section">
+      <div class="card">
+        <div class="title" id="publicationTitle">Featured Publication</div>
+        <div id="publicationBox" class="publication-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="title" id="viewerTitle">Living System Viewer</div>
+        <div id="viewerBox" class="viewer-box"></div>
+      </div>
     </div>
 
     <div class="card section">
@@ -1073,14 +914,15 @@
       <textarea id="pubDraftText" class="publisher-textarea" readonly></textarea>
 
       <div class="publisher-actions">
-        <button id="btnGenerateSignalPost" type="button" class="btn-primary">Generate Top Signal Post</button>
+        <button id="btnGenerateSignalPost" type="button" class="btn-secondary">Generate Top Signal Post</button>
         <button id="btnGenerateBriefPost" type="button" class="btn-secondary">Generate Strategic Brief</button>
         <button id="btnGeneratePublicationPost" type="button" class="btn-secondary">Generate Featured Publication</button>
+        <button id="btnGenerateLivingPost" type="button" class="btn-primary">Generate Living Presence Post</button>
         <button id="btnCopyDraftPost" type="button" class="btn-secondary">Copy Draft</button>
       </div>
     </div>
 
-    <div class="footer">© 2026 IBSS — Dashboard Layer</div>
+    <div class="footer">© 2026 IBSS — Adaptive Living Dashboard Layer</div>
   </div>
 
   <script src="data.js"></script>
@@ -1090,7 +932,6 @@
   <script src="analysis.js"></script>
   <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
-  <script src="content.js"></script>
   <script src="engine.js"></script>
   <script src="audio-engine.js"></script>
   <script src="geo-radar.js"></script>
@@ -1112,7 +953,7 @@
           nav_about: "About",
 
           title: "IBSS Dashboard",
-          sub: "Unified Sovereign Metrics & Decision Layer",
+          sub: "Adaptive Living Presence & Unified Sovereign Decision Layer",
           ticker: "Live Intelligence Strip",
           state: "System State",
           level: "Level",
@@ -1120,20 +961,19 @@
           decision: "Decision",
           mode: "Mode",
           signal: "Primary Signal",
-          radar: "Geo Radar",
+          drivers: "Dominant Drivers",
           feed: "Live Feed",
           scenario: "Scenario Engine",
           country: "Country Risk Unit",
           snapshot: "Strategic Snapshot",
           metrics: "Unified Metrics",
-          metricsSub: "SSI / CRI / Signal / Cluster / Theater",
-          publisher: "Publishing Console",
+          metricsSub: "SSI / CRI / Signal / Cluster / Theater / Confidence",
           publication: "Featured Publication",
-          drivers: "Decision Drivers",
-          driverSummary: "Driver Summary",
-          dominantDriver: "Dominant Driver",
-          pressureComposition: "Pressure Composition",
-          linkedPublication: "Linked Publication",
+          viewer: "Living System Viewer",
+          publisher: "Publishing Console",
+          presenceKicker: "LIVING PRESENCE",
+          advisory: "ADVISORY",
+          drift: "PRESSURE DRIFT",
 
           levelHigh: "HIGH",
           levelMed: "MEDIUM",
@@ -1153,6 +993,8 @@
           riskScore: "Risk Score",
           riskLevel: "Risk Level",
           trend: "Trend",
+          band: "Band",
+          confidence: "Confidence",
           sourceEngine: "Engine source",
           updatedAt: "Updated",
           noData: "No data available.",
@@ -1162,6 +1004,8 @@
           sourceFallback: "SOURCE — LIMITED",
           metricsOn: "METRICS — INTEGRATED",
           metricsOff: "METRICS — OFF",
+          presenceOn: "PRESENCE — ACTIVE",
+          presenceIdle: "PRESENCE — IDLE",
 
           snapshotTheater: "Top Theater",
           snapshotCluster: "Top Strategic File",
@@ -1175,16 +1019,27 @@
           theaterRisk: "Theater Risk",
           countryRisk: "Country Risk",
           systemStress: "System Stress",
-          confidence: "Confidence",
-          band: "Band",
 
           audioOn: "AUDIO — ON",
           audioOff: "AUDIO — OFF",
           audioButtonOn: "AUDIO ON",
           audioButtonOff: "AUDIO OFF",
 
-          topLabel: "TOP",
-          publicationLabel: "Featured Publication"
+          posture: "Posture",
+          urgency: "Urgency",
+          persistence: "Persistence",
+          volatility: "Volatility",
+          intent: "Intent",
+          advisoryLabel: "Advisory",
+          publicationType: "Type",
+          publicationDomain: "Domain",
+          publicationCountry: "Country",
+
+          generateSignalPost: "Generate Top Signal Post",
+          generateBriefPost: "Generate Strategic Brief",
+          generatePublicationPost: "Generate Featured Publication",
+          generateLivingPost: "Generate Living Presence Post",
+          copyDraft: "Copy Draft"
         },
 
         ar: {
@@ -1197,7 +1052,7 @@
           nav_about: "حول",
 
           title: "لوحة تحكم IBSS",
-          sub: "طبقة القرار والقياس السيادي الموحد",
+          sub: "طبقة الحضور الحي والقرار السيادي الموحد",
           ticker: "الشريط الاستخباري الحي",
           state: "حالة النظام",
           level: "المستوى",
@@ -1205,20 +1060,19 @@
           decision: "القرار",
           mode: "الوضع",
           signal: "الإشارة الأساسية",
-          radar: "الرادار الجغرافي",
+          drivers: "المحرّكات المهيمنة",
           feed: "التغذية الحية",
           scenario: "محرك السيناريو",
           country: "وحدة مخاطر الدول",
           snapshot: "اللقطة الاستراتيجية",
           metrics: "المقاييس الموحدة",
-          metricsSub: "SSI / CRI / Signal / Cluster / Theater",
-          publisher: "وحدة النشر",
+          metricsSub: "SSI / CRI / Signal / Cluster / Theater / Confidence",
           publication: "المنشور المميز",
-          drivers: "محركات القرار",
-          driverSummary: "ملخص المحركات",
-          dominantDriver: "المحرّك المهيمن",
-          pressureComposition: "تركيب الضغط",
-          linkedPublication: "المنشور المرتبط",
+          viewer: "عارض النظام الحي",
+          publisher: "وحدة النشر",
+          presenceKicker: "الحضور الحي",
+          advisory: "التوجيه",
+          drift: "انجراف الضغط",
 
           levelHigh: "مرتفع",
           levelMed: "متوسط",
@@ -1238,6 +1092,8 @@
           riskScore: "درجة الخطر",
           riskLevel: "مستوى الخطر",
           trend: "الاتجاه",
+          band: "الحزمة",
+          confidence: "الثقة",
           sourceEngine: "مصدر المحرك",
           updatedAt: "آخر تحديث",
           noData: "لا توجد بيانات.",
@@ -1247,6 +1103,8 @@
           sourceFallback: "المصدر — محدود",
           metricsOn: "القياس — مدمج",
           metricsOff: "القياس — غير مفعل",
+          presenceOn: "الحضور — نشط",
+          presenceIdle: "الحضور — ساكن",
 
           snapshotTheater: "المسرح الأعلى",
           snapshotCluster: "الملف الاستراتيجي الأعلى",
@@ -1260,16 +1118,27 @@
           theaterRisk: "خطر المسرح",
           countryRisk: "خطر الدولة",
           systemStress: "ضغط النظام",
-          confidence: "الثقة",
-          band: "الحزمة",
 
           audioOn: "الصوت — يعمل",
           audioOff: "الصوت — متوقف",
           audioButtonOn: "تشغيل الصوت",
           audioButtonOff: "إيقاف الصوت",
 
-          topLabel: "TOP",
-          publicationLabel: "المنشور المميز"
+          posture: "الوضعية",
+          urgency: "الاستعجال",
+          persistence: "الاستمرار",
+          volatility: "التذبذب",
+          intent: "النية",
+          advisoryLabel: "التوجيه",
+          publicationType: "النوع",
+          publicationDomain: "المجال",
+          publicationCountry: "الدولة",
+
+          generateSignalPost: "توليد منشور الإشارة الأعلى",
+          generateBriefPost: "توليد موجز استراتيجي",
+          generatePublicationPost: "توليد المنشور المميز",
+          generateLivingPost: "توليد منشور الحضور الحي",
+          copyDraft: "نسخ المسودة"
         }
       };
 
@@ -1328,17 +1197,6 @@
         });
       }
 
-      function formatDate(value) {
-        if (!value) return "-";
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return "-";
-        return date.toLocaleDateString(STATE.lang === "ar" ? "ar-EG" : "en-US", {
-          year:"numeric",
-          month:"short",
-          day:"2-digit"
-        });
-      }
-
       function getBandLabel(score) {
         if (window.IBSS_METRICS?.classifyBand) {
           const band = window.IBSS_METRICS.classifyBand(safeNumber(score, 0));
@@ -1388,22 +1246,21 @@
         qs("decisionLabel").textContent = t("decision");
         qs("modeLabel").textContent = t("mode");
         qs("signalTitleLabel").textContent = t("signal");
-        qs("radarTitle").textContent = t("radar");
+        qs("driversTitle").textContent = t("drivers");
         qs("snapshotTitle").textContent = t("snapshot");
         qs("metricsTitle").textContent = t("metrics");
         qs("metricsSub").textContent = t("metricsSub");
         qs("scenarioTitle").textContent = t("scenario");
         qs("countryTitle").textContent = t("country");
         qs("feedTitle").textContent = t("feed");
-        qs("publisherTitle").textContent = t("publisher");
         qs("publicationTitle").textContent = t("publication");
-        qs("driversTitle").textContent = t("drivers");
-        qs("driverSummaryTitle").textContent = t("driverSummary");
-        qs("dominantDriverLabel").textContent = t("dominantDriver");
-        qs("pressureCompositionLabel").textContent = t("pressureComposition");
-        qs("linkedPublicationLabel").textContent = t("linkedPublication");
+        qs("viewerTitle").textContent = t("viewer");
+        qs("publisherTitle").textContent = t("publisher");
         qs("pubDraftTypeLabel").textContent = t("latestDraftType");
         qs("pubDraftTimeLabel").textContent = t("createdAt");
+        qs("presenceKicker").textContent = t("presenceKicker");
+        qs("advisoryLabel").textContent = t("advisory");
+        qs("driftLabel").textContent = t("drift");
 
         document.querySelector('[data-i18n="nav_home"]').textContent = t("nav_home");
         document.querySelector('[data-i18n="nav_dashboard"]').textContent = t("nav_dashboard");
@@ -1413,14 +1270,11 @@
         document.querySelector('[data-i18n="nav_models"]').textContent = t("nav_models");
         document.querySelector('[data-i18n="nav_about"]').textContent = t("nav_about");
 
-        qs("btnGenerateSignalPost").textContent =
-          STATE.lang === "ar" ? "توليد منشور الإشارة الأعلى" : "Generate Top Signal Post";
-        qs("btnGenerateBriefPost").textContent =
-          STATE.lang === "ar" ? "توليد موجز استراتيجي" : "Generate Strategic Brief";
-        qs("btnGeneratePublicationPost").textContent =
-          STATE.lang === "ar" ? "توليد منشور مميز" : "Generate Featured Publication";
-        qs("btnCopyDraftPost").textContent =
-          STATE.lang === "ar" ? "نسخ المسودة" : "Copy Draft";
+        qs("btnGenerateSignalPost").textContent = t("generateSignalPost");
+        qs("btnGenerateBriefPost").textContent = t("generateBriefPost");
+        qs("btnGeneratePublicationPost").textContent = t("generatePublicationPost");
+        qs("btnGenerateLivingPost").textContent = t("generateLivingPost");
+        qs("btnCopyDraftPost").textContent = t("copyDraft");
 
         qs("btn-en").classList.toggle("active", STATE.lang === "en");
         qs("btn-ar").classList.toggle("active", STATE.lang === "ar");
@@ -1442,12 +1296,8 @@
 
       function getRawSystem() {
         try {
-          if (window.IBSS_ENGINE?.getSystemState) {
-            return window.IBSS_ENGINE.getSystemState();
-          }
-          if (window.IBSS_ENGINE?.getStaticSystemFallback) {
-            return window.IBSS_ENGINE.getStaticSystemFallback();
-          }
+          if (window.IBSS_ENGINE?.getSystemState) return window.IBSS_ENGINE.getSystemState();
+          if (window.IBSS_ENGINE?.getStaticSystemFallback) return window.IBSS_ENGINE.getStaticSystemFallback();
         } catch (error) {
           console.error("Dashboard getRawSystem error:", error);
         }
@@ -1479,21 +1329,13 @@
         );
       }
 
-      function getFeaturedPublication(system) {
-        return (
-          system?.featuredPublication ||
-          system?.snapshot?.latestStudy ||
-          window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
-          null
-        );
-      }
-
       function renderMeta(system) {
         qs("metaLine").textContent =
           `${t("sourceEngine")}: ${safe(system?.source, "-")} | ${t("updatedAt")}: ${formatDateTime(system?.updatedAt)}`;
 
         const sourceBadge = qs("sourceBadge");
         const metricsBadge = qs("metricsBadge");
+        const presenceBadge = qs("presenceBadge");
 
         if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed) {
           sourceBadge.textContent = t("sourceLive");
@@ -1505,13 +1347,45 @@
 
         if (system?.metricsReference) {
           metricsBadge.textContent = t("metricsOn");
-          metricsBadge.className = "meta-badge info";
+          metricsBadge.className = "meta-badge live";
         } else {
           metricsBadge.textContent = t("metricsOff");
           metricsBadge.className = "meta-badge fallback";
         }
 
+        if (safeText(system?.presence?.state, "")) {
+          presenceBadge.textContent = t("presenceOn");
+          presenceBadge.className = "meta-badge blue";
+        } else {
+          presenceBadge.textContent = t("presenceIdle");
+          presenceBadge.className = "meta-badge";
+        }
+
         updateAudioBadge();
+      }
+
+      function renderPresence(system) {
+        qs("presenceTitle").textContent = getLocalizedText(system?.voice?.posture) || "-";
+        qs("presenceSummary").textContent = getLocalizedText(system?.voice?.summary) || t("noData");
+        qs("presenceExplanation").textContent = getLocalizedText(system?.voice?.explanation) || t("noData");
+
+        qs("presenceAdvisory").textContent = getLocalizedText(system?.voice?.advisory) || "-";
+        qs("presenceIntent").textContent = `${t("intent")}: ${getLocalizedText(system?.voice?.intent) || "-"}`;
+
+        const drift = system?.drift || {};
+        qs("presenceDrift").textContent = safeText(drift.direction, "STABLE");
+        qs("presenceDriftMeta").textContent =
+          `${t("persistence")}: ${safeNumber(drift.persistence, 0)} | ${t("volatility")}: ${safeNumber(drift.volatility, 0)}`;
+
+        const urgency = safeText(system?.presence?.urgency, "low");
+        const urgencyClass = urgency === "immediate" || urgency === "high" ? "high" : urgency === "medium" ? "medium" : "low";
+
+        qs("presenceChips").innerHTML = `
+          <span class="presence-chip ${urgencyClass}">${escapeHtml(`${t("urgency")}: ${urgency}`)}</span>
+          <span class="presence-chip">${escapeHtml(`${t("systemStress")}: ${safeNumber(system?.systemPressure, 0)}`)}</span>
+          <span class="presence-chip">${escapeHtml(`${t("confidence")}: ${safeNumber(system?.confidenceScore, 0)}`)}</span>
+          <span class="presence-chip">${escapeHtml(`${t("drift")}: ${safeText(drift.direction, "STABLE")}`)}</span>
+        `;
       }
 
       function renderLevel(system) {
@@ -1546,167 +1420,66 @@
       }
 
       function renderDecision(level, system) {
-        const decisionEl = qs("decision");
-        const decisionWord = qs("decisionWord");
-        const decisionNote = qs("decisionNote");
-        const modeEl = qs("mode");
-
-        decisionEl.textContent = safe(system?.decision, "-");
-        decisionWord.textContent = safe(system?.decision, "-");
-        modeEl.textContent = safe(system?.mode, "-");
+        qs("decision").textContent = safe(system?.decision, "-");
+        qs("decisionWord").textContent = safe(system?.decision, "-");
+        qs("mode").textContent = safe(system?.mode, "-");
 
         if (level === "HIGH") {
-          decisionNote.textContent = t("noteHigh");
+          qs("decisionNote").textContent = t("noteHigh");
         } else if (level === "MEDIUM") {
-          decisionNote.textContent = t("noteMedium");
+          qs("decisionNote").textContent = t("noteMedium");
         } else {
-          decisionNote.textContent = t("noteLow");
+          qs("decisionNote").textContent = t("noteLow");
         }
       }
 
       function renderPrimarySignal(signal) {
-        const titleEl = qs("signalTitle");
-        const descEl = qs("signalDesc");
-        const badges = qs("signalBadges");
-
         if (!signal) {
-          titleEl.textContent = "-";
-          descEl.textContent = t("noData");
-          badges.innerHTML = "";
+          qs("signalTitle").textContent = "-";
+          qs("signalDesc").textContent = t("noData");
+          qs("signalBadges").innerHTML = "";
           return;
         }
 
-        titleEl.textContent = getLocalizedText(signal.title);
-        descEl.textContent = getLocalizedText(signal.description || signal.summary);
-
         const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
-        const priority = safeText(signal?.priority, "LOW");
+        const priority = String(signal?.priority || "LOW").toUpperCase();
         const signalClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
 
-        badges.innerHTML = `
+        qs("signalTitle").textContent = getLocalizedText(signal.title);
+        qs("signalDesc").textContent = getLocalizedText(signal.description || signal.summary);
+
+        qs("signalBadges").innerHTML = `
           <span class="mini-badge ${signalClass}">${escapeHtml(t("signalScore"))}: ${score}</span>
           <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
-          <span class="mini-badge">${escapeHtml(t("country"))}: ${escapeHtml(safeText(signal.country || signal.region, "-"))}</span>
+          <span class="mini-badge">${escapeHtml(t("publicationDomain"))}: ${escapeHtml(safeText(signal.domain, "-"))}</span>
+          <span class="mini-badge">${escapeHtml(t("publicationCountry"))}: ${escapeHtml(safeText(signal.country || signal.region, "-"))}</span>
         `;
       }
 
-      function renderRadar(system) {
-        try {
-          if (window.IBSS_GEO_RADAR?.render) {
-            const size = window.innerWidth <= 640 ? 270 : 300;
-            window.IBSS_GEO_RADAR.render(qs("radar"), system, {
-              lang: STATE.lang,
-              size
-            });
-          }
-        } catch (error) {
-          console.error("Dashboard radar render error:", error);
-        }
-      }
-
-      function renderRadarLegend(system) {
-        const legend = qs("radarLegend");
-        const signals = Array.isArray(system?.rankedSignals) ? system.rankedSignals.slice(0, 5) : [];
-
-        if (!signals.length) {
-          legend.innerHTML = `
-            <div class="legend-item">
-              <div class="legend-left">
-                <div class="legend-texts">
-                  <div class="legend-name">${escapeHtml(t("noData"))}</div>
-                </div>
-              </div>
-            </div>
-          `;
-          return;
-        }
-
-        legend.innerHTML = signals.map((signal, index) => {
-          const score = safeNumber(signal?.balancedScore100 ?? signal?.score100, 0);
-          const priority = safeText(signal?.priority || signal?.weight, "LOW");
-          const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
-          const title = getLocalizedText(signal.title);
-          const sub = safeText(signal.region || signal.domain || "-", "-");
-
-          return `
-            <div class="legend-item">
-              <div class="legend-left">
-                <span class="legend-dot ${cls}"></span>
-                <div class="legend-texts">
-                  <div class="legend-name">${escapeHtml(title)}</div>
-                  <div class="legend-sub">${escapeHtml(sub)}</div>
-                </div>
-              </div>
-              <div class="legend-right">
-                <div class="legend-score">${score}</div>
-                <span class="legend-badge ${cls}">${index === 0 ? escapeHtml(t("topLabel")) : escapeHtml(priority)}</span>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
       function renderDrivers(system) {
-        const box = qs("driverBox");
+        const box = qs("driversBox");
         const drivers = asArray(system?.drivers);
 
         if (!drivers.length) {
-          box.innerHTML = `<div class="driver-item">${escapeHtml(t("noData"))}</div>`;
-          qs("dominantDriverTitle").textContent = "-";
-          qs("dominantDriverMeta").textContent = t("noData");
-          qs("pressureCompositionTitle").textContent = "-";
-          qs("pressureCompositionMeta").textContent = t("noData");
-          qs("linkedPublicationTitle").textContent = "-";
-          qs("linkedPublicationMeta").textContent = t("noData");
+          box.innerHTML = `<div class="driver-item"><div class="driver-name">${escapeHtml(t("noData"))}</div></div>`;
           return;
         }
 
-        box.innerHTML = drivers.map((driver) => `
+        box.innerHTML = drivers.slice(0, 5).map((driver) => `
           <div class="driver-item">
-            <div class="driver-top">
-              <div class="driver-label">${escapeHtml(getLocalizedText(driver.label))}</div>
-              <div class="driver-score">${safeNumber(driver.score, 0)}</div>
-            </div>
-            <div class="driver-meta">
-              <span class="driver-chip">${escapeHtml(String(driver.type || "driver").toUpperCase())}</span>
-              <span class="driver-chip">${escapeHtml(String(driver.priority || "LOW").toUpperCase())}</span>
-            </div>
-            <div class="driver-explanation">${escapeHtml(getLocalizedText(driver.explanation))}</div>
+            <div class="driver-name">${escapeHtml(getLocalizedText(driver.label))}</div>
+            <div class="driver-meta">${escapeHtml(getLocalizedText(driver.explanation))}</div>
           </div>
         `).join("");
-
-        const dominant = drivers[0];
-        qs("dominantDriverTitle").textContent = getLocalizedText(dominant.label);
-        qs("dominantDriverMeta").textContent = getLocalizedText(dominant.explanation);
-
-        const pressure = system?.unifiedPressure || system?.publisherDigest?.pressure || null;
-        qs("pressureCompositionTitle").textContent =
-          pressure
-            ? `${t("systemStress")}: ${safeNumber(pressure.systemPressure, 0)}`
-            : "-";
-
-        qs("pressureCompositionMeta").textContent =
-          pressure
-            ? `Signal ${safeNumber(pressure.signalPressure, 0)} | Cluster ${safeNumber(pressure.clusterPressure, 0)} | Theater ${safeNumber(pressure.theaterPressure, 0)} | News ${safeNumber(pressure.newsPressure, 0)}`
-            : t("noData");
-
-        const publication = getFeaturedPublication(system);
-        qs("linkedPublicationTitle").textContent = publication ? getLocalizedText(publication.title) : "-";
-        qs("linkedPublicationMeta").textContent = publication
-          ? `${safeText(publication.type, "-")} • ${safeText(publication.country, "-")} • ${formatDate(publication.publishedAt)}`
-          : t("noData");
       }
 
       function renderSnapshot(system) {
-        const box = qs("snapshotBox");
-        const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.() || null;
-
+        const snapshot = system?.snapshot || null;
         const topTheater = snapshot?.topTheater || system?.topTheater || null;
         const topCluster = snapshot?.topCluster || system?.topCluster || null;
         const topCountry = snapshot?.topCountry || system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
-        const featuredPublication = getFeaturedPublication(system);
 
-        box.innerHTML = `
+        qs("snapshotBox").innerHTML = `
           <div class="snapshot-item">
             <strong>${escapeHtml(t("snapshotTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
             <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("riskScore")}: ${safeNumber(topTheater.avgRisk, 0)} | ${t("band")}: ${getBandLabel(topTheater.avgRisk)}` : t("noData"))}</div>
@@ -1721,16 +1494,10 @@
             <strong>${escapeHtml(t("snapshotCountry"))}: ${escapeHtml(topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-")}</strong>
             <div class="snapshot-meta">${escapeHtml(topCountry ? `${t("riskScore")}: ${safeNumber(topCountry.riskScore, 0)} | ${t("riskLevel")}: ${safeText(topCountry.riskLevel, "-")}` : t("noData"))}</div>
           </div>
-
-          <div class="snapshot-item">
-            <strong>${escapeHtml(t("publicationLabel"))}: ${escapeHtml(featuredPublication ? getLocalizedText(featuredPublication.title) : "-")}</strong>
-            <div class="snapshot-meta">${escapeHtml(featuredPublication ? safeText(getLocalizedText(featuredPublication.summary), "-") : t("noData"))}</div>
-          </div>
         `;
       }
 
       function renderMetrics(system) {
-        const box = qs("metricsBox");
         const topSignal = system?.topSignal || null;
         const topCluster = system?.topCluster || null;
         const topTheater = system?.topTheater || null;
@@ -1745,7 +1512,7 @@
           { label: t("confidence"), value: safeNumber(system?.confidenceScore, 0), sub: `${t("band")}: ${getBandLabel(system?.confidenceScore)}` }
         ];
 
-        box.innerHTML = rows.map((row) => `
+        qs("metricsBox").innerHTML = rows.map((row) => `
           <div class="metric-row">
             <div>
               <strong style="font-size:15px;color:#fff">${escapeHtml(row.label)}</strong>
@@ -1757,16 +1524,15 @@
       }
 
       function renderScenarios(system) {
-        const box = qs("scenarioBox");
         const scenarios = Array.isArray(system?.scenarios) ? system.scenarios : [];
         const labels = [t("scenarioA"), t("scenarioB"), t("scenarioC")];
 
         if (!scenarios.length) {
-          box.innerHTML = `<div class="scenario-row"><span>${escapeHtml(t("noData"))}</span><strong>0%</strong></div>`;
+          qs("scenarioBox").innerHTML = `<div class="scenario-row"><span>${escapeHtml(t("noData"))}</span><strong>0%</strong></div>`;
           return;
         }
 
-        box.innerHTML = scenarios.map((item, index) => `
+        qs("scenarioBox").innerHTML = scenarios.map((item, index) => `
           <div class="scenario-row">
             <span>${escapeHtml(labels[index] || safe(item?.key, "Scenario"))}</span>
             <strong>${safeNumber(item?.value, 0)}%</strong>
@@ -1775,36 +1541,58 @@
       }
 
       function renderPublication(system) {
-        const box = qs("publicationBox");
-        const publication = getFeaturedPublication(system);
+        const publication =
+          system?.featuredPublication ||
+          system?.publicationContext?.featuredPublication ||
+          window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
+          null;
 
         if (!publication) {
-          box.innerHTML = `<div class="publication-summary">${escapeHtml(t("noData"))}</div>`;
+          qs("publicationBox").innerHTML = `<div class="publication-text">${escapeHtml(t("noData"))}</div>`;
           return;
         }
 
-        box.innerHTML = `
-          <div class="publication-title">${escapeHtml(getLocalizedText(publication.title))}</div>
-          <div class="publication-summary">${escapeHtml(getLocalizedText(publication.summary))}</div>
-          <div class="publication-meta">
-            <span class="publication-chip">${escapeHtml(safeText(publication.type, "-").toUpperCase())}</span>
-            <span class="publication-chip">${escapeHtml(safeText(publication.country, "-"))}</span>
-            <span class="publication-chip">${escapeHtml(safeText(publication.domain, "-"))}</span>
-            <span class="publication-chip">${escapeHtml(formatDate(publication.publishedAt))}</span>
+        qs("publicationBox").innerHTML = `
+          <h3 class="publication-title">${escapeHtml(getLocalizedText(publication.title))}</h3>
+          <p class="publication-text">${escapeHtml(getLocalizedText(publication.summary))}</p>
+          <div class="mini-badges" style="margin-top:14px">
+            <span class="mini-badge">${escapeHtml(t("publicationType"))}: ${escapeHtml(safeText(publication.type, "-").toUpperCase())}</span>
+            <span class="mini-badge">${escapeHtml(t("publicationDomain"))}: ${escapeHtml(safeText(publication.domain, "-"))}</span>
+            <span class="mini-badge">${escapeHtml(t("publicationCountry"))}: ${escapeHtml(safeText(publication.country, "-"))}</span>
+            <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(publication?.metrics?.strategicWeight || 0))}</span>
           </div>
         `;
       }
 
+      function renderViewer(system) {
+        const voiceSummary = getLocalizedText(system?.voice?.summary) || "-";
+        const voiceExplanation = getLocalizedText(system?.voice?.explanation) || "-";
+        const voiceIntent = getLocalizedText(system?.voice?.intent) || "-";
+        const voiceAdvisory = getLocalizedText(system?.voice?.advisory) || "-";
+
+        qs("viewerBox").innerHTML = `
+          <h3 class="viewer-title">${escapeHtml(getLocalizedText(system?.voice?.posture) || "-")}</h3>
+          <div class="viewer-body">${escapeHtml(
+`${t("advisoryLabel")}: ${voiceAdvisory}
+
+${voiceSummary}
+
+${voiceExplanation}
+
+${t("intent")}: ${voiceIntent}`
+          )}</div>
+        `;
+      }
+
       function renderCountries(system) {
-        const box = qs("countryBox");
         const items = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed.slice(0, 5) : [];
 
         if (!items.length) {
-          box.innerHTML = `<div class="country-row"><span>${escapeHtml(t("noData"))}</span><strong>0</strong></div>`;
+          qs("countryBox").innerHTML = `<div class="country-row"><span>${escapeHtml(t("noData"))}</span><strong>0</strong></div>`;
           return;
         }
 
-        box.innerHTML = items.map((item) => `
+        qs("countryBox").innerHTML = items.map((item) => `
           <div class="country-row">
             <div>
               <div class="country-name">${escapeHtml(getLocalizedText(item.nameLocalized || item.name))}</div>
@@ -1816,15 +1604,14 @@
       }
 
       function renderFeed(system) {
-        const feed = qs("feed");
         const unifiedFeed = buildUnifiedFeed(system);
 
         if (!unifiedFeed.length) {
-          feed.innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
+          qs("feed").innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
           return;
         }
 
-        feed.innerHTML = unifiedFeed.slice(0, 10).map((item) => {
+        qs("feed").innerHTML = unifiedFeed.slice(0, 10).map((item) => {
           const text = getLocalizedText(item.text || item.title);
           return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
         }).join("");
@@ -1834,29 +1621,27 @@
         if (!window.IBSS_PUBLISHER) return;
 
         const draft = window.IBSS_PUBLISHER.getLatestDraft?.() || null;
-        const typeEl = qs("pubDraftType");
-        const timeEl = qs("pubDraftTime");
-        const textEl = qs("pubDraftText");
 
         if (!draft) {
-          typeEl.textContent = "-";
-          timeEl.textContent = "-";
-          textEl.value = "";
+          qs("pubDraftType").textContent = "-";
+          qs("pubDraftTime").textContent = "-";
+          qs("pubDraftText").value = "";
           return;
         }
 
-        typeEl.textContent = draft.type || "-";
-        timeEl.textContent = draft.createdAt ? formatDateTime(draft.createdAt) : "-";
-        textEl.value =
+        qs("pubDraftType").textContent = draft.type || "-";
+        qs("pubDraftTime").textContent = draft.createdAt ? formatDateTime(draft.createdAt) : "-";
+        qs("pubDraftText").value =
           STATE.lang === "ar"
-            ? (draft?.payload?.text_ar || draft?.payload?.text_en || "")
-            : (draft?.payload?.text_en || draft?.payload?.text_ar || "");
+            ? (draft?.payload?.text_ar || draft?.payload?.presence_ar || draft?.payload?.text_en || "")
+            : (draft?.payload?.text_en || draft?.payload?.presence_en || draft?.payload?.text_ar || "");
       }
 
       function wirePublisherButtons() {
         const btnSignal = qs("btnGenerateSignalPost");
         const btnBrief = qs("btnGenerateBriefPost");
         const btnPublication = qs("btnGeneratePublicationPost");
+        const btnLiving = qs("btnGenerateLivingPost");
         const btnCopy = qs("btnCopyDraftPost");
 
         if (btnSignal && !btnSignal.dataset.bound) {
@@ -1901,6 +1686,20 @@
           });
         }
 
+        if (btnLiving && !btnLiving.dataset.bound) {
+          btnLiving.dataset.bound = "1";
+          btnLiving.addEventListener("click", function () {
+            try {
+              if (window.IBSS_PUBLISHER?.generateLivingPresencePost) {
+                window.IBSS_PUBLISHER.generateLivingPresencePost();
+                renderPublisherConsole();
+              }
+            } catch (error) {
+              console.error("Generate Living Presence Post error:", error);
+            }
+          });
+        }
+
         if (btnCopy && !btnCopy.dataset.bound) {
           btnCopy.dataset.bound = "1";
           btnCopy.addEventListener("click", async function () {
@@ -1933,11 +1732,7 @@
 
         track.innerHTML = items.map((item) => {
           const priority = String(item.priority || "LOW").toUpperCase();
-          const cls =
-            priority === "HIGH" ? "high" :
-            priority === "MEDIUM" ? "medium" :
-            "low";
-
+          const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
           const text = getLocalizedText(item.text || item.title);
 
           return `
@@ -1972,18 +1767,18 @@
 
         applyLanguage();
         renderMeta(system);
+        renderPresence(system);
         renderTickerStrip(system);
 
         const level = renderLevel(system);
         renderDecision(level, system);
-        renderDrivers(system);
         renderPrimarySignal(system.topSignal || system.dominantSignal || null);
-        renderRadar(system);
-        renderRadarLegend(system);
+        renderDrivers(system);
         renderSnapshot(system);
         renderMetrics(system);
         renderScenarios(system);
         renderPublication(system);
+        renderViewer(system);
         renderCountries(system);
         renderFeed(system);
         renderPublisherConsole();
