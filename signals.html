@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS Signals</title>
+  <title>IBSS Signals — Living Signal Layer</title>
 
   <style>
     :root{
@@ -25,6 +25,7 @@
     }
 
     *{box-sizing:border-box}
+
     html,body{
       margin:0;
       padding:0;
@@ -190,9 +191,6 @@
       text-align:center;
       padding:14px;
       border-radius:14px;
-      background:rgba(255,77,79,.14);
-      border:1px solid rgba(255,77,79,.40);
-      color:#ffd1d1;
       font-weight:800;
       line-height:1.7;
     }
@@ -702,6 +700,7 @@
       line-height:1.9;
       font-size:15px;
       margin:0;
+      white-space:pre-wrap;
     }
 
     .viewer-box{
@@ -1098,6 +1097,7 @@
           layer: "Layer",
           search: "Search",
           signalList: "Ranked Signal Matrix",
+          publisher: "Publishing Console",
 
           miniTopSignal: "Top Signal Score",
           miniLiveSignals: "Live Signals",
@@ -1198,6 +1198,7 @@
           layer: "الطبقة",
           search: "بحث",
           signalList: "مصفوفة الإشارات المرتبة",
+          publisher: "وحدة النشر",
 
           miniTopSignal: "أعلى درجة إشارة",
           miniLiveSignals: "الإشارات الحية",
@@ -1311,7 +1312,19 @@
           const band = window.IBSS_METRICS.classifyBand(Number(score || 0));
           return currentLang === "ar" ? band?.ar || "-" : band?.en || "-";
         }
-        return "-";
+        const value = safeNumber(score, 0);
+        if (currentLang === "ar") {
+          if (value >= 85) return "حرج";
+          if (value >= 70) return "مرتفع";
+          if (value >= 55) return "ضغط";
+          if (value >= 35) return "مراقبة";
+          return "منخفض";
+        }
+        if (value >= 85) return "Critical";
+        if (value >= 70) return "High";
+        if (value >= 55) return "Pressure";
+        if (value >= 35) return "Watch";
+        return "Low";
       }
 
       function scoreClass(score){
@@ -1360,7 +1373,7 @@
         document.getElementById("searchFilterLabel").textContent = t("search");
         document.getElementById("contextTitle").textContent = t("signalContext");
         document.getElementById("signalListTitle").textContent = t("signalList");
-        document.getElementById("publisherTitle").textContent = t("latestDraft");
+        document.getElementById("publisherTitle").textContent = t("publisher");
         document.getElementById("pubDraftTypeTitle").textContent = t("latestDraft");
         document.getElementById("driversTitle").textContent = t("drivers");
         document.getElementById("presenceKicker").textContent = t("presenceKicker");
@@ -1377,13 +1390,19 @@
         document.getElementById("btnCopyDraftPost").textContent = t("copyDraft");
 
         const prioritySelect = document.getElementById("priorityFilter");
-        if (prioritySelect) prioritySelect.options[0].text = t("all");
+        if (prioritySelect && prioritySelect.options.length) {
+          prioritySelect.options[0].text = t("all");
+        }
 
         const regionSelect = document.getElementById("regionFilter");
-        if (regionSelect && regionSelect.options.length) regionSelect.options[0].text = t("all");
+        if (regionSelect && regionSelect.options.length) {
+          regionSelect.options[0].text = t("all");
+        }
 
         const layerSelect = document.getElementById("layerFilter");
-        if (layerSelect && layerSelect.options.length) layerSelect.options[0].text = t("all");
+        if (layerSelect && layerSelect.options.length) {
+          layerSelect.options[0].text = t("all");
+        }
 
         const searchInput = document.getElementById("searchFilter");
         if (searchInput) {
@@ -1467,10 +1486,19 @@
 
         if (system?.level === "HIGH") {
           alertBox.textContent = t("alertHigh");
+          alertBox.style.background = "rgba(255,77,79,.14)";
+          alertBox.style.border = "1px solid rgba(255,77,79,.40)";
+          alertBox.style.color = "#ffd1d1";
         } else if (system?.level === "MEDIUM") {
           alertBox.textContent = t("alertMed");
+          alertBox.style.background = "rgba(255,159,26,.12)";
+          alertBox.style.border = "1px solid rgba(255,159,26,.35)";
+          alertBox.style.color = "#ffe8c9";
         } else {
           alertBox.textContent = t("alertLow");
+          alertBox.style.background = "rgba(0,208,132,.10)";
+          alertBox.style.border = "1px solid rgba(0,208,132,.30)";
+          alertBox.style.color = "#d7fff1";
         }
       }
 
@@ -1581,7 +1609,7 @@
         const snapshot = system?.snapshot || null;
         const topTheater = snapshot?.topTheater || system?.topTheater || null;
         const topCluster = snapshot?.topCluster || system?.topCluster || null;
-        const topCountry = snapshot?.topCountry || (system?.countryRiskFeed || [])[0] || null;
+        const topCountry = snapshot?.topCountry || asArray(system?.countryRiskFeed)[0] || null;
 
         document.getElementById("snapshotBox").innerHTML = `
           <div class="snapshot-item">
@@ -1651,7 +1679,7 @@
         const topSignal = getSelectedSignal(system) || system?.topSignal || null;
         const topCluster = system?.topCluster || null;
         const topTheater = system?.topTheater || null;
-        const topCountry = (system?.countryRiskFeed || [])[0] || null;
+        const topCountry = asArray(system?.countryRiskFeed)[0] || null;
 
         const rows = [
           { label: t("signalScore"), value: safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0) },
@@ -1675,7 +1703,7 @@
 
       function renderFeed(system){
         const box = document.getElementById("feedBox");
-        const lines = Array.isArray(system?.publisherFeed) ? system.publisherFeed.slice(0, 8) : [];
+        const lines = asArray(system?.publisherFeed || system?.unifiedFeed || window.IBSS_PUBLISHER?.getUnifiedFeed?.()).slice(0, 8);
 
         if (!lines.length) {
           box.innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
@@ -1859,13 +1887,13 @@
 
       function bindFilters(){
         ["priorityFilter", "regionFilter", "layerFilter", "searchFilter"].forEach(id => {
-          const el = document.getElementById(id);
-          if (!el || el.dataset.bound) return;
+          const node = document.getElementById(id);
+          if (!node || node.dataset.bound) return;
 
-          el.dataset.bound = "1";
+          node.dataset.bound = "1";
           const eventName = id === "searchFilter" ? "input" : "change";
 
-          el.addEventListener(eventName, function () {
+          node.addEventListener(eventName, function () {
             if (!currentSystem) return;
             renderSignalList(currentSystem);
           });
@@ -1877,11 +1905,15 @@
         if (!btn || btn.dataset.bound) return;
 
         btn.dataset.bound = "1";
-        btn.addEventListener("click", function () {
-          if (!window.IBSS_AUDIO?.toggle) return;
-          window.IBSS_AUDIO.toggle();
-          updateAudioBadge();
-          if (currentSystem) updateMeta(currentSystem);
+        btn.addEventListener("click", async function () {
+          try {
+            if (!window.IBSS_AUDIO?.toggle) return;
+            await window.IBSS_AUDIO.toggle();
+            updateAudioBadge();
+            if (currentSystem) updateMeta(currentSystem);
+          } catch (error) {
+            console.error("Audio toggle error:", error);
+          }
         });
       }
 
@@ -1910,11 +1942,9 @@
           btnPublication.addEventListener("click", function () {
             try {
               const signal = getSelectedSignal(currentSystem);
-
               if (window.IBSS_PUBLISHER?.generateLinkedPublicationPost) {
                 window.IBSS_PUBLISHER.generateLinkedPublicationPost(signal);
               }
-
               renderPublisherConsole();
             } catch (error) {
               console.error("Generate linked publication post error:", error);
@@ -1954,7 +1984,7 @@
         const track = document.getElementById("tickerTrack");
         if (!track) return;
 
-        const unifiedFeed = (
+        const unifiedFeed = asArray(
           system?.publisherFeed ||
           system?.unifiedFeed ||
           window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
@@ -2013,31 +2043,22 @@
       }
 
       function startRuntime(){
-        if (!window.IBSS_RUNTIME?.start) {
+        const renderOnce = () => {
           const system = getSystem();
           if (system) renderSignalsCore(system);
+        };
+
+        renderOnce();
+
+        if (!window.IBSS_RUNTIME?.start) {
           return;
         }
 
         window.IBSS_RUNTIME.start({
           pageId: "signals",
           lang: currentLang,
-          tickerTrackEl: document.getElementById("tickerTrack"),
           refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
           systemProvider: getSystem,
-          tickerItemsProvider: function (system) {
-            const unifiedFeed = (
-              system?.publisherFeed ||
-              system?.unifiedFeed ||
-              window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
-              []
-            );
-
-            return unifiedFeed.slice(0, 10).map((item) => ({
-              level: String(item.priority || "LOW").toLowerCase(),
-              text: getLocalizedText(item.text || item.title)
-            }));
-          },
           afterRender: function(system) {
             renderSignalsCore(system);
           }
