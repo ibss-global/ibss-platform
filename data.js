@@ -1,22 +1,22 @@
-// IBSS DATA CORE — Full Living Presence Seed
-// Version: v4.0 Living Presence Data Foundation
+// IBSS DATA CORE — Full Expansion Rebuild
+// Version: v4.0 Sovereign Living Dataset
 
 window.IBSS_DATA = (function () {
   "use strict";
 
-  /* =========================
+  /* =========================================
      CONFIG
-  ========================= */
+  ========================================= */
 
   const CONFIG = {
-    version: "v4.0-living-presence",
+    version: "v4.0-sovereign-living-dataset",
     generatedAt: new Date().toISOString(),
-    source: "IBSS_DATA_CORE"
+    schema: "IBSS_EXPANDED_DATA_SCHEMA_V1"
   };
 
-  /* =========================
+  /* =========================================
      UTILITIES
-  ========================= */
+  ========================================= */
 
   function safeText(value, fallback = "") {
     return typeof value === "string" && value.trim() ? value.trim() : fallback;
@@ -38,7 +38,7 @@ window.IBSS_DATA = (function () {
     return "LOW";
   }
 
-  function localized(en, ar) {
+  function localize(en, ar) {
     return {
       en: safeText(en, "-"),
       ar: safeText(ar, en || "-")
@@ -49,625 +49,803 @@ window.IBSS_DATA = (function () {
     return new Date(Date.now() - (offsetMinutes * 60 * 1000)).toISOString();
   }
 
-  function buildSignalScore(weight, volatility, impact) {
-    return clamp(
-      Math.round(
-        (safeNumber(weight, 0.5) * 35) +
-        (safeNumber(volatility, 0.5) * 25) +
-        (safeNumber(impact, 0.5) * 40)
-      ),
-      0,
-      100
-    );
+  function buildMetrics(input = {}) {
+    return {
+      weight: clamp(safeNumber(input.weight, 0.5), 0, 1),
+      volatility: clamp(safeNumber(input.volatility, 0.5), 0, 1),
+      impact: clamp(safeNumber(input.impact, 0.5), 0, 1),
+      confidence: clamp(safeNumber(input.confidence, 0.65), 0, 1),
+      urgency: clamp(safeNumber(input.urgency, 0.5), 0, 1)
+    };
   }
 
-  /* =========================
-     LIVING PRESENCE SEED
-  ========================= */
-
-  const presenceSeed = {
-    identity: {
-      name: "IBSS Living Sovereign Presence",
-      codename: "LIVING PRESENCE CORE",
-      version: "LP-1.0"
-    },
-
-    baselineVoice: {
-      posture: localized("MONITORING POSTURE", "وضعية مراقبة"),
-      summary: localized(
-        "The system remains active and continuously interprets incoming pressure.",
-        "يبقى النظام نشطاً ويواصل تفسير الضغط الوارد بصورة مستمرة."
-      ),
-      explanation: localized(
-        "The platform does not behave as a static dashboard. It listens, condenses, prioritizes, and projects structured meaning.",
-        "المنصة لا تتصرف كلوحة جامدة، بل تستمع وتكثف وتُرتب الأولويات وتُسقط المعنى البنيوي."
-      ),
-      intent: localized(
-        "Maintain sovereign continuity across signal intake, risk concentration, and decision support.",
-        "الحفاظ على الاستمرارية السيادية عبر استقبال الإشارات وتركيز المخاطر ودعم القرار."
-      ),
-      advisory: localized(
-        "Keep the dominant theater under continuous structured observation.",
-        "أبقِ المسرح المهيمن تحت المراقبة البنيوية المستمرة."
-      )
-    },
-
-    pressureModes: {
-      low: {
-        posture: localized("MONITORING POSTURE", "وضعية مراقبة"),
-        urgency: localized("low", "منخفض"),
-        summary: localized(
-          "The system is stable under controlled monitoring conditions.",
-          "النظام مستقر ضمن ظروف مراقبة مضبوطة."
-        ),
-        explanation: localized(
-          "No immediate escalation posture is required, but structured listening remains active.",
-          "لا توجد حاجة إلى وضعية تصعيد فورية، لكن الاستماع البنيوي يبقى فعالاً."
-        ),
-        intent: localized(
-          "Continue observation, absorb signals, and refine long-range interpretation.",
-          "الاستمرار في الرصد وامتصاص الإشارات وصقل التفسير بعيد المدى."
-        ),
-        advisory: localized(
-          "Do not force escalation assumptions while signal density remains low.",
-          "لا تفرض افتراضات تصعيدية ما دام كثافة الإشارات منخفضة."
-        )
-      },
-
-      medium: {
-        posture: localized("HEIGHTENED WATCH", "مراقبة مشددة"),
-        urgency: localized("elevated", "مرتفع نسبياً"),
-        summary: localized(
-          "The system is operating under structured pressure with elevated sensitivity.",
-          "يعمل النظام تحت ضغط بنيوي مع حساسية تشغيلية مرتفعة."
-        ),
-        explanation: localized(
-          "Signals are beginning to cluster in ways that may shift the operational picture.",
-          "بدأت الإشارات تتجمع بطريقة قد تغيّر المشهد التشغيلي."
-        ),
-        intent: localized(
-          "Maintain live observation, tighten interpretation loops, and prepare escalation routing if pressure deepens.",
-          "الحفاظ على الرصد الحي وتشديد حلقات التفسير والاستعداد لتمرير التصعيد إذا تعمق الضغط."
-        ),
-        advisory: localized(
-          "Track the dominant file closely and preserve continuity between signal and publication layers.",
-          "تابع الملف المهيمن عن قرب وحافظ على الاستمرارية بين طبقة الإشارات وطبقة المنشورات."
-        )
-      },
-
-      high: {
-        posture: localized("ACTIVE POSTURE", "وضعية نشطة"),
-        urgency: localized("high", "مرتفع"),
-        summary: localized(
-          "The system is operating in a live active posture under concentrated strategic pressure.",
-          "يعمل النظام ضمن وضعية نشطة حية تحت ضغط استراتيجي مركز."
-        ),
-        explanation: localized(
-          "The dominant theater, top file, and high-grade signals now form a coherent escalation structure.",
-          "يشكل المسرح المهيمن والملف الأعلى والإشارات عالية الكثافة بنية تصعيد متماسكة."
-        ),
-        intent: localized(
-          "Sustain readiness, maintain continuity of live interpretation, and support decision-grade transition if escalation intensifies.",
-          "الحفاظ على الجاهزية واستمرارية التفسير الحي ودعم الانتقال إلى درجة قرار إذا اشتد التصعيد."
-        ),
-        advisory: localized(
-          "Preserve direct visibility over the leading theater and avoid fragmentation of risk interpretation.",
-          "حافظ على الرؤية المباشرة للمسرح المتقدم وتجنب تفكك تفسير المخاطر."
-        )
-      },
-
-      critical: {
-        posture: localized("ACTIVE RESPONSE POSTURE", "وضعية استجابة نشطة"),
-        urgency: localized("critical", "حرج"),
-        summary: localized(
-          "The system has entered a critical concentration band and is maintaining active response posture.",
-          "دخل النظام إلى حزمة تركز حرجة ويحافظ على وضعية استجابة نشطة."
-        ),
-        explanation: localized(
-          "Signals, pressure bands, and theater dominance now indicate that the system must behave as a live operational intelligence presence.",
-          "تشير الإشارات وحزم الضغط وهيمنة المسرح إلى أن النظام يجب أن يتصرف كحضور استخباري تشغيلي حي."
-        ),
-        intent: localized(
-          "Support immediate decision continuity, maintain live intake, and keep escalation logic available without delay.",
-          "دعم استمرارية القرار الفوري والحفاظ على الاستقبال الحي وإبقاء منطق التصعيد جاهزاً دون تأخير."
-        ),
-        advisory: localized(
-          "Do not dilute attention away from the primary theater while the system remains inside the critical band.",
-          "لا تُشتت الانتباه بعيداً عن المسرح الأساسي ما دام النظام داخل الحزمة الحرجة."
-        )
-      }
-    }
-  };
-
-  /* =========================
-     SIGNALS — FALLBACK / SEED
-  ========================= */
-
-  const signals = [
-    {
-      id: "SIG-GAZA-ESC-001",
-      title: localized(
-        "Escalation Pressure in Gaza Theater",
-        "تصاعد الضغط في مسرح غزة"
-      ),
-      summary: localized(
-        "Rising structured escalation indicators are converging across military and political layers.",
-        "تتقارب مؤشرات تصعيد بنيوي متصاعد عبر المستويين العسكري والسياسي."
-      ),
-      description: localized(
-        "Rising military and political pressure suggests a structured escalation trajectory rather than isolated friction.",
-        "يشير تصاعد الضغط العسكري والسياسي إلى مسار تصعيدي منظم لا إلى احتكاك معزول."
-      ),
-      region: "gaza",
-      country: "gaza",
-      countryId: "CTR-GAZA",
-      domain: "geo-security",
-      priority: "HIGH",
-      signalType: localized("escalation", "تصعيد"),
-      layer: "L9",
-      sourceUnit: "SSU",
-      source: "IBSS_SEED",
-      decisionMode: localized("Escalation Preparation", "تحضير للتصعيد"),
-      reliabilityScore: 88,
-      freshnessScore: 0.96,
-      metrics: {
-        weight: 0.94,
-        volatility: 0.86,
-        impact: 0.95
-      },
-      score100: buildSignalScore(0.94, 0.86, 0.95),
-      balancedScore100: buildSignalScore(0.94, 0.86, 0.95),
-      timestamp: nowIso(5),
-      live: true
-    },
-
-    {
-      id: "SIG-IRAN-NUCLEAR-002",
-      title: localized(
-        "Iran Nuclear Posture Shift",
-        "تغير في الموقف النووي الإيراني"
-      ),
-      summary: localized(
-        "Strategic posture indicators point to recalibration with regional spillover implications.",
-        "تشير مؤشرات التموضع الاستراتيجي إلى إعادة معايرة ذات تداعيات إقليمية ممتدة."
-      ),
-      description: localized(
-        "Strategic signals indicate recalibration of nuclear posture with direct consequences for regional security architecture.",
-        "تدل الإشارات الاستراتيجية على إعادة ضبط الموقف النووي بما ينعكس مباشرة على هندسة الأمن الإقليمي."
-      ),
-      region: "iran",
-      country: "iran",
-      countryId: "CTR-IRN",
-      domain: "geo-security",
-      priority: "HIGH",
-      signalType: localized("strategic posture", "تموضع استراتيجي"),
-      layer: "L8",
-      sourceUnit: "SSU",
-      source: "IBSS_SEED",
-      decisionMode: localized("Strategic Watch", "مراقبة استراتيجية"),
-      reliabilityScore: 84,
-      freshnessScore: 0.89,
-      metrics: {
-        weight: 0.89,
-        volatility: 0.72,
-        impact: 0.91
-      },
-      score100: buildSignalScore(0.89, 0.72, 0.91),
-      balancedScore100: buildSignalScore(0.89, 0.72, 0.91),
-      timestamp: nowIso(18),
-      live: true
-    },
-
-    {
-      id: "SIG-REDSEA-TRADE-003",
-      title: localized(
-        "Red Sea Trade Disruption Signal",
-        "إشارة اضطراب التجارة في البحر الأحمر"
-      ),
-      summary: localized(
-        "Shipping instability continues to affect strategic trade corridors.",
-        "يستمر اضطراب الملاحة في التأثير على الممرات التجارية الاستراتيجية."
-      ),
-      description: localized(
-        "Shipping instability across the Red Sea corridor is affecting trade flow reliability and pressure mapping.",
-        "يؤثر اضطراب الملاحة عبر ممر البحر الأحمر على موثوقية التدفق التجاري وخريطة الضغط."
-      ),
-      region: "redsea",
-      country: "redsea",
-      countryId: "CTR-RS",
-      domain: "geo-economics",
-      priority: "MEDIUM",
-      signalType: localized("trade disruption", "اضطراب تجاري"),
-      layer: "L5",
-      sourceUnit: "CRU",
-      source: "IBSS_SEED",
-      decisionMode: localized("Monitoring", "مراقبة"),
-      reliabilityScore: 76,
-      freshnessScore: 0.82,
-      metrics: {
-        weight: 0.66,
-        volatility: 0.61,
-        impact: 0.70
-      },
-      score100: buildSignalScore(0.66, 0.61, 0.70),
-      balancedScore100: buildSignalScore(0.66, 0.61, 0.70),
-      timestamp: nowIso(28),
-      live: true
-    },
-
-    {
-      id: "SIG-LEB-GOV-004",
-      title: localized(
-        "Lebanon Internal Political Friction",
-        "احتكاك سياسي داخلي في لبنان"
-      ),
-      summary: localized(
-        "Internal fragmentation is weighing on governance continuity.",
-        "يؤثر التفتت الداخلي على استمرارية الحكم."
-      ),
-      description: localized(
-        "Internal fragmentation and governance strain are weakening institutional continuity inside Lebanon.",
-        "يؤدي الانقسام الداخلي وضغط الحكم إلى إضعاف الاستمرارية المؤسسية داخل لبنان."
-      ),
-      region: "lebanon",
-      country: "lebanon",
-      countryId: "CTR-LEB",
-      domain: "geo-political",
-      priority: "LOW",
-      signalType: localized("political friction", "احتكاك سياسي"),
-      layer: "L3",
-      sourceUnit: "CRU",
-      source: "IBSS_SEED",
-      decisionMode: localized("Background Monitoring", "مراقبة خلفية"),
-      reliabilityScore: 69,
-      freshnessScore: 0.64,
-      metrics: {
-        weight: 0.38,
-        volatility: 0.42,
-        impact: 0.36
-      },
-      score100: buildSignalScore(0.38, 0.42, 0.36),
-      balancedScore100: buildSignalScore(0.38, 0.42, 0.36),
-      timestamp: nowIso(42),
-      live: false
-    },
-
-    {
-      id: "SIG-WB-SEC-005",
-      title: localized(
-        "West Bank Security Friction Accumulation",
-        "تراكم الاحتكاك الأمني في الضفة الغربية"
-      ),
-      summary: localized(
-        "Localized security incidents are accumulating into a broader stress pattern.",
-        "تتراكم الحوادث الأمنية الموضعية في صورة نمط ضغط أوسع."
-      ),
-      description: localized(
-        "Localized security pressure is accumulating into a broader field pattern with possible spillover into the wider Palestine file.",
-        "يتراكم الضغط الأمني الموضعي ليتحول إلى نمط ميداني أوسع مع احتمال امتداده إلى الملف الفلسطيني الأشمل."
-      ),
-      region: "westbank",
-      country: "westbank",
-      countryId: "CTR-WB",
-      domain: "geo-security",
-      priority: "MEDIUM",
-      signalType: localized("security friction", "احتكاك أمني"),
-      layer: "L6",
-      sourceUnit: "CRU",
-      source: "IBSS_SEED",
-      decisionMode: localized("Heightened Monitoring", "مراقبة مشددة"),
-      reliabilityScore: 78,
-      freshnessScore: 0.79,
-      metrics: {
-        weight: 0.63,
-        volatility: 0.69,
-        impact: 0.65
-      },
-      score100: buildSignalScore(0.63, 0.69, 0.65),
-      balancedScore100: buildSignalScore(0.63, 0.69, 0.65),
-      timestamp: nowIso(16),
-      live: true
-    }
-  ];
-
-  /* =========================
-     NEWS FEED — FALLBACK
-  ========================= */
-
-  const newsFeed = [
-    {
-      id: "NEWS-GAZA-001",
-      title: localized(
-        "Negotiation Track Shows Signs of Breakdown",
-        "ظهور مؤشرات تعثر في مسار التفاوض"
-      ),
-      summary: localized(
-        "Negotiation behavior suggests movement toward a harder escalation structure.",
-        "يشير سلوك التفاوض إلى حركة باتجاه بنية تصعيد أكثر صلابة."
-      ),
-      description: localized(
-        "Negotiation rhythm and field signals together indicate that diplomatic structure may be shifting toward escalation legitimation.",
-        "يشير إيقاع التفاوض مع الإشارات الميدانية إلى أن البنية الدبلوماسية قد تتحول نحو شرعنة التصعيد."
-      ),
-      region: "gaza",
-      country: "gaza",
-      domain: "geo-security",
-      priority: "HIGH",
-      score100: 86,
-      reliabilityScore: 81,
-      freshnessScore: 0.95,
-      source: "IBSS_NEWS_FALLBACK",
-      publishedAt: nowIso(3)
-    },
-
-    {
-      id: "NEWS-REDSEA-002",
-      title: localized(
-        "Shipping Delays Continue Across Red Sea Corridor",
-        "استمرار تأخيرات الشحن عبر ممر البحر الأحمر"
-      ),
-      summary: localized(
-        "Trade corridor reliability remains under sustained operational friction.",
-        "تبقى موثوقية الممر التجاري تحت احتكاك تشغيلي مستمر."
-      ),
-      description: localized(
-        "Ongoing disruption across the corridor continues to affect route confidence and commercial timing.",
-        "يستمر الاضطراب عبر الممر في التأثير على الثقة بالمسار والتوقيت التجاري."
-      ),
-      region: "redsea",
-      country: "redsea",
-      domain: "geo-economics",
-      priority: "MEDIUM",
-      score100: 62,
-      reliabilityScore: 73,
-      freshnessScore: 0.83,
-      source: "IBSS_NEWS_FALLBACK",
-      publishedAt: nowIso(11)
-    },
-
-    {
-      id: "NEWS-REGIONAL-003",
-      title: localized(
-        "Regional Diplomatic Movement Intensifies",
-        "تصاعد الحركة الدبلوماسية الإقليمية"
-      ),
-      summary: localized(
-        "Diplomatic motion is increasing across several connected files.",
-        "تزداد الحركة الدبلوماسية عبر عدة ملفات مترابطة."
-      ),
-      description: localized(
-        "Regional diplomatic signaling is increasing, indicating wider strategic positioning around active theaters.",
-        "تزداد الإشارات الدبلوماسية الإقليمية بما يعكس تموضعاً استراتيجياً أوسع حول المسارح النشطة."
-      ),
-      region: "regional",
-      country: "regional",
-      domain: "diplomatic",
-      priority: "LOW",
-      score100: 44,
-      reliabilityScore: 67,
-      freshnessScore: 0.74,
-      source: "IBSS_NEWS_FALLBACK",
-      publishedAt: nowIso(22)
-    }
-  ];
-
-  /* =========================
+  /* =========================================
      COUNTRY BASELINES
-  ========================= */
+  ========================================= */
 
   const countries = [
     {
       id: "CTR-GAZA",
-      name: localized("Gaza", "غزة"),
+      name: localize("Gaza", "غزة"),
       region: "gaza",
-      riskScore: 93,
-      primaryDrivers: localized(
-        ["Escalation concentration", "Negotiation breakdown risk", "Operational pressure"],
-        ["تركز التصعيد", "خطر انهيار التفاوض", "ضغط تشغيلي"]
-      )
-    },
-    {
-      id: "CTR-IRN",
-      name: localized("Iran", "إيران"),
-      region: "iran",
-      riskScore: 87,
-      primaryDrivers: localized(
-        ["Strategic posture shift", "Regional deterrence pressure", "Security architecture"],
-        ["تغير التموضع الاستراتيجي", "ضغط الردع الإقليمي", "هندسة الأمن"]
-      )
-    },
-    {
-      id: "CTR-RS",
-      name: localized("Red Sea", "البحر الأحمر"),
-      region: "redsea",
-      riskScore: 66,
-      primaryDrivers: localized(
-        ["Trade route instability", "Maritime friction", "Supply corridor pressure"],
-        ["اضطراب المسار التجاري", "احتكاك بحري", "ضغط ممرات الإمداد"]
-      )
-    },
-    {
-      id: "CTR-LEB",
-      name: localized("Lebanon", "لبنان"),
-      region: "lebanon",
-      riskScore: 38,
-      primaryDrivers: localized(
-        ["Governance strain", "Internal fragmentation", "Political friction"],
-        ["ضغط الحكم", "تفكك داخلي", "احتكاك سياسي"]
-      )
+      theater: "levant",
+      riskScore: 74,
+      governanceStress: 88,
+      infrastructureStress: 91,
+      operationalDensity: 93,
+      primaryDrivers: {
+        en: [
+          "Escalation architecture",
+          "Governance fragmentation",
+          "Negotiation instability",
+          "Humanitarian strain"
+        ],
+        ar: [
+          "هندسة التصعيد",
+          "تفكك الحوكمة",
+          "عدم استقرار التفاوض",
+          "الضغط الإنساني"
+        ]
+      }
     },
     {
       id: "CTR-WB",
-      name: localized("West Bank", "الضفة الغربية"),
+      name: localize("West Bank", "الضفة الغربية"),
       region: "westbank",
-      riskScore: 64,
-      primaryDrivers: localized(
-        ["Security friction", "Localized field stress", "Palestine file spillover"],
-        ["احتكاك أمني", "ضغط ميداني موضعي", "امتداد الملف الفلسطيني"]
-      )
+      theater: "levant",
+      riskScore: 57,
+      governanceStress: 63,
+      infrastructureStress: 49,
+      operationalDensity: 55,
+      primaryDrivers: {
+        en: [
+          "Administrative pressure",
+          "Localized friction",
+          "Institutional ambiguity"
+        ],
+        ar: [
+          "ضغط إداري",
+          "احتكاك موضعي",
+          "غموض مؤسسي"
+        ]
+      }
+    },
+    {
+      id: "CTR-LEB",
+      name: localize("Lebanon", "لبنان"),
+      region: "lebanon",
+      theater: "levant",
+      riskScore: 52,
+      governanceStress: 79,
+      infrastructureStress: 58,
+      operationalDensity: 46,
+      primaryDrivers: {
+        en: [
+          "Internal fragmentation",
+          "Border pressure",
+          "Institutional weakness"
+        ],
+        ar: [
+          "تفكك داخلي",
+          "ضغط حدودي",
+          "هشاشة مؤسسية"
+        ]
+      }
+    },
+    {
+      id: "CTR-IRN",
+      name: localize("Iran", "إيران"),
+      region: "iran",
+      theater: "gulf",
+      riskScore: 69,
+      governanceStress: 51,
+      infrastructureStress: 43,
+      operationalDensity: 77,
+      primaryDrivers: {
+        en: [
+          "Strategic deterrence posture",
+          "Regional projection",
+          "Nuclear signaling"
+        ],
+        ar: [
+          "وضعية ردع استراتيجية",
+          "إسقاط إقليمي",
+          "إشارات نووية"
+        ]
+      }
+    },
+    {
+      id: "CTR-RS",
+      name: localize("Red Sea", "البحر الأحمر"),
+      region: "redsea",
+      theater: "maritime",
+      riskScore: 61,
+      governanceStress: 34,
+      infrastructureStress: 67,
+      operationalDensity: 72,
+      primaryDrivers: {
+        en: [
+          "Shipping disruption",
+          "Trade insecurity",
+          "Maritime pressure"
+        ],
+        ar: [
+          "تعطل الشحن",
+          "هشاشة التجارة",
+          "ضغط بحري"
+        ]
+      }
     }
   ];
 
-  /* =========================
-     CONTENT — BASE FALLBACK
-  ========================= */
+  /* =========================================
+     SIGNALS — EXPANDED FALLBACK LAYER
+  ========================================= */
+
+  const signals = [
+    {
+      id: "SIG-GAZA-NEG-001",
+      title: localize(
+        "Negotiation Track Shows Signs of Breakdown",
+        "مسار التفاوض يُظهر علامات انهيار"
+      ),
+      description: localize(
+        "Negotiation behavior is being read less as diplomacy failure and more as a structured preparatory environment for escalatory legitimacy.",
+        "يُقرأ سلوك التفاوض أقل كفشل دبلوماسي وأكثر كبيئة تمهيدية منظمة لشرعنة التصعيد."
+      ),
+      summary: localize(
+        "The negotiation layer is shifting from mediation space to pressure-conditioning architecture.",
+        "طبقة التفاوض تتحول من مساحة وساطة إلى هندسة تكييف للضغط."
+      ),
+      region: "gaza",
+      country: "gaza",
+      countryId: "CTR-GAZA",
+      theater: "levant",
+      domain: "geo-security",
+      signalType: localize("Escalation Architecture", "هندسة تصعيد"),
+      decisionMode: localize("Monitoring", "مراقبة"),
+      influenceBand: localize("Narrative Conditioning", "تكييف سردي"),
+      layer: "L9",
+      sourceUnit: "SSU",
+      source: "IBSS_SEED",
+      priority: "HIGH",
+      live: true,
+      metrics: buildMetrics({
+        weight: 0.90,
+        volatility: 0.71,
+        impact: 0.94,
+        confidence: 0.84,
+        urgency: 0.72
+      }),
+      score100: 70,
+      balancedScore100: 70,
+      reliabilityScore: 86,
+      freshnessScore: 0.94,
+      timestamp: nowIso(8),
+      clusterKey: "gaza::geo-security",
+      theaterKey: "levant"
+    },
+    {
+      id: "SIG-GAZA-GOV-002",
+      title: localize(
+        "Administrative Re-Centering Around Deir al-Balah",
+        "إعادة تمركز إداري حول دير البلح"
+      ),
+      description: localize(
+        "Emerging administrative concentration suggests possible experimental compartmentalization of governance functions rather than unified territorial administration.",
+        "التمركز الإداري الناشئ يوحي بإمكانية تجزئة تجريبية لوظائف الحوكمة بدل الإدارة الإقليمية الموحدة."
+      ),
+      summary: localize(
+        "Administrative concentration may be a staging mechanism for fragmented governance architecture.",
+        "قد يكون التمركز الإداري آلية تمهيد لحوكمة مجزأة."
+      ),
+      region: "gaza",
+      country: "gaza",
+      countryId: "CTR-GAZA",
+      theater: "levant",
+      domain: "geo-governance",
+      signalType: localize("Governance Fragmentation", "تفكك الحوكمة"),
+      decisionMode: localize("Heightened Monitoring", "مراقبة مرتفعة"),
+      influenceBand: localize("Administrative Pressure", "ضغط إداري"),
+      layer: "L8",
+      sourceUnit: "SSU",
+      source: "IBSS_SEED",
+      priority: "HIGH",
+      live: true,
+      metrics: buildMetrics({
+        weight: 0.84,
+        volatility: 0.63,
+        impact: 0.88,
+        confidence: 0.78,
+        urgency: 0.69
+      }),
+      score100: 68,
+      balancedScore100: 68,
+      reliabilityScore: 81,
+      freshnessScore: 0.88,
+      timestamp: nowIso(16),
+      clusterKey: "gaza::geo-governance",
+      theaterKey: "levant"
+    },
+    {
+      id: "SIG-GAZA-HUM-003",
+      title: localize(
+        "Humanitarian Compression Across Civil Space",
+        "انضغاط إنساني عبر الحيز المدني"
+      ),
+      description: localize(
+        "Civilian space is narrowing under layered stress, reinforcing pressure transfer from humanitarian conditions into political and operational reading.",
+        "الحيز المدني يضيق تحت ضغط متعدد الطبقات، بما يعزز انتقال الضغط من الشروط الإنسانية إلى القراءة السياسية والتشغيلية."
+      ),
+      summary: localize(
+        "Humanitarian pressure is no longer isolated from strategic interpretation.",
+        "الضغط الإنساني لم يعد معزولًا عن التفسير الاستراتيجي."
+      ),
+      region: "gaza",
+      country: "gaza",
+      countryId: "CTR-GAZA",
+      theater: "levant",
+      domain: "human-security",
+      signalType: localize("Humanitarian Compression", "انضغاط إنساني"),
+      decisionMode: localize("Monitoring", "مراقبة"),
+      influenceBand: localize("Civilian Stress", "ضغط مدني"),
+      layer: "L6",
+      sourceUnit: "CRU",
+      source: "IBSS_SEED",
+      priority: "MEDIUM",
+      live: true,
+      metrics: buildMetrics({
+        weight: 0.72,
+        volatility: 0.58,
+        impact: 0.81,
+        confidence: 0.76,
+        urgency: 0.75
+      }),
+      score100: 59,
+      balancedScore100: 59,
+      reliabilityScore: 79,
+      freshnessScore: 0.82,
+      timestamp: nowIso(24),
+      clusterKey: "gaza::human-security",
+      theaterKey: "levant"
+    },
+    {
+      id: "SIG-RS-TRADE-004",
+      title: localize(
+        "Shipping Delays Continue Across Red Sea Corridor",
+        "استمرار تأخيرات الشحن عبر ممر البحر الأحمر"
+      ),
+      description: localize(
+        "Maritime pressure is maintaining friction on commercial routes, with supply-chain effects extending beyond immediate security incidents.",
+        "الضغط البحري يحافظ على الاحتكاك في المسارات التجارية مع آثار تمتد لما بعد الحوادث الأمنية المباشرة."
+      ),
+      summary: localize(
+        "Trade insecurity in the Red Sea remains active and structurally relevant.",
+        "انعدام الأمان التجاري في البحر الأحمر ما يزال نشطًا وذا صلة بنيوية."
+      ),
+      region: "redsea",
+      country: "redsea",
+      countryId: "CTR-RS",
+      theater: "maritime",
+      domain: "geo-economics",
+      signalType: localize("Trade Disruption", "اضطراب تجاري"),
+      decisionMode: localize("Monitoring", "مراقبة"),
+      influenceBand: localize("Supply Chain Pressure", "ضغط سلاسل الإمداد"),
+      layer: "L5",
+      sourceUnit: "CRU",
+      source: "IBSS_SEED",
+      priority: "MEDIUM",
+      live: true,
+      metrics: buildMetrics({
+        weight: 0.69,
+        volatility: 0.52,
+        impact: 0.74,
+        confidence: 0.77,
+        urgency: 0.60
+      }),
+      score100: 56,
+      balancedScore100: 56,
+      reliabilityScore: 80,
+      freshnessScore: 0.79,
+      timestamp: nowIso(30),
+      clusterKey: "redsea::geo-economics",
+      theaterKey: "maritime"
+    },
+    {
+      id: "SIG-IRAN-POSTURE-005",
+      title: localize(
+        "Iran Strategic Posture Remains Deliberately Signaled",
+        "الوضعية الاستراتيجية الإيرانية ما تزال تُرسل بإشارات مقصودة"
+      ),
+      description: localize(
+        "Strategic signaling remains calibrated, suggesting disciplined posture projection rather than uncontrolled regional drift.",
+        "الإشارات الاستراتيجية ما تزال مضبوطة بما يوحي بإسقاط وضعي منضبط لا بانجراف إقليمي غير مضبوط."
+      ),
+      summary: localize(
+        "Iranian signaling remains measured but operationally relevant.",
+        "الإشارات الإيرانية ما تزال محسوبة لكنها ذات صلة تشغيلية."
+      ),
+      region: "iran",
+      country: "iran",
+      countryId: "CTR-IRN",
+      theater: "gulf",
+      domain: "geo-security",
+      signalType: localize("Strategic Posture", "وضعية استراتيجية"),
+      decisionMode: localize("Strategic Watch", "مراقبة استراتيجية"),
+      influenceBand: localize("Deterrence Signaling", "إشارات ردع"),
+      layer: "L7",
+      sourceUnit: "SSU",
+      source: "IBSS_SEED",
+      priority: "MEDIUM",
+      live: true,
+      metrics: buildMetrics({
+        weight: 0.73,
+        volatility: 0.47,
+        impact: 0.79,
+        confidence: 0.82,
+        urgency: 0.51
+      }),
+      score100: 58,
+      balancedScore100: 58,
+      reliabilityScore: 84,
+      freshnessScore: 0.74,
+      timestamp: nowIso(40),
+      clusterKey: "iran::geo-security",
+      theaterKey: "gulf"
+    },
+    {
+      id: "SIG-LEB-FRAG-006",
+      title: localize(
+        "Lebanon Internal Fragmentation Remains Active",
+        "التفكك الداخلي في لبنان ما يزال نشطًا"
+      ),
+      description: localize(
+        "Internal political and institutional friction remains present but has not yet crossed into dominant theater pressure.",
+        "الاحتكاك السياسي والمؤسسي الداخلي ما يزال حاضرًا لكنه لم يتحول بعد إلى ضغط مسرحي مهيمن."
+      ),
+      summary: localize(
+        "Lebanon remains structurally fragile without becoming the primary driver.",
+        "يبقى لبنان هشًا بنيويًا دون أن يتحول إلى المحرك الأول."
+      ),
+      region: "lebanon",
+      country: "lebanon",
+      countryId: "CTR-LEB",
+      theater: "levant",
+      domain: "geo-political",
+      signalType: localize("Political Fragmentation", "تفكك سياسي"),
+      decisionMode: localize("Background Monitoring", "مراقبة خلفية"),
+      influenceBand: localize("Institutional Weakness", "ضعف مؤسسي"),
+      layer: "L4",
+      sourceUnit: "CRU",
+      source: "IBSS_SEED",
+      priority: "LOW",
+      live: false,
+      metrics: buildMetrics({
+        weight: 0.49,
+        volatility: 0.44,
+        impact: 0.51,
+        confidence: 0.73,
+        urgency: 0.38
+      }),
+      score100: 37,
+      balancedScore100: 37,
+      reliabilityScore: 76,
+      freshnessScore: 0.67,
+      timestamp: nowIso(52),
+      clusterKey: "lebanon::geo-political",
+      theaterKey: "levant"
+    }
+  ];
+
+  /* =========================================
+     NEWS FEED — EXPANDED FALLBACK
+  ========================================= */
+
+  const newsFeed = [
+    {
+      id: "NEWS-GAZA-001",
+      title: localize(
+        "Negotiation channel appears increasingly unstable",
+        "قناة التفاوض تبدو أكثر هشاشة"
+      ),
+      summary: localize(
+        "Track behavior suggests more than routine mediation fatigue.",
+        "سلوك المسار يوحي بما يتجاوز إرهاق الوساطة التقليدي."
+      ),
+      text: localize(
+        "Negotiation channel appears increasingly unstable.",
+        "قناة التفاوض تبدو أكثر هشاشة."
+      ),
+      region: "gaza",
+      country: "gaza",
+      domain: "geo-security",
+      priority: "HIGH",
+      publishedAt: nowIso(6),
+      source: "IBSS_NEWS"
+    },
+    {
+      id: "NEWS-GAZA-002",
+      title: localize(
+        "Administrative concentration debates intensify around Deir al-Balah",
+        "تصاعد النقاش حول التمركز الإداري في دير البلح"
+      ),
+      summary: localize(
+        "Questions are growing about fragmented governance pathways.",
+        "تتزايد الأسئلة حول مسارات الحوكمة المجزأة."
+      ),
+      text: localize(
+        "Administrative concentration debates intensify around Deir al-Balah.",
+        "تصاعد النقاش حول التمركز الإداري في دير البلح."
+      ),
+      region: "gaza",
+      country: "gaza",
+      domain: "geo-governance",
+      priority: "HIGH",
+      publishedAt: nowIso(14),
+      source: "IBSS_NEWS"
+    },
+    {
+      id: "NEWS-RS-003",
+      title: localize(
+        "Shipping friction persists in the Red Sea corridor",
+        "استمرار الاحتكاك الملاحي في ممر البحر الأحمر"
+      ),
+      summary: localize(
+        "Commercial movement remains exposed to sustained disruption risk.",
+        "الحركة التجارية ما تزال مكشوفة لخطر التعطيل المستدام."
+      ),
+      text: localize(
+        "Shipping friction persists in the Red Sea corridor.",
+        "استمرار الاحتكاك الملاحي في ممر البحر الأحمر."
+      ),
+      region: "redsea",
+      country: "redsea",
+      domain: "geo-economics",
+      priority: "MEDIUM",
+      publishedAt: nowIso(19),
+      source: "IBSS_NEWS"
+    },
+    {
+      id: "NEWS-IRAN-004",
+      title: localize(
+        "Regional observers note continuity in Iran strategic signaling",
+        "مراقبون إقليميون يلاحظون استمرارية في الإشارات الاستراتيجية الإيرانية"
+      ),
+      summary: localize(
+        "The signal remains measured rather than abrupt.",
+        "الإشارة ما تزال محسوبة وليست مفاجئة."
+      ),
+      text: localize(
+        "Regional observers note continuity in Iran strategic signaling.",
+        "مراقبون إقليميون يلاحظون استمرارية في الإشارات الاستراتيجية الإيرانية."
+      ),
+      region: "iran",
+      country: "iran",
+      domain: "geo-security",
+      priority: "MEDIUM",
+      publishedAt: nowIso(28),
+      source: "IBSS_NEWS"
+    }
+  ];
+
+  /* =========================================
+     CONTENT — BASE PUBLICATION LAYER
+  ========================================= */
 
   const content = [
     {
-      id: "PUB-GAZA-L9-001",
+      id: "PUB-L9-GAZA-001",
       type: "study",
       classification: "L9 Blueprint Deconstruction",
       edition: "L9-SOV Blueprint Deconstruction Edition",
       layer: "L9",
       mode: "Blueprint Deconstruction",
-      title: localized(
+
+      title: localize(
         "Gaza — Blueprint Deconstruction: When Narrative Becomes Part of Operational War Architecture",
-        "غزة — تفكيك المخطط البنيوي: حين تتحول السردية إلى جزء من البنية القتالية"
+        "غزة — تفكيك المخطط البنيوي: حين تصبح السردية جزءًا من عمارة الحرب التشغيلية"
       ),
-      summary: localized(
+
+      summary: localize(
         "An L9-layer study reading negotiation failure and controlled narrative as part of a pre-operational war architecture.",
-        "دراسة من طبقة L9 تقرأ فشل التفاوض والسردية المضبوطة كجزء من بنية تمهيدية للحرب."
+        "دراسة من طبقة L9 تقرأ فشل التفاوض والسردية المضبوطة كجزء من عمارة حرب ما قبل التشغيل."
       ),
-      body: localized(
+
+      body: localize(
         "The visible event should not be read as a sequence of isolated headlines. The core question is structural: what architecture makes war appear as failed diplomacy rather than a pre-arranged decision? This study argues that narrative is not an explanation after the fact. It is part of the environment-building process that legitimizes escalation.",
-        "لا ينبغي قراءة الحدث الظاهر كسلسلة عناوين منفصلة. السؤال المركزي هنا بنيوي: ما هي الهندسة التي تجعل الحرب تبدو كأنها نتيجة لفشل دبلوماسي لا قراراً معداً مسبقاً؟ تجادل هذه الدراسة بأن السردية ليست شرحاً لاحقاً، بل جزء من عملية بناء البيئة التي تمنح التصعيد شرعيته."
+        "لا ينبغي قراءة الحدث الظاهر كسلسلة من العناوين المنفصلة. السؤال الجوهري هو بنيوي: ما العمارة التي تجعل الحرب تبدو كفشل دبلوماسي بدل أن تكون قرارًا مُعدًا مسبقًا؟ تجادل هذه الدراسة بأن السردية ليست تفسيرًا لاحقًا، بل جزءًا من عملية بناء البيئة التي تمنح التصعيد شرعيته."
       ),
+
       unit: "SSU",
       status: "published",
       priority: "HIGH",
+
       domain: "geo-security",
       region: "gaza",
       country: "gaza",
       countryId: "CTR-GAZA",
-      signalIds: ["SIG-GAZA-ESC-001"],
+
+      signalIds: ["SIG-GAZA-NEG-001"],
       clusterKeys: ["gaza::geo-security"],
-      theaterKeys: ["gaza"],
+      theaterKeys: ["levant"],
+
       author: "Naeem Dahalan",
       authors: ["Naeem Dahalan"],
       sourcePlatform: "internal",
       sourceUrl: "",
-      publishedAt: nowIso(60),
-      tags: ["gaza", "L9", "WAAD", "blueprint deconstruction", "escalation"],
+
+      tags: [
+        "gaza",
+        "L9",
+        "blueprint deconstruction",
+        "war architecture",
+        "narrative"
+      ],
+
       metrics: {
         policyRisk: 86,
         implementationDifficulty: 72,
         regionalSensitivity: 91,
         strategicWeight: 94
       },
+
       meta: {
         featured: true,
         pinned: true,
         canonical: true
-      }
+      },
+
+      publishedAt: nowIso(60),
+      createdAt: nowIso(60),
+      updatedAt: nowIso(60)
     },
 
     {
-      id: "PUB-IRAN-STRAT-002",
+      id: "PUB-GAZA-GOV-002",
       type: "analysis",
-      classification: "Strategic Position Assessment",
-      edition: "Strategic Monitoring Edition",
+      classification: "Fragmented Governance Reading",
+      edition: "Administrative Fragmentation Note",
       layer: "L8",
-      mode: "Strategic Watch",
-      title: localized(
-        "Iran — Strategic Recalibration and Regional Security Echo",
-        "إيران — إعادة المعايرة الاستراتيجية وصداها الأمني الإقليمي"
+      mode: "Governance Mapping",
+
+      title: localize(
+        "Gaza: From Administrative Concentration to Fragmented Governance",
+        "غزة: من التمركز الإداري إلى الحوكمة المجزأة"
       ),
-      summary: localized(
-        "Assessment of Iranian posture shifts and their effect on regional security patterning.",
-        "تقييم لتحولات التموضع الإيراني وتأثيرها على نمط الأمن الإقليمي."
+
+      summary: localize(
+        "A short reading on whether selective administrative concentration may signal territorial compartmentalization rather than unified governance restoration.",
+        "قراءة قصيرة حول ما إذا كان التمركز الإداري الانتقائي يشير إلى تجزئة إقليمية بدل استعادة الحوكمة الموحدة."
       ),
-      body: localized(
-        "The significance of the Iranian signal does not lie only in nuclear posture itself, but in how surrounding systems reinterpret it. The signal matters because it changes deterrence reading, posture calibration, and regional expectation mapping.",
-        "لا تكمن أهمية الإشارة الإيرانية في التموضع النووي نفسه فقط، بل في كيفية إعادة تفسير الأنظمة المحيطة له. تكتسب الإشارة أهميتها لأنها تغيّر قراءة الردع ومعايرة التموضع وخريطة التوقع الإقليمي."
+
+      body: localize(
+        "When administrative functions begin clustering in one location under unstable war conditions, the question is not only practical but structural. The issue becomes whether governance is being restored or redesigned in fragments. The paper argues that concentration around one node can operate as a pilot zone for differentiated governance logic.",
+        "عندما تبدأ الوظائف الإدارية بالتجمع في مكان واحد تحت شروط حرب غير مستقرة، لا يعود السؤال عمليًا فقط بل بنيويًا. فالقضية تصبح: هل تُستعاد الحوكمة أم يُعاد تصميمها على شكل شظايا؟ وتجادل الورقة بأن التمركز حول عقدة واحدة قد يعمل كمنطقة تجريبية لمنطق حوكمة متمايزة."
       ),
+
       unit: "SSU",
       status: "published",
       priority: "HIGH",
-      domain: "geo-security",
-      region: "iran",
-      country: "iran",
-      countryId: "CTR-IRN",
-      signalIds: ["SIG-IRAN-NUCLEAR-002"],
-      clusterKeys: ["iran::geo-security"],
-      theaterKeys: ["iran"],
+
+      domain: "geo-governance",
+      region: "gaza",
+      country: "gaza",
+      countryId: "CTR-GAZA",
+
+      signalIds: ["SIG-GAZA-GOV-002"],
+      clusterKeys: ["gaza::geo-governance"],
+      theaterKeys: ["levant"],
+
       author: "Naeem Dahalan",
       authors: ["Naeem Dahalan"],
       sourcePlatform: "internal",
       sourceUrl: "",
-      publishedAt: nowIso(140),
-      tags: ["iran", "nuclear posture", "regional security", "strategic recalibration"],
+
+      tags: [
+        "gaza",
+        "governance",
+        "deir al-balah",
+        "fragmentation",
+        "administrative concentration"
+      ],
+
       metrics: {
         policyRisk: 82,
-        implementationDifficulty: 68,
+        implementationDifficulty: 66,
         regionalSensitivity: 88,
         strategicWeight: 89
       },
+
       meta: {
         featured: false,
         pinned: true,
         canonical: false
-      }
+      },
+
+      publishedAt: nowIso(75),
+      createdAt: nowIso(75),
+      updatedAt: nowIso(75)
     },
 
     {
-      id: "PUB-REDSEA-ECON-003",
+      id: "PUB-RS-TRADE-003",
       type: "brief",
-      classification: "Strategic Trade Brief",
-      edition: "Maritime Stability Brief",
+      classification: "Maritime Trade Pressure",
+      edition: "Red Sea Supply Brief",
       layer: "L5",
-      mode: "Trade Corridor Monitoring",
-      title: localized(
-        "Red Sea — Corridor Disruption and Supply Confidence Stress",
-        "البحر الأحمر — اضطراب الممر وضغط الثقة في الإمداد"
+      mode: "Trade Corridor Reading",
+
+      title: localize(
+        "Red Sea Corridor: Persistent Friction Beyond Immediate Events",
+        "ممر البحر الأحمر: احتكاك مستمر يتجاوز الحدث المباشر"
       ),
-      summary: localized(
-        "Brief mapping maritime disruption into strategic trade pressure.",
-        "موجز يربط الاضطراب البحري بضغط التجارة الاستراتيجية."
+
+      summary: localize(
+        "A brief on how maritime disruption acquires structural importance through repeated commercial friction.",
+        "إيجاز حول كيف يكتسب الاضطراب البحري أهمية بنيوية عبر تكرار الاحتكاك التجاري."
       ),
-      body: localized(
-        "The Red Sea file should not be treated only as shipping news. It is a strategic pressure file because route confidence affects timing, insurance, supply continuity, and broader risk perception.",
-        "لا ينبغي التعامل مع ملف البحر الأحمر كأخبار شحن فقط. إنه ملف ضغط استراتيجي لأن الثقة بالمسار تؤثر في التوقيت والتأمين واستمرارية الإمداد والإدراك الأوسع للمخاطر."
+
+      body: localize(
+        "The strategic significance of Red Sea disruption lies not only in singular incidents, but in repetition. Repeated friction changes route psychology, insurance behavior, and trade planning, making insecurity economically structural even before full closure scenarios emerge.",
+        "تكمن الأهمية الاستراتيجية لاضطراب البحر الأحمر ليس فقط في الحوادث المفردة بل في التكرار. فالاحتكاك المتكرر يغير نفسية المسار وسلوك التأمين وتخطيط التجارة، ما يجعل انعدام الأمان اقتصاديًا بنيويًا حتى قبل ظهور سيناريوهات الإغلاق الكامل."
       ),
-      unit: "SSU",
+
+      unit: "CRU",
       status: "published",
       priority: "MEDIUM",
+
       domain: "geo-economics",
       region: "redsea",
       country: "redsea",
       countryId: "CTR-RS",
-      signalIds: ["SIG-REDSEA-TRADE-003"],
+
+      signalIds: ["SIG-RS-TRADE-004"],
       clusterKeys: ["redsea::geo-economics"],
-      theaterKeys: ["redsea"],
-      author: "IBSS",
-      authors: ["IBSS"],
+      theaterKeys: ["maritime"],
+
+      author: "IBSS Unit",
+      authors: ["IBSS Unit"],
       sourcePlatform: "internal",
       sourceUrl: "",
-      publishedAt: nowIso(220),
-      tags: ["red sea", "trade", "shipping", "corridor risk"],
+
+      tags: [
+        "red sea",
+        "shipping",
+        "trade",
+        "maritime risk"
+      ],
+
       metrics: {
         policyRisk: 61,
-        implementationDifficulty: 43,
+        implementationDifficulty: 48,
         regionalSensitivity: 67,
         strategicWeight: 73
       },
+
       meta: {
         featured: false,
         pinned: false,
         canonical: false
-      }
+      },
+
+      publishedAt: nowIso(96),
+      createdAt: nowIso(96),
+      updatedAt: nowIso(96)
+    },
+
+    {
+      id: "PUB-NEWS-GAZA-004",
+      type: "news",
+      classification: "Live News Update",
+      edition: "Signal News Note",
+      layer: "L3",
+      mode: "Live Intake",
+
+      title: localize(
+        "Administrative concentration debates intensify around Deir al-Balah",
+        "تصاعد النقاش حول التمركز الإداري في دير البلح"
+      ),
+
+      summary: localize(
+        "Live update reflecting expanding debate over selective administrative relocation and governance implications.",
+        "تحديث حي يعكس اتساع النقاش حول إعادة التموضع الإداري الانتقائي ودلالاته الحوكمية."
+      ),
+
+      body: localize(
+        "The issue is no longer being framed merely as logistics. It is increasingly interpreted as a governance question tied to who administers, where administration is centered, and whether territorial logic is being redistributed.",
+        "لم يعد الموضوع يُصاغ على أنه مسألة لوجستية فقط، بل يُفسر أكثر فأكثر كسؤال حوكمي يتعلق بمن يدير، وأين يتمركز هذا الإدار، وما إذا كان المنطق الإقليمي يعاد توزيعه."
+      ),
+
+      unit: "NEWS",
+      status: "published",
+      priority: "HIGH",
+
+      domain: "geo-governance",
+      region: "gaza",
+      country: "gaza",
+      countryId: "CTR-GAZA",
+
+      signalIds: ["SIG-GAZA-GOV-002"],
+      clusterKeys: ["gaza::geo-governance"],
+      theaterKeys: ["levant"],
+
+      author: "IBSS Live Desk",
+      authors: ["IBSS Live Desk"],
+      sourcePlatform: "internal",
+      sourceUrl: "",
+
+      tags: [
+        "gaza",
+        "deir al-balah",
+        "governance",
+        "news"
+      ],
+
+      metrics: {
+        policyRisk: 58,
+        implementationDifficulty: 31,
+        regionalSensitivity: 74,
+        strategicWeight: 57
+      },
+
+      meta: {
+        featured: false,
+        pinned: false,
+        canonical: false
+      },
+
+      publishedAt: nowIso(10),
+      createdAt: nowIso(10),
+      updatedAt: nowIso(10)
     }
   ];
 
-  /* =========================
-     EXPORT
-  ========================= */
+  /* =========================================
+     INDEXES / EXPORT SHAPES
+  ========================================= */
+
+  const signalIndex = signals.reduce((acc, item) => {
+    acc[item.id] = item;
+    return acc;
+  }, {});
+
+  const countryIndex = countries.reduce((acc, item) => {
+    acc[item.id] = item;
+    return acc;
+  }, {});
+
+  const contentIndex = content.reduce((acc, item) => {
+    acc[item.id] = item;
+    return acc;
+  }, {});
+
+  /* =========================================
+     WINDOW BRIDGES
+  ========================================= */
+
+  window.IBSS_SIGNALS = signals;
+  window.IBSS_COUNTRIES = countries;
+  window.IBSS_CONTENT = content;
+  window.IBSS_NEWS = newsFeed;
+
+  window.IBSS_SIGNAL_INDEX = signalIndex;
+  window.IBSS_COUNTRY_INDEX = countryIndex;
+  window.IBSS_CONTENT_INDEX = contentIndex;
+
+  /* =========================================
+     PUBLIC API
+  ========================================= */
 
   return {
     CONFIG,
-    presenceSeed,
+
     signals,
     newsFeed,
     countries,
-    content
+    content,
+
+    signalIndex,
+    countryIndex,
+    contentIndex
   };
 })();
