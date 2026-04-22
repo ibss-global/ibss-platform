@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS Reports</title>
+  <title>IBSS Reports — Integrated Sovereign Reports Layer</title>
 
   <style>
     :root{
@@ -190,9 +190,6 @@
       text-align:center;
       padding:14px 16px;
       border-radius:14px;
-      background:rgba(255,77,79,.14);
-      border:1px solid rgba(255,77,79,.40);
-      color:#ffd1d1;
       font-weight:800;
       line-height:1.7;
     }
@@ -272,7 +269,6 @@
       scrollbar-width:none;
       direction:ltr;
       white-space:nowrap;
-      scroll-behavior:auto;
       min-height:72px;
     }
 
@@ -400,6 +396,7 @@
       line-height:1.9;
       font-size:15px;
       margin:0 0 14px;
+      white-space:pre-wrap;
     }
 
     .focus-block{
@@ -485,6 +482,7 @@
       font-size:14px;
       line-height:1.8;
       margin:0 0 12px;
+      white-space:pre-wrap;
     }
 
     .meta-row{
@@ -568,6 +566,7 @@
       line-height:1.9;
       font-size:15px;
       margin:0 0 14px;
+      white-space:pre-wrap;
     }
 
     .viewer-body{
@@ -929,7 +928,7 @@
           source_engine: "Engine source",
           updated_at: "Updated",
 
-          source_live: "SOURCE — ENGINE",
+          source_live: "SOURCE — ORCHESTRATED",
           source_fallback: "SOURCE — FALLBACK",
           metrics_on: "METRICS — INTEGRATED",
           metrics_off: "METRICS — OFF",
@@ -961,6 +960,7 @@
           summary_cards: "Strategic Summary",
           publication_viewer: "Publication Viewer",
           publications_archive: "Publications Archive",
+          publisher: "Publishing Console",
 
           top_theater: "Top Theater",
           top_file: "Top Strategic File",
@@ -982,6 +982,7 @@
           linked_country: "Country-linked publication",
           viewer_search: "Search publications",
           all_types: "All Types",
+          all_priorities: "All Priorities",
           type: "Type",
           priority: "Priority",
           domain: "Domain",
@@ -1009,7 +1010,7 @@
           source_engine: "مصدر المحرك",
           updated_at: "آخر تحديث",
 
-          source_live: "المصدر — المحرك",
+          source_live: "المصدر — منسق",
           source_fallback: "المصدر — الاحتياطي",
           metrics_on: "القياس — مدمج",
           metrics_off: "القياس — غير مفعل",
@@ -1041,6 +1042,7 @@
           summary_cards: "الملخص الاستراتيجي",
           publication_viewer: "عارض المنشورات",
           publications_archive: "أرشيف المنشورات",
+          publisher: "وحدة النشر",
 
           top_theater: "المسرح الأعلى",
           top_file: "الملف الاستراتيجي الأعلى",
@@ -1062,6 +1064,7 @@
           linked_country: "منشور مرتبط بالدولة",
           viewer_search: "ابحث في المنشورات",
           all_types: "كل الأنواع",
+          all_priorities: "كل الأولويات",
           type: "النوع",
           priority: "الأولوية",
           domain: "المجال",
@@ -1100,6 +1103,10 @@
         return Number.isFinite(n) ? n : fallback;
       }
 
+      function asArray(value){
+        return Array.isArray(value) ? value : [];
+      }
+
       function getLocalizedText(value){
         if (!value) return "-";
         if (typeof value === "string" || typeof value === "number") return String(value);
@@ -1131,13 +1138,27 @@
           const band = window.IBSS_METRICS.classifyBand(safeNumber(score, 0));
           return STATE.lang === "ar" ? (band?.ar || "-") : (band?.en || "-");
         }
-        return "-";
+
+        const value = safeNumber(score, 0);
+        if (STATE.lang === "ar") {
+          if (value >= 85) return "حرج";
+          if (value >= 70) return "مرتفع";
+          if (value >= 55) return "ضغط";
+          if (value >= 35) return "مراقبة";
+          return "منخفض";
+        }
+
+        if (value >= 85) return "Critical";
+        if (value >= 70) return "High";
+        if (value >= 55) return "Pressure";
+        if (value >= 35) return "Watch";
+        return "Low";
       }
 
       function levelClass(level){
-        const v = String(level || "LOW").toUpperCase();
-        if (v === "HIGH") return "high";
-        if (v === "MEDIUM") return "medium";
+        const value = String(level || "LOW").toUpperCase();
+        if (value === "HIGH") return "high";
+        if (value === "MEDIUM") return "medium";
         return "low";
       }
 
@@ -1186,7 +1207,7 @@
         qs("summaryCardsTitle").textContent = t("summary_cards");
         qs("summaryConfidenceTitle").textContent = t("confidence");
         qs("summaryConfidenceMeta").textContent = t("confidence_meta");
-        qs("publisherTitle").textContent = t("latest_draft");
+        qs("publisherTitle").textContent = t("publisher");
         qs("pubDraftTypeTitle").textContent = t("latest_draft");
         qs("footerText").textContent = t("footer");
 
@@ -1200,6 +1221,11 @@
 
         updateAudioBadge();
         populateTypeFilter();
+
+        const priorityFilter = qs("priorityFilter");
+        if (priorityFilter && priorityFilter.options.length) {
+          priorityFilter.options[0].text = t("all_priorities");
+        }
       }
 
       function updateAudioBadge(){
@@ -1247,7 +1273,7 @@
       }
 
       function sortByDateDesc(list){
-        return (Array.isArray(list) ? list.slice() : []).sort((a, b) => {
+        return asArray(list).slice().sort((a, b) => {
           const aTime = new Date(a?.publishedAt || a?.updatedAt || a?.createdAt || 0).getTime();
           const bTime = new Date(b?.publishedAt || b?.updatedAt || b?.createdAt || 0).getTime();
           return bTime - aTime;
@@ -1256,7 +1282,7 @@
 
       function dedupeById(list){
         const map = new Map();
-        (Array.isArray(list) ? list : []).forEach(item => {
+        asArray(list).forEach(item => {
           const id = safeText(item?.id, "");
           if (!id) return;
           if (!map.has(id)) map.set(id, item);
@@ -1328,7 +1354,7 @@
 
       function buildFallbackTickerItems(system){
         const items = [];
-        const unifiedFeed = (
+        const unifiedFeed = asArray(
           system?.publisherFeed ||
           system?.unifiedFeed ||
           window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
@@ -1360,11 +1386,7 @@
 
         const items = buildFallbackTickerItems(system);
         const base = items.length ? items : [{ level: "low", text: t("no_data") }];
-        const duplicated = [];
-
-        for (let i = 0; i < 3; i += 1) duplicated.push(...base);
-
-        track.innerHTML = duplicated.map(item => `
+        track.innerHTML = base.map(item => `
           <div class="ticker-item">
             <span class="ticker-dot ${escapeHtml(item.level)}"></span>
             <span class="ticker-item-text" dir="${STATE.lang === "ar" ? "rtl" : "ltr"}">${escapeHtml(item.text)}</span>
@@ -1380,7 +1402,7 @@
         const metricsBadge = qs("metricsBadge");
         const audioBadge = qs("audioBadge");
 
-        if (system?.source === "engine") {
+        if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed) {
           sourceBadge.textContent = t("source_live");
           sourceBadge.className = "meta-badge live";
         } else {
@@ -1411,10 +1433,19 @@
 
         if (system?.level === "HIGH") {
           alert.textContent = t("alert_high");
+          alert.style.background = "rgba(255,77,79,.14)";
+          alert.style.border = "1px solid rgba(255,77,79,.40)";
+          alert.style.color = "#ffd1d1";
         } else if (system?.level === "MEDIUM") {
           alert.textContent = t("alert_medium");
+          alert.style.background = "rgba(255,159,26,.12)";
+          alert.style.border = "1px solid rgba(255,159,26,.35)";
+          alert.style.color = "#ffe8c9";
         } else {
           alert.textContent = t("alert_low");
+          alert.style.background = "rgba(0,208,132,.10)";
+          alert.style.border = "1px solid rgba(0,208,132,.30)";
+          alert.style.color = "#d7fff1";
         }
       }
 
@@ -1483,7 +1514,7 @@
           {
             title: t("linked_country"),
             item: context?.topCountryContent || null,
-            value: safeNumber((system?.countryRiskFeed || [])[0]?.riskScore, 0)
+            value: safeNumber(asArray(system?.countryRiskFeed)[0]?.riskScore, 0)
           }
         ];
 
@@ -1651,7 +1682,7 @@
 
       function renderFeed(system){
         const list = qs("feedList");
-        const feed = (
+        const feed = asArray(
           system?.publisherFeed ||
           system?.unifiedFeed ||
           window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
@@ -1796,12 +1827,7 @@
       }
 
       function renderTicker(system){
-        const track = qs("tickerTrack");
-        if (!track) return;
-
-        if (!track.children.length || !track.textContent.trim()) {
-          renderFallbackTicker(system);
-        }
+        renderFallbackTicker(system);
       }
 
       function renderPage(system){
@@ -1851,7 +1877,6 @@
           window.IBSS_RUNTIME.start({
             pageId: "reports",
             lang: STATE.lang,
-            tickerTrackEl: qs("tickerTrack"),
             refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
             systemProvider: getSystem,
             afterRender: function(system) {
@@ -1860,10 +1885,7 @@
           });
 
           setTimeout(() => {
-            const track = qs("tickerTrack");
-            const tickerLooksDead = !track || !track.textContent.trim();
-
-            if (tickerLooksDead) {
+            if (!qs("tickerTrack")?.textContent.trim()) {
               const system = getSystem();
               if (system) renderPage(system);
             }
