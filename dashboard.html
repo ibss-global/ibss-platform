@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS Dashboard</title>
+  <title>IBSS Dashboard — Living Command Center</title>
 
   <style>
     :root{
@@ -22,6 +22,7 @@
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
       --shadow:0 10px 24px rgba(0,0,0,.18);
+      --glow:0 0 22px rgba(212,175,55,.08);
     }
 
     *{box-sizing:border-box}
@@ -31,6 +32,7 @@
       font-family:Arial,sans-serif;
       background:
         radial-gradient(circle at top, rgba(212,175,55,.07), transparent 30%),
+        radial-gradient(circle at 82% 18%, rgba(90,140,255,.05), transparent 24%),
         var(--bg);
       color:var(--text);
     }
@@ -38,9 +40,9 @@
     body{min-height:100vh}
 
     .wrap{
-      width:min(1220px,92%);
+      width:min(1280px,92%);
       margin:auto;
-      padding:20px 0 42px;
+      padding:20px 0 46px;
     }
 
     .topbar{
@@ -121,7 +123,7 @@
 
     .hero{
       text-align:center;
-      padding:28px 0 18px;
+      padding:30px 0 20px;
     }
 
     .hero h1{
@@ -136,13 +138,21 @@
       margin:0;
       color:var(--muted);
       font-size:16px;
-      line-height:1.8;
+      line-height:1.85;
     }
 
     .meta-line{
       margin-top:10px;
       color:#8a8a8a;
       font-size:13px;
+    }
+
+    .presence-line{
+      margin-top:10px;
+      color:var(--blue);
+      font-size:14px;
+      font-weight:700;
+      line-height:1.8;
     }
 
     .hero-badges{
@@ -172,16 +182,16 @@
       background:rgba(0,208,132,.08);
     }
 
-    .meta-badge.fallback{
+    .meta-badge.warn{
       color:var(--orange);
       border-color:rgba(255,159,26,.30);
       background:rgba(255,159,26,.08);
     }
 
-    .meta-badge.blue{
-      color:#bfd2ff;
-      border-color:rgba(90,140,255,.35);
-      background:rgba(90,140,255,.10);
+    .meta-badge.danger{
+      color:#ffd0d1;
+      border-color:rgba(255,77,79,.35);
+      background:rgba(255,77,79,.10);
     }
 
     .alert{
@@ -197,14 +207,27 @@
       line-height:1.7;
     }
 
-    .section{margin-top:18px}
+    .section{
+      margin-top:20px;
+    }
 
     .card{
       background:var(--panel);
       border:1px solid var(--soft-border);
-      border-radius:22px;
+      border-radius:24px;
       padding:22px;
       box-shadow:var(--shadow);
+    }
+
+    .feature-card{
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 35%),
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
+        var(--panel);
+      border:1px solid rgba(212,175,55,.14);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset, 0 14px 28px rgba(0,0,0,.2);
     }
 
     .title{
@@ -219,127 +242,28 @@
       font-size:13px;
       margin-top:-8px;
       margin-bottom:16px;
-      line-height:1.7;
+      line-height:1.75;
     }
 
-    .presence-grid{
+    .grid{
       display:grid;
-      grid-template-columns:1.1fr .9fr;
+      grid-template-columns:1.05fr .95fr;
       gap:18px;
-      margin-top:22px;
+      margin-top:20px;
     }
 
-    .presence-card{
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 38%),
-        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
-        var(--panel);
-      border:1px solid rgba(212,175,55,.14);
-      border-radius:24px;
-      padding:22px;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,.02) inset,
-        0 14px 28px rgba(0,0,0,.2);
-    }
-
-    .presence-kicker{
-      color:var(--gold);
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.08em;
-      margin-bottom:10px;
-    }
-
-    .presence-title{
-      font-size:28px;
-      font-weight:900;
-      color:#fff;
-      line-height:1.4;
-      margin:0 0 12px;
-    }
-
-    .presence-summary{
-      color:#ddd;
-      font-size:15px;
-      line-height:1.9;
-      margin:0 0 12px;
-    }
-
-    .presence-explanation{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.9;
-      margin:0 0 14px;
-    }
-
-    .presence-chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    .presence-chip{
-      display:inline-flex;
-      align-items:center;
-      padding:7px 11px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      color:#ddd;
-    }
-
-    .presence-chip.high{
-      color:#ffd7d7;
-      background:rgba(255,77,79,.12);
-      border-color:rgba(255,77,79,.28);
-    }
-
-    .presence-chip.medium{
-      color:#ffe2b8;
-      background:rgba(255,159,26,.12);
-      border-color:rgba(255,159,26,.28);
-    }
-
-    .presence-chip.low{
-      color:#d6fff1;
-      background:rgba(0,208,132,.12);
-      border-color:rgba(0,208,132,.28);
-    }
-
-    .presence-side{
+    .grid-3{
       display:grid;
+      grid-template-columns:repeat(3,1fr);
       gap:18px;
+      margin-top:18px;
     }
 
-    .presence-mini{
-      background:var(--panel);
-      border:1px solid var(--soft-border);
-      border-radius:22px;
-      padding:22px;
-      box-shadow:var(--shadow);
-    }
-
-    .presence-mini-label{
-      color:#8f8f8f;
-      font-size:12px;
-      letter-spacing:.08em;
-      margin-bottom:10px;
-    }
-
-    .presence-mini-value{
-      color:var(--gold);
-      font-size:22px;
-      font-weight:900;
-      line-height:1.5;
-      margin-bottom:8px;
-    }
-
-    .presence-mini-sub{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.8;
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:18px;
     }
 
     .ticker-shell{
@@ -352,28 +276,27 @@
       overflow-y:hidden;
       -webkit-overflow-scrolling:touch;
       scrollbar-width:none;
-      margin-top:18px;
     }
 
     .ticker-shell::-webkit-scrollbar{display:none}
 
     .ticker-track{
       display:flex;
-      align-items:stretch;
+      align-items:center;
       gap:12px;
       padding:14px 16px;
-      min-height:92px;
+      min-height:88px;
       width:max-content;
       white-space:normal;
     }
 
     .ticker-item{
-      flex:0 0 280px;
+      flex:0 0 300px;
       display:flex;
       align-items:flex-start;
       gap:10px;
-      min-height:72px;
-      max-width:280px;
+      min-height:70px;
+      max-width:300px;
       padding:14px 16px;
       border-radius:18px;
       background:rgba(255,255,255,.03);
@@ -398,26 +321,12 @@
       height:8px;
       border-radius:50%;
       flex:0 0 8px;
-      margin-top:5px;
+      margin-top:6px;
     }
 
     .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
     .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
     .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
-
-    .grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px;
-      margin-top:22px;
-    }
-
-    .grid-3{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:18px;
-      margin-top:18px;
-    }
 
     .state{
       display:grid;
@@ -427,18 +336,20 @@
 
     .state-item,
     .signal-box,
+    .legend-item,
     .feed-item,
     .decision-box,
     .scenario-row,
     .country-row,
     .metric-row,
     .snapshot-item,
+    .voice-box,
+    .presence-box,
     .driver-item,
-    .publication-box,
-    .viewer-box{
+    .context-item{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
-      border-radius:16px;
+      border-radius:18px;
     }
 
     .state-item{
@@ -485,14 +396,18 @@
 
     .decision-note{
       color:var(--muted);
-      line-height:1.8;
+      line-height:1.85;
       min-height:50px;
       font-size:14px;
+      white-space:pre-wrap;
     }
 
     .signal-box{
-      padding:16px;
+      padding:18px;
       border-color:rgba(212,175,55,.24);
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 38%),
+        var(--panel2);
     }
 
     .signal-box h3{
@@ -507,6 +422,7 @@
       color:#ddd;
       line-height:1.9;
       font-size:15px;
+      white-space:pre-wrap;
     }
 
     .mini-badges{
@@ -547,26 +463,154 @@
       border-color:rgba(0,208,132,.28);
     }
 
-    .drivers-box,
+    .voice-box,
+    .presence-box{
+      padding:18px;
+      min-height:220px;
+    }
+
+    .voice-title,
+    .presence-title{
+      font-size:26px;
+      font-weight:900;
+      color:#fff;
+      line-height:1.45;
+      margin:0 0 12px;
+    }
+
+    .voice-text,
+    .presence-text{
+      color:#ddd;
+      line-height:1.9;
+      font-size:15px;
+      white-space:pre-wrap;
+    }
+
+    .legend,
     .feed,
     .scenario-box,
     .country-box,
     .metrics-box,
-    .snapshot-box{
+    .snapshot-box,
+    .drivers-box,
+    .context-box{
       display:grid;
       gap:12px;
     }
 
+    .legend-item,
     .feed-item,
     .scenario-row,
     .country-row,
     .metric-row,
     .snapshot-item,
-    .driver-item{
-      padding:13px 15px;
-      color:#e3e3e3;
+    .driver-item,
+    .context-item{
+      padding:14px 15px;
+    }
+
+    .legend-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .legend-left{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      min-width:0;
+    }
+
+    .legend-dot{
+      width:11px;
+      height:11px;
+      border-radius:50%;
+      flex:0 0 auto;
+    }
+
+    .legend-dot.high{background:var(--red)}
+    .legend-dot.medium{background:var(--orange)}
+    .legend-dot.low{background:var(--green)}
+
+    .legend-texts{min-width:0}
+
+    .legend-name{
+      color:#fff;
+      font-size:15px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:240px;
+    }
+
+    .legend-sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:4px;
+    }
+
+    .legend-right{
+      text-align:right;
+      flex:0 0 auto;
+    }
+
+    .legend-score{
+      color:var(--gold);
+      font-size:20px;
+      font-weight:900;
+      line-height:1;
+    }
+
+    .legend-badge{
+      margin-top:6px;
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .legend-badge.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.3);
+    }
+
+    .legend-badge.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.3);
+    }
+
+    .legend-badge.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
+    .snapshot-item strong,
+    .country-name,
+    .metric-name,
+    .driver-name,
+    .context-title{
+      color:#fff;
+      display:block;
+      margin-bottom:6px;
+      font-size:15px;
+    }
+
+    .snapshot-meta,
+    .country-meta,
+    .metric-sub,
+    .driver-meta,
+    .context-meta{
+      color:var(--muted);
+      font-size:12px;
       line-height:1.7;
-      font-size:14px;
     }
 
     .scenario-row,
@@ -578,25 +622,7 @@
       gap:12px;
     }
 
-    .snapshot-item strong,
-    .country-name,
-    .driver-name{
-      color:#fff;
-      display:block;
-      margin-bottom:6px;
-      font-size:15px;
-    }
-
-    .snapshot-meta,
-    .country-meta,
-    .metric-sub,
-    .driver-meta{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.7;
-    }
-
-    .metric-row strong,
+    .metric-score,
     .country-score{
       color:var(--gold);
       font-size:20px;
@@ -604,45 +630,75 @@
       flex:0 0 auto;
     }
 
-    .publication-box{
-      padding:18px;
-      border-color:rgba(212,175,55,.24);
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 35%),
-        var(--panel2);
+    .metric-score.high{color:var(--red)}
+    .metric-score.medium{color:var(--orange)}
+    .metric-score.low{color:var(--green)}
+
+    .driver-item{
+      border-color:rgba(212,175,55,.14);
+      background:rgba(255,255,255,.02);
     }
 
-    .publication-title{
+    .driver-item .chip-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#ddd;
+    }
+
+    .chip.high{
+      color:#ffd7d7;
+      background:rgba(255,77,79,.12);
+      border-color:rgba(255,77,79,.28);
+    }
+
+    .chip.medium{
+      color:#ffe2b8;
+      background:rgba(255,159,26,.12);
+      border-color:rgba(255,159,26,.28);
+    }
+
+    .chip.low{
+      color:#d6fff1;
+      background:rgba(0,208,132,.12);
+      border-color:rgba(0,208,132,.28);
+    }
+
+    .publication-box,
+    .viewer-box{
+      background:var(--panel2);
+      border:1px solid var(--soft-border-2);
+      border-radius:18px;
+      padding:18px;
+    }
+
+    .publication-title,
+    .viewer-title{
       color:#fff;
-      font-size:28px;
-      line-height:1.45;
+      font-size:26px;
       font-weight:900;
+      line-height:1.45;
       margin:0 0 10px;
     }
 
-    .publication-text{
+    .publication-text,
+    .viewer-body{
       color:#ddd;
       line-height:1.9;
       font-size:15px;
-      margin:0;
-    }
-
-    .viewer-box{
-      padding:16px;
-    }
-
-    .viewer-title{
-      color:#fff;
-      font-size:22px;
-      font-weight:900;
-      line-height:1.5;
-      margin:0 0 10px;
-    }
-
-    .viewer-body{
-      color:#f0f0f0;
-      line-height:1.95;
-      font-size:14px;
       white-space:pre-wrap;
     }
 
@@ -676,7 +732,7 @@
 
     .publisher-textarea{
       width:100%;
-      min-height:210px;
+      min-height:220px;
       background:#121212;
       color:#fff;
       border:1px solid rgba(255,255,255,.08);
@@ -702,10 +758,10 @@
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
+    html[dir="rtl"] .legend-item,
     html[dir="rtl"] .scenario-row,
     html[dir="rtl"] .country-row,
-    html[dir="rtl"] .metric-row,
-    html[dir="rtl"] .presence-chips{
+    html[dir="rtl"] .metric-row{
       direction:rtl;
     }
 
@@ -716,10 +772,12 @@
       text-align:center;
     }
 
-    @media (max-width:980px){
-      .presence-grid,
+    html[dir="rtl"] .legend-right{text-align:left}
+
+    @media (max-width:1100px){
       .grid,
-      .grid-3{
+      .grid-3,
+      .grid-2{
         grid-template-columns:1fr;
       }
     }
@@ -727,7 +785,14 @@
     @media (max-width:640px){
       .hero h1{font-size:34px}
       .topbar{flex-direction:column}
+      .nav{justify-content:center}
+      .brand{text-align:center}
       .state{grid-template-columns:1fr}
+      .legend-item{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+      .legend-right{text-align:left}
       .publisher-actions{flex-direction:column}
       .ticker-item{
         flex:0 0 78vw;
@@ -766,42 +831,18 @@
 
     <div class="hero">
       <h1 id="pageTitle">IBSS Dashboard</h1>
-      <p id="pageSub">Adaptive Living Presence & Unified Sovereign Decision Layer</p>
+      <p id="pageSub">Living Command Center — Adaptive Voice / Pressure / Decision Layer</p>
       <div id="metaLine" class="meta-line">Engine source: -</div>
+      <div id="presenceLine" class="presence-line">-</div>
 
       <div class="hero-badges">
-        <span id="sourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
+        <span id="sourceBadge" class="meta-badge warn">SOURCE — LIMITED</span>
         <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
-        <span id="presenceBadge" class="meta-badge blue">PRESENCE — IDLE</span>
-        <span id="audioBadge" class="meta-badge fallback">AUDIO — OFF</span>
+        <span id="audioBadge" class="meta-badge warn">AUDIO — OFF</span>
       </div>
     </div>
 
     <div id="alertBox" class="alert"></div>
-
-    <div class="presence-grid">
-      <div class="presence-card">
-        <div class="presence-kicker" id="presenceKicker">LIVING PRESENCE</div>
-        <h3 id="presenceTitle" class="presence-title">-</h3>
-        <p id="presenceSummary" class="presence-summary">-</p>
-        <p id="presenceExplanation" class="presence-explanation">-</p>
-        <div id="presenceChips" class="presence-chips"></div>
-      </div>
-
-      <div class="presence-side">
-        <div class="presence-mini">
-          <div class="presence-mini-label" id="advisoryLabel">ADVISORY</div>
-          <div id="presenceAdvisory" class="presence-mini-value">-</div>
-          <div id="presenceIntent" class="presence-mini-sub">-</div>
-        </div>
-
-        <div class="presence-mini">
-          <div class="presence-mini-label" id="driftLabel">PRESSURE DRIFT</div>
-          <div id="presenceDrift" class="presence-mini-value">-</div>
-          <div id="presenceDriftMeta" class="presence-mini-sub">-</div>
-        </div>
-      </div>
-    </div>
 
     <div class="section">
       <div class="title" id="tickerTitle">Live Intelligence Strip</div>
@@ -827,12 +868,12 @@
 
           <div class="state-item">
             <div class="label" id="decisionLabel">Decision</div>
-            <div id="decision" class="value">-</div>
+            <div id="decision" class="value gold">-</div>
           </div>
 
           <div class="state-item">
             <div class="label" id="modeLabel">Mode</div>
-            <div id="mode" class="value">-</div>
+            <div id="mode" class="value blue">-</div>
           </div>
         </div>
 
@@ -842,6 +883,24 @@
         </div>
       </div>
 
+      <div class="feature-card">
+        <div class="title" id="voicePanelTitle">Living Voice</div>
+
+        <div class="voice-box">
+          <h3 id="voiceTitle" class="voice-title">-</h3>
+          <div id="voiceText" class="voice-text">-</div>
+          <div id="voiceBadges" class="mini-badges"></div>
+        </div>
+
+        <div class="presence-box" style="margin-top:14px;">
+          <h3 id="presenceTitle" class="presence-title">-</h3>
+          <div id="presenceText" class="presence-text">-</div>
+          <div id="presenceBadges" class="mini-badges"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
       <div class="card">
         <div class="title" id="signalTitleLabel">Primary Signal</div>
 
@@ -851,8 +910,13 @@
           <div id="signalBadges" class="mini-badges"></div>
         </div>
 
-        <div class="title" style="margin-top:18px" id="driversTitle">Dominant Drivers</div>
+        <div class="title" style="margin-top:18px" id="driversTitle">Primary Drivers</div>
         <div id="driversBox" class="drivers-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="title" id="radarTitle">Top Strategic Matrix</div>
+        <div class="legend" id="radarLegend"></div>
       </div>
     </div>
 
@@ -864,7 +928,7 @@
 
       <div class="card">
         <div class="title" id="metricsTitle">Unified Metrics</div>
-        <div class="sub-title" id="metricsSub">SSI / CRI / Signal / Cluster / Theater / Confidence</div>
+        <div class="sub-title" id="metricsSub">SSI / CRI / Signal / Cluster / Theater</div>
         <div id="metricsBox" class="metrics-box"></div>
       </div>
 
@@ -874,15 +938,15 @@
       </div>
     </div>
 
-    <div class="grid section">
+    <div class="grid-2">
       <div class="card">
         <div class="title" id="publicationTitle">Featured Publication</div>
         <div id="publicationBox" class="publication-box"></div>
       </div>
 
       <div class="card">
-        <div class="title" id="viewerTitle">Living System Viewer</div>
-        <div id="viewerBox" class="viewer-box"></div>
+        <div class="title" id="contextTitle">Publication Context</div>
+        <div id="contextBox" class="context-box"></div>
       </div>
     </div>
 
@@ -899,30 +963,25 @@
     <div class="card section">
       <div class="title" id="publisherTitle">Publishing Console</div>
 
-      <div class="scenario-box">
-        <div class="scenario-row">
-          <span class="label" id="pubDraftTypeLabel">Latest Draft Type</span>
-          <strong id="pubDraftType">-</strong>
-        </div>
-
-        <div class="scenario-row">
-          <span class="label" id="pubDraftTimeLabel">Created At</span>
-          <strong id="pubDraftTime">-</strong>
+      <div class="context-box">
+        <div class="context-item">
+          <div class="context-title" id="pubDraftTypeTitle">Latest Draft</div>
+          <div class="context-meta" id="pubDraftMeta">-</div>
         </div>
       </div>
 
       <textarea id="pubDraftText" class="publisher-textarea" readonly></textarea>
 
       <div class="publisher-actions">
-        <button id="btnGenerateSignalPost" type="button" class="btn-secondary">Generate Top Signal Post</button>
+        <button id="btnGenerateSignalPost" type="button" class="btn-primary">Generate Top Signal Post</button>
         <button id="btnGenerateBriefPost" type="button" class="btn-secondary">Generate Strategic Brief</button>
         <button id="btnGeneratePublicationPost" type="button" class="btn-secondary">Generate Featured Publication</button>
-        <button id="btnGenerateLivingPost" type="button" class="btn-primary">Generate Living Presence Post</button>
+        <button id="btnGenerateLivingPost" type="button" class="btn-secondary">Generate Living Presence Post</button>
         <button id="btnCopyDraftPost" type="button" class="btn-secondary">Copy Draft</button>
       </div>
     </div>
 
-    <div class="footer">© 2026 IBSS — Adaptive Living Dashboard Layer</div>
+    <div class="footer">© 2026 IBSS — Living Command Center</div>
   </div>
 
   <script src="data.js"></script>
@@ -934,7 +993,6 @@
   <script src="cluster-engine.js"></script>
   <script src="engine.js"></script>
   <script src="audio-engine.js"></script>
-  <script src="geo-radar.js"></script>
   <script src="runtime-engine.js"></script>
   <script src="publisher.js"></script>
 
@@ -953,7 +1011,7 @@
           nav_about: "About",
 
           title: "IBSS Dashboard",
-          sub: "Adaptive Living Presence & Unified Sovereign Decision Layer",
+          sub: "Living Command Center — Adaptive Voice / Pressure / Decision Layer",
           ticker: "Live Intelligence Strip",
           state: "System State",
           level: "Level",
@@ -961,31 +1019,30 @@
           decision: "Decision",
           mode: "Mode",
           signal: "Primary Signal",
-          drivers: "Dominant Drivers",
+          radar: "Top Strategic Matrix",
           feed: "Live Feed",
           scenario: "Scenario Engine",
           country: "Country Risk Unit",
           snapshot: "Strategic Snapshot",
           metrics: "Unified Metrics",
-          metricsSub: "SSI / CRI / Signal / Cluster / Theater / Confidence",
+          metricsSub: "SSI / CRI / Signal / Cluster / Theater",
           publication: "Featured Publication",
-          viewer: "Living System Viewer",
+          context: "Publication Context",
+          drivers: "Primary Drivers",
           publisher: "Publishing Console",
-          presenceKicker: "LIVING PRESENCE",
-          advisory: "ADVISORY",
-          drift: "PRESSURE DRIFT",
+          voicePanel: "Living Voice",
 
           levelHigh: "HIGH",
           levelMed: "MEDIUM",
           levelLow: "LOW",
 
-          noteHigh: "Critical composite pressure detected. Immediate sovereign readiness required.",
-          noteMedium: "Structured pressure detected. Maintain preparation posture and monitor transition bands.",
-          noteLow: "System remains inside low-stress monitoring conditions.",
+          noteHigh: "Critical composite pressure detected. The system has shifted into a high-readiness posture and is reading escalation as active rather than hypothetical.",
+          noteMedium: "Structured pressure detected. The system is holding preparation posture while tracking transition thresholds and driver concentration.",
+          noteLow: "The system remains inside monitoring conditions, but the field is still being actively interpreted and watched.",
 
-          alertHigh: "⚠ HIGH ESCALATION — COMPOSITE SYSTEM IN ACTIVE RESPONSE BAND",
-          alertMed: "⚠ STRUCTURED PRESSURE — COMPOSITE SYSTEM IN PREPARATION BAND",
-          alertLow: "✓ LOW PRESSURE — COMPOSITE SYSTEM IN MONITORING BAND",
+          alertHigh: "⚠ HIGH ESCALATION — LIVING SYSTEM IN ACTIVE PRESSURE BAND",
+          alertMed: "⚠ STRUCTURED PRESSURE — LIVING SYSTEM IN PREPARATION BAND",
+          alertLow: "✓ LOW PRESSURE — LIVING SYSTEM IN MONITORING BAND",
 
           scenarioA: "Scenario A",
           scenarioB: "Scenario B",
@@ -993,25 +1050,22 @@
           riskScore: "Risk Score",
           riskLevel: "Risk Level",
           trend: "Trend",
-          band: "Band",
-          confidence: "Confidence",
           sourceEngine: "Engine source",
           updatedAt: "Updated",
           noData: "No data available.",
           noFeed: "No live feed available.",
+          noContext: "No linked publication context available.",
 
           sourceLive: "SOURCE — ORCHESTRATED",
           sourceFallback: "SOURCE — LIMITED",
           metricsOn: "METRICS — INTEGRATED",
           metricsOff: "METRICS — OFF",
-          presenceOn: "PRESENCE — ACTIVE",
-          presenceIdle: "PRESENCE — IDLE",
 
           snapshotTheater: "Top Theater",
           snapshotCluster: "Top Strategic File",
           snapshotCountry: "Top Country Risk",
 
-          latestDraftType: "Latest Draft Type",
+          latestDraft: "Latest Draft",
           createdAt: "Created At",
 
           signalScore: "Signal Score",
@@ -1019,27 +1073,26 @@
           theaterRisk: "Theater Risk",
           countryRisk: "Country Risk",
           systemStress: "System Stress",
+          confidence: "Confidence",
+          band: "Band",
 
           audioOn: "AUDIO — ON",
           audioOff: "AUDIO — OFF",
           audioButtonOn: "AUDIO ON",
           audioButtonOff: "AUDIO OFF",
 
-          posture: "Posture",
-          urgency: "Urgency",
-          persistence: "Persistence",
-          volatility: "Volatility",
-          intent: "Intent",
-          advisoryLabel: "Advisory",
-          publicationType: "Type",
-          publicationDomain: "Domain",
-          publicationCountry: "Country",
-
+          topLabel: "TOP",
           generateSignalPost: "Generate Top Signal Post",
           generateBriefPost: "Generate Strategic Brief",
           generatePublicationPost: "Generate Featured Publication",
           generateLivingPost: "Generate Living Presence Post",
-          copyDraft: "Copy Draft"
+          copyDraft: "Copy Draft",
+
+          posture: "Posture",
+          urgency: "Urgency",
+          drift: "Drift",
+          advisory: "Advisory",
+          stateLabel: "State"
         },
 
         ar: {
@@ -1052,7 +1105,7 @@
           nav_about: "حول",
 
           title: "لوحة تحكم IBSS",
-          sub: "طبقة الحضور الحي والقرار السيادي الموحد",
+          sub: "مركز القيادة الحي — الصوت التكيفي / الضغط / القرار",
           ticker: "الشريط الاستخباري الحي",
           state: "حالة النظام",
           level: "المستوى",
@@ -1060,31 +1113,30 @@
           decision: "القرار",
           mode: "الوضع",
           signal: "الإشارة الأساسية",
-          drivers: "المحرّكات المهيمنة",
+          radar: "المصفوفة الاستراتيجية العليا",
           feed: "التغذية الحية",
           scenario: "محرك السيناريو",
           country: "وحدة مخاطر الدول",
           snapshot: "اللقطة الاستراتيجية",
           metrics: "المقاييس الموحدة",
-          metricsSub: "SSI / CRI / Signal / Cluster / Theater / Confidence",
+          metricsSub: "SSI / CRI / Signal / Cluster / Theater",
           publication: "المنشور المميز",
-          viewer: "عارض النظام الحي",
+          context: "سياق المنشورات",
+          drivers: "المحرّكات الأساسية",
           publisher: "وحدة النشر",
-          presenceKicker: "الحضور الحي",
-          advisory: "التوجيه",
-          drift: "انجراف الضغط",
+          voicePanel: "الصوت الحي",
 
           levelHigh: "مرتفع",
           levelMed: "متوسط",
           levelLow: "منخفض",
 
-          noteHigh: "تم رصد ضغط مركب حرج. الجاهزية السيادية الفورية مطلوبة.",
-          noteMedium: "تم رصد ضغط بنيوي. حافظ على وضعية التحضير وراقب انتقالات الخطر.",
-          noteLow: "النظام ما يزال ضمن ظروف مراقبة منخفضة الضغط.",
+          noteHigh: "تم رصد ضغط مركب حرج. النظام انتقل إلى وضعية جاهزية مرتفعة ويتعامل مع التصعيد كحركة نشطة لا كاحتمال نظري.",
+          noteMedium: "تم رصد ضغط بنيوي. النظام يحافظ على وضعية التحضير ويتابع عتبات الانتقال وتركيز المحرّكات.",
+          noteLow: "النظام ما يزال ضمن ظروف المراقبة، لكنه يواصل قراءة الحقل ومتابعة التطورات بشكل حي.",
 
-          alertHigh: "⚠ تصعيد مرتفع — النظام المركب داخل حزمة الاستجابة النشطة",
-          alertMed: "⚠ ضغط بنيوي — النظام المركب داخل حزمة التحضير",
-          alertLow: "✓ ضغط منخفض — النظام المركب داخل حزمة المراقبة",
+          alertHigh: "⚠ تصعيد مرتفع — النظام الحي داخل حزمة ضغط نشطة",
+          alertMed: "⚠ ضغط بنيوي — النظام الحي داخل حزمة التحضير",
+          alertLow: "✓ ضغط منخفض — النظام الحي داخل حزمة المراقبة",
 
           scenarioA: "السيناريو أ",
           scenarioB: "السيناريو ب",
@@ -1092,25 +1144,22 @@
           riskScore: "درجة الخطر",
           riskLevel: "مستوى الخطر",
           trend: "الاتجاه",
-          band: "الحزمة",
-          confidence: "الثقة",
           sourceEngine: "مصدر المحرك",
           updatedAt: "آخر تحديث",
           noData: "لا توجد بيانات.",
           noFeed: "لا توجد تغذية حية.",
+          noContext: "لا يوجد سياق منشورات مرتبط.",
 
           sourceLive: "المصدر — منسق",
           sourceFallback: "المصدر — محدود",
           metricsOn: "القياس — مدمج",
           metricsOff: "القياس — غير مفعل",
-          presenceOn: "الحضور — نشط",
-          presenceIdle: "الحضور — ساكن",
 
           snapshotTheater: "المسرح الأعلى",
           snapshotCluster: "الملف الاستراتيجي الأعلى",
           snapshotCountry: "أعلى دولة خطرًا",
 
-          latestDraftType: "نوع المسودة الأخيرة",
+          latestDraft: "أحدث مسودة",
           createdAt: "تاريخ الإنشاء",
 
           signalScore: "درجة الإشارة",
@@ -1118,27 +1167,26 @@
           theaterRisk: "خطر المسرح",
           countryRisk: "خطر الدولة",
           systemStress: "ضغط النظام",
+          confidence: "الثقة",
+          band: "الحزمة",
 
           audioOn: "الصوت — يعمل",
           audioOff: "الصوت — متوقف",
           audioButtonOn: "تشغيل الصوت",
           audioButtonOff: "إيقاف الصوت",
 
-          posture: "الوضعية",
-          urgency: "الاستعجال",
-          persistence: "الاستمرار",
-          volatility: "التذبذب",
-          intent: "النية",
-          advisoryLabel: "التوجيه",
-          publicationType: "النوع",
-          publicationDomain: "المجال",
-          publicationCountry: "الدولة",
-
+          topLabel: "TOP",
           generateSignalPost: "توليد منشور الإشارة الأعلى",
           generateBriefPost: "توليد موجز استراتيجي",
-          generatePublicationPost: "توليد المنشور المميز",
+          generatePublicationPost: "توليد منشور مميز",
           generateLivingPost: "توليد منشور الحضور الحي",
-          copyDraft: "نسخ المسودة"
+          copyDraft: "نسخ المسودة",
+
+          posture: "الوضعية",
+          urgency: "الاستعجال",
+          drift: "الانجراف",
+          advisory: "التوجيه",
+          stateLabel: "الحالة"
         }
       };
 
@@ -1233,6 +1281,13 @@
         return "low";
       }
 
+      function normalizePriority(priority) {
+        const p = String(priority || "LOW").toUpperCase();
+        if (p === "HIGH") return "HIGH";
+        if (p === "MEDIUM") return "MEDIUM";
+        return "LOW";
+      }
+
       function applyLanguage() {
         document.documentElement.lang = STATE.lang;
         document.documentElement.dir = STATE.lang === "ar" ? "rtl" : "ltr";
@@ -1246,7 +1301,7 @@
         qs("decisionLabel").textContent = t("decision");
         qs("modeLabel").textContent = t("mode");
         qs("signalTitleLabel").textContent = t("signal");
-        qs("driversTitle").textContent = t("drivers");
+        qs("radarTitle").textContent = t("radar");
         qs("snapshotTitle").textContent = t("snapshot");
         qs("metricsTitle").textContent = t("metrics");
         qs("metricsSub").textContent = t("metricsSub");
@@ -1254,13 +1309,11 @@
         qs("countryTitle").textContent = t("country");
         qs("feedTitle").textContent = t("feed");
         qs("publicationTitle").textContent = t("publication");
-        qs("viewerTitle").textContent = t("viewer");
+        qs("contextTitle").textContent = t("context");
+        qs("driversTitle").textContent = t("drivers");
         qs("publisherTitle").textContent = t("publisher");
-        qs("pubDraftTypeLabel").textContent = t("latestDraftType");
-        qs("pubDraftTimeLabel").textContent = t("createdAt");
-        qs("presenceKicker").textContent = t("presenceKicker");
-        qs("advisoryLabel").textContent = t("advisory");
-        qs("driftLabel").textContent = t("drift");
+        qs("voicePanelTitle").textContent = t("voicePanel");
+        qs("pubDraftTypeTitle").textContent = t("latestDraft");
 
         document.querySelector('[data-i18n="nav_home"]').textContent = t("nav_home");
         document.querySelector('[data-i18n="nav_dashboard"]').textContent = t("nav_dashboard");
@@ -1288,7 +1341,7 @@
         const btn = qs("audioToggleBtn");
 
         badge.textContent = enabled ? t("audioOn") : t("audioOff");
-        badge.className = enabled ? "meta-badge live" : "meta-badge fallback";
+        badge.className = enabled ? "meta-badge live" : "meta-badge warn";
 
         btn.textContent = enabled ? t("audioButtonOff") : t("audioButtonOn");
         btn.classList.toggle("active", enabled);
@@ -1296,8 +1349,12 @@
 
       function getRawSystem() {
         try {
-          if (window.IBSS_ENGINE?.getSystemState) return window.IBSS_ENGINE.getSystemState();
-          if (window.IBSS_ENGINE?.getStaticSystemFallback) return window.IBSS_ENGINE.getStaticSystemFallback();
+          if (window.IBSS_ENGINE?.getSystemState) {
+            return window.IBSS_ENGINE.getSystemState();
+          }
+          if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+            return window.IBSS_ENGINE.getStaticSystemFallback();
+          }
         } catch (error) {
           console.error("Dashboard getRawSystem error:", error);
         }
@@ -1330,19 +1387,25 @@
       }
 
       function renderMeta(system) {
+        const digest = system?.publisherDigest || {};
         qs("metaLine").textContent =
-          `${t("sourceEngine")}: ${safe(system?.source, "-")} | ${t("updatedAt")}: ${formatDateTime(system?.updatedAt)}`;
+          `${t("sourceEngine")}: ${safe(digest?.source || system?.source, "-")} | ${t("updatedAt")}: ${formatDateTime(system?.updatedAt)}`;
+
+        qs("presenceLine").textContent = [
+          `${t("stateLabel")}: ${safeText(system?.presence?.state, "-")}`,
+          `${t("urgency")}: ${safeText(system?.presence?.urgency, "-")}`,
+          `${t("posture")}: ${getLocalizedText(system?.voice?.posture) || safeText(system?.mode, "-")}`
+        ].join(" • ");
 
         const sourceBadge = qs("sourceBadge");
         const metricsBadge = qs("metricsBadge");
-        const presenceBadge = qs("presenceBadge");
 
         if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed) {
           sourceBadge.textContent = t("sourceLive");
           sourceBadge.className = "meta-badge live";
         } else {
           sourceBadge.textContent = t("sourceFallback");
-          sourceBadge.className = "meta-badge fallback";
+          sourceBadge.className = "meta-badge warn";
         }
 
         if (system?.metricsReference) {
@@ -1350,368 +1413,10 @@
           metricsBadge.className = "meta-badge live";
         } else {
           metricsBadge.textContent = t("metricsOff");
-          metricsBadge.className = "meta-badge fallback";
-        }
-
-        if (safeText(system?.presence?.state, "")) {
-          presenceBadge.textContent = t("presenceOn");
-          presenceBadge.className = "meta-badge blue";
-        } else {
-          presenceBadge.textContent = t("presenceIdle");
-          presenceBadge.className = "meta-badge";
+          metricsBadge.className = "meta-badge warn";
         }
 
         updateAudioBadge();
-      }
-
-      function renderPresence(system) {
-        qs("presenceTitle").textContent = getLocalizedText(system?.voice?.posture) || "-";
-        qs("presenceSummary").textContent = getLocalizedText(system?.voice?.summary) || t("noData");
-        qs("presenceExplanation").textContent = getLocalizedText(system?.voice?.explanation) || t("noData");
-
-        qs("presenceAdvisory").textContent = getLocalizedText(system?.voice?.advisory) || "-";
-        qs("presenceIntent").textContent = `${t("intent")}: ${getLocalizedText(system?.voice?.intent) || "-"}`;
-
-        const drift = system?.drift || {};
-        qs("presenceDrift").textContent = safeText(drift.direction, "STABLE");
-        qs("presenceDriftMeta").textContent =
-          `${t("persistence")}: ${safeNumber(drift.persistence, 0)} | ${t("volatility")}: ${safeNumber(drift.volatility, 0)}`;
-
-        const urgency = safeText(system?.presence?.urgency, "low");
-        const urgencyClass = urgency === "immediate" || urgency === "high" ? "high" : urgency === "medium" ? "medium" : "low";
-
-        qs("presenceChips").innerHTML = `
-          <span class="presence-chip ${urgencyClass}">${escapeHtml(`${t("urgency")}: ${urgency}`)}</span>
-          <span class="presence-chip">${escapeHtml(`${t("systemStress")}: ${safeNumber(system?.systemPressure, 0)}`)}</span>
-          <span class="presence-chip">${escapeHtml(`${t("confidence")}: ${safeNumber(system?.confidenceScore, 0)}`)}</span>
-          <span class="presence-chip">${escapeHtml(`${t("drift")}: ${safeText(drift.direction, "STABLE")}`)}</span>
-        `;
-      }
-
-      function renderLevel(system) {
-        const levelEl = qs("level");
-        const ssiEl = qs("ssi");
-        const alertBox = qs("alertBox");
-
-        const pressure = safeNumber(system?.ssi || system?.systemPressure, 0);
-        const level = safeText(system?.level, "LOW");
-
-        ssiEl.textContent = pressure;
-        ssiEl.className = `value ${levelClass(level)}`;
-
-        if (level === "HIGH") {
-          levelEl.textContent = t("levelHigh");
-          levelEl.className = "value high";
-          alertBox.style.display = "block";
-          alertBox.textContent = t("alertHigh");
-        } else if (level === "MEDIUM") {
-          levelEl.textContent = t("levelMed");
-          levelEl.className = "value medium";
-          alertBox.style.display = "block";
-          alertBox.textContent = t("alertMed");
-        } else {
-          levelEl.textContent = t("levelLow");
-          levelEl.className = "value low";
-          alertBox.style.display = "block";
-          alertBox.textContent = t("alertLow");
-        }
-
-        return level;
-      }
-
-      function renderDecision(level, system) {
-        qs("decision").textContent = safe(system?.decision, "-");
-        qs("decisionWord").textContent = safe(system?.decision, "-");
-        qs("mode").textContent = safe(system?.mode, "-");
-
-        if (level === "HIGH") {
-          qs("decisionNote").textContent = t("noteHigh");
-        } else if (level === "MEDIUM") {
-          qs("decisionNote").textContent = t("noteMedium");
-        } else {
-          qs("decisionNote").textContent = t("noteLow");
-        }
-      }
-
-      function renderPrimarySignal(signal) {
-        if (!signal) {
-          qs("signalTitle").textContent = "-";
-          qs("signalDesc").textContent = t("noData");
-          qs("signalBadges").innerHTML = "";
-          return;
-        }
-
-        const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
-        const priority = String(signal?.priority || "LOW").toUpperCase();
-        const signalClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
-
-        qs("signalTitle").textContent = getLocalizedText(signal.title);
-        qs("signalDesc").textContent = getLocalizedText(signal.description || signal.summary);
-
-        qs("signalBadges").innerHTML = `
-          <span class="mini-badge ${signalClass}">${escapeHtml(t("signalScore"))}: ${score}</span>
-          <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
-          <span class="mini-badge">${escapeHtml(t("publicationDomain"))}: ${escapeHtml(safeText(signal.domain, "-"))}</span>
-          <span class="mini-badge">${escapeHtml(t("publicationCountry"))}: ${escapeHtml(safeText(signal.country || signal.region, "-"))}</span>
-        `;
-      }
-
-      function renderDrivers(system) {
-        const box = qs("driversBox");
-        const drivers = asArray(system?.drivers);
-
-        if (!drivers.length) {
-          box.innerHTML = `<div class="driver-item"><div class="driver-name">${escapeHtml(t("noData"))}</div></div>`;
-          return;
-        }
-
-        box.innerHTML = drivers.slice(0, 5).map((driver) => `
-          <div class="driver-item">
-            <div class="driver-name">${escapeHtml(getLocalizedText(driver.label))}</div>
-            <div class="driver-meta">${escapeHtml(getLocalizedText(driver.explanation))}</div>
-          </div>
-        `).join("");
-      }
-
-      function renderSnapshot(system) {
-        const snapshot = system?.snapshot || null;
-        const topTheater = snapshot?.topTheater || system?.topTheater || null;
-        const topCluster = snapshot?.topCluster || system?.topCluster || null;
-        const topCountry = snapshot?.topCountry || system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
-
-        qs("snapshotBox").innerHTML = `
-          <div class="snapshot-item">
-            <strong>${escapeHtml(t("snapshotTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
-            <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("riskScore")}: ${safeNumber(topTheater.avgRisk, 0)} | ${t("band")}: ${getBandLabel(topTheater.avgRisk)}` : t("noData"))}</div>
-          </div>
-
-          <div class="snapshot-item">
-            <strong>${escapeHtml(t("snapshotCluster"))}: ${escapeHtml(topCluster ? getLocalizedText(topCluster.name) : "-")}</strong>
-            <div class="snapshot-meta">${escapeHtml(topCluster ? `${t("riskScore")}: ${safeNumber(topCluster.avgRisk, 0)} | ${t("trend")}: ${safeText(topCluster.trend, "-")}` : t("noData"))}</div>
-          </div>
-
-          <div class="snapshot-item">
-            <strong>${escapeHtml(t("snapshotCountry"))}: ${escapeHtml(topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-")}</strong>
-            <div class="snapshot-meta">${escapeHtml(topCountry ? `${t("riskScore")}: ${safeNumber(topCountry.riskScore, 0)} | ${t("riskLevel")}: ${safeText(topCountry.riskLevel, "-")}` : t("noData"))}</div>
-          </div>
-        `;
-      }
-
-      function renderMetrics(system) {
-        const topSignal = system?.topSignal || null;
-        const topCluster = system?.topCluster || null;
-        const topTheater = system?.topTheater || null;
-        const topCountry = system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
-
-        const rows = [
-          { label: t("systemStress"), value: safeNumber(system?.systemPressure, 0), sub: `${t("band")}: ${getBandLabel(system?.systemPressure)}` },
-          { label: t("signalScore"), value: safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0), sub: `${t("band")}: ${getBandLabel(topSignal?.balancedScore100 || topSignal?.score100)}` },
-          { label: t("clusterRisk"), value: safeNumber(topCluster?.avgRisk, 0), sub: `${t("band")}: ${getBandLabel(topCluster?.avgRisk)}` },
-          { label: t("theaterRisk"), value: safeNumber(topTheater?.avgRisk, 0), sub: `${t("band")}: ${getBandLabel(topTheater?.avgRisk)}` },
-          { label: t("countryRisk"), value: safeNumber(topCountry?.riskScore, 0), sub: `${t("band")}: ${getBandLabel(topCountry?.riskScore)}` },
-          { label: t("confidence"), value: safeNumber(system?.confidenceScore, 0), sub: `${t("band")}: ${getBandLabel(system?.confidenceScore)}` }
-        ];
-
-        qs("metricsBox").innerHTML = rows.map((row) => `
-          <div class="metric-row">
-            <div>
-              <strong style="font-size:15px;color:#fff">${escapeHtml(row.label)}</strong>
-              <div class="metric-sub">${escapeHtml(row.sub)}</div>
-            </div>
-            <strong class="${metricLevelClass(row.value)}">${row.value}</strong>
-          </div>
-        `).join("");
-      }
-
-      function renderScenarios(system) {
-        const scenarios = Array.isArray(system?.scenarios) ? system.scenarios : [];
-        const labels = [t("scenarioA"), t("scenarioB"), t("scenarioC")];
-
-        if (!scenarios.length) {
-          qs("scenarioBox").innerHTML = `<div class="scenario-row"><span>${escapeHtml(t("noData"))}</span><strong>0%</strong></div>`;
-          return;
-        }
-
-        qs("scenarioBox").innerHTML = scenarios.map((item, index) => `
-          <div class="scenario-row">
-            <span>${escapeHtml(labels[index] || safe(item?.key, "Scenario"))}</span>
-            <strong>${safeNumber(item?.value, 0)}%</strong>
-          </div>
-        `).join("");
-      }
-
-      function renderPublication(system) {
-        const publication =
-          system?.featuredPublication ||
-          system?.publicationContext?.featuredPublication ||
-          window.IBSS_PUBLISHER?.getLatestFeaturedPublication?.() ||
-          null;
-
-        if (!publication) {
-          qs("publicationBox").innerHTML = `<div class="publication-text">${escapeHtml(t("noData"))}</div>`;
-          return;
-        }
-
-        qs("publicationBox").innerHTML = `
-          <h3 class="publication-title">${escapeHtml(getLocalizedText(publication.title))}</h3>
-          <p class="publication-text">${escapeHtml(getLocalizedText(publication.summary))}</p>
-          <div class="mini-badges" style="margin-top:14px">
-            <span class="mini-badge">${escapeHtml(t("publicationType"))}: ${escapeHtml(safeText(publication.type, "-").toUpperCase())}</span>
-            <span class="mini-badge">${escapeHtml(t("publicationDomain"))}: ${escapeHtml(safeText(publication.domain, "-"))}</span>
-            <span class="mini-badge">${escapeHtml(t("publicationCountry"))}: ${escapeHtml(safeText(publication.country, "-"))}</span>
-            <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(publication?.metrics?.strategicWeight || 0))}</span>
-          </div>
-        `;
-      }
-
-      function renderViewer(system) {
-        const voiceSummary = getLocalizedText(system?.voice?.summary) || "-";
-        const voiceExplanation = getLocalizedText(system?.voice?.explanation) || "-";
-        const voiceIntent = getLocalizedText(system?.voice?.intent) || "-";
-        const voiceAdvisory = getLocalizedText(system?.voice?.advisory) || "-";
-
-        qs("viewerBox").innerHTML = `
-          <h3 class="viewer-title">${escapeHtml(getLocalizedText(system?.voice?.posture) || "-")}</h3>
-          <div class="viewer-body">${escapeHtml(
-`${t("advisoryLabel")}: ${voiceAdvisory}
-
-${voiceSummary}
-
-${voiceExplanation}
-
-${t("intent")}: ${voiceIntent}`
-          )}</div>
-        `;
-      }
-
-      function renderCountries(system) {
-        const items = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed.slice(0, 5) : [];
-
-        if (!items.length) {
-          qs("countryBox").innerHTML = `<div class="country-row"><span>${escapeHtml(t("noData"))}</span><strong>0</strong></div>`;
-          return;
-        }
-
-        qs("countryBox").innerHTML = items.map((item) => `
-          <div class="country-row">
-            <div>
-              <div class="country-name">${escapeHtml(getLocalizedText(item.nameLocalized || item.name))}</div>
-              <div class="country-meta">${escapeHtml(`${t("riskLevel")}: ${safeText(item.riskLevel, "-")} | ${t("trend")}: ${safeText(item.trend, "-")} | ${t("band")}: ${getBandLabel(item.riskScore)}`)}</div>
-            </div>
-            <div class="country-score">${safeNumber(item.riskScore, 0)}</div>
-          </div>
-        `).join("");
-      }
-
-      function renderFeed(system) {
-        const unifiedFeed = buildUnifiedFeed(system);
-
-        if (!unifiedFeed.length) {
-          qs("feed").innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
-          return;
-        }
-
-        qs("feed").innerHTML = unifiedFeed.slice(0, 10).map((item) => {
-          const text = getLocalizedText(item.text || item.title);
-          return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
-        }).join("");
-      }
-
-      function renderPublisherConsole() {
-        if (!window.IBSS_PUBLISHER) return;
-
-        const draft = window.IBSS_PUBLISHER.getLatestDraft?.() || null;
-
-        if (!draft) {
-          qs("pubDraftType").textContent = "-";
-          qs("pubDraftTime").textContent = "-";
-          qs("pubDraftText").value = "";
-          return;
-        }
-
-        qs("pubDraftType").textContent = draft.type || "-";
-        qs("pubDraftTime").textContent = draft.createdAt ? formatDateTime(draft.createdAt) : "-";
-        qs("pubDraftText").value =
-          STATE.lang === "ar"
-            ? (draft?.payload?.text_ar || draft?.payload?.presence_ar || draft?.payload?.text_en || "")
-            : (draft?.payload?.text_en || draft?.payload?.presence_en || draft?.payload?.text_ar || "");
-      }
-
-      function wirePublisherButtons() {
-        const btnSignal = qs("btnGenerateSignalPost");
-        const btnBrief = qs("btnGenerateBriefPost");
-        const btnPublication = qs("btnGeneratePublicationPost");
-        const btnLiving = qs("btnGenerateLivingPost");
-        const btnCopy = qs("btnCopyDraftPost");
-
-        if (btnSignal && !btnSignal.dataset.bound) {
-          btnSignal.dataset.bound = "1";
-          btnSignal.addEventListener("click", function () {
-            try {
-              if (window.IBSS_PUBLISHER?.generateTopSignalPost) {
-                window.IBSS_PUBLISHER.generateTopSignalPost();
-                renderPublisherConsole();
-              }
-            } catch (error) {
-              console.error("Generate Top Signal Post error:", error);
-            }
-          });
-        }
-
-        if (btnBrief && !btnBrief.dataset.bound) {
-          btnBrief.dataset.bound = "1";
-          btnBrief.addEventListener("click", function () {
-            try {
-              if (window.IBSS_PUBLISHER?.generateStrategicBrief) {
-                window.IBSS_PUBLISHER.generateStrategicBrief();
-                renderPublisherConsole();
-              }
-            } catch (error) {
-              console.error("Generate Strategic Brief error:", error);
-            }
-          });
-        }
-
-        if (btnPublication && !btnPublication.dataset.bound) {
-          btnPublication.dataset.bound = "1";
-          btnPublication.addEventListener("click", function () {
-            try {
-              if (window.IBSS_PUBLISHER?.generateFeaturedPublicationPost) {
-                window.IBSS_PUBLISHER.generateFeaturedPublicationPost();
-                renderPublisherConsole();
-              }
-            } catch (error) {
-              console.error("Generate Publication Post error:", error);
-            }
-          });
-        }
-
-        if (btnLiving && !btnLiving.dataset.bound) {
-          btnLiving.dataset.bound = "1";
-          btnLiving.addEventListener("click", function () {
-            try {
-              if (window.IBSS_PUBLISHER?.generateLivingPresencePost) {
-                window.IBSS_PUBLISHER.generateLivingPresencePost();
-                renderPublisherConsole();
-              }
-            } catch (error) {
-              console.error("Generate Living Presence Post error:", error);
-            }
-          });
-        }
-
-        if (btnCopy && !btnCopy.dataset.bound) {
-          btnCopy.dataset.bound = "1";
-          btnCopy.addEventListener("click", async function () {
-            try {
-              const text = qs("pubDraftText")?.value || "";
-              if (!text) return;
-              await navigator.clipboard.writeText(text);
-            } catch (error) {
-              console.error("Copy Draft error:", error);
-            }
-          });
-        }
       }
 
       function renderTickerStrip(system) {
@@ -1731,8 +1436,12 @@ ${t("intent")}: ${voiceIntent}`
         }
 
         track.innerHTML = items.map((item) => {
-          const priority = String(item.priority || "LOW").toUpperCase();
-          const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+          const priority = normalizePriority(item.priority || "LOW");
+          const cls =
+            priority === "HIGH" ? "high" :
+            priority === "MEDIUM" ? "medium" :
+            "low";
+
           const text = getLocalizedText(item.text || item.title);
 
           return `
@@ -1742,6 +1451,428 @@ ${t("intent")}: ${voiceIntent}`
             </div>
           `;
         }).join("");
+      }
+
+      function renderLevel(system) {
+        const levelEl = qs("level");
+        const ssiEl = qs("ssi");
+        const alertBox = qs("alertBox");
+
+        const pressure = safeNumber(system?.ssi || system?.systemPressure, 0);
+        const level = safeText(system?.level, "LOW");
+
+        ssiEl.textContent = pressure;
+        ssiEl.className = `value ${levelClass(level)}`;
+
+        if (level === "HIGH") {
+          levelEl.textContent = t("levelHigh");
+          levelEl.className = "value high";
+          alertBox.style.display = "block";
+          alertBox.textContent = t("alertHigh");
+          alertBox.style.background = "rgba(255,77,79,.14)";
+          alertBox.style.borderColor = "rgba(255,77,79,.40)";
+          alertBox.style.color = "#ffd1d1";
+        } else if (level === "MEDIUM") {
+          levelEl.textContent = t("levelMed");
+          levelEl.className = "value medium";
+          alertBox.style.display = "block";
+          alertBox.textContent = t("alertMed");
+          alertBox.style.background = "rgba(255,159,26,.12)";
+          alertBox.style.borderColor = "rgba(255,159,26,.35)";
+          alertBox.style.color = "#ffe8c9";
+        } else {
+          levelEl.textContent = t("levelLow");
+          levelEl.className = "value low";
+          alertBox.style.display = "block";
+          alertBox.textContent = t("alertLow");
+          alertBox.style.background = "rgba(0,208,132,.10)";
+          alertBox.style.borderColor = "rgba(0,208,132,.30)";
+          alertBox.style.color = "#d7fff1";
+        }
+
+        return level;
+      }
+
+      function renderDecision(level, system) {
+        qs("decision").textContent = safe(system?.decision, "-");
+        qs("decisionWord").textContent = safe(system?.decision, "-");
+        qs("mode").textContent = safe(system?.mode, "-");
+
+        const voiceSummary = getLocalizedText(system?.voice?.summary);
+        const voiceAdvisory = getLocalizedText(system?.voice?.advisory);
+
+        if (level === "HIGH") {
+          qs("decisionNote").textContent = [t("noteHigh"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n");
+        } else if (level === "MEDIUM") {
+          qs("decisionNote").textContent = [t("noteMedium"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n");
+        } else {
+          qs("decisionNote").textContent = [t("noteLow"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n");
+        }
+      }
+
+      function renderVoice(system) {
+        const voice = system?.voice || {};
+        const presence = system?.presence || {};
+
+        qs("voiceTitle").textContent =
+          getLocalizedText(voice.posture) ||
+          safe(system?.mode, "-");
+
+        qs("voiceText").textContent = [
+          getLocalizedText(voice.summary),
+          getLocalizedText(voice.explanation)
+        ].filter(Boolean).join("\n\n") || t("noData");
+
+        qs("voiceBadges").innerHTML = `
+          <span class="mini-badge">${escapeHtml(`${t("confidence")}: ${safeNumber(system?.confidenceScore, 0)}`)}</span>
+          <span class="mini-badge">${escapeHtml(`${t("systemStress")}: ${safeNumber(system?.systemPressure, 0)}`)}</span>
+          <span class="mini-badge">${escapeHtml(`${t("posture")}: ${getLocalizedText(voice.posture) || "-"}`)}</span>
+        `;
+
+        qs("presenceTitle").textContent = safeText(presence.state, "-");
+        qs("presenceText").textContent = [
+          `${t("urgency")}: ${safeText(presence.urgency, "-")}`,
+          `${t("drift")}: ${safeText(presence.drift, "-")}`,
+          `${t("advisory")}: ${getLocalizedText(voice.advisory) || "-"}`
+        ].join("\n");
+
+        qs("presenceBadges").innerHTML = `
+          <span class="mini-badge">${escapeHtml(`${t("stateLabel")}: ${safeText(presence.state, "-")}`)}</span>
+          <span class="mini-badge ${levelClass(presence.urgency || "LOW")}">${escapeHtml(`${t("urgency")}: ${safeText(presence.urgency, "-")}`)}</span>
+          <span class="mini-badge">${escapeHtml(`${t("drift")}: ${safeText(presence.drift, "-")}`)}</span>
+        `;
+      }
+
+      function renderPrimarySignal(signal) {
+        const titleEl = qs("signalTitle");
+        const descEl = qs("signalDesc");
+        const badges = qs("signalBadges");
+
+        if (!signal) {
+          titleEl.textContent = "-";
+          descEl.textContent = t("noData");
+          badges.innerHTML = "";
+          return;
+        }
+
+        titleEl.textContent = getLocalizedText(signal.title);
+        descEl.textContent = getLocalizedText(signal.description || signal.summary);
+
+        const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
+        const priority = safeText(signal?.priority, "LOW");
+        const signalClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+
+        badges.innerHTML = `
+          <span class="mini-badge ${signalClass}">${escapeHtml(t("signalScore"))}: ${score}</span>
+          <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
+          <span class="mini-badge">${escapeHtml(t("mode"))}: ${escapeHtml(getLocalizedText(signal?.decisionMode) || safeText(signal?.mode, "-"))}</span>
+          <span class="mini-badge">${escapeHtml(t("country"))}: ${escapeHtml(safeText(signal.country || signal.region, "-"))}</span>
+        `;
+      }
+
+      function renderDrivers(system) {
+        const box = qs("driversBox");
+        const drivers = asArray(system?.drivers).slice(0, 5);
+
+        if (!drivers.length) {
+          box.innerHTML = `<div class="driver-item"><div class="driver-name">${escapeHtml(t("noData"))}</div></div>`;
+          return;
+        }
+
+        box.innerHTML = drivers.map((driver) => `
+          <div class="driver-item">
+            <div class="driver-name">${escapeHtml(getLocalizedText(driver.label))}</div>
+            <div class="driver-meta">${escapeHtml(getLocalizedText(driver.explanation) || "-")}</div>
+            <div class="chip-row">
+              <span class="chip ${levelClass(driver.priority || "LOW")}">${escapeHtml(safeText(driver.priority, "-"))}</span>
+              <span class="chip">${escapeHtml(`${t("riskScore")}: ${safeNumber(driver.score, 0)}`)}</span>
+              <span class="chip">${escapeHtml(safeText(driver.type, "-"))}</span>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      function renderLegend(system) {
+        const legend = qs("radarLegend");
+        const signals = Array.isArray(system?.rankedSignals) ? system.rankedSignals.slice(0, 5) : [];
+
+        if (!signals.length) {
+          legend.innerHTML = `
+            <div class="legend-item">
+              <div class="legend-left">
+                <div class="legend-texts">
+                  <div class="legend-name">${escapeHtml(t("noData"))}</div>
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        legend.innerHTML = signals.map((signal, index) => {
+          const score = safeNumber(signal?.balancedScore100 ?? signal?.score100, 0);
+          const priority = safeText(signal?.priority || signal?.weight, "LOW");
+          const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+          const title = getLocalizedText(signal.title);
+          const sub = safeText(signal.region || signal.domain || "-", "-");
+
+          return `
+            <div class="legend-item">
+              <div class="legend-left">
+                <span class="legend-dot ${cls}"></span>
+                <div class="legend-texts">
+                  <div class="legend-name">${escapeHtml(title)}</div>
+                  <div class="legend-sub">${escapeHtml(sub)}</div>
+                </div>
+              </div>
+              <div class="legend-right">
+                <div class="legend-score">${score}</div>
+                <span class="legend-badge ${cls}">${index === 0 ? escapeHtml(t("topLabel")) : escapeHtml(priority)}</span>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function renderSnapshot(system) {
+        const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.() || null;
+        const box = qs("snapshotBox");
+
+        const topTheater = snapshot?.topTheater || system?.topTheater || null;
+        const topCluster = snapshot?.topCluster || system?.topCluster || null;
+        const topCountry = snapshot?.topCountry || system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
+        const featuredPublication = system?.featuredPublication || snapshot?.latestStudy || null;
+
+        box.innerHTML = `
+          <div class="snapshot-item">
+            <strong>${escapeHtml(t("snapshotTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
+            <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("riskScore")}: ${safeNumber(topTheater.avgRisk, 0)} | ${t("band")}: ${getBandLabel(topTheater.avgRisk)}` : t("noData"))}</div>
+          </div>
+
+          <div class="snapshot-item">
+            <strong>${escapeHtml(t("snapshotCluster"))}: ${escapeHtml(topCluster ? getLocalizedText(topCluster.name) : "-")}</strong>
+            <div class="snapshot-meta">${escapeHtml(topCluster ? `${t("riskScore")}: ${safeNumber(topCluster.avgRisk, 0)} | ${t("trend")}: ${safeText(topCluster.trend, "-")}` : t("noData"))}</div>
+          </div>
+
+          <div class="snapshot-item">
+            <strong>${escapeHtml(t("snapshotCountry"))}: ${escapeHtml(topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-")}</strong>
+            <div class="snapshot-meta">${escapeHtml(topCountry ? `${t("riskScore")}: ${safeNumber(topCountry.riskScore, 0)} | ${t("riskLevel")}: ${safeText(topCountry.riskLevel, "-")}` : t("noData"))}</div>
+          </div>
+
+          <div class="snapshot-item">
+            <strong>${escapeHtml(t("publication"))}: ${escapeHtml(featuredPublication ? getLocalizedText(featuredPublication.title) : "-")}</strong>
+            <div class="snapshot-meta">${escapeHtml(featuredPublication ? safeText(getLocalizedText(featuredPublication.summary), "-") : t("noData"))}</div>
+          </div>
+        `;
+      }
+
+      function renderMetrics(system) {
+        const box = qs("metricsBox");
+        const topSignal = system?.topSignal || null;
+        const topCluster = system?.topCluster || null;
+        const topTheater = system?.topTheater || null;
+        const topCountry = system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
+
+        const rows = [
+          { label: t("systemStress"), value: safeNumber(system?.systemPressure, 0), sub: `${t("band")}: ${getBandLabel(system?.systemPressure)}` },
+          { label: t("signalScore"), value: safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0), sub: `${t("band")}: ${getBandLabel(topSignal?.balancedScore100 || topSignal?.score100)}` },
+          { label: t("clusterRisk"), value: safeNumber(topCluster?.avgRisk, 0), sub: `${t("band")}: ${getBandLabel(topCluster?.avgRisk)}` },
+          { label: t("theaterRisk"), value: safeNumber(topTheater?.avgRisk, 0), sub: `${t("band")}: ${getBandLabel(topTheater?.avgRisk)}` },
+          { label: t("countryRisk"), value: safeNumber(topCountry?.riskScore, 0), sub: `${t("band")}: ${getBandLabel(topCountry?.riskScore)}` },
+          { label: t("confidence"), value: safeNumber(system?.confidenceScore, 0), sub: `${t("band")}: ${getBandLabel(system?.confidenceScore)}` }
+        ];
+
+        box.innerHTML = rows.map((row) => `
+          <div class="metric-row">
+            <div>
+              <strong style="font-size:15px;color:#fff">${escapeHtml(row.label)}</strong>
+              <div class="metric-sub">${escapeHtml(row.sub)}</div>
+            </div>
+            <strong class="metric-score ${metricLevelClass(row.value)}">${row.value}</strong>
+          </div>
+        `).join("");
+      }
+
+      function renderScenarios(system) {
+        const box = qs("scenarioBox");
+        const scenarios = Array.isArray(system?.scenarios) ? system.scenarios : [];
+        const labels = [t("scenarioA"), t("scenarioB"), t("scenarioC")];
+
+        if (!scenarios.length) {
+          box.innerHTML = `<div class="scenario-row"><span>${escapeHtml(t("noData"))}</span><strong>0%</strong></div>`;
+          return;
+        }
+
+        box.innerHTML = scenarios.map((item, index) => `
+          <div class="scenario-row">
+            <span>${escapeHtml(labels[index] || safe(item?.key, "Scenario"))}</span>
+            <strong>${safeNumber(item?.value, 0)}%</strong>
+          </div>
+        `).join("");
+      }
+
+      function renderPublication(system) {
+        const box = qs("publicationBox");
+        const publication = system?.featuredPublication || system?.publicationContext?.featuredPublication || null;
+
+        if (!publication) {
+          box.innerHTML = `<div class="publication-text">${escapeHtml(t("noData"))}</div>`;
+          return;
+        }
+
+        box.innerHTML = `
+          <h3 class="publication-title">${escapeHtml(getLocalizedText(publication.title))}</h3>
+          <div class="publication-text">${escapeHtml(getLocalizedText(publication.summary))}</div>
+          <div class="mini-badges" style="margin-top:14px;">
+            <span class="mini-badge">${escapeHtml(safeText(publication.type, "-").toUpperCase())}</span>
+            <span class="mini-badge">${escapeHtml(safeText(publication.domain, "-"))}</span>
+            <span class="mini-badge">${escapeHtml(safeText(publication.country, publication.countryId || "-"))}</span>
+            <span class="mini-badge">${escapeHtml(safeText(publication.edition, "-"))}</span>
+          </div>
+        `;
+      }
+
+      function renderContext(system) {
+        const box = qs("contextBox");
+        const context = system?.publicationContext || {};
+        const rows = [
+          { label: "Signal", item: context?.topSignalContent },
+          { label: "Cluster", item: context?.topClusterContent },
+          { label: "Country", item: context?.topCountryContent }
+        ];
+
+        const validRows = rows.filter(row => row.item);
+
+        if (!validRows.length) {
+          box.innerHTML = `<div class="context-item"><div class="context-title">${escapeHtml(t("noContext"))}</div></div>`;
+          return;
+        }
+
+        box.innerHTML = validRows.map(row => `
+          <div class="context-item">
+            <div class="context-title">${escapeHtml(row.label)} → ${escapeHtml(getLocalizedText(row.item.title))}</div>
+            <div class="context-meta">${escapeHtml(`${safeText(row.item.type, "-").toUpperCase()} | ${safeText(row.item.domain, "-")} | ${safeText(row.item.country, row.item.countryId || "-")}`)}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderCountries(system) {
+        const box = qs("countryBox");
+        const items = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed.slice(0, 5) : [];
+
+        if (!items.length) {
+          box.innerHTML = `<div class="country-row"><span>${escapeHtml(t("noData"))}</span><strong>0</strong></div>`;
+          return;
+        }
+
+        box.innerHTML = items.map((item) => `
+          <div class="country-row">
+            <div>
+              <div class="country-name">${escapeHtml(getLocalizedText(item.nameLocalized || item.name))}</div>
+              <div class="country-meta">${escapeHtml(`${t("riskLevel")}: ${safeText(item.riskLevel, "-")} | ${t("trend")}: ${safeText(item.trend, "-")} | ${t("band")}: ${getBandLabel(item.riskScore)}`)}</div>
+            </div>
+            <div class="country-score">${safeNumber(item.riskScore, 0)}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderFeed(system) {
+        const feed = qs("feed");
+        const unifiedFeed = buildUnifiedFeed(system);
+
+        if (!unifiedFeed.length) {
+          feed.innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
+          return;
+        }
+
+        feed.innerHTML = unifiedFeed.slice(0, 10).map((item) => {
+          const text = getLocalizedText(item.text || item.title);
+          return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
+        }).join("");
+      }
+
+      function renderPublisherConsole() {
+        if (!window.IBSS_PUBLISHER) return;
+
+        const draft = window.IBSS_PUBLISHER.getLatestDraft?.() || null;
+        const meta = qs("pubDraftMeta");
+        const textEl = qs("pubDraftText");
+
+        qs("pubDraftTypeTitle").textContent = draft?.type || t("latestDraft");
+        meta.textContent = draft?.createdAt ? formatDateTime(draft.createdAt) : "-";
+        textEl.value =
+          STATE.lang === "ar"
+            ? (draft?.payload?.text_ar || draft?.payload?.text_en || "")
+            : (draft?.payload?.text_en || draft?.payload?.text_ar || "");
+      }
+
+      function wirePublisherButtons() {
+        const btnSignal = qs("btnGenerateSignalPost");
+        const btnBrief = qs("btnGenerateBriefPost");
+        const btnPublication = qs("btnGeneratePublicationPost");
+        const btnLiving = qs("btnGenerateLivingPost");
+        const btnCopy = qs("btnCopyDraftPost");
+
+        if (btnSignal && !btnSignal.dataset.bound) {
+          btnSignal.dataset.bound = "1";
+          btnSignal.addEventListener("click", function () {
+            try {
+              window.IBSS_PUBLISHER?.generateTopSignalPost?.();
+              renderPublisherConsole();
+            } catch (error) {
+              console.error("Generate Top Signal Post error:", error);
+            }
+          });
+        }
+
+        if (btnBrief && !btnBrief.dataset.bound) {
+          btnBrief.dataset.bound = "1";
+          btnBrief.addEventListener("click", function () {
+            try {
+              window.IBSS_PUBLISHER?.generateStrategicBrief?.();
+              renderPublisherConsole();
+            } catch (error) {
+              console.error("Generate Strategic Brief error:", error);
+            }
+          });
+        }
+
+        if (btnPublication && !btnPublication.dataset.bound) {
+          btnPublication.dataset.bound = "1";
+          btnPublication.addEventListener("click", function () {
+            try {
+              window.IBSS_PUBLISHER?.generateFeaturedPublicationPost?.();
+              renderPublisherConsole();
+            } catch (error) {
+              console.error("Generate Publication Post error:", error);
+            }
+          });
+        }
+
+        if (btnLiving && !btnLiving.dataset.bound) {
+          btnLiving.dataset.bound = "1";
+          btnLiving.addEventListener("click", function () {
+            try {
+              window.IBSS_PUBLISHER?.generateLivingPresencePost?.();
+              renderPublisherConsole();
+            } catch (error) {
+              console.error("Generate Living Presence Post error:", error);
+            }
+          });
+        }
+
+        if (btnCopy && !btnCopy.dataset.bound) {
+          btnCopy.dataset.bound = "1";
+          btnCopy.addEventListener("click", async function () {
+            try {
+              const text = qs("pubDraftText")?.value || "";
+              if (!text) return;
+              await navigator.clipboard.writeText(text);
+            } catch (error) {
+              console.error("Copy Draft error:", error);
+            }
+          });
+        }
       }
 
       function wireAudioButton() {
@@ -1767,18 +1898,19 @@ ${t("intent")}: ${voiceIntent}`
 
         applyLanguage();
         renderMeta(system);
-        renderPresence(system);
         renderTickerStrip(system);
 
         const level = renderLevel(system);
         renderDecision(level, system);
+        renderVoice(system);
         renderPrimarySignal(system.topSignal || system.dominantSignal || null);
         renderDrivers(system);
+        renderLegend(system);
         renderSnapshot(system);
         renderMetrics(system);
         renderScenarios(system);
         renderPublication(system);
-        renderViewer(system);
+        renderContext(system);
         renderCountries(system);
         renderFeed(system);
         renderPublisherConsole();
