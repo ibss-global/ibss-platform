@@ -22,10 +22,10 @@
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
       --shadow:0 10px 24px rgba(0,0,0,.18);
-      --glow:0 0 22px rgba(212,175,55,.08);
     }
 
     *{box-sizing:border-box}
+
     html,body{
       margin:0;
       padding:0;
@@ -207,9 +207,7 @@
       line-height:1.7;
     }
 
-    .section{
-      margin-top:20px;
-    }
+    .section{margin-top:20px}
 
     .card{
       background:var(--panel);
@@ -227,7 +225,7 @@
       border:1px solid rgba(212,175,55,.14);
       border-radius:24px;
       padding:22px;
-      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset, 0 14px 28px rgba(0,0,0,.2);
+      box-shadow:0 14px 28px rgba(0,0,0,.2);
     }
 
     .title{
@@ -271,11 +269,10 @@
       border-radius:18px;
       background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
       box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
-      position:relative;
       overflow-x:auto;
       overflow-y:hidden;
-      -webkit-overflow-scrolling:touch;
       scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;
     }
 
     .ticker-shell::-webkit-scrollbar{display:none}
@@ -287,7 +284,6 @@
       padding:14px 16px;
       min-height:88px;
       width:max-content;
-      white-space:normal;
     }
 
     .ticker-item{
@@ -324,9 +320,9 @@
       margin-top:6px;
     }
 
-    .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
-    .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
-    .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
+    .ticker-dot.high{background:var(--red)}
+    .ticker-dot.medium{background:var(--orange)}
+    .ticker-dot.low{background:var(--green)}
 
     .state{
       display:grid;
@@ -346,7 +342,8 @@
     .voice-box,
     .presence-box,
     .driver-item,
-    .context-item{
+    .context-item,
+    .publication-box{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:18px;
@@ -402,22 +399,28 @@
       white-space:pre-wrap;
     }
 
-    .signal-box{
+    .signal-box,
+    .voice-box,
+    .presence-box,
+    .publication-box{
       padding:18px;
-      border-color:rgba(212,175,55,.24);
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 38%),
-        var(--panel2);
     }
 
-    .signal-box h3{
+    .signal-box h3,
+    .voice-title,
+    .presence-title,
+    .publication-title{
       margin:0 0 10px;
-      font-size:30px;
+      font-size:28px;
+      line-height:1.4;
       color:#fff;
-      line-height:1.35;
+      font-weight:900;
     }
 
-    .signal-box p{
+    .signal-box p,
+    .voice-text,
+    .presence-text,
+    .publication-text{
       margin:0;
       color:#ddd;
       line-height:1.9;
@@ -461,29 +464,6 @@
       color:#d6fff1;
       background:rgba(0,208,132,.12);
       border-color:rgba(0,208,132,.28);
-    }
-
-    .voice-box,
-    .presence-box{
-      padding:18px;
-      min-height:220px;
-    }
-
-    .voice-title,
-    .presence-title{
-      font-size:26px;
-      font-weight:900;
-      color:#fff;
-      line-height:1.45;
-      margin:0 0 12px;
-    }
-
-    .voice-text,
-    .presence-text{
-      color:#ddd;
-      line-height:1.9;
-      font-size:15px;
-      white-space:pre-wrap;
     }
 
     .legend,
@@ -630,10 +610,6 @@
       flex:0 0 auto;
     }
 
-    .metric-score.high{color:var(--red)}
-    .metric-score.medium{color:var(--orange)}
-    .metric-score.low{color:var(--green)}
-
     .driver-item{
       border-color:rgba(212,175,55,.14);
       background:rgba(255,255,255,.02);
@@ -675,31 +651,6 @@
       color:#d6fff1;
       background:rgba(0,208,132,.12);
       border-color:rgba(0,208,132,.28);
-    }
-
-    .publication-box,
-    .viewer-box{
-      background:var(--panel2);
-      border:1px solid var(--soft-border-2);
-      border-radius:18px;
-      padding:18px;
-    }
-
-    .publication-title,
-    .viewer-title{
-      color:#fff;
-      font-size:26px;
-      font-weight:900;
-      line-height:1.45;
-      margin:0 0 10px;
-    }
-
-    .publication-text,
-    .viewer-body{
-      color:#ddd;
-      line-height:1.9;
-      font-size:15px;
-      white-space:pre-wrap;
     }
 
     .publisher-actions{
@@ -755,6 +706,7 @@
     }
 
     html[dir="rtl"] body{text-align:right}
+
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
@@ -1066,8 +1018,6 @@
           snapshotCountry: "Top Country Risk",
 
           latestDraft: "Latest Draft",
-          createdAt: "Created At",
-
           signalScore: "Signal Score",
           clusterRisk: "Strategic File Risk",
           theaterRisk: "Theater Risk",
@@ -1160,8 +1110,6 @@
           snapshotCountry: "أعلى دولة خطرًا",
 
           latestDraft: "أحدث مسودة",
-          createdAt: "تاريخ الإنشاء",
-
           signalScore: "درجة الإشارة",
           clusterRisk: "خطر الملف الاستراتيجي",
           theaterRisk: "خطر المسرح",
@@ -1190,53 +1138,41 @@
         }
       };
 
-      const STATE = {
+      const APP = {
         lang: localStorage.getItem("ibss_lang") || "en",
         system: null
       };
 
-      function qs(id) {
-        return document.getElementById(id);
-      }
+      function el(id){ return document.getElementById(id); }
+      function t(key){ return UI[APP.lang]?.[key] || key; }
+      function asArray(value){ return Array.isArray(value) ? value : []; }
 
-      function t(key) {
-        return UI[STATE.lang]?.[key] || key;
-      }
-
-      function safe(value, fallback = "-") {
-        return value !== undefined && value !== null && value !== "" ? value : fallback;
-      }
-
-      function safeText(value, fallback = "-") {
+      function safeText(value, fallback = "-"){
         return typeof value === "string" && value.trim() ? value.trim() : fallback;
       }
 
-      function safeNumber(value, fallback = 0) {
+      function safeNumber(value, fallback = 0){
         const n = Number(value);
         return Number.isFinite(n) ? n : fallback;
       }
 
-      function asArray(value) {
-        return Array.isArray(value) ? value : [];
-      }
-
-      function getLocalizedText(value) {
+      function getLocalizedText(value){
         if (!value) return "-";
         if (typeof value === "string" || typeof value === "number") return String(value);
-        return value[STATE.lang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
+        return value[APP.lang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
       }
 
-      function escapeHtml(text) {
+      function escapeHtml(text){
         const div = document.createElement("div");
         div.textContent = text ?? "";
         return div.innerHTML;
       }
 
-      function formatDateTime(value) {
+      function formatDateTime(value){
         if (!value) return "-";
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return "-";
-        return date.toLocaleString(STATE.lang === "ar" ? "ar-EG" : "en-US", {
+        return date.toLocaleString(APP.lang === "ar" ? "ar-EG" : "en-US", {
           year:"numeric",
           month:"short",
           day:"2-digit",
@@ -1245,21 +1181,19 @@
         });
       }
 
-      function getBandLabel(score) {
+      function getBandLabel(score){
         if (window.IBSS_METRICS?.classifyBand) {
           const band = window.IBSS_METRICS.classifyBand(safeNumber(score, 0));
-          return STATE.lang === "ar" ? (band?.ar || "-") : (band?.en || "-");
+          return APP.lang === "ar" ? (band?.ar || "-") : (band?.en || "-");
         }
-
         const value = safeNumber(score, 0);
-        if (STATE.lang === "ar") {
+        if (APP.lang === "ar") {
           if (value >= 85) return "حرج";
           if (value >= 70) return "مرتفع";
           if (value >= 55) return "ضغط";
           if (value >= 35) return "مراقبة";
           return "منخفض";
         }
-
         if (value >= 85) return "Critical";
         if (value >= 70) return "High";
         if (value >= 55) return "Pressure";
@@ -1267,53 +1201,53 @@
         return "Low";
       }
 
-      function levelClass(level) {
-        const v = String(level || "LOW").toUpperCase();
-        if (v === "HIGH") return "high";
-        if (v === "MEDIUM") return "medium";
-        return "low";
-      }
-
-      function metricLevelClass(score) {
-        const n = safeNumber(score, 0);
-        if (n >= 70) return "high";
-        if (n >= 35) return "medium";
-        return "low";
-      }
-
-      function normalizePriority(priority) {
+      function normalizePriority(priority){
         const p = String(priority || "LOW").toUpperCase();
         if (p === "HIGH") return "HIGH";
         if (p === "MEDIUM") return "MEDIUM";
         return "LOW";
       }
 
-      function applyLanguage() {
-        document.documentElement.lang = STATE.lang;
-        document.documentElement.dir = STATE.lang === "ar" ? "rtl" : "ltr";
+      function levelClass(level){
+        const v = String(level || "LOW").toUpperCase();
+        if (v === "HIGH") return "high";
+        if (v === "MEDIUM") return "medium";
+        return "low";
+      }
 
-        qs("pageTitle").textContent = t("title");
-        qs("pageSub").textContent = t("sub");
-        qs("tickerTitle").textContent = t("ticker");
-        qs("stateTitle").textContent = t("state");
-        qs("levelLabel").textContent = t("level");
-        qs("ssiLabel").textContent = t("ssi");
-        qs("decisionLabel").textContent = t("decision");
-        qs("modeLabel").textContent = t("mode");
-        qs("signalTitleLabel").textContent = t("signal");
-        qs("radarTitle").textContent = t("radar");
-        qs("snapshotTitle").textContent = t("snapshot");
-        qs("metricsTitle").textContent = t("metrics");
-        qs("metricsSub").textContent = t("metricsSub");
-        qs("scenarioTitle").textContent = t("scenario");
-        qs("countryTitle").textContent = t("country");
-        qs("feedTitle").textContent = t("feed");
-        qs("publicationTitle").textContent = t("publication");
-        qs("contextTitle").textContent = t("context");
-        qs("driversTitle").textContent = t("drivers");
-        qs("publisherTitle").textContent = t("publisher");
-        qs("voicePanelTitle").textContent = t("voicePanel");
-        qs("pubDraftTypeTitle").textContent = t("latestDraft");
+      function metricLevelClass(score){
+        const n = safeNumber(score, 0);
+        if (n >= 70) return "high";
+        if (n >= 35) return "medium";
+        return "low";
+      }
+
+      function applyLanguage(){
+        document.documentElement.lang = APP.lang;
+        document.documentElement.dir = APP.lang === "ar" ? "rtl" : "ltr";
+
+        el("pageTitle").textContent = t("title");
+        el("pageSub").textContent = t("sub");
+        el("tickerTitle").textContent = t("ticker");
+        el("stateTitle").textContent = t("state");
+        el("levelLabel").textContent = t("level");
+        el("ssiLabel").textContent = t("ssi");
+        el("decisionLabel").textContent = t("decision");
+        el("modeLabel").textContent = t("mode");
+        el("signalTitleLabel").textContent = t("signal");
+        el("radarTitle").textContent = t("radar");
+        el("snapshotTitle").textContent = t("snapshot");
+        el("metricsTitle").textContent = t("metrics");
+        el("metricsSub").textContent = t("metricsSub");
+        el("scenarioTitle").textContent = t("scenario");
+        el("countryTitle").textContent = t("country");
+        el("feedTitle").textContent = t("feed");
+        el("publicationTitle").textContent = t("publication");
+        el("contextTitle").textContent = t("context");
+        el("driversTitle").textContent = t("drivers");
+        el("publisherTitle").textContent = t("publisher");
+        el("voicePanelTitle").textContent = t("voicePanel");
+        el("pubDraftTypeTitle").textContent = t("latestDraft");
 
         document.querySelector('[data-i18n="nav_home"]').textContent = t("nav_home");
         document.querySelector('[data-i18n="nav_dashboard"]').textContent = t("nav_dashboard");
@@ -1323,22 +1257,22 @@
         document.querySelector('[data-i18n="nav_models"]').textContent = t("nav_models");
         document.querySelector('[data-i18n="nav_about"]').textContent = t("nav_about");
 
-        qs("btnGenerateSignalPost").textContent = t("generateSignalPost");
-        qs("btnGenerateBriefPost").textContent = t("generateBriefPost");
-        qs("btnGeneratePublicationPost").textContent = t("generatePublicationPost");
-        qs("btnGenerateLivingPost").textContent = t("generateLivingPost");
-        qs("btnCopyDraftPost").textContent = t("copyDraft");
+        el("btnGenerateSignalPost").textContent = t("generateSignalPost");
+        el("btnGenerateBriefPost").textContent = t("generateBriefPost");
+        el("btnGeneratePublicationPost").textContent = t("generatePublicationPost");
+        el("btnGenerateLivingPost").textContent = t("generateLivingPost");
+        el("btnCopyDraftPost").textContent = t("copyDraft");
 
-        qs("btn-en").classList.toggle("active", STATE.lang === "en");
-        qs("btn-ar").classList.toggle("active", STATE.lang === "ar");
+        el("btn-en").classList.toggle("active", APP.lang === "en");
+        el("btn-ar").classList.toggle("active", APP.lang === "ar");
 
         updateAudioBadge();
       }
 
-      function updateAudioBadge() {
+      function updateAudioBadge(){
         const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
-        const badge = qs("audioBadge");
-        const btn = qs("audioToggleBtn");
+        const badge = el("audioBadge");
+        const btn = el("audioToggleBtn");
 
         badge.textContent = enabled ? t("audioOn") : t("audioOff");
         badge.className = enabled ? "meta-badge live" : "meta-badge warn";
@@ -1347,7 +1281,7 @@
         btn.classList.toggle("active", enabled);
       }
 
-      function getRawSystem() {
+      function getRawSystem(){
         try {
           if (window.IBSS_ENGINE?.getSystemState) {
             return window.IBSS_ENGINE.getSystemState();
@@ -1361,7 +1295,7 @@
         return null;
       }
 
-      function getSystem() {
+      function getSystem(){
         const raw = getRawSystem();
         if (!raw) return null;
 
@@ -1376,7 +1310,7 @@
         return raw;
       }
 
-      function buildUnifiedFeed(system) {
+      function buildUnifiedFeed(system){
         return asArray(
           system?.publisherFeed ||
           system?.unifiedFeed ||
@@ -1386,19 +1320,19 @@
         );
       }
 
-      function renderMeta(system) {
+      function renderMeta(system){
         const digest = system?.publisherDigest || {};
-        qs("metaLine").textContent =
-          `${t("sourceEngine")}: ${safe(digest?.source || system?.source, "-")} | ${t("updatedAt")}: ${formatDateTime(system?.updatedAt)}`;
+        el("metaLine").textContent =
+          `${t("sourceEngine")}: ${safeText(digest?.source || system?.source, "-")} | ${t("updatedAt")}: ${formatDateTime(system?.updatedAt)}`;
 
-        qs("presenceLine").textContent = [
+        el("presenceLine").textContent = [
           `${t("stateLabel")}: ${safeText(system?.presence?.state, "-")}`,
           `${t("urgency")}: ${safeText(system?.presence?.urgency, "-")}`,
           `${t("posture")}: ${getLocalizedText(system?.voice?.posture) || safeText(system?.mode, "-")}`
         ].join(" • ");
 
-        const sourceBadge = qs("sourceBadge");
-        const metricsBadge = qs("metricsBadge");
+        const sourceBadge = el("sourceBadge");
+        const metricsBadge = el("metricsBadge");
 
         if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed) {
           sourceBadge.textContent = t("sourceLive");
@@ -1419,10 +1353,8 @@
         updateAudioBadge();
       }
 
-      function renderTickerStrip(system) {
-        const track = qs("tickerTrack");
-        if (!track) return;
-
+      function renderTickerStrip(system){
+        const track = el("tickerTrack");
         const unifiedFeed = buildUnifiedFeed(system);
         const items = unifiedFeed.slice(0, 10);
 
@@ -1437,11 +1369,7 @@
 
         track.innerHTML = items.map((item) => {
           const priority = normalizePriority(item.priority || "LOW");
-          const cls =
-            priority === "HIGH" ? "high" :
-            priority === "MEDIUM" ? "medium" :
-            "low";
-
+          const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
           const text = getLocalizedText(item.text || item.title);
 
           return `
@@ -1453,36 +1381,33 @@
         }).join("");
       }
 
-      function renderLevel(system) {
-        const levelEl = qs("level");
-        const ssiEl = qs("ssi");
-        const alertBox = qs("alertBox");
-
+      function renderLevel(system){
         const pressure = safeNumber(system?.ssi || system?.systemPressure, 0);
         const level = safeText(system?.level, "LOW");
+        const alertBox = el("alertBox");
 
-        ssiEl.textContent = pressure;
-        ssiEl.className = `value ${levelClass(level)}`;
+        el("ssi").textContent = pressure;
+        el("ssi").className = `value ${levelClass(level)}`;
 
         if (level === "HIGH") {
-          levelEl.textContent = t("levelHigh");
-          levelEl.className = "value high";
+          el("level").textContent = t("levelHigh");
+          el("level").className = "value high";
           alertBox.style.display = "block";
           alertBox.textContent = t("alertHigh");
           alertBox.style.background = "rgba(255,77,79,.14)";
           alertBox.style.borderColor = "rgba(255,77,79,.40)";
           alertBox.style.color = "#ffd1d1";
         } else if (level === "MEDIUM") {
-          levelEl.textContent = t("levelMed");
-          levelEl.className = "value medium";
+          el("level").textContent = t("levelMed");
+          el("level").className = "value medium";
           alertBox.style.display = "block";
           alertBox.textContent = t("alertMed");
           alertBox.style.background = "rgba(255,159,26,.12)";
           alertBox.style.borderColor = "rgba(255,159,26,.35)";
           alertBox.style.color = "#ffe8c9";
         } else {
-          levelEl.textContent = t("levelLow");
-          levelEl.className = "value low";
+          el("level").textContent = t("levelLow");
+          el("level").className = "value low";
           alertBox.style.display = "block";
           alertBox.textContent = t("alertLow");
           alertBox.style.background = "rgba(0,208,132,.10)";
@@ -1493,76 +1418,69 @@
         return level;
       }
 
-      function renderDecision(level, system) {
-        qs("decision").textContent = safe(system?.decision, "-");
-        qs("decisionWord").textContent = safe(system?.decision, "-");
-        qs("mode").textContent = safe(system?.mode, "-");
+      function renderDecision(level, system){
+        el("decision").textContent = safeText(system?.decision, "-");
+        el("decisionWord").textContent = safeText(system?.decision, "-");
+        el("mode").textContent = safeText(system?.mode, "-");
 
         const voiceSummary = getLocalizedText(system?.voice?.summary);
         const voiceAdvisory = getLocalizedText(system?.voice?.advisory);
 
         if (level === "HIGH") {
-          qs("decisionNote").textContent = [t("noteHigh"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n");
+          el("decisionNote").textContent = [t("noteHigh"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n");
         } else if (level === "MEDIUM") {
-          qs("decisionNote").textContent = [t("noteMedium"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n");
+          el("decisionNote").textContent = [t("noteMedium"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n");
         } else {
-          qs("decisionNote").textContent = [t("noteLow"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n");
+          el("decisionNote").textContent = [t("noteLow"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n");
         }
       }
 
-      function renderVoice(system) {
+      function renderVoice(system){
         const voice = system?.voice || {};
         const presence = system?.presence || {};
 
-        qs("voiceTitle").textContent =
-          getLocalizedText(voice.posture) ||
-          safe(system?.mode, "-");
-
-        qs("voiceText").textContent = [
+        el("voiceTitle").textContent = getLocalizedText(voice.posture) || safeText(system?.mode, "-");
+        el("voiceText").textContent = [
           getLocalizedText(voice.summary),
           getLocalizedText(voice.explanation)
         ].filter(Boolean).join("\n\n") || t("noData");
 
-        qs("voiceBadges").innerHTML = `
+        el("voiceBadges").innerHTML = `
           <span class="mini-badge">${escapeHtml(`${t("confidence")}: ${safeNumber(system?.confidenceScore, 0)}`)}</span>
           <span class="mini-badge">${escapeHtml(`${t("systemStress")}: ${safeNumber(system?.systemPressure, 0)}`)}</span>
           <span class="mini-badge">${escapeHtml(`${t("posture")}: ${getLocalizedText(voice.posture) || "-"}`)}</span>
         `;
 
-        qs("presenceTitle").textContent = safeText(presence.state, "-");
-        qs("presenceText").textContent = [
+        el("presenceTitle").textContent = safeText(presence.state, "-");
+        el("presenceText").textContent = [
           `${t("urgency")}: ${safeText(presence.urgency, "-")}`,
           `${t("drift")}: ${safeText(presence.drift, "-")}`,
           `${t("advisory")}: ${getLocalizedText(voice.advisory) || "-"}`
         ].join("\n");
 
-        qs("presenceBadges").innerHTML = `
+        el("presenceBadges").innerHTML = `
           <span class="mini-badge">${escapeHtml(`${t("stateLabel")}: ${safeText(presence.state, "-")}`)}</span>
           <span class="mini-badge ${levelClass(presence.urgency || "LOW")}">${escapeHtml(`${t("urgency")}: ${safeText(presence.urgency, "-")}`)}</span>
           <span class="mini-badge">${escapeHtml(`${t("drift")}: ${safeText(presence.drift, "-")}`)}</span>
         `;
       }
 
-      function renderPrimarySignal(signal) {
-        const titleEl = qs("signalTitle");
-        const descEl = qs("signalDesc");
-        const badges = qs("signalBadges");
-
+      function renderPrimarySignal(signal){
         if (!signal) {
-          titleEl.textContent = "-";
-          descEl.textContent = t("noData");
-          badges.innerHTML = "";
+          el("signalTitle").textContent = "-";
+          el("signalDesc").textContent = t("noData");
+          el("signalBadges").innerHTML = "";
           return;
         }
-
-        titleEl.textContent = getLocalizedText(signal.title);
-        descEl.textContent = getLocalizedText(signal.description || signal.summary);
 
         const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
         const priority = safeText(signal?.priority, "LOW");
         const signalClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
 
-        badges.innerHTML = `
+        el("signalTitle").textContent = getLocalizedText(signal.title);
+        el("signalDesc").textContent = getLocalizedText(signal.description || signal.summary);
+
+        el("signalBadges").innerHTML = `
           <span class="mini-badge ${signalClass}">${escapeHtml(t("signalScore"))}: ${score}</span>
           <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
           <span class="mini-badge">${escapeHtml(t("mode"))}: ${escapeHtml(getLocalizedText(signal?.decisionMode) || safeText(signal?.mode, "-"))}</span>
@@ -1570,8 +1488,8 @@
         `;
       }
 
-      function renderDrivers(system) {
-        const box = qs("driversBox");
+      function renderDrivers(system){
+        const box = el("driversBox");
         const drivers = asArray(system?.drivers).slice(0, 5);
 
         if (!drivers.length) {
@@ -1592,9 +1510,9 @@
         `).join("");
       }
 
-      function renderLegend(system) {
-        const legend = qs("radarLegend");
-        const signals = Array.isArray(system?.rankedSignals) ? system.rankedSignals.slice(0, 5) : [];
+      function renderLegend(system){
+        const legend = el("radarLegend");
+        const signals = asArray(system?.rankedSignals).slice(0, 5);
 
         if (!signals.length) {
           legend.innerHTML = `
@@ -1634,16 +1552,14 @@
         }).join("");
       }
 
-      function renderSnapshot(system) {
+      function renderSnapshot(system){
         const snapshot = system?.snapshot || window.IBSS_UTILS?.getHomeSnapshot?.() || null;
-        const box = qs("snapshotBox");
-
         const topTheater = snapshot?.topTheater || system?.topTheater || null;
         const topCluster = snapshot?.topCluster || system?.topCluster || null;
-        const topCountry = snapshot?.topCountry || system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
+        const topCountry = snapshot?.topCountry || system?.topCountry || asArray(system?.countryRiskFeed)[0] || null;
         const featuredPublication = system?.featuredPublication || snapshot?.latestStudy || null;
 
-        box.innerHTML = `
+        el("snapshotBox").innerHTML = `
           <div class="snapshot-item">
             <strong>${escapeHtml(t("snapshotTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
             <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("riskScore")}: ${safeNumber(topTheater.avgRisk, 0)} | ${t("band")}: ${getBandLabel(topTheater.avgRisk)}` : t("noData"))}</div>
@@ -1666,12 +1582,11 @@
         `;
       }
 
-      function renderMetrics(system) {
-        const box = qs("metricsBox");
+      function renderMetrics(system){
         const topSignal = system?.topSignal || null;
         const topCluster = system?.topCluster || null;
         const topTheater = system?.topTheater || null;
-        const topCountry = system?.topCountry || (system?.countryRiskFeed || [])[0] || null;
+        const topCountry = system?.topCountry || asArray(system?.countryRiskFeed)[0] || null;
 
         const rows = [
           { label: t("systemStress"), value: safeNumber(system?.systemPressure, 0), sub: `${t("band")}: ${getBandLabel(system?.systemPressure)}` },
@@ -1682,45 +1597,43 @@
           { label: t("confidence"), value: safeNumber(system?.confidenceScore, 0), sub: `${t("band")}: ${getBandLabel(system?.confidenceScore)}` }
         ];
 
-        box.innerHTML = rows.map((row) => `
+        el("metricsBox").innerHTML = rows.map((row) => `
           <div class="metric-row">
             <div>
-              <strong style="font-size:15px;color:#fff">${escapeHtml(row.label)}</strong>
+              <div class="metric-name">${escapeHtml(row.label)}</div>
               <div class="metric-sub">${escapeHtml(row.sub)}</div>
             </div>
-            <strong class="metric-score ${metricLevelClass(row.value)}">${row.value}</strong>
+            <div class="metric-score ${metricLevelClass(row.value)}">${row.value}</div>
           </div>
         `).join("");
       }
 
-      function renderScenarios(system) {
-        const box = qs("scenarioBox");
-        const scenarios = Array.isArray(system?.scenarios) ? system.scenarios : [];
+      function renderScenarios(system){
+        const scenarios = asArray(system?.scenarios);
         const labels = [t("scenarioA"), t("scenarioB"), t("scenarioC")];
 
         if (!scenarios.length) {
-          box.innerHTML = `<div class="scenario-row"><span>${escapeHtml(t("noData"))}</span><strong>0%</strong></div>`;
+          el("scenarioBox").innerHTML = `<div class="scenario-row"><span>${escapeHtml(t("noData"))}</span><strong>0%</strong></div>`;
           return;
         }
 
-        box.innerHTML = scenarios.map((item, index) => `
+        el("scenarioBox").innerHTML = scenarios.map((item, index) => `
           <div class="scenario-row">
-            <span>${escapeHtml(labels[index] || safe(item?.key, "Scenario"))}</span>
+            <span>${escapeHtml(labels[index] || safeText(item?.key, "Scenario"))}</span>
             <strong>${safeNumber(item?.value, 0)}%</strong>
           </div>
         `).join("");
       }
 
-      function renderPublication(system) {
-        const box = qs("publicationBox");
+      function renderPublication(system){
         const publication = system?.featuredPublication || system?.publicationContext?.featuredPublication || null;
 
         if (!publication) {
-          box.innerHTML = `<div class="publication-text">${escapeHtml(t("noData"))}</div>`;
+          el("publicationBox").innerHTML = `<div class="publication-text">${escapeHtml(t("noData"))}</div>`;
           return;
         }
 
-        box.innerHTML = `
+        el("publicationBox").innerHTML = `
           <h3 class="publication-title">${escapeHtml(getLocalizedText(publication.title))}</h3>
           <div class="publication-text">${escapeHtml(getLocalizedText(publication.summary))}</div>
           <div class="mini-badges" style="margin-top:14px;">
@@ -1732,23 +1645,20 @@
         `;
       }
 
-      function renderContext(system) {
-        const box = qs("contextBox");
+      function renderContext(system){
         const context = system?.publicationContext || {};
         const rows = [
           { label: "Signal", item: context?.topSignalContent },
           { label: "Cluster", item: context?.topClusterContent },
           { label: "Country", item: context?.topCountryContent }
-        ];
+        ].filter(row => row.item);
 
-        const validRows = rows.filter(row => row.item);
-
-        if (!validRows.length) {
-          box.innerHTML = `<div class="context-item"><div class="context-title">${escapeHtml(t("noContext"))}</div></div>`;
+        if (!rows.length) {
+          el("contextBox").innerHTML = `<div class="context-item"><div class="context-title">${escapeHtml(t("noContext"))}</div></div>`;
           return;
         }
 
-        box.innerHTML = validRows.map(row => `
+        el("contextBox").innerHTML = rows.map(row => `
           <div class="context-item">
             <div class="context-title">${escapeHtml(row.label)} → ${escapeHtml(getLocalizedText(row.item.title))}</div>
             <div class="context-meta">${escapeHtml(`${safeText(row.item.type, "-").toUpperCase()} | ${safeText(row.item.domain, "-")} | ${safeText(row.item.country, row.item.countryId || "-")}`)}</div>
@@ -1756,16 +1666,15 @@
         `).join("");
       }
 
-      function renderCountries(system) {
-        const box = qs("countryBox");
-        const items = Array.isArray(system?.countryRiskFeed) ? system.countryRiskFeed.slice(0, 5) : [];
+      function renderCountries(system){
+        const items = asArray(system?.countryRiskFeed).slice(0, 5);
 
         if (!items.length) {
-          box.innerHTML = `<div class="country-row"><span>${escapeHtml(t("noData"))}</span><strong>0</strong></div>`;
+          el("countryBox").innerHTML = `<div class="country-row"><span>${escapeHtml(t("noData"))}</span><strong>0</strong></div>`;
           return;
         }
 
-        box.innerHTML = items.map((item) => `
+        el("countryBox").innerHTML = items.map((item) => `
           <div class="country-row">
             <div>
               <div class="country-name">${escapeHtml(getLocalizedText(item.nameLocalized || item.name))}</div>
@@ -1776,96 +1685,60 @@
         `).join("");
       }
 
-      function renderFeed(system) {
-        const feed = qs("feed");
+      function renderFeed(system){
         const unifiedFeed = buildUnifiedFeed(system);
 
         if (!unifiedFeed.length) {
-          feed.innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
+          el("feed").innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
           return;
         }
 
-        feed.innerHTML = unifiedFeed.slice(0, 10).map((item) => {
+        el("feed").innerHTML = unifiedFeed.slice(0, 10).map((item) => {
           const text = getLocalizedText(item.text || item.title);
           return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
         }).join("");
       }
 
-      function renderPublisherConsole() {
+      function renderPublisherConsole(){
         if (!window.IBSS_PUBLISHER) return;
 
         const draft = window.IBSS_PUBLISHER.getLatestDraft?.() || null;
-        const meta = qs("pubDraftMeta");
-        const textEl = qs("pubDraftText");
-
-        qs("pubDraftTypeTitle").textContent = draft?.type || t("latestDraft");
-        meta.textContent = draft?.createdAt ? formatDateTime(draft.createdAt) : "-";
-        textEl.value =
-          STATE.lang === "ar"
+        el("pubDraftTypeTitle").textContent = draft?.type || t("latestDraft");
+        el("pubDraftMeta").textContent = draft?.createdAt ? formatDateTime(draft.createdAt) : "-";
+        el("pubDraftText").value =
+          APP.lang === "ar"
             ? (draft?.payload?.text_ar || draft?.payload?.text_en || "")
             : (draft?.payload?.text_en || draft?.payload?.text_ar || "");
       }
 
-      function wirePublisherButtons() {
-        const btnSignal = qs("btnGenerateSignalPost");
-        const btnBrief = qs("btnGenerateBriefPost");
-        const btnPublication = qs("btnGeneratePublicationPost");
-        const btnLiving = qs("btnGenerateLivingPost");
-        const btnCopy = qs("btnCopyDraftPost");
+      function wirePublisherButtons(){
+        const bindings = [
+          ["btnGenerateSignalPost", () => window.IBSS_PUBLISHER?.generateTopSignalPost?.()],
+          ["btnGenerateBriefPost", () => window.IBSS_PUBLISHER?.generateStrategicBrief?.()],
+          ["btnGeneratePublicationPost", () => window.IBSS_PUBLISHER?.generateFeaturedPublicationPost?.()],
+          ["btnGenerateLivingPost", () => window.IBSS_PUBLISHER?.generateLivingPresencePost?.()]
+        ];
 
-        if (btnSignal && !btnSignal.dataset.bound) {
-          btnSignal.dataset.bound = "1";
-          btnSignal.addEventListener("click", function () {
+        bindings.forEach(([id, fn]) => {
+          const button = el(id);
+          if (!button || button.dataset.bound === "1") return;
+          button.dataset.bound = "1";
+          button.addEventListener("click", function () {
             try {
-              window.IBSS_PUBLISHER?.generateTopSignalPost?.();
+              fn();
               renderPublisherConsole();
             } catch (error) {
-              console.error("Generate Top Signal Post error:", error);
+              console.error(`${id} error:`, error);
             }
           });
-        }
+        });
 
-        if (btnBrief && !btnBrief.dataset.bound) {
-          btnBrief.dataset.bound = "1";
-          btnBrief.addEventListener("click", function () {
+        const copyBtn = el("btnCopyDraftPost");
+        if (copyBtn && copyBtn.dataset.bound !== "1") {
+          copyBtn.dataset.bound = "1";
+          copyBtn.addEventListener("click", async function () {
             try {
-              window.IBSS_PUBLISHER?.generateStrategicBrief?.();
-              renderPublisherConsole();
-            } catch (error) {
-              console.error("Generate Strategic Brief error:", error);
-            }
-          });
-        }
-
-        if (btnPublication && !btnPublication.dataset.bound) {
-          btnPublication.dataset.bound = "1";
-          btnPublication.addEventListener("click", function () {
-            try {
-              window.IBSS_PUBLISHER?.generateFeaturedPublicationPost?.();
-              renderPublisherConsole();
-            } catch (error) {
-              console.error("Generate Publication Post error:", error);
-            }
-          });
-        }
-
-        if (btnLiving && !btnLiving.dataset.bound) {
-          btnLiving.dataset.bound = "1";
-          btnLiving.addEventListener("click", function () {
-            try {
-              window.IBSS_PUBLISHER?.generateLivingPresencePost?.();
-              renderPublisherConsole();
-            } catch (error) {
-              console.error("Generate Living Presence Post error:", error);
-            }
-          });
-        }
-
-        if (btnCopy && !btnCopy.dataset.bound) {
-          btnCopy.dataset.bound = "1";
-          btnCopy.addEventListener("click", async function () {
-            try {
-              const text = qs("pubDraftText")?.value || "";
+              const text = el("pubDraftText")?.value || "";
               if (!text) return;
               await navigator.clipboard.writeText(text);
             } catch (error) {
@@ -1875,8 +1748,8 @@
         }
       }
 
-      function wireAudioButton() {
-        const btn = qs("audioToggleBtn");
+      function wireAudioButton(){
+        const btn = el("audioToggleBtn");
         if (!btn || btn.dataset.bound === "1") return;
 
         btn.dataset.bound = "1";
@@ -1885,16 +1758,16 @@
             if (!window.IBSS_AUDIO?.toggle) return;
             await window.IBSS_AUDIO.toggle();
             applyLanguage();
-            if (STATE.system) renderMeta(STATE.system);
+            if (APP.system) renderMeta(APP.system);
           } catch (error) {
             console.error("Audio toggle error:", error);
           }
         });
       }
 
-      function renderDashboardCore(system) {
+      function renderDashboard(system){
         if (!system) return;
-        STATE.system = system;
+        APP.system = system;
 
         applyLanguage();
         renderMeta(system);
@@ -1918,35 +1791,35 @@
         wireAudioButton();
       }
 
-      function startRuntime() {
+      function startRuntime(){
         const system = getSystem();
-        if (system) renderDashboardCore(system);
+        if (system) renderDashboard(system);
 
         if (!window.IBSS_RUNTIME?.start) return;
 
         window.IBSS_RUNTIME.start({
           pageId: "dashboard",
-          lang: STATE.lang,
+          lang: APP.lang,
           refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
           systemProvider: getSystem,
-          afterRender: function(system) {
-            renderDashboardCore(system);
+          afterRender: function(system){
+            renderDashboard(system);
           }
         });
       }
 
-      qs("btn-en").addEventListener("click", function () {
-        STATE.lang = "en";
+      el("btn-en").addEventListener("click", function () {
+        APP.lang = "en";
         localStorage.setItem("ibss_lang", "en");
         if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage("en");
-        if (STATE.system) renderDashboardCore(STATE.system);
+        if (APP.system) renderDashboard(APP.system);
       });
 
-      qs("btn-ar").addEventListener("click", function () {
-        STATE.lang = "ar";
+      el("btn-ar").addEventListener("click", function () {
+        APP.lang = "ar";
         localStorage.setItem("ibss_lang", "ar");
         if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage("ar");
-        if (STATE.system) renderDashboardCore(STATE.system);
+        if (APP.system) renderDashboard(APP.system);
       });
 
       window.addEventListener("load", function () {
