@@ -1,5 +1,5 @@
 // IBSS ENGINE CORE — Adaptive Living Presence Full Rebuild
-// Version: v3.0 Adaptive Living Engine
+// Version: v3.1 Adaptive Living Engine Integrated
 
 window.IBSS_ENGINE = (function () {
   "use strict";
@@ -9,7 +9,7 @@ window.IBSS_ENGINE = (function () {
     historyLimit: 180,
     reportLimit: 80,
     archiveLimit: 120,
-    storageKey: "ibss_engine_state_v30_adaptive_living",
+    storageKey: "ibss_engine_state_v31_adaptive_living_integrated",
     minLiveSignalScore: 40,
     scenarioHighThreshold: 85,
     scenarioPrepThreshold: 70,
@@ -73,6 +73,15 @@ window.IBSS_ENGINE = (function () {
     return { en, ar };
   }
 
+  function clone(value) {
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      console.error("IBSS_ENGINE clone error:", error);
+      return null;
+    }
+  }
+
   function getLocalizedText(value, lang = "en") {
     if (!value) return "-";
 
@@ -99,7 +108,6 @@ window.IBSS_ENGINE = (function () {
   function average(list, selector) {
     const arr = asArray(list);
     if (!arr.length) return 0;
-
     const sum = arr.reduce((acc, item) => acc + safeNumber(selector(item), 0), 0);
     return sum / arr.length;
   }
@@ -204,16 +212,27 @@ window.IBSS_ENGINE = (function () {
      Source Readers
   ========================================= */
 
+  function getDataRoot() {
+    return window.IBSS_DATA || {};
+  }
+
   function getContent() {
     return asArray(window.IBSS_CONTENT);
   }
 
   function getCountries() {
-    return asArray(window.IBSS_COUNTRIES);
+    if (window.IBSS_COUNTRIES) return asArray(window.IBSS_COUNTRIES);
+    return asArray(getDataRoot().countries);
   }
 
   function getSeedSignals() {
-    return asArray(window.IBSS_SIGNALS);
+    if (window.IBSS_SIGNALS) return asArray(window.IBSS_SIGNALS);
+    return asArray(getDataRoot().signals);
+  }
+
+  function getNewsSeed() {
+    if (window.IBSS_NEWS) return asArray(window.IBSS_NEWS);
+    return asArray(getDataRoot().newsFeed);
   }
 
   function getPublishedContent() {
@@ -230,7 +249,7 @@ window.IBSS_ENGINE = (function () {
     return {
       total: content.length,
       published: content.filter(item => item?.status === "published").length,
-      pending: content.filter(item => item?.status === "pending").length,
+      pending: content.filter(item => item?.status === "pending" || item?.status === "draft").length,
       archived: content.filter(item => item?.status === "archived").length,
       reports: content.filter(item => item?.type === "report").length,
       studies: content.filter(item => item?.type === "study").length,
@@ -255,20 +274,11 @@ window.IBSS_ENGINE = (function () {
   }
 
   function getSignalsFromSeedData() {
-    return getSeedSignals().map((item, index) => ({
-      id: safeText(item?.id, `SEED-${index + 1}`),
-      title: item?.title || localize("Untitled Signal", "إشارة غير معنونة"),
-      summary: item?.report || item?.description || localize("No summary available.", "لا يوجد ملخص."),
-      description: item?.description || item?.report || localize("No description available.", "لا يوجد وصف."),
-      country: normalizeText(item?.country || item?.countryId || item?.region || "global"),
-      region: normalizeText(item?.region || item?.country || "global"),
-      domain: normalizeText(
-        getLocalizedText(item?.signalType, "en") ||
-        getLocalizedText(item?.layer, "en") ||
-        "geopolitical"
-      ),
-      priority: normalizePriority(item?.weight || item?.priority),
-      score100: clamp(
+    return getSeedSignals().map((item, index) => {
+      const directScore = safeNumber(item?.score100, NaN);
+      const directBalanced = safeNumber(item?.balancedScore100, NaN);
+
+      const derivedScore = clamp(
         Math.round(
           (safeNumber(item?.metrics?.weight, 0.5) * 35) +
           (safeNumber(item?.metrics?.volatility, 0.5) * 25) +
@@ -276,32 +286,65 @@ window.IBSS_ENGINE = (function () {
         ),
         0,
         100
-      ),
-      reliabilityScore: 72,
-      freshnessScore: item?.live ? 0.9 : 0.55,
-      timestamp: nowIso(),
-      source: "IBSS_SEED",
-      raw: item
-    }));
+      );
+
+      const finalScore = Number.isFinite(directBalanced)
+        ? directBalanced
+        : Number.isFinite(directScore)
+          ? directScore
+          : derivedScore;
+
+      return {
+        id: safeText(item?.id, `SEED-${index + 1}`),
+        title: item?.title || localize("Untitled Signal", "إشارة غير معنونة"),
+        summary: item?.summary || item?.report || item?.description || localize("No summary available.", "لا يوجد ملخص."),
+        description: item?.description || item?.report || localize("No description available.", "لا يوجد وصف."),
+        country: normalizeText(item?.country || item?.countryId || item?.region || "global"),
+        region: normalizeText(item?.region || item?.country || "global"),
+        domain: normalizeText(
+          item?.domain ||
+          getLocalizedText(item?.signalType, "en") ||
+          getLocalizedText(item?.layer, "en") ||
+          "geopolitical"
+        ),
+        priority: normalizePriority(item?.priority || item?.weight || inferPriorityFromScore(finalScore)),
+        score100: finalScore,
+        balancedScore100: finalScore,
+        reliabilityScore: clamp(safeNumber(item?.reliabilityScore, 72), 0, 100),
+        freshnessScore: clamp(safeNumber(item?.freshnessScore, item?.live ? 0.9 : 0.55), 0, 1),
+        timestamp: item?.timestamp || nowIso(),
+        source: safeText(item?.source, "IBSS_SEED"),
+        sourceUnit: safeText(item?.sourceUnit, ""),
+        signalType: item?.signalType || null,
+        decisionMode: item?.decisionMode || item?.mode || null,
+        layer: item?.layer || null,
+        influenceBand: item?.influenceBand || null,
+        raw: item
+      };
+    });
   }
 
   function getFallbackSignalsFromNews() {
-    const news = asArray(window.IBSS_NEWS);
-
-    return news.map((item, index) => ({
+    return getNewsSeed().map((item, index) => ({
       id: safeText(item?.id, `NEWS-${index + 1}`),
       title: item?.title || localize("Untitled News Signal", "إشارة خبرية غير معنونة"),
-      summary: item?.summary || item?.description || localize("No summary available.", "لا يوجد ملخص."),
-      description: item?.summary || item?.description || localize("No description available.", "لا يوجد وصف."),
-      country: safeText(item?.country, safeText(item?.region, "global")),
-      region: safeText(item?.region, safeText(item?.country, "global")),
-      domain: safeText(item?.domain, safeText(item?.category, "geopolitical")),
+      summary: item?.summary || item?.text || item?.description || localize("No summary available.", "لا يوجد ملخص."),
+      description: item?.summary || item?.text || item?.description || localize("No description available.", "لا يوجد وصف."),
+      country: normalizeText(item?.country || item?.region || "global"),
+      region: normalizeText(item?.region || item?.country || "global"),
+      domain: normalizeText(item?.domain || item?.category || "geopolitical"),
       priority: normalizePriority(item?.priority || item?.severity),
       score100: clamp(safeNumber(item?.score100, 50), 0, 100),
+      balancedScore100: clamp(safeNumber(item?.balancedScore100, item?.score100 ?? 50), 0, 100),
       reliabilityScore: clamp(safeNumber(item?.reliabilityScore, 60), 0, 100),
       freshnessScore: clamp(safeNumber(item?.freshnessScore, 0.5), 0, 1),
       timestamp: item?.publishedAt || item?.timestamp || nowIso(),
       source: item?.source || item?.sourceName || "NEWS",
+      sourceUnit: safeText(item?.sourceUnit, ""),
+      signalType: item?.signalType || "news",
+      decisionMode: item?.decisionMode || item?.mode || null,
+      layer: item?.layer || null,
+      influenceBand: item?.influenceBand || null,
       raw: item
     }));
   }
@@ -1253,6 +1296,18 @@ window.IBSS_ENGINE = (function () {
     };
   }
 
+  function formatDriverNames(driverNames, lang = "en") {
+    const arr = asArray(driverNames).filter(Boolean);
+    if (!arr.length) return lang === "ar" ? "لا شيء" : "none";
+    if (arr.length === 1) return arr[0];
+    if (arr.length === 2) {
+      return lang === "ar" ? `${arr[0]} و ${arr[1]}` : `${arr[0]} and ${arr[1]}`;
+    }
+    const head = arr.slice(0, -1).join(lang === "ar" ? "، " : ", ");
+    const tail = arr[arr.length - 1];
+    return lang === "ar" ? `${head}، و ${tail}` : `${head}, and ${tail}`;
+  }
+
   function buildVoice(system) {
     const topSignal = system?.topSignal || null;
     const topTheater = system?.topTheater || null;
@@ -1344,7 +1399,7 @@ window.IBSS_ENGINE = (function () {
       postureEn = "Strategic strain posture";
       postureAr = "وضعية إجهاد استراتيجي";
 
-      summaryEn = `The platform is carrying sustained pressure, not just elevated pressure.`;
+      summaryEn = "The platform is carrying sustained pressure, not just elevated pressure.";
       summaryAr = "المنصة تحمل ضغطاً مستداماً، لا مجرد ضغط مرتفع.";
 
       explanationEn = `Persistence across recent cycles suggests strain accumulation around ${clusterNameEn} and ${theaterNameEn}.`;
@@ -1364,18 +1419,6 @@ window.IBSS_ENGINE = (function () {
       advisory: { en: advisoryEn, ar: advisoryAr },
       intent: { en: intentEn, ar: intentAr }
     };
-  }
-
-  function formatDriverNames(driverNames, lang = "en") {
-    const arr = asArray(driverNames).filter(Boolean);
-    if (!arr.length) return lang === "ar" ? "لا شيء" : "none";
-    if (arr.length === 1) return arr[0];
-    if (arr.length === 2) {
-      return lang === "ar" ? `${arr[0]} و ${arr[1]}` : `${arr[0]} and ${arr[1]}`;
-    }
-    const head = arr.slice(0, -1).join(lang === "ar" ? "، " : ", ");
-    const tail = arr[arr.length - 1];
-    return lang === "ar" ? `${head}، و ${tail}` : `${head}, and ${tail}`;
   }
 
   /* =========================================
@@ -1948,28 +1991,28 @@ window.IBSS_ENGINE = (function () {
 
   function getCountryRiskFeed() {
     const system = STATE.lastSystem || computeSystemState();
-    return system.countryRiskFeed;
+    return clone(system.countryRiskFeed) || [];
   }
 
   function getUnifiedRiskUnit() {
     const system = STATE.lastSystem || computeSystemState();
-    return system.unifiedRisk || null;
+    return clone(system.unifiedRisk) || null;
   }
 
   function getReports() {
-    return [...STATE.reports].reverse();
+    return clone([...STATE.reports].reverse()) || [];
   }
 
   function getLatestReport() {
-    return STATE.reports[STATE.reports.length - 1] || null;
+    return clone(STATE.reports[STATE.reports.length - 1] || null);
   }
 
   function getHistory() {
-    return [...STATE.history];
+    return clone(STATE.history) || [];
   }
 
   function getArchive() {
-    return [...STATE.archive];
+    return clone(STATE.archive) || [];
   }
 
   loadState();
@@ -1990,7 +2033,7 @@ window.IBSS_ENGINE = (function () {
     getPublishedNewsContent,
     getHomeSnapshot: function () {
       const system = STATE.lastSystem || computeSystemState();
-      return system.snapshot || getHomeSnapshot(system);
+      return clone(system.snapshot || getHomeSnapshot(system));
     },
     riskLevelFromScore,
     buildUnifiedSignals: buildRankedSignals,
