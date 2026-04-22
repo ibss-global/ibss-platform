@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS — International Bureau of Sovereign Studies</title>
+  <title>IBSS — Living Sovereign Gateway</title>
 
   <style>
     :root{
@@ -21,8 +21,9 @@
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
-      --glow:0 0 18px rgba(212,175,55,.08);
       --shadow:0 10px 24px rgba(0,0,0,.18);
+      --glow:0 0 22px rgba(212,175,55,.08);
+      --hero-glow:radial-gradient(circle at top, rgba(212,175,55,.10), transparent 34%);
     }
 
     *{box-sizing:border-box}
@@ -32,23 +33,24 @@
       margin:0;
       font-family:Arial,sans-serif;
       background:
-        radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+        radial-gradient(circle at 50% 0%, rgba(212,175,55,.06), transparent 25%),
+        radial-gradient(circle at 80% 20%, rgba(90,140,255,.05), transparent 25%),
         linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,0)),
         var(--bg);
       color:var(--text);
     }
 
     .wrap{
-      width:min(1180px,92%);
+      width:min(1220px,92%);
       margin:auto;
-      padding:20px 0 70px;
+      padding:20px 0 64px;
     }
 
     .topbar{
       display:flex;
       justify-content:space-between;
       align-items:center;
-      gap:12px;
+      gap:14px;
       padding:14px 0 20px;
       border-bottom:1px solid rgba(255,255,255,.05);
       flex-wrap:wrap;
@@ -57,7 +59,7 @@
     .brand{
       color:var(--gold);
       font-size:30px;
-      font-weight:800;
+      font-weight:900;
       text-decoration:none;
       letter-spacing:1px;
     }
@@ -82,7 +84,7 @@
       text-decoration:none;
       padding:10px 14px;
       border:1px solid rgba(255,255,255,.08);
-      border-radius:10px;
+      border-radius:12px;
       font-size:14px;
       transition:.2s ease;
     }
@@ -91,6 +93,7 @@
     .nav a:hover{
       color:var(--gold);
       border-color:var(--border);
+      box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
     }
 
     .lang-switch,
@@ -105,7 +108,7 @@
       border:1px solid rgba(255,255,255,.1);
       color:#ccc;
       padding:8px 10px;
-      border-radius:8px;
+      border-radius:10px;
       cursor:pointer;
       transition:.2s ease;
       font-size:13px;
@@ -120,13 +123,28 @@
     }
 
     .hero{
+      position:relative;
       text-align:center;
-      padding:56px 0 24px;
+      padding:54px 0 26px;
+      overflow:hidden;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:var(--hero-glow);
+      pointer-events:none;
+    }
+
+    .hero-inner{
+      position:relative;
+      z-index:1;
     }
 
     .hero h1{
-      font-size:clamp(40px,6vw,70px);
-      line-height:1.06;
+      font-size:clamp(44px,7vw,76px);
+      line-height:1.04;
       color:#fff;
       margin:0 0 14px;
       letter-spacing:1px;
@@ -134,8 +152,8 @@
 
     .official{
       color:var(--gold);
-      font-size:clamp(18px,2.5vw,26px);
-      font-weight:700;
+      font-size:clamp(18px,2.5vw,28px);
+      font-weight:800;
       margin-bottom:14px;
     }
 
@@ -143,14 +161,22 @@
       color:var(--muted);
       max-width:860px;
       margin:0 auto;
-      line-height:1.9;
-      font-size:clamp(16px,2vw,20px);
+      line-height:1.95;
+      font-size:clamp(15px,2vw,20px);
     }
 
-    .system-line{
+    .living-line{
       margin-top:18px;
-      color:var(--green);
-      font-size:15px;
+      color:#f3f3f3;
+      font-size:16px;
+      font-weight:700;
+      line-height:1.8;
+    }
+
+    .presence-line{
+      margin-top:8px;
+      color:var(--blue);
+      font-size:14px;
       font-weight:700;
     }
 
@@ -185,152 +211,29 @@
       background:rgba(0,208,132,.08);
     }
 
-    .meta-badge.fallback{
+    .meta-badge.warn{
       color:var(--orange);
       border-color:rgba(255,159,26,.35);
       background:rgba(255,159,26,.08);
     }
 
-    .meta-badge.blue{
-      color:#bfd2ff;
-      border-color:rgba(90,140,255,.35);
-      background:rgba(90,140,255,.10);
+    .meta-badge.danger{
+      color:#ffd0d1;
+      border-color:rgba(255,77,79,.35);
+      background:rgba(255,77,79,.10);
     }
 
     .home-alert{
       display:none;
       margin:22px auto 0;
-      max-width:780px;
+      max-width:840px;
       padding:14px 16px;
-      border-radius:12px;
+      border-radius:14px;
       background:rgba(255,77,79,.12);
       border:1px solid rgba(255,77,79,.45);
       color:#ffd5d5;
-      font-weight:700;
-      text-align:center;
-      line-height:1.8;
-    }
-
-    .presence-shell{
-      margin:26px auto 0;
-      max-width:980px;
-      display:grid;
-      grid-template-columns:1.15fr .85fr;
-      gap:16px;
-    }
-
-    .presence-card{
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 36%),
-        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
-        var(--panel);
-      border:1px solid rgba(212,175,55,.14);
-      border-radius:24px;
-      padding:22px;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,.02) inset,
-        0 14px 28px rgba(0,0,0,.2);
-      text-align:left;
-    }
-
-    .presence-kicker{
-      color:var(--gold);
-      font-size:12px;
       font-weight:800;
-      letter-spacing:.08em;
-      margin-bottom:12px;
-    }
-
-    .presence-title{
-      color:#fff;
-      font-size:28px;
-      font-weight:900;
-      line-height:1.45;
-      margin:0 0 10px;
-    }
-
-    .presence-summary{
-      color:#ddd;
-      font-size:15px;
-      line-height:1.9;
-      margin:0 0 12px;
-    }
-
-    .presence-explain{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.9;
-      margin:0 0 14px;
-    }
-
-    .presence-chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    .presence-chip{
-      display:inline-flex;
-      align-items:center;
-      padding:7px 11px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      color:#ddd;
-    }
-
-    .presence-chip.high{
-      color:#ffd6d6;
-      background:rgba(255,77,79,.10);
-      border-color:rgba(255,77,79,.24);
-    }
-
-    .presence-chip.medium{
-      color:#ffe0b5;
-      background:rgba(255,159,26,.10);
-      border-color:rgba(255,159,26,.24);
-    }
-
-    .presence-chip.low{
-      color:#d7fff2;
-      background:rgba(0,208,132,.10);
-      border-color:rgba(0,208,132,.24);
-    }
-
-    .presence-side{
-      display:grid;
-      gap:12px;
-    }
-
-    .presence-mini{
-      background:var(--panel);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      text-align:left;
-    }
-
-    .presence-mini-label{
-      color:#8f8f8f;
-      font-size:12px;
-      margin-bottom:10px;
-      letter-spacing:.08em;
-    }
-
-    .presence-mini-value{
-      color:var(--gold);
-      font-size:22px;
-      font-weight:900;
-      line-height:1.5;
-      margin-bottom:8px;
-    }
-
-    .presence-mini-sub{
-      color:var(--muted);
-      font-size:13px;
+      text-align:center;
       line-height:1.8;
     }
 
@@ -365,12 +268,12 @@
       background:var(--gold);
       color:#000;
       border:none;
-      font-weight:700;
+      font-weight:800;
     }
 
     .btn-primary:hover{
       color:#000;
-      opacity:.92;
+      opacity:.94;
     }
 
     .status-grid{
@@ -383,7 +286,7 @@
     .status-card{
       background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
       border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;
+      border-radius:22px;
       padding:22px;
       text-align:center;
       transition:.25s ease;
@@ -404,9 +307,10 @@
 
     .status-value{
       font-size:28px;
-      font-weight:800;
+      font-weight:900;
       color:#fff;
       word-break:break-word;
+      line-height:1.25;
     }
 
     .status-value.low{color:var(--green)}
@@ -416,7 +320,7 @@
     .status-value.blue{color:var(--blue)}
 
     .section{
-      margin-top:36px;
+      margin-top:38px;
     }
 
     .section h2{
@@ -429,9 +333,9 @@
     .section-subtitle{
       text-align:center;
       color:var(--muted);
-      max-width:880px;
+      max-width:900px;
       margin:-6px auto 22px;
-      line-height:1.8;
+      line-height:1.85;
       font-size:15px;
     }
 
@@ -455,6 +359,7 @@
       direction:ltr;
       white-space:nowrap;
       scroll-behavior:auto;
+      min-height:78px;
     }
 
     .ticker-track::-webkit-scrollbar{display:none}
@@ -464,8 +369,8 @@
       display:inline-flex;
       align-items:center;
       gap:10px;
-      min-height:44px;
-      max-width:min(82vw, 520px);
+      min-height:46px;
+      max-width:min(84vw,580px);
       padding:10px 14px;
       border-radius:999px;
       background:rgba(255,255,255,.03);
@@ -492,68 +397,177 @@
     .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
     .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
 
-    .snapshot-grid,
-    .unit-grid,
+    .living-grid{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:18px;
+    }
+
     .feature-grid{
       display:grid;
+      grid-template-columns:1.1fr .9fr;
       gap:18px;
     }
 
     .snapshot-grid{
+      display:grid;
       grid-template-columns:repeat(3,1fr);
+      gap:16px;
     }
 
+    .metric-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+
+    .unit-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+
+    .dual-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .card,
+    .feature-card,
     .snapshot-card,
-    .unit-card,
-    .feature-card{
-      background:var(--panel);
+    .metric-card,
+    .unit-card{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
+        var(--panel);
       border:1px solid rgba(255,255,255,.08);
-      border-radius:22px;
+      border-radius:24px;
       padding:22px;
       box-shadow:var(--shadow);
     }
 
-    .snapshot-card .kicker,
-    .feature-kicker{
-      color:#8f8f8f;
+    .feature-card{
+      border-color:rgba(212,175,55,.14);
+      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset, 0 14px 28px rgba(0,0,0,.2);
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
+        var(--panel);
+    }
+
+    .feature-kicker,
+    .kicker{
+      color:var(--gold);
       font-size:12px;
+      font-weight:800;
       letter-spacing:.08em;
       margin-bottom:10px;
     }
 
-    .snapshot-card .big,
     .feature-title{
+      color:#fff;
+      font-size:30px;
+      font-weight:900;
+      line-height:1.38;
+      margin:0 0 12px;
+    }
+
+    .feature-summary{
+      color:#ddd;
+      font-size:15px;
+      line-height:1.9;
+      margin:0 0 14px;
+    }
+
+    .feature-body{
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:18px;
+      padding:14px 16px;
+      color:#eee;
+      line-height:1.9;
+      font-size:14px;
+      white-space:pre-wrap;
+      max-height:360px;
+      overflow:auto;
+    }
+
+    .feature-meta,
+    .chip-row,
+    .living-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .feature-chip,
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 11px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      color:#ddd;
+    }
+
+    .chip.high{color:#ffd7d7;background:rgba(255,77,79,.12);border-color:rgba(255,77,79,.28)}
+    .chip.medium{color:#ffe2b8;background:rgba(255,159,26,.12);border-color:rgba(255,159,26,.28)}
+    .chip.low{color:#d6fff1;background:rgba(0,208,132,.12);border-color:rgba(0,208,132,.28)}
+
+    .living-title{
+      color:#fff;
+      font-size:28px;
+      font-weight:900;
+      line-height:1.45;
+      margin:0 0 12px;
+    }
+
+    .living-text{
+      color:#ddd;
+      line-height:1.95;
+      font-size:15px;
+      margin:0 0 12px;
+      white-space:pre-wrap;
+    }
+
+    .advisory-box,
+    .voice-box,
+    .feed-item,
+    .country-item,
+    .metric-item,
+    .unit-panel,
+    .presence-box{
+      border:1px solid var(--soft-border-2);
+      border-radius:18px;
+      background:var(--panel2);
+      padding:14px 16px;
+    }
+
+    .snapshot-card .big{
       color:var(--gold);
       font-size:22px;
-      font-weight:800;
-      line-height:1.5;
+      font-weight:900;
+      line-height:1.45;
       margin-bottom:8px;
     }
 
-    .snapshot-card .small,
-    .feature-summary{
+    .snapshot-card .small{
       color:var(--muted);
       font-size:14px;
-      line-height:1.8;
+      line-height:1.85;
     }
 
     .metric-box,
-    .country-box,
     .feed-box,
-    .drivers-box{
+    .country-box{
       display:grid;
       gap:12px;
       margin-top:18px;
-    }
-
-    .metric-item,
-    .country-item,
-    .feed-item,
-    .driver-item{
-      border:1px solid var(--soft-border-2);
-      border-radius:16px;
-      background:var(--panel2);
-      padding:14px 16px;
     }
 
     .metric-item,
@@ -564,9 +578,13 @@
       gap:12px;
     }
 
+    .metric-left,
+    .country-left{
+      min-width:0;
+    }
+
     .metric-name,
-    .country-name,
-    .driver-name{
+    .country-name{
       color:#fff;
       font-weight:800;
       font-size:16px;
@@ -574,8 +592,7 @@
     }
 
     .metric-meta,
-    .country-meta,
-    .driver-meta{
+    .country-meta{
       color:var(--muted);
       font-size:13px;
       line-height:1.7;
@@ -593,10 +610,6 @@
       color:#ddd;
       line-height:1.8;
       font-size:14px;
-    }
-
-    .unit-grid{
-      grid-template-columns:repeat(3,1fr);
     }
 
     .unit-top{
@@ -663,14 +676,6 @@
       margin-bottom:18px;
     }
 
-    .unit-panel{
-      border:1px solid rgba(255,255,255,.05);
-      border-radius:18px;
-      background:rgba(255,255,255,.02);
-      padding:16px;
-      margin-bottom:16px;
-    }
-
     .unit-panel-label{
       font-size:12px;
       color:#8c8c8c;
@@ -683,47 +688,6 @@
       line-height:1.8;
       font-size:16px;
     }
-
-    .unit-list{
-      display:grid;
-      gap:12px;
-      margin-bottom:16px;
-    }
-
-    .unit-list-item{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      border:1px solid rgba(255,255,255,.04);
-      background:rgba(255,255,255,.02);
-      border-radius:16px;
-      padding:12px 14px;
-    }
-
-    .unit-list-item strong{
-      display:block;
-      color:#f2f2f2;
-      margin-bottom:4px;
-      font-size:14px;
-      line-height:1.7;
-    }
-
-    .unit-list-item small{
-      color:#9d9d9d;
-      line-height:1.5;
-    }
-
-    .unit-dot{
-      width:10px;
-      height:10px;
-      border-radius:50%;
-      margin-top:6px;
-      flex:0 0 10px;
-    }
-
-    .unit-dot.high{background:var(--red)}
-    .unit-dot.medium{background:var(--orange)}
-    .unit-dot.low{background:var(--green)}
 
     .mini-metrics{
       display:grid;
@@ -772,56 +736,20 @@
       transform:translateY(-1px);
     }
 
-    .feature-grid{
-      grid-template-columns:1.1fr .9fr;
-    }
-
-    .feature-body{
-      background:var(--panel2);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:18px;
-      padding:14px 16px;
-      color:#eee;
-      line-height:1.9;
-      font-size:14px;
-      white-space:pre-wrap;
-      max-height:320px;
-      overflow:auto;
-    }
-
-    .feature-meta{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-bottom:14px;
-    }
-
-    .feature-chip{
-      display:inline-flex;
-      align-items:center;
-      padding:7px 11px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      color:#ddd;
-    }
-
-    .founder{
-      margin-top:46px;
-      text-align:center;
-      color:var(--muted);
-      font-size:15px;
-    }
-
     .footer{
-      margin-top:60px;
+      margin-top:56px;
       color:#777;
       font-size:14px;
       border-top:1px solid rgba(255,255,255,.05);
       padding-top:20px;
       text-align:center;
+    }
+
+    .founder{
+      margin-top:42px;
+      text-align:center;
+      color:var(--muted);
+      font-size:15px;
     }
 
     html[dir="rtl"] body{text-align:right}
@@ -833,43 +761,39 @@
     html[dir="rtl"] .system-meta,
     html[dir="rtl"] .metric-item,
     html[dir="rtl"] .country-item,
-    html[dir="rtl"] .unit-top,
     html[dir="rtl"] .feature-meta,
-    html[dir="rtl"] .presence-chips{
+    html[dir="rtl"] .chip-row,
+    html[dir="rtl"] .unit-top{
       direction:rtl;
     }
 
     html[dir="rtl"] .hero,
-    html[dir="rtl"] .status-card,
     html[dir="rtl"] .section h2,
     html[dir="rtl"] .section-subtitle,
-    html[dir="rtl"] .founder,
+    html[dir="rtl"] .status-card,
+    html[dir="rtl"] .home-alert,
     html[dir="rtl"] .footer,
-    html[dir="rtl"] .home-alert{
+    html[dir="rtl"] .founder{
       text-align:center;
     }
 
-    html[dir="rtl"] .presence-card,
-    html[dir="rtl"] .presence-mini,
-    html[dir="rtl"] .unit-card,
-    html[dir="rtl"] .snapshot-card,
-    html[dir="rtl"] .feature-card{
-      text-align:right;
-    }
-
-    @media(max-width:1100px){
+    @media(max-width:1120px){
       .status-grid{grid-template-columns:repeat(2,1fr)}
-      .presence-shell{grid-template-columns:1fr}
-      .snapshot-grid{grid-template-columns:1fr}
-      .unit-grid{grid-template-columns:1fr}
-      .feature-grid{grid-template-columns:1fr}
+      .living-grid,
+      .feature-grid,
+      .snapshot-grid,
+      .metric-grid,
+      .unit-grid,
+      .dual-grid{
+        grid-template-columns:1fr;
+      }
     }
 
     @media(max-width:700px){
       .topbar{flex-direction:column}
       .status-grid{grid-template-columns:1fr}
       .metric-item,
-      .country-item{flex-direction:column; align-items:flex-start}
+      .country-item{flex-direction:column;align-items:flex-start}
       .mini-metrics{grid-template-columns:1fr}
     }
   </style>
@@ -903,81 +827,56 @@
     </div>
 
     <div class="hero">
-      <h1>IBSS</h1>
+      <div class="hero-inner">
+        <h1>IBSS</h1>
 
-      <div class="official" data-i18n="hero_official">
-        International Bureau of Sovereign Studies
-      </div>
-
-      <p class="desc" data-i18n="hero_desc">
-        A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.
-      </p>
-
-      <p class="system-line" data-i18n="system_line">
-        System Active — Monitoring Global Signals
-      </p>
-
-      <p id="lastUpdateLine" class="sub-system-line">Last Update — -</p>
-
-      <div class="system-meta">
-        <span id="systemSourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
-        <span id="systemHealthBadge" class="meta-badge">ENGINE — READY</span>
-        <span id="systemMetricsBadge" class="meta-badge">METRICS — OFF</span>
-        <span id="systemPresenceBadge" class="meta-badge blue">PRESENCE — IDLE</span>
-        <span id="systemAudioBadge" class="meta-badge fallback">AUDIO — OFF</span>
-      </div>
-
-      <div id="homeAlert" class="home-alert"></div>
-
-      <div class="presence-shell">
-        <div class="presence-card">
-          <div class="presence-kicker" data-i18n="presence_kicker">LIVING PRESENCE</div>
-          <h3 id="presenceTitle" class="presence-title">-</h3>
-          <p id="presenceSummary" class="presence-summary">-</p>
-          <p id="presenceExplanation" class="presence-explain">-</p>
-          <div id="presenceChips" class="presence-chips"></div>
+        <div class="official" data-i18n="hero_official">
+          International Bureau of Sovereign Studies
         </div>
 
-        <div class="presence-side">
-          <div class="presence-mini">
-            <div class="presence-mini-label" data-i18n="presence_advisory_label">ADVISORY</div>
-            <div id="presenceAdvisory" class="presence-mini-value">-</div>
-            <div id="presenceIntent" class="presence-mini-sub">-</div>
+        <p class="desc" data-i18n="hero_desc">
+          A living sovereign platform for structured signals, strategic analysis, adaptive pressure reading, and decision-grade intelligence.
+        </p>
+
+        <p id="livingLine" class="living-line">-</p>
+        <p id="presenceLine" class="presence-line">-</p>
+        <p id="lastUpdateLine" class="sub-system-line">Last Update — -</p>
+
+        <div class="system-meta">
+          <span id="systemSourceBadge" class="meta-badge warn">SOURCE — LIMITED</span>
+          <span id="systemHealthBadge" class="meta-badge">ENGINE — READY</span>
+          <span id="systemMetricsBadge" class="meta-badge">METRICS — OFF</span>
+          <span id="systemAudioBadge" class="meta-badge warn">AUDIO — OFF</span>
+        </div>
+
+        <div id="homeAlert" class="home-alert"></div>
+
+        <div class="hero-buttons">
+          <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Open Dashboard</a>
+          <a href="signals.html" class="btn" data-i18n="btn_signals">Explore Signals</a>
+          <a href="reports.html" class="btn" data-i18n="btn_reports">View Reports</a>
+        </div>
+
+        <div class="status-grid">
+          <div class="status-card">
+            <div class="status-label" data-i18n="top_threat">Top Threat</div>
+            <div id="topThreat" class="status-value gold">-</div>
           </div>
 
-          <div class="presence-mini">
-            <div class="presence-mini-label" data-i18n="presence_drift_label">PRESSURE DRIFT</div>
-            <div id="presenceDrift" class="presence-mini-value">-</div>
-            <div id="presenceDriftMeta" class="presence-mini-sub">-</div>
+          <div class="status-card">
+            <div class="status-label" data-i18n="system_pressure">System Pressure</div>
+            <div id="systemPressure" class="status-value high">0</div>
           </div>
-        </div>
-      </div>
 
-      <div class="hero-buttons">
-        <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Open Dashboard</a>
-        <a href="signals.html" class="btn" data-i18n="btn_signals">Explore Signals</a>
-        <a href="reports.html" class="btn" data-i18n="btn_reports">View Reports</a>
-      </div>
+          <div class="status-card">
+            <div class="status-label" data-i18n="decision_mode">Decision Mode</div>
+            <div id="decisionMode" class="status-value blue">-</div>
+          </div>
 
-      <div class="status-grid">
-        <div class="status-card">
-          <div class="status-label" data-i18n="top_threat">Top Threat</div>
-          <div id="topThreat" class="status-value gold">-</div>
-        </div>
-
-        <div class="status-card">
-          <div class="status-label" data-i18n="system_pressure">System Pressure</div>
-          <div id="systemPressure" class="status-value high">0</div>
-        </div>
-
-        <div class="status-card">
-          <div class="status-label" data-i18n="decision_mode">Decision Mode</div>
-          <div id="decisionMode" class="status-value gold">-</div>
-        </div>
-
-        <div class="status-card">
-          <div class="status-label" data-i18n="active_signals">Active Signals</div>
-          <div id="activeSignals" class="status-value low">0</div>
+          <div class="status-card">
+            <div class="status-label" data-i18n="active_signals">Active Signals</div>
+            <div id="activeSignals" class="status-value low">0</div>
+          </div>
         </div>
       </div>
     </div>
@@ -985,7 +884,7 @@
     <div class="section">
       <h2 data-i18n="live_intelligence">Live Intelligence Strip</h2>
       <p class="section-subtitle" data-i18n="live_intelligence_desc">
-        Real-time signal condensation layer highlighting active pressure, dominant files, and current system movement.
+        Real-time sovereign condensation layer highlighting living pressure, dominant files, and active system movement.
       </p>
 
       <div class="ticker-shell">
@@ -994,9 +893,41 @@
     </div>
 
     <div class="section">
+      <h2 data-i18n="living_presence">Living Presence</h2>
+      <p class="section-subtitle" data-i18n="living_presence_desc">
+        The system does not only display signals. It expresses posture, urgency, explanation, and operational advisory.
+      </p>
+
+      <div class="living-grid">
+        <div class="feature-card">
+          <div class="feature-kicker" data-i18n="system_voice">SYSTEM VOICE</div>
+          <h3 id="voiceTitle" class="feature-title">-</h3>
+          <p id="voiceSummary" class="feature-summary">-</p>
+
+          <div id="voiceBadges" class="feature-meta"></div>
+
+          <div id="voiceExplanation" class="feature-body">-</div>
+        </div>
+
+        <div class="card">
+          <div class="kicker" data-i18n="presence_state">PRESENCE STATE</div>
+          <h3 id="presenceTitle" class="living-title">-</h3>
+          <p id="presenceSummary" class="living-text">-</p>
+
+          <div id="presenceBadges" class="living-badges"></div>
+
+          <div class="presence-box">
+            <div class="kicker" data-i18n="advisory_label">ADVISORY</div>
+            <div id="presenceAdvisory" class="living-text">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
       <h2 data-i18n="strategic_snapshot">Strategic Snapshot</h2>
       <p class="section-subtitle" data-i18n="strategic_snapshot_desc">
-        Immediate sovereign reading of the dominant theater, leading strategic file, and top country risk.
+        Immediate living reading of the dominant theater, leading strategic file, and top country risk.
       </p>
 
       <div class="snapshot-grid">
@@ -1021,23 +952,6 @@
     </div>
 
     <div class="section">
-      <h2 data-i18n="unified_metrics">Unified Metrics</h2>
-      <p class="section-subtitle" data-i18n="unified_metrics_desc">
-        A single sovereign metrics layer aligning signal score, strategic-file risk, theater risk, country risk, and system stress.
-      </p>
-
-      <div id="metricBox" class="metric-box"></div>
-    </div>
-
-    <div class="section">
-      <h2 data-i18n="drivers_title">Dominant Drivers</h2>
-      <p class="section-subtitle" data-i18n="drivers_desc">
-        The causal layer showing what is actively pushing the system.
-      </p>
-      <div id="driversBox" class="drivers-box"></div>
-    </div>
-
-    <div class="section">
       <h2 data-i18n="featured_publication">Featured Publication</h2>
       <p class="section-subtitle" data-i18n="featured_publication_desc">
         The latest institutional study or policy paper surfaced directly from the sovereign publication layer.
@@ -1045,7 +959,7 @@
 
       <div class="feature-grid">
         <div class="feature-card">
-          <div class="feature-kicker" id="featuredPublicationKicker">PUBLICATION • SSU</div>
+          <div id="featuredPublicationKicker" class="feature-kicker">PUBLICATION • SSU</div>
           <h3 id="featuredPublicationTitle" class="feature-title">-</h3>
           <p id="featuredPublicationSummary" class="feature-summary">-</p>
           <div id="featuredPublicationMeta" class="feature-meta"></div>
@@ -1057,6 +971,15 @@
           <div id="featuredPublicationBody" class="feature-body">-</div>
         </div>
       </div>
+    </div>
+
+    <div class="section">
+      <h2 data-i18n="unified_metrics">Unified Metrics</h2>
+      <p class="section-subtitle" data-i18n="unified_metrics_desc">
+        A sovereign metrics layer aligning signal score, strategic-file risk, theater risk, country risk, system stress, and confidence.
+      </p>
+
+      <div id="metricBox" class="metric-box"></div>
     </div>
 
     <div class="section">
@@ -1074,7 +997,7 @@
 
           <h3 data-i18n="unit_ssu_title">Sovereign Strategic Studies Unit</h3>
           <div class="unit-desc" data-i18n="unit_ssu_desc">
-            The analytical doctrine arm of the platform, producing sovereign studies, pressure papers, and decision-grade strategic estimates.
+            The doctrine arm of the platform, producing sovereign studies, pressure papers, and decision-grade strategic estimates.
           </div>
 
           <div class="unit-panel">
@@ -1104,10 +1027,10 @@
 
           <h3 data-i18n="unit_niu_title">News Tracking & Analysis Unit</h3>
           <div class="unit-desc" data-i18n="unit_niu_desc">
-            Converts statements, developments, and live information flows into structured signals ready for sovereign interpretation.
+            Converts developments and live information flows into structured signals ready for sovereign interpretation.
           </div>
 
-          <div id="latestNewsList" class="unit-list"></div>
+          <div id="latestNewsList" class="metric-box"></div>
 
           <a href="signals.html" class="unit-btn" data-i18n="btn_news_unit">Open News Unit</a>
         </article>
@@ -1197,8 +1120,7 @@
           nav_about: "About",
 
           hero_official: "International Bureau of Sovereign Studies",
-          hero_desc: "A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.",
-          system_line: "System Active — Monitoring Global Signals",
+          hero_desc: "A living sovereign platform for structured signals, strategic analysis, adaptive pressure reading, and decision-grade intelligence.",
 
           btn_dashboard: "Open Dashboard",
           btn_signals: "Explore Signals",
@@ -1211,23 +1133,26 @@
           active_signals: "Active Signals",
 
           live_intelligence: "Live Intelligence Strip",
-          live_intelligence_desc: "Real-time signal condensation layer highlighting active pressure, dominant files, and current system movement.",
+          live_intelligence_desc: "Real-time sovereign condensation layer highlighting living pressure, dominant files, and active system movement.",
+
+          living_presence: "Living Presence",
+          living_presence_desc: "The system does not only display signals. It expresses posture, urgency, explanation, and operational advisory.",
+          system_voice: "SYSTEM VOICE",
+          presence_state: "PRESENCE STATE",
+          advisory_label: "ADVISORY",
 
           strategic_snapshot: "Strategic Snapshot",
-          strategic_snapshot_desc: "Immediate sovereign reading of the dominant theater, leading strategic file, and top country risk.",
+          strategic_snapshot_desc: "Immediate living reading of the dominant theater, leading strategic file, and top country risk.",
           snapshot_top_theater: "Top Theater",
           snapshot_top_cluster: "Top Strategic File",
           snapshot_top_country: "Top Country Risk",
 
-          unified_metrics: "Unified Metrics",
-          unified_metrics_desc: "A single sovereign metrics layer aligning signal score, strategic-file risk, theater risk, country risk, and system stress.",
-
-          drivers_title: "Dominant Drivers",
-          drivers_desc: "The causal layer showing what is actively pushing the system.",
-
           featured_publication: "Featured Publication",
           featured_publication_desc: "The latest institutional study or policy paper surfaced directly from the sovereign publication layer.",
           featured_publication_preview: "Publication Preview",
+
+          unified_metrics: "Unified Metrics",
+          unified_metrics_desc: "A sovereign metrics layer aligning signal score, strategic-file risk, theater risk, country risk, system stress, and confidence.",
 
           sovereign_units: "Sovereign Intelligence Units",
           sovereign_units_desc: "Institutional layer connecting strategic studies, news analysis, and pattern-risk observation before entering the operational engine.",
@@ -1235,14 +1160,14 @@
           unit_status_watch: "Watch",
 
           unit_ssu_title: "Sovereign Strategic Studies Unit",
-          unit_ssu_desc: "The analytical doctrine arm of the platform, producing sovereign studies, pressure papers, and decision-grade strategic estimates.",
+          unit_ssu_desc: "The doctrine arm of the platform, producing sovereign studies, pressure papers, and decision-grade strategic estimates.",
           latest_study_label: "Latest Study",
           metric_published: "Published",
           metric_reports: "Reports",
           btn_studies: "Open Studies",
 
           unit_niu_title: "News Tracking & Analysis Unit",
-          unit_niu_desc: "Converts statements, developments, and live information flows into structured signals ready for sovereign interpretation.",
+          unit_niu_desc: "Converts developments and live information flows into structured signals ready for sovereign interpretation.",
           btn_news_unit: "Open News Unit",
 
           unit_pru_title: "Pattern & Country Risk Unit",
@@ -1259,19 +1184,17 @@
           founder_line: "Founded by Naeem M. Dahalan",
           footer_text: "© 2026 IBSS — Founded by Naeem M. Dahalan",
 
-          high_alert: "⚠ HIGH ESCALATION — SYSTEM IN ACTIVE RESPONSE MODE",
-          medium_alert: "⚠ STRUCTURED PRESSURE — SYSTEM IN PREPARATION MODE",
-          low_alert: "✓ LOW PRESSURE — SYSTEM IN MONITORING MODE",
+          high_alert: "⚠ HIGH ESCALATION — THE SYSTEM HAS ENTERED AN ACTIVE PRESSURE BAND",
+          medium_alert: "⚠ STRUCTURED PRESSURE — THE SYSTEM IS HOLDING A PREPARATION POSTURE",
+          low_alert: "✓ LOW PRESSURE — THE SYSTEM REMAINS IN MONITORING MODE",
 
           last_update: "Last Update",
-          source_engine: "SOURCE — ENGINE",
-          source_fallback: "SOURCE — FALLBACK",
+          source_orchestrated: "SOURCE — ORCHESTRATED",
+          source_fallback: "SOURCE — LIMITED",
           engine_ready: "ENGINE — READY",
           engine_limited: "ENGINE — LIMITED",
           metrics_on: "METRICS — INTEGRATED",
           metrics_off: "METRICS — OFF",
-          presence_on: "PRESENCE — ACTIVE",
-          presence_idle: "PRESENCE — IDLE",
           audio_on: "AUDIO — ON",
           audio_off: "AUDIO — OFF",
           audio_button_on: "AUDIO ON",
@@ -1287,19 +1210,15 @@
           system_stress: "System Stress",
           confidence: "Confidence",
 
-          presence_kicker: "LIVING PRESENCE",
-          presence_advisory_label: "ADVISORY",
-          presence_drift_label: "PRESSURE DRIFT",
-          posture: "Posture",
-          urgency: "Urgency",
-          drift: "Drift",
-          persistence: "Persistence",
-          volatility: "Volatility",
-          intent: "Intent",
-
           no_data: "No data available.",
           no_feed: "No live feed available.",
-          no_news: "No recent news items available."
+          no_news: "No recent news items available.",
+
+          presence_state_label: "State",
+          presence_urgency_label: "Urgency",
+          presence_drift_label: "Drift",
+          presence_posture_label: "Posture",
+          voice_explanation_fallback: "No explanation available."
         },
 
         ar: {
@@ -1312,8 +1231,7 @@
           nav_about: "حول",
 
           hero_official: "المكتب الدولي للدراسات السيادية",
-          hero_desc: "منصة سيادية للإشارات المنظمة والتحليل الاستراتيجي والاستخبارات بدرجة قرار.",
-          system_line: "النظام فعال — يراقب الإشارات العالمية",
+          hero_desc: "منصة سيادية حيّة للإشارات المنظمة والتحليل الاستراتيجي والقراءة التكيفية للضغط والاستخبارات بدرجة قرار.",
 
           btn_dashboard: "فتح لوحة التحكم",
           btn_signals: "استكشاف الإشارات",
@@ -1326,42 +1244,45 @@
           active_signals: "الإشارات النشطة",
 
           live_intelligence: "الشريط الاستخباري الحي",
-          live_intelligence_desc: "طبقة عرض حية تضغط الإشارات النشطة والملفات المهيمنة واتجاه الحركة الحالية داخل النظام.",
+          live_intelligence_desc: "طبقة سيادية حية تضغط الحركة الحالية للنظام والضغط المهيمن والملفات الأعلى نشاطاً.",
+
+          living_presence: "الحضور الحي",
+          living_presence_desc: "النظام لا يعرض إشارات فقط، بل يعبّر عن وضعية وشرح واستعجال وتوجيه تشغيلي.",
+          system_voice: "صوت النظام",
+          presence_state: "حالة الحضور",
+          advisory_label: "التوجيه",
 
           strategic_snapshot: "اللقطة الاستراتيجية",
-          strategic_snapshot_desc: "قراءة سيادية فورية للمسرح المهيمن، الملف الاستراتيجي الأعلى، وأعلى دولة خطرًا.",
+          strategic_snapshot_desc: "قراءة حيّة للمسرح المهيمن والملف الأعلى والدولة الأعلى خطراً.",
           snapshot_top_theater: "المسرح الأعلى",
           snapshot_top_cluster: "الملف الاستراتيجي الأعلى",
-          snapshot_top_country: "أعلى دولة خطرًا",
-
-          unified_metrics: "المقاييس الموحدة",
-          unified_metrics_desc: "طبقة قياس سيادية واحدة توحّد درجة الإشارة وخطر الملف وخطر المسرح وخطر الدولة وضغط النظام.",
-
-          drivers_title: "المحرّكات المهيمنة",
-          drivers_desc: "الطبقة السببية التي تُظهر ما الذي يدفع النظام فعلياً.",
+          snapshot_top_country: "أعلى دولة خطراً",
 
           featured_publication: "المنشور المميز",
-          featured_publication_desc: "أحدث دراسة أو ورقة سياسات مؤسسية تظهر مباشرة من طبقة النشر السيادي.",
+          featured_publication_desc: "أحدث دراسة أو ورقة مؤسسية تظهر مباشرة من طبقة النشر السيادي.",
           featured_publication_preview: "معاينة المنشور",
 
+          unified_metrics: "المقاييس الموحدة",
+          unified_metrics_desc: "طبقة قياس سيادية توحّد درجة الإشارة وخطر الملف وخطر المسرح وخطر الدولة وضغط النظام والثقة.",
+
           sovereign_units: "الوحدات السيادية",
-          sovereign_units_desc: "طبقة مؤسسية تربط الدراسات، تحليل الأخبار، وتتبع الأنماط قبل الدخول إلى المحرك التشغيلي.",
+          sovereign_units_desc: "طبقة مؤسسية تربط الدراسات وتحليل الأخبار وتتبع الأنماط قبل الدخول إلى المحرك التشغيلي.",
           unit_status_active: "نشط",
           unit_status_watch: "مراقبة",
 
           unit_ssu_title: "وحدة الدراسات الاستراتيجية السيادية",
-          unit_ssu_desc: "الذراع العقائدي التحليلي للمنصة، وتنتج دراسات سيادية وأوراق ضغط وتقديرات موقف بدرجة قرار.",
+          unit_ssu_desc: "الذراع العقائدي للمنصة، ويُنتج الدراسات السيادية وأوراق الضغط والتقديرات بدرجة قرار.",
           latest_study_label: "أحدث دراسة",
           metric_published: "المنشور",
           metric_reports: "التقارير",
           btn_studies: "فتح الدراسات",
 
           unit_niu_title: "وحدة تتبع وتحليل الأخبار",
-          unit_niu_desc: "تحول التصريحات والتطورات وتدفقات الأخبار إلى إشارات منظمة جاهزة للقراءة السيادية.",
+          unit_niu_desc: "تحوّل التطورات والتدفقات الحية إلى إشارات منظمة جاهزة للقراءة السيادية.",
           btn_news_unit: "فتح وحدة الأخبار",
 
-          unit_pru_title: "وحدة تتبع وتحليل أنماط ومخاطر الدول",
-          unit_pru_desc: "تراقب الضغط البنيوي واتجاه المخاطر وتحولات الدول عبر الساحات الاستراتيجية النشطة.",
+          unit_pru_title: "وحدة تتبع الأنماط ومخاطر الدول",
+          unit_pru_desc: "تراقب الضغط البنيوي واتجاه الخطر وتحولات الدول عبر المسارح النشطة.",
           metric_top_country: "الدولة الأعلى",
           metric_top_country_score: "درجة الخطر",
           metric_risk_trend: "الاتجاه",
@@ -1374,19 +1295,17 @@
           founder_line: "تأسس بواسطة نعيم م. دحلان",
           footer_text: "© 2026 IBSS — تأسس بواسطة نعيم م. دحلان",
 
-          high_alert: "⚠ تم رصد تصعيد مرتفع — النظام في وضعية استجابة نشطة",
-          medium_alert: "⚠ تم رصد ضغط بنيوي — النظام في وضعية تحضير",
-          low_alert: "✓ ضغط منخفض — النظام في وضعية مراقبة",
+          high_alert: "⚠ تصعيد مرتفع — النظام دخل حزمة ضغط نشطة",
+          medium_alert: "⚠ ضغط بنيوي — النظام يحافظ على وضعية تحضير",
+          low_alert: "✓ ضغط منخفض — النظام ما يزال في وضعية المراقبة",
 
           last_update: "آخر تحديث",
-          source_engine: "المصدر — المحرك",
-          source_fallback: "المصدر — الاحتياطي",
+          source_orchestrated: "المصدر — منسق",
+          source_fallback: "المصدر — محدود",
           engine_ready: "المحرك — جاهز",
           engine_limited: "المحرك — محدود",
           metrics_on: "القياس — مدمج",
           metrics_off: "القياس — غير مفعل",
-          presence_on: "الحضور — نشط",
-          presence_idle: "الحضور — ساكن",
           audio_on: "الصوت — يعمل",
           audio_off: "الصوت — متوقف",
           audio_button_on: "تشغيل الصوت",
@@ -1402,19 +1321,15 @@
           system_stress: "ضغط النظام",
           confidence: "الثقة",
 
-          presence_kicker: "الحضور الحي",
-          presence_advisory_label: "التوجيه",
-          presence_drift_label: "انجراف الضغط",
-          posture: "الوضعية",
-          urgency: "الاستعجال",
-          drift: "الانجراف",
-          persistence: "الاستمرار",
-          volatility: "التذبذب",
-          intent: "النية",
-
           no_data: "لا توجد بيانات.",
           no_feed: "لا توجد تغذية حية.",
-          no_news: "لا توجد عناصر خبرية حديثة."
+          no_news: "لا توجد عناصر خبرية حديثة.",
+
+          presence_state_label: "الحالة",
+          presence_urgency_label: "الاستعجال",
+          presence_drift_label: "الانجراف",
+          presence_posture_label: "الوضعية",
+          voice_explanation_fallback: "لا يوجد شرح متاح."
         }
       };
 
@@ -1470,6 +1385,18 @@
         });
       }
 
+      function formatDate(value) {
+        if (!value) return "-";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "-";
+
+        return date.toLocaleDateString(STATE.lang === "ar" ? "ar-EG" : "en-US", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit"
+        });
+      }
+
       function getBandLabel(score) {
         if (window.IBSS_METRICS?.classifyBand) {
           const band = window.IBSS_METRICS.classifyBand(safeNumber(score, 0));
@@ -1499,41 +1426,14 @@
         return "low";
       }
 
-      function applyLanguage() {
-        document.documentElement.lang = STATE.lang;
-        document.documentElement.dir = STATE.lang === "ar" ? "rtl" : "ltr";
-
-        document.querySelectorAll("[data-i18n]").forEach((el) => {
-          const key = el.getAttribute("data-i18n");
-          el.textContent = t(key);
-        });
-
-        qs("btn-en").classList.toggle("active", STATE.lang === "en");
-        qs("btn-ar").classList.toggle("active", STATE.lang === "ar");
-
-        updateAudioBadge();
-      }
-
-      function updateAudioBadge() {
-        const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
-        const badge = qs("systemAudioBadge");
-        const btn = qs("audioToggleBtn");
-
-        if (badge) {
-          badge.textContent = enabled ? t("audio_on") : t("audio_off");
-          badge.className = enabled ? "meta-badge live" : "meta-badge fallback";
-        }
-
-        if (btn) {
-          btn.textContent = enabled ? t("audio_button_off") : t("audio_button_on");
-          btn.classList.toggle("active", enabled);
-        }
-      }
-
       function getRawSystem() {
         try {
-          if (window.IBSS_ENGINE?.getSystemState) return window.IBSS_ENGINE.getSystemState();
-          if (window.IBSS_ENGINE?.getStaticSystemFallback) return window.IBSS_ENGINE.getStaticSystemFallback();
+          if (window.IBSS_ENGINE?.getSystemState) {
+            return window.IBSS_ENGINE.getSystemState();
+          }
+          if (window.IBSS_ENGINE?.getStaticSystemFallback) {
+            return window.IBSS_ENGINE.getStaticSystemFallback();
+          }
         } catch (error) {
           console.error("index getRawSystem error:", error);
         }
@@ -1574,16 +1474,47 @@
         );
       }
 
+      function applyLanguage() {
+        document.documentElement.lang = STATE.lang;
+        document.documentElement.dir = STATE.lang === "ar" ? "rtl" : "ltr";
+
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          el.textContent = t(key);
+        });
+
+        qs("btn-en").classList.toggle("active", STATE.lang === "en");
+        qs("btn-ar").classList.toggle("active", STATE.lang === "ar");
+
+        updateAudioBadge();
+      }
+
+      function updateAudioBadge() {
+        const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
+        const badge = qs("systemAudioBadge");
+        const btn = qs("audioToggleBtn");
+
+        if (badge) {
+          badge.textContent = enabled ? t("audio_on") : t("audio_off");
+          badge.className = enabled ? "meta-badge live" : "meta-badge warn";
+        }
+
+        if (btn) {
+          btn.textContent = enabled ? t("audio_button_off") : t("audio_button_on");
+          btn.classList.toggle("active", enabled);
+        }
+      }
+
       function updateSourceBadge(system) {
         const badge = qs("systemSourceBadge");
         if (!badge) return;
 
-        if (system?.publisherFeed || system?.unifiedFeed || system?.source === "engine" || system?.source === "orchestrated") {
-          badge.textContent = t("source_engine");
+        if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed || system?.source === "orchestrated") {
+          badge.textContent = t("source_orchestrated");
           badge.className = "meta-badge live";
         } else {
           badge.textContent = t("source_fallback");
-          badge.className = "meta-badge fallback";
+          badge.className = "meta-badge warn";
         }
       }
 
@@ -1591,12 +1522,12 @@
         const badge = qs("systemHealthBadge");
         if (!badge) return;
 
-        if (system?.source === "engine" || system?.source === "orchestrated") {
+        if (system?.source === "orchestrated" || system?.source === "engine") {
           badge.textContent = t("engine_ready");
           badge.className = "meta-badge live";
         } else {
           badge.textContent = t("engine_limited");
-          badge.className = "meta-badge fallback";
+          badge.className = "meta-badge warn";
         }
       }
 
@@ -1609,21 +1540,7 @@
           badge.className = "meta-badge live";
         } else {
           badge.textContent = t("metrics_off");
-          badge.className = "meta-badge fallback";
-        }
-      }
-
-      function updatePresenceBadge(system) {
-        const badge = qs("systemPresenceBadge");
-        if (!badge) return;
-
-        const state = safeText(system?.presence?.state, "");
-        if (state) {
-          badge.textContent = t("presence_on");
-          badge.className = "meta-badge blue";
-        } else {
-          badge.textContent = t("presence_idle");
-          badge.className = "meta-badge";
+          badge.className = "meta-badge warn";
         }
       }
 
@@ -1635,11 +1552,37 @@
 
         if (level === "HIGH") {
           alert.textContent = t("high_alert");
+          alert.style.background = "rgba(255,77,79,.12)";
+          alert.style.borderColor = "rgba(255,77,79,.45)";
+          alert.style.color = "#ffd5d5";
         } else if (level === "MEDIUM") {
           alert.textContent = t("medium_alert");
+          alert.style.background = "rgba(255,159,26,.10)";
+          alert.style.borderColor = "rgba(255,159,26,.35)";
+          alert.style.color = "#ffe7c8";
         } else {
           alert.textContent = t("low_alert");
+          alert.style.background = "rgba(0,208,132,.10)";
+          alert.style.borderColor = "rgba(0,208,132,.30)";
+          alert.style.color = "#d8fff1";
         }
+      }
+
+      function renderHeroPresence(system) {
+        const voice = system?.voice || {};
+        const presence = system?.presence || {};
+
+        qs("livingLine").textContent =
+          getLocalizedText(voice.summary) ||
+          getLocalizedText(voice.posture) ||
+          getLocalizedText(voice.intent) ||
+          "-";
+
+        qs("presenceLine").textContent =
+          [
+            `${t("presence_state_label")}: ${safeText(presence.state, "-")}`,
+            `${t("presence_urgency_label")}: ${safeText(presence.urgency, "-")}`
+          ].join(" • ");
       }
 
       function renderStatusCards(system) {
@@ -1655,30 +1598,58 @@
         qs("activeSignals").textContent = liveCount;
       }
 
-      function renderPresence(system) {
-        qs("presenceTitle").textContent = getLocalizedText(system?.voice?.posture) || "-";
-        qs("presenceSummary").textContent = getLocalizedText(system?.voice?.summary) || t("no_data");
-        qs("presenceExplanation").textContent = getLocalizedText(system?.voice?.explanation) || t("no_data");
+      function renderLivingPresence(system) {
+        const voice = system?.voice || {};
+        const presence = system?.presence || {};
+        const drivers = asArray(system?.drivers).slice(0, 4);
 
-        qs("presenceAdvisory").textContent = getLocalizedText(system?.voice?.advisory) || "-";
-        qs("presenceIntent").textContent = `${t("intent")}: ${getLocalizedText(system?.voice?.intent) || "-"}`;
+        qs("voiceTitle").textContent =
+          getLocalizedText(voice.posture) ||
+          safeText(system?.mode, "-");
 
-        const drift = system?.drift || {};
-        qs("presenceDrift").textContent = safeText(drift.direction, "STABLE");
-        qs("presenceDriftMeta").textContent =
-          `${t("persistence")}: ${safeNumber(drift.persistence, 0)} | ` +
-          `${t("volatility")}: ${safeNumber(drift.volatility, 0)}`;
+        qs("voiceSummary").textContent =
+          getLocalizedText(voice.summary) ||
+          t("voice_explanation_fallback");
 
-        const chips = [];
-        const urgency = safeText(system?.presence?.urgency, "low");
-        const urgencyClass = urgency === "immediate" || urgency === "high" ? "high" : urgency === "medium" ? "medium" : "low";
+        qs("voiceExplanation").textContent =
+          getLocalizedText(voice.explanation) ||
+          getLocalizedText(voice.intent) ||
+          t("voice_explanation_fallback");
 
-        chips.push(`<span class="presence-chip ${urgencyClass}">${escapeHtml(`${t("urgency")}: ${urgency}`)}</span>`);
-        chips.push(`<span class="presence-chip">${escapeHtml(`${t("drift")}: ${safeText(drift.direction, "STABLE")}`)}</span>`);
-        chips.push(`<span class="presence-chip">${escapeHtml(`${t("confidence")}: ${safeNumber(system?.confidenceScore, 0)}`)}</span>`);
-        chips.push(`<span class="presence-chip">${escapeHtml(`${t("system_stress")}: ${safeNumber(system?.systemPressure, 0)}`)}</span>`);
+        qs("presenceTitle").textContent =
+          safeText(presence.state, "-");
 
-        qs("presenceChips").innerHTML = chips.join("");
+        qs("presenceSummary").textContent =
+          getLocalizedText(voice.intent) ||
+          getLocalizedText(voice.summary) ||
+          "-";
+
+        qs("presenceAdvisory").textContent =
+          getLocalizedText(voice.advisory) ||
+          "-";
+
+        qs("voiceBadges").innerHTML = `
+          <span class="feature-chip">${escapeHtml(`${t("presence_posture_label")}: ${getLocalizedText(voice.posture) || "-"}`)}</span>
+          <span class="feature-chip">${escapeHtml(`${t("confidence")}: ${safeNumber(system?.confidenceScore, 0)}`)}</span>
+          <span class="feature-chip">${escapeHtml(`${t("system_stress")}: ${safeNumber(system?.systemPressure, 0)}`)}</span>
+        `;
+
+        const badges = [
+          { label: `${t("presence_state_label")}: ${safeText(presence.state, "-")}`, cls: "" },
+          { label: `${t("presence_urgency_label")}: ${safeText(presence.urgency, "-")}`, cls: String(presence.urgency || "").toLowerCase().includes("high") || String(presence.urgency || "").includes("مرتفع") ? "high" : String(presence.urgency || "").toLowerCase().includes("medium") || String(presence.urgency || "").includes("متوسط") ? "medium" : "low" },
+          { label: `${t("presence_drift_label")}: ${safeText(presence.drift, "-")}`, cls: "" }
+        ];
+
+        drivers.forEach(driver => {
+          badges.push({
+            label: getLocalizedText(driver?.label) || "-",
+            cls: levelClass(driver?.priority || "LOW")
+          });
+        });
+
+        qs("presenceBadges").innerHTML = badges.map(item => `
+          <span class="chip ${item.cls || ""}">${escapeHtml(item.label)}</span>
+        `).join("");
       }
 
       function renderSnapshot(system) {
@@ -1752,28 +1723,11 @@
 
         box.innerHTML = metrics.map((item) => `
           <div class="metric-item">
-            <div>
+            <div class="metric-left">
               <div class="metric-name">${escapeHtml(item.name)}</div>
               <div class="metric-meta">${escapeHtml(item.meta)}</div>
             </div>
             <div class="metric-score">${item.score}</div>
-          </div>
-        `).join("");
-      }
-
-      function renderDrivers(system) {
-        const box = qs("driversBox");
-        const drivers = asArray(system?.drivers);
-
-        if (!drivers.length) {
-          box.innerHTML = `<div class="driver-item"><div class="driver-name">${escapeHtml(t("no_data"))}</div></div>`;
-          return;
-        }
-
-        box.innerHTML = drivers.map((driver) => `
-          <div class="driver-item">
-            <div class="driver-name">${escapeHtml(getLocalizedText(driver.label))}</div>
-            <div class="driver-meta">${escapeHtml(getLocalizedText(driver.explanation))}</div>
           </div>
         `).join("");
       }
@@ -1788,12 +1742,12 @@
         qs("featuredPublicationTitle").textContent = item ? getLocalizedText(item.title) : "-";
         qs("featuredPublicationSummary").textContent = item ? getLocalizedText(item.summary) : t("no_data");
 
-        const meta = qs("featuredPublicationMeta");
-        meta.innerHTML = item ? `
+        qs("featuredPublicationMeta").innerHTML = item ? `
           <span class="feature-chip">${escapeHtml(safeText(item.edition, "-"))}</span>
           <span class="feature-chip">${escapeHtml(safeText(item.country, "-"))}</span>
           <span class="feature-chip">${escapeHtml(safeText(item.domain, "-"))}</span>
-          <span class="feature-chip">${escapeHtml(formatDateTime(item.publishedAt))}</span>
+          <span class="feature-chip">${escapeHtml(formatDate(item.publishedAt))}</span>
+          <span class="feature-chip">${escapeHtml(safeText(item.priority, "-"))}</span>
         ` : `<span class="feature-chip">${escapeHtml(t("no_data"))}</span>`;
 
         qs("featuredPublicationBody").textContent = item ? getLocalizedText(item.body) : t("no_data");
@@ -1817,31 +1771,12 @@
         const newsItems = feed.filter((item) => item?.type === "news").slice(0, 3);
 
         if (!newsItems.length) {
-          list.innerHTML = `
-            <div class="unit-list-item">
-              <span class="unit-dot low"></span>
-              <div>
-                <strong>${escapeHtml(t("no_news"))}</strong>
-                <small>${escapeHtml(t("no_data"))}</small>
-              </div>
-            </div>
-          `;
+          list.innerHTML = `<div class="feed-item">${escapeHtml(t("no_news"))}</div>`;
           return;
         }
 
         list.innerHTML = newsItems.map((item) => {
-          const severity = String(item.priority || "LOW").toLowerCase();
-          const dotClass = severity === "high" ? "high" : severity === "medium" ? "medium" : "low";
-
-          return `
-            <div class="unit-list-item">
-              <span class="unit-dot ${dotClass}"></span>
-              <div>
-                <strong>${escapeHtml(getLocalizedText(item.text || item.title))}</strong>
-                <small>${escapeHtml(safeText(item.source, "-"))}</small>
-              </div>
-            </div>
-          `;
+          return `<div class="feed-item">${escapeHtml(getLocalizedText(item.text || item.title))}</div>`;
         }).join("");
       }
 
@@ -1863,7 +1798,7 @@
         if (!countries.length) {
           box.innerHTML = `
             <div class="country-item">
-              <div>
+              <div class="country-left">
                 <div class="country-name">-</div>
                 <div class="country-meta">${escapeHtml(t("no_data"))}</div>
               </div>
@@ -1875,7 +1810,7 @@
 
         box.innerHTML = countries.map((country) => `
           <div class="country-item">
-            <div>
+            <div class="country-left">
               <div class="country-name">${escapeHtml(getLocalizedText(country.nameLocalized || country.name))}</div>
               <div class="country-meta">${escapeHtml(`${t("risk_level")}: ${safeText(country.riskLevel, "-")} | ${t("trend")}: ${safeText(country.trend, "-")} | ${t("band")}: ${getBandLabel(country.riskScore)}`)}</div>
             </div>
@@ -1914,14 +1849,13 @@
         updateSourceBadge(system);
         updateHealthBadge(system);
         updateMetricsBadge(system);
-        updatePresenceBadge(system);
         updateAudioBadge();
         updateAlert(system.level);
-        renderPresence(system);
+        renderHeroPresence(system);
         renderStatusCards(system);
+        renderLivingPresence(system);
         renderSnapshot(system);
         renderMetricBox(system);
-        renderDrivers(system);
         renderFeaturedPublication(system);
         renderUnitStudies(system);
         renderUnitNews(system);
@@ -1964,14 +1898,18 @@
         qs("btn-en").addEventListener("click", function () {
           STATE.lang = "en";
           localStorage.setItem("ibss_lang", "en");
-          if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage("en");
+          if (window.IBSS_RUNTIME?.setLanguage) {
+            window.IBSS_RUNTIME.setLanguage("en");
+          }
           if (STATE.system) renderIndexCore(STATE.system);
         });
 
         qs("btn-ar").addEventListener("click", function () {
           STATE.lang = "ar";
           localStorage.setItem("ibss_lang", "ar");
-          if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage("ar");
+          if (window.IBSS_RUNTIME?.setLanguage) {
+            window.IBSS_RUNTIME.setLanguage("ar");
+          }
           if (STATE.system) renderIndexCore(STATE.system);
         });
 
