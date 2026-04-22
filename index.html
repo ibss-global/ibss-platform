@@ -17,7 +17,7 @@
       --green:#00d084;
       --orange:#ff9f1a;
       --red:#ff4d4f;
-      --blue:#6aa9ff;
+      --blue:#5a8cff;
       --border:rgba(212,175,55,.28);
       --soft-border:rgba(255,255,255,.08);
       --soft-border-2:rgba(255,255,255,.06);
@@ -39,7 +39,7 @@
     }
 
     .wrap{
-      width:min(1160px,92%);
+      width:min(1180px,92%);
       margin:auto;
       padding:20px 0 70px;
     }
@@ -141,7 +141,7 @@
 
     .desc{
       color:var(--muted);
-      max-width:840px;
+      max-width:860px;
       margin:0 auto;
       line-height:1.9;
       font-size:clamp(16px,2vw,20px);
@@ -191,16 +191,16 @@
       background:rgba(255,159,26,.08);
     }
 
-    .meta-badge.info{
-      color:var(--blue);
-      border-color:rgba(106,169,255,.28);
-      background:rgba(106,169,255,.08);
+    .meta-badge.blue{
+      color:#bfd2ff;
+      border-color:rgba(90,140,255,.35);
+      background:rgba(90,140,255,.10);
     }
 
     .home-alert{
       display:none;
       margin:22px auto 0;
-      max-width:760px;
+      max-width:780px;
       padding:14px 16px;
       border-radius:12px;
       background:rgba(255,77,79,.12);
@@ -208,6 +208,129 @@
       color:#ffd5d5;
       font-weight:700;
       text-align:center;
+      line-height:1.8;
+    }
+
+    .presence-shell{
+      margin:26px auto 0;
+      max-width:980px;
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:16px;
+    }
+
+    .presence-card{
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 36%),
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
+        var(--panel);
+      border:1px solid rgba(212,175,55,.14);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.02) inset,
+        0 14px 28px rgba(0,0,0,.2);
+      text-align:left;
+    }
+
+    .presence-kicker{
+      color:var(--gold);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      margin-bottom:12px;
+    }
+
+    .presence-title{
+      color:#fff;
+      font-size:28px;
+      font-weight:900;
+      line-height:1.45;
+      margin:0 0 10px;
+    }
+
+    .presence-summary{
+      color:#ddd;
+      font-size:15px;
+      line-height:1.9;
+      margin:0 0 12px;
+    }
+
+    .presence-explain{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.9;
+      margin:0 0 14px;
+    }
+
+    .presence-chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .presence-chip{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 11px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      color:#ddd;
+    }
+
+    .presence-chip.high{
+      color:#ffd6d6;
+      background:rgba(255,77,79,.10);
+      border-color:rgba(255,77,79,.24);
+    }
+
+    .presence-chip.medium{
+      color:#ffe0b5;
+      background:rgba(255,159,26,.10);
+      border-color:rgba(255,159,26,.24);
+    }
+
+    .presence-chip.low{
+      color:#d7fff2;
+      background:rgba(0,208,132,.10);
+      border-color:rgba(0,208,132,.24);
+    }
+
+    .presence-side{
+      display:grid;
+      gap:12px;
+    }
+
+    .presence-mini{
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      text-align:left;
+    }
+
+    .presence-mini-label{
+      color:#8f8f8f;
+      font-size:12px;
+      margin-bottom:10px;
+      letter-spacing:.08em;
+    }
+
+    .presence-mini-value{
+      color:var(--gold);
+      font-size:22px;
+      font-weight:900;
+      line-height:1.5;
+      margin-bottom:8px;
+    }
+
+    .presence-mini-sub{
+      color:var(--muted);
+      font-size:13px;
       line-height:1.8;
     }
 
@@ -290,10 +413,7 @@
     .status-value.medium{color:var(--orange)}
     .status-value.high{color:var(--red)}
     .status-value.gold{color:var(--gold)}
-
-    #topThreat{
-      text-shadow:0 0 12px rgba(212,175,55,.3);
-    }
+    .status-value.blue{color:var(--blue)}
 
     .section{
       margin-top:36px;
@@ -313,197 +433,6 @@
       margin:-6px auto 22px;
       line-height:1.8;
       font-size:15px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:16px;
-    }
-
-    .card{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;
-      padding:24px 20px;
-      background:var(--panel);
-      text-align:center;
-      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset, var(--shadow);
-    }
-
-    .card strong{
-      display:block;
-      font-size:clamp(24px,3vw,38px);
-      margin-bottom:14px;
-      color:#fff;
-    }
-
-    .card p{
-      margin:0;
-      color:#ddd;
-      line-height:1.8;
-      font-size:15px;
-    }
-
-    .feed-box,
-    .country-box,
-    .metric-box,
-    .driver-box{
-      display:grid;
-      gap:12px;
-      margin-top:18px;
-    }
-
-    .feed-item,
-    .country-item,
-    .metric-item,
-    .driver-item{
-      border:1px solid var(--soft-border-2);
-      border-radius:16px;
-      background:var(--panel2);
-      padding:14px 16px;
-    }
-
-    .country-item,
-    .metric-item{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-
-    .country-left,
-    .metric-left{
-      min-width:0;
-    }
-
-    .country-name,
-    .metric-name{
-      color:#fff;
-      font-weight:800;
-      font-size:16px;
-      margin-bottom:6px;
-    }
-
-    .country-meta,
-    .metric-meta{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .country-score,
-    .metric-score{
-      color:var(--gold);
-      font-weight:900;
-      font-size:28px;
-      flex:0 0 auto;
-    }
-
-    .feed-item{
-      color:#ddd;
-      line-height:1.8;
-      font-size:14px;
-    }
-
-    .driver-grid{
-      display:grid;
-      grid-template-columns:1.15fr .85fr;
-      gap:18px;
-    }
-
-    .driver-panel{
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.04), transparent 35%),
-        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
-        var(--panel);
-      border:1px solid rgba(212,175,55,.14);
-      border-radius:24px;
-      padding:22px;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,.02) inset,
-        0 14px 28px rgba(0,0,0,.2);
-    }
-
-    .driver-item{
-      background:rgba(255,255,255,.025);
-    }
-
-    .driver-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:8px;
-    }
-
-    .driver-label{
-      color:#fff;
-      font-weight:800;
-      line-height:1.6;
-      font-size:15px;
-    }
-
-    .driver-score{
-      color:var(--gold);
-      font-weight:900;
-      font-size:18px;
-    }
-
-    .driver-meta{
-      color:#8d8d8d;
-      font-size:12px;
-      margin-bottom:8px;
-    }
-
-    .driver-explanation{
-      color:#ddd;
-      font-size:14px;
-      line-height:1.8;
-    }
-
-    .driver-chip{
-      display:inline-flex;
-      align-items:center;
-      padding:7px 11px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      color:#ddd;
-    }
-
-    .driver-summary{
-      display:grid;
-      gap:12px;
-    }
-
-    .driver-summary-card{
-      border:1px solid rgba(255,255,255,.06);
-      background:rgba(255,255,255,.02);
-      border-radius:18px;
-      padding:16px;
-    }
-
-    .driver-summary-card .kicker{
-      font-size:12px;
-      color:#8e8e8e;
-      margin-bottom:6px;
-    }
-
-    .driver-summary-card .big{
-      font-size:18px;
-      font-weight:800;
-      color:#fff;
-      line-height:1.6;
-      margin-bottom:6px;
-    }
-
-    .driver-summary-card .small{
-      color:#cfcfcf;
-      font-size:14px;
-      line-height:1.8;
     }
 
     .ticker-shell{
@@ -528,9 +457,7 @@
       scroll-behavior:auto;
     }
 
-    .ticker-track::-webkit-scrollbar{
-      display:none;
-    }
+    .ticker-track::-webkit-scrollbar{display:none}
 
     .ticker-item{
       flex:0 0 auto;
@@ -565,23 +492,111 @@
     .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
     .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
 
-    .unit-grid{
+    .snapshot-grid,
+    .unit-grid,
+    .feature-grid{
       display:grid;
-      grid-template-columns:repeat(3,1fr);
       gap:18px;
     }
 
-    .unit-card{
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.04), transparent 35%),
-        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
-        var(--panel);
-      border:1px solid rgba(212,175,55,.14);
-      border-radius:24px;
+    .snapshot-grid{
+      grid-template-columns:repeat(3,1fr);
+    }
+
+    .snapshot-card,
+    .unit-card,
+    .feature-card{
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:22px;
       padding:22px;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,.02) inset,
-        0 14px 28px rgba(0,0,0,.2);
+      box-shadow:var(--shadow);
+    }
+
+    .snapshot-card .kicker,
+    .feature-kicker{
+      color:#8f8f8f;
+      font-size:12px;
+      letter-spacing:.08em;
+      margin-bottom:10px;
+    }
+
+    .snapshot-card .big,
+    .feature-title{
+      color:var(--gold);
+      font-size:22px;
+      font-weight:800;
+      line-height:1.5;
+      margin-bottom:8px;
+    }
+
+    .snapshot-card .small,
+    .feature-summary{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.8;
+    }
+
+    .metric-box,
+    .country-box,
+    .feed-box,
+    .drivers-box{
+      display:grid;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .metric-item,
+    .country-item,
+    .feed-item,
+    .driver-item{
+      border:1px solid var(--soft-border-2);
+      border-radius:16px;
+      background:var(--panel2);
+      padding:14px 16px;
+    }
+
+    .metric-item,
+    .country-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .metric-name,
+    .country-name,
+    .driver-name{
+      color:#fff;
+      font-weight:800;
+      font-size:16px;
+      margin-bottom:6px;
+    }
+
+    .metric-meta,
+    .country-meta,
+    .driver-meta{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .metric-score,
+    .country-score{
+      color:var(--gold);
+      font-weight:900;
+      font-size:28px;
+      flex:0 0 auto;
+    }
+
+    .feed-item{
+      color:#ddd;
+      line-height:1.8;
+      font-size:14px;
+    }
+
+    .unit-grid{
+      grid-template-columns:repeat(3,1fr);
     }
 
     .unit-top{
@@ -757,81 +772,21 @@
       transform:translateY(-1px);
     }
 
-    .snapshot-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:16px;
-    }
-
-    .snapshot-card{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;
-      padding:22px;
-      background:var(--panel);
-      box-shadow:var(--shadow);
-    }
-
-    .snapshot-card .kicker{
-      color:#8f8f8f;
-      font-size:12px;
-      letter-spacing:.08em;
-      margin-bottom:10px;
-    }
-
-    .snapshot-card .big{
-      color:var(--gold);
-      font-size:22px;
-      font-weight:800;
-      line-height:1.5;
-      margin-bottom:8px;
-    }
-
-    .snapshot-card .small{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.8;
-    }
-
     .feature-grid{
-      display:grid;
       grid-template-columns:1.1fr .9fr;
-      gap:18px;
     }
 
-    .feature-card{
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 38%),
-        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
-        var(--panel);
-      border:1px solid rgba(212,175,55,.14);
-      border-radius:24px;
-      padding:22px;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,.02) inset,
-        0 14px 28px rgba(0,0,0,.2);
-    }
-
-    .feature-kicker{
-      color:var(--gold);
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.08em;
-      margin-bottom:10px;
-    }
-
-    .feature-title{
-      color:#fff;
-      font-size:28px;
-      font-weight:900;
-      line-height:1.4;
-      margin:0 0 12px;
-    }
-
-    .feature-summary{
-      color:#ddd;
-      font-size:15px;
+    .feature-body{
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:18px;
+      padding:14px 16px;
+      color:#eee;
       line-height:1.9;
-      margin:0 0 14px;
+      font-size:14px;
+      white-space:pre-wrap;
+      max-height:320px;
+      overflow:auto;
     }
 
     .feature-meta{
@@ -853,19 +808,6 @@
       color:#ddd;
     }
 
-    .feature-body{
-      background:var(--panel2);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:18px;
-      padding:14px 16px;
-      color:#eee;
-      line-height:1.9;
-      font-size:14px;
-      white-space:pre-wrap;
-      max-height:320px;
-      overflow:auto;
-    }
-
     .founder{
       margin-top:46px;
       text-align:center;
@@ -882,20 +824,18 @@
       text-align:center;
     }
 
-    html[dir="rtl"] body{
-      text-align:right;
-    }
+    html[dir="rtl"] body{text-align:right}
 
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
     html[dir="rtl"] .hero-buttons,
     html[dir="rtl"] .system-meta,
-    html[dir="rtl"] .country-item,
     html[dir="rtl"] .metric-item,
+    html[dir="rtl"] .country-item,
     html[dir="rtl"] .unit-top,
     html[dir="rtl"] .feature-meta,
-    html[dir="rtl"] .driver-top{
+    html[dir="rtl"] .presence-chips{
       direction:rtl;
     }
 
@@ -903,27 +843,33 @@
     html[dir="rtl"] .status-card,
     html[dir="rtl"] .section h2,
     html[dir="rtl"] .section-subtitle,
-    html[dir="rtl"] .card,
     html[dir="rtl"] .founder,
     html[dir="rtl"] .footer,
     html[dir="rtl"] .home-alert{
       text-align:center;
     }
 
+    html[dir="rtl"] .presence-card,
+    html[dir="rtl"] .presence-mini,
+    html[dir="rtl"] .unit-card,
+    html[dir="rtl"] .snapshot-card,
+    html[dir="rtl"] .feature-card{
+      text-align:right;
+    }
+
     @media(max-width:1100px){
       .status-grid{grid-template-columns:repeat(2,1fr)}
-      .unit-grid{grid-template-columns:1fr}
+      .presence-shell{grid-template-columns:1fr}
       .snapshot-grid{grid-template-columns:1fr}
-      .grid{grid-template-columns:1fr}
+      .unit-grid{grid-template-columns:1fr}
       .feature-grid{grid-template-columns:1fr}
-      .driver-grid{grid-template-columns:1fr}
     }
 
     @media(max-width:700px){
       .topbar{flex-direction:column}
       .status-grid{grid-template-columns:1fr}
-      .country-item,
-      .metric-item{flex-direction:column; align-items:flex-start}
+      .metric-item,
+      .country-item{flex-direction:column; align-items:flex-start}
       .mini-metrics{grid-template-columns:1fr}
     }
   </style>
@@ -971,21 +917,44 @@
         System Active — Monitoring Global Signals
       </p>
 
-      <p id="lastUpdateLine" class="sub-system-line">
-        Last Update — -
-      </p>
+      <p id="lastUpdateLine" class="sub-system-line">Last Update — -</p>
 
       <div class="system-meta">
         <span id="systemSourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
         <span id="systemHealthBadge" class="meta-badge">ENGINE — READY</span>
         <span id="systemMetricsBadge" class="meta-badge">METRICS — OFF</span>
+        <span id="systemPresenceBadge" class="meta-badge blue">PRESENCE — IDLE</span>
         <span id="systemAudioBadge" class="meta-badge fallback">AUDIO — OFF</span>
       </div>
 
       <div id="homeAlert" class="home-alert"></div>
 
+      <div class="presence-shell">
+        <div class="presence-card">
+          <div class="presence-kicker" data-i18n="presence_kicker">LIVING PRESENCE</div>
+          <h3 id="presenceTitle" class="presence-title">-</h3>
+          <p id="presenceSummary" class="presence-summary">-</p>
+          <p id="presenceExplanation" class="presence-explain">-</p>
+          <div id="presenceChips" class="presence-chips"></div>
+        </div>
+
+        <div class="presence-side">
+          <div class="presence-mini">
+            <div class="presence-mini-label" data-i18n="presence_advisory_label">ADVISORY</div>
+            <div id="presenceAdvisory" class="presence-mini-value">-</div>
+            <div id="presenceIntent" class="presence-mini-sub">-</div>
+          </div>
+
+          <div class="presence-mini">
+            <div class="presence-mini-label" data-i18n="presence_drift_label">PRESSURE DRIFT</div>
+            <div id="presenceDrift" class="presence-mini-value">-</div>
+            <div id="presenceDriftMeta" class="presence-mini-sub">-</div>
+          </div>
+        </div>
+      </div>
+
       <div class="hero-buttons">
-        <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Enter Decision Layer</a>
+        <a href="dashboard.html" class="btn btn-primary" data-i18n="btn_dashboard">Open Dashboard</a>
         <a href="signals.html" class="btn" data-i18n="btn_signals">Explore Signals</a>
         <a href="reports.html" class="btn" data-i18n="btn_reports">View Reports</a>
       </div>
@@ -1009,41 +978,6 @@
         <div class="status-card">
           <div class="status-label" data-i18n="active_signals">Active Signals</div>
           <div id="activeSignals" class="status-value low">0</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2 data-i18n="decision_drivers">Why the System Reached This Reading</h2>
-      <p class="section-subtitle" data-i18n="decision_drivers_desc">
-        Causality layer showing the direct drivers behind current pressure, dominant files, and sovereign system direction.
-      </p>
-
-      <div class="driver-grid">
-        <div class="driver-panel">
-          <div id="driverBox" class="driver-box"></div>
-        </div>
-
-        <div class="driver-panel">
-          <div class="driver-summary">
-            <div class="driver-summary-card">
-              <div class="kicker" data-i18n="driver_summary_top">Dominant Driver</div>
-              <div id="dominantDriverTitle" class="big">-</div>
-              <div id="dominantDriverMeta" class="small">-</div>
-            </div>
-
-            <div class="driver-summary-card">
-              <div class="kicker" data-i18n="driver_summary_pressure">Pressure Composition</div>
-              <div id="pressureCompositionTitle" class="big">-</div>
-              <div id="pressureCompositionMeta" class="small">-</div>
-            </div>
-
-            <div class="driver-summary-card">
-              <div class="kicker" data-i18n="driver_summary_publication">Linked Publication</div>
-              <div id="driverPublicationTitle" class="big">-</div>
-              <div id="driverPublicationMeta" class="small">-</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -1093,6 +1027,14 @@
       </p>
 
       <div id="metricBox" class="metric-box"></div>
+    </div>
+
+    <div class="section">
+      <h2 data-i18n="drivers_title">Dominant Drivers</h2>
+      <p class="section-subtitle" data-i18n="drivers_desc">
+        The causal layer showing what is actively pushing the system.
+      </p>
+      <div id="driversBox" class="drivers-box"></div>
     </div>
 
     <div class="section">
@@ -1206,30 +1148,6 @@
     </div>
 
     <div class="section">
-      <h2 data-i18n="core_systems">Core Systems</h2>
-      <p class="section-subtitle" data-i18n="core_systems_desc">
-        The sovereign engine layer that transforms raw signals into classification, escalation logic, and decision structure.
-      </p>
-
-      <div class="grid">
-        <div class="card">
-          <strong>Σ-9X</strong>
-          <p data-i18n="card_sigma">Signal to Decision Engine</p>
-        </div>
-
-        <div class="card">
-          <strong>WAAD</strong>
-          <p data-i18n="card_waad">War Acceptance Architecture</p>
-        </div>
-
-        <div class="card">
-          <strong>CRU</strong>
-          <p data-i18n="card_cru">Country Risk Unit</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
       <h2 data-i18n="country_unit">Country Risk Unit</h2>
       <div id="countryBox" class="country-box"></div>
     </div>
@@ -1282,7 +1200,7 @@
           hero_desc: "A sovereign platform for structured signals, strategic analysis, and decision-grade intelligence.",
           system_line: "System Active — Monitoring Global Signals",
 
-          btn_dashboard: "Enter Decision Layer",
+          btn_dashboard: "Open Dashboard",
           btn_signals: "Explore Signals",
           btn_reports: "View Reports",
           btn_open_publications: "Open Publications",
@@ -1291,12 +1209,6 @@
           system_pressure: "System Pressure",
           decision_mode: "Decision Mode",
           active_signals: "Active Signals",
-
-          decision_drivers: "Why the System Reached This Reading",
-          decision_drivers_desc: "Causality layer showing the direct drivers behind current pressure, dominant files, and sovereign system direction.",
-          driver_summary_top: "Dominant Driver",
-          driver_summary_pressure: "Pressure Composition",
-          driver_summary_publication: "Linked Publication",
 
           live_intelligence: "Live Intelligence Strip",
           live_intelligence_desc: "Real-time signal condensation layer highlighting active pressure, dominant files, and current system movement.",
@@ -1309,6 +1221,9 @@
 
           unified_metrics: "Unified Metrics",
           unified_metrics_desc: "A single sovereign metrics layer aligning signal score, strategic-file risk, theater risk, country risk, and system stress.",
+
+          drivers_title: "Dominant Drivers",
+          drivers_desc: "The causal layer showing what is actively pushing the system.",
 
           featured_publication: "Featured Publication",
           featured_publication_desc: "The latest institutional study or policy paper surfaced directly from the sovereign publication layer.",
@@ -1338,12 +1253,6 @@
           metric_live_signals: "Live Signals",
           btn_patterns: "Open Risk Unit",
 
-          core_systems: "Core Systems",
-          core_systems_desc: "The sovereign engine layer that transforms raw signals into classification, escalation logic, and decision structure.",
-          card_sigma: "Signal to Decision Engine",
-          card_waad: "War Acceptance Architecture",
-          card_cru: "Country Risk Unit",
-
           country_unit: "Country Risk Unit",
           live_feed: "Live Feed",
 
@@ -1361,6 +1270,8 @@
           engine_limited: "ENGINE — LIMITED",
           metrics_on: "METRICS — INTEGRATED",
           metrics_off: "METRICS — OFF",
+          presence_on: "PRESENCE — ACTIVE",
+          presence_idle: "PRESENCE — IDLE",
           audio_on: "AUDIO — ON",
           audio_off: "AUDIO — OFF",
           audio_button_on: "AUDIO ON",
@@ -1375,6 +1286,16 @@
           country_risk: "Country Risk",
           system_stress: "System Stress",
           confidence: "Confidence",
+
+          presence_kicker: "LIVING PRESENCE",
+          presence_advisory_label: "ADVISORY",
+          presence_drift_label: "PRESSURE DRIFT",
+          posture: "Posture",
+          urgency: "Urgency",
+          drift: "Drift",
+          persistence: "Persistence",
+          volatility: "Volatility",
+          intent: "Intent",
 
           no_data: "No data available.",
           no_feed: "No live feed available.",
@@ -1394,7 +1315,7 @@
           hero_desc: "منصة سيادية للإشارات المنظمة والتحليل الاستراتيجي والاستخبارات بدرجة قرار.",
           system_line: "النظام فعال — يراقب الإشارات العالمية",
 
-          btn_dashboard: "الدخول إلى طبقة القرار",
+          btn_dashboard: "فتح لوحة التحكم",
           btn_signals: "استكشاف الإشارات",
           btn_reports: "عرض التقارير",
           btn_open_publications: "فتح المنشورات",
@@ -1403,12 +1324,6 @@
           system_pressure: "ضغط النظام",
           decision_mode: "وضع القرار",
           active_signals: "الإشارات النشطة",
-
-          decision_drivers: "لماذا وصل النظام إلى هذه القراءة",
-          decision_drivers_desc: "طبقة السببية التي تعرض المحركات المباشرة وراء الضغط الحالي والملفات المهيمنة واتجاه النظام السيادي.",
-          driver_summary_top: "المحرّك المهيمن",
-          driver_summary_pressure: "تركيب الضغط",
-          driver_summary_publication: "المنشور المرتبط",
 
           live_intelligence: "الشريط الاستخباري الحي",
           live_intelligence_desc: "طبقة عرض حية تضغط الإشارات النشطة والملفات المهيمنة واتجاه الحركة الحالية داخل النظام.",
@@ -1421,6 +1336,9 @@
 
           unified_metrics: "المقاييس الموحدة",
           unified_metrics_desc: "طبقة قياس سيادية واحدة توحّد درجة الإشارة وخطر الملف وخطر المسرح وخطر الدولة وضغط النظام.",
+
+          drivers_title: "المحرّكات المهيمنة",
+          drivers_desc: "الطبقة السببية التي تُظهر ما الذي يدفع النظام فعلياً.",
 
           featured_publication: "المنشور المميز",
           featured_publication_desc: "أحدث دراسة أو ورقة سياسات مؤسسية تظهر مباشرة من طبقة النشر السيادي.",
@@ -1450,12 +1368,6 @@
           metric_live_signals: "الإشارات الحية",
           btn_patterns: "فتح وحدة المخاطر",
 
-          core_systems: "الأنظمة الأساسية",
-          core_systems_desc: "طبقة المحرك السيادي التي تحول الإشارات الخام إلى تصنيف ومنطق تصعيد وبنية قرار.",
-          card_sigma: "محرك من الإشارة إلى القرار",
-          card_waad: "هندسة قبول الحرب",
-          card_cru: "وحدة مخاطر الدول",
-
           country_unit: "وحدة مخاطر الدول",
           live_feed: "التغذية الحية",
 
@@ -1473,6 +1385,8 @@
           engine_limited: "المحرك — محدود",
           metrics_on: "القياس — مدمج",
           metrics_off: "القياس — غير مفعل",
+          presence_on: "الحضور — نشط",
+          presence_idle: "الحضور — ساكن",
           audio_on: "الصوت — يعمل",
           audio_off: "الصوت — متوقف",
           audio_button_on: "تشغيل الصوت",
@@ -1487,6 +1401,16 @@
           country_risk: "خطر الدولة",
           system_stress: "ضغط النظام",
           confidence: "الثقة",
+
+          presence_kicker: "الحضور الحي",
+          presence_advisory_label: "التوجيه",
+          presence_drift_label: "انجراف الضغط",
+          posture: "الوضعية",
+          urgency: "الاستعجال",
+          drift: "الانجراف",
+          persistence: "الاستمرار",
+          volatility: "التذبذب",
+          intent: "النية",
 
           no_data: "لا توجد بيانات.",
           no_feed: "لا توجد تغذية حية.",
@@ -1543,18 +1467,6 @@
           day: "2-digit",
           hour: "2-digit",
           minute: "2-digit"
-        });
-      }
-
-      function formatDate(value) {
-        if (!value) return "-";
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return "-";
-
-        return date.toLocaleDateString(STATE.lang === "ar" ? "ar-EG" : "en-US", {
-          year: "numeric",
-          month: "short",
-          day: "2-digit"
         });
       }
 
@@ -1620,12 +1532,8 @@
 
       function getRawSystem() {
         try {
-          if (window.IBSS_ENGINE?.getSystemState) {
-            return window.IBSS_ENGINE.getSystemState();
-          }
-          if (window.IBSS_ENGINE?.getStaticSystemFallback) {
-            return window.IBSS_ENGINE.getStaticSystemFallback();
-          }
+          if (window.IBSS_ENGINE?.getSystemState) return window.IBSS_ENGINE.getSystemState();
+          if (window.IBSS_ENGINE?.getStaticSystemFallback) return window.IBSS_ENGINE.getStaticSystemFallback();
         } catch (error) {
           console.error("index getRawSystem error:", error);
         }
@@ -1698,10 +1606,24 @@
 
         if (system?.metricsReference) {
           badge.textContent = t("metrics_on");
-          badge.className = "meta-badge info";
+          badge.className = "meta-badge live";
         } else {
           badge.textContent = t("metrics_off");
           badge.className = "meta-badge fallback";
+        }
+      }
+
+      function updatePresenceBadge(system) {
+        const badge = qs("systemPresenceBadge");
+        if (!badge) return;
+
+        const state = safeText(system?.presence?.state, "");
+        if (state) {
+          badge.textContent = t("presence_on");
+          badge.className = "meta-badge blue";
+        } else {
+          badge.textContent = t("presence_idle");
+          badge.className = "meta-badge";
         }
       }
 
@@ -1733,61 +1655,30 @@
         qs("activeSignals").textContent = liveCount;
       }
 
-      function renderDrivers(system) {
-        const box = qs("driverBox");
-        if (!box) return;
+      function renderPresence(system) {
+        qs("presenceTitle").textContent = getLocalizedText(system?.voice?.posture) || "-";
+        qs("presenceSummary").textContent = getLocalizedText(system?.voice?.summary) || t("no_data");
+        qs("presenceExplanation").textContent = getLocalizedText(system?.voice?.explanation) || t("no_data");
 
-        const drivers = asArray(system?.drivers);
+        qs("presenceAdvisory").textContent = getLocalizedText(system?.voice?.advisory) || "-";
+        qs("presenceIntent").textContent = `${t("intent")}: ${getLocalizedText(system?.voice?.intent) || "-"}`;
 
-        if (!drivers.length) {
-          box.innerHTML = `
-            <div class="driver-item">
-              <div class="driver-label">${escapeHtml(t("no_data"))}</div>
-            </div>
-          `;
-          qs("dominantDriverTitle").textContent = "-";
-          qs("dominantDriverMeta").textContent = t("no_data");
-          qs("pressureCompositionTitle").textContent = "-";
-          qs("pressureCompositionMeta").textContent = t("no_data");
-          qs("driverPublicationTitle").textContent = "-";
-          qs("driverPublicationMeta").textContent = t("no_data");
-          return;
-        }
+        const drift = system?.drift || {};
+        qs("presenceDrift").textContent = safeText(drift.direction, "STABLE");
+        qs("presenceDriftMeta").textContent =
+          `${t("persistence")}: ${safeNumber(drift.persistence, 0)} | ` +
+          `${t("volatility")}: ${safeNumber(drift.volatility, 0)}`;
 
-        box.innerHTML = drivers.map((driver) => `
-          <div class="driver-item">
-            <div class="driver-top">
-              <div class="driver-label">${escapeHtml(getLocalizedText(driver.label))}</div>
-              <div class="driver-score">${safeNumber(driver.score, 0)}</div>
-            </div>
-            <div class="driver-meta">
-              <span class="driver-chip">${escapeHtml(String(driver.type || "driver").toUpperCase())}</span>
-              <span class="driver-chip">${escapeHtml(String(driver.priority || "LOW").toUpperCase())}</span>
-            </div>
-            <div class="driver-explanation">${escapeHtml(getLocalizedText(driver.explanation))}</div>
-          </div>
-        `).join("");
+        const chips = [];
+        const urgency = safeText(system?.presence?.urgency, "low");
+        const urgencyClass = urgency === "immediate" || urgency === "high" ? "high" : urgency === "medium" ? "medium" : "low";
 
-        const dominant = drivers[0];
-        qs("dominantDriverTitle").textContent = getLocalizedText(dominant.label);
-        qs("dominantDriverMeta").textContent = getLocalizedText(dominant.explanation);
+        chips.push(`<span class="presence-chip ${urgencyClass}">${escapeHtml(`${t("urgency")}: ${urgency}`)}</span>`);
+        chips.push(`<span class="presence-chip">${escapeHtml(`${t("drift")}: ${safeText(drift.direction, "STABLE")}`)}</span>`);
+        chips.push(`<span class="presence-chip">${escapeHtml(`${t("confidence")}: ${safeNumber(system?.confidenceScore, 0)}`)}</span>`);
+        chips.push(`<span class="presence-chip">${escapeHtml(`${t("system_stress")}: ${safeNumber(system?.systemPressure, 0)}`)}</span>`);
 
-        const pressure = system?.unifiedPressure || system?.publisherDigest?.pressure || null;
-        qs("pressureCompositionTitle").textContent =
-          pressure
-            ? `${t("system_stress")}: ${safeNumber(pressure.systemPressure, 0)}`
-            : "-";
-
-        qs("pressureCompositionMeta").textContent =
-          pressure
-            ? `Signal ${safeNumber(pressure.signalPressure, 0)} | Cluster ${safeNumber(pressure.clusterPressure, 0)} | Theater ${safeNumber(pressure.theaterPressure, 0)} | News ${safeNumber(pressure.newsPressure, 0)}`
-            : t("no_data");
-
-        const publication = getFeaturedPublication(system);
-        qs("driverPublicationTitle").textContent = publication ? getLocalizedText(publication.title) : "-";
-        qs("driverPublicationMeta").textContent = publication
-          ? `${safeText(publication.type, "-")} • ${safeText(publication.country, "-")} • ${formatDate(publication.publishedAt)}`
-          : t("no_data");
+        qs("presenceChips").innerHTML = chips.join("");
       }
 
       function renderSnapshot(system) {
@@ -1861,11 +1752,28 @@
 
         box.innerHTML = metrics.map((item) => `
           <div class="metric-item">
-            <div class="metric-left">
+            <div>
               <div class="metric-name">${escapeHtml(item.name)}</div>
               <div class="metric-meta">${escapeHtml(item.meta)}</div>
             </div>
             <div class="metric-score">${item.score}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderDrivers(system) {
+        const box = qs("driversBox");
+        const drivers = asArray(system?.drivers);
+
+        if (!drivers.length) {
+          box.innerHTML = `<div class="driver-item"><div class="driver-name">${escapeHtml(t("no_data"))}</div></div>`;
+          return;
+        }
+
+        box.innerHTML = drivers.map((driver) => `
+          <div class="driver-item">
+            <div class="driver-name">${escapeHtml(getLocalizedText(driver.label))}</div>
+            <div class="driver-meta">${escapeHtml(getLocalizedText(driver.explanation))}</div>
           </div>
         `).join("");
       }
@@ -1885,17 +1793,10 @@
           <span class="feature-chip">${escapeHtml(safeText(item.edition, "-"))}</span>
           <span class="feature-chip">${escapeHtml(safeText(item.country, "-"))}</span>
           <span class="feature-chip">${escapeHtml(safeText(item.domain, "-"))}</span>
-          <span class="feature-chip">${escapeHtml(formatDate(item.publishedAt))}</span>
+          <span class="feature-chip">${escapeHtml(formatDateTime(item.publishedAt))}</span>
         ` : `<span class="feature-chip">${escapeHtml(t("no_data"))}</span>`;
 
-        const bodyText =
-          item
-            ? getLocalizedText(item.body) !== "-"
-              ? getLocalizedText(item.body)
-              : getLocalizedText(item.summary)
-            : t("no_data");
-
-        qs("featuredPublicationBody").textContent = bodyText;
+        qs("featuredPublicationBody").textContent = item ? getLocalizedText(item.body) : t("no_data");
       }
 
       function renderUnitStudies(system) {
@@ -1913,7 +1814,7 @@
         if (!list) return;
 
         const feed = getUnifiedFeed(system);
-        const newsItems = feed.filter((item) => item?.type === "news" || item?.type === "signal_summary").slice(0, 3);
+        const newsItems = feed.filter((item) => item?.type === "news").slice(0, 3);
 
         if (!newsItems.length) {
           list.innerHTML = `
@@ -1962,7 +1863,7 @@
         if (!countries.length) {
           box.innerHTML = `
             <div class="country-item">
-              <div class="country-left">
+              <div>
                 <div class="country-name">-</div>
                 <div class="country-meta">${escapeHtml(t("no_data"))}</div>
               </div>
@@ -1974,7 +1875,7 @@
 
         box.innerHTML = countries.map((country) => `
           <div class="country-item">
-            <div class="country-left">
+            <div>
               <div class="country-name">${escapeHtml(getLocalizedText(country.nameLocalized || country.name))}</div>
               <div class="country-meta">${escapeHtml(`${t("risk_level")}: ${safeText(country.riskLevel, "-")} | ${t("trend")}: ${safeText(country.trend, "-")} | ${t("band")}: ${getBandLabel(country.riskScore)}`)}</div>
             </div>
@@ -2013,12 +1914,14 @@
         updateSourceBadge(system);
         updateHealthBadge(system);
         updateMetricsBadge(system);
+        updatePresenceBadge(system);
         updateAudioBadge();
         updateAlert(system.level);
+        renderPresence(system);
         renderStatusCards(system);
-        renderDrivers(system);
         renderSnapshot(system);
         renderMetricBox(system);
+        renderDrivers(system);
         renderFeaturedPublication(system);
         renderUnitStudies(system);
         renderUnitNews(system);
@@ -2061,18 +1964,14 @@
         qs("btn-en").addEventListener("click", function () {
           STATE.lang = "en";
           localStorage.setItem("ibss_lang", "en");
-          if (window.IBSS_RUNTIME?.setLanguage) {
-            window.IBSS_RUNTIME.setLanguage("en");
-          }
+          if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage("en");
           if (STATE.system) renderIndexCore(STATE.system);
         });
 
         qs("btn-ar").addEventListener("click", function () {
           STATE.lang = "ar";
           localStorage.setItem("ibss_lang", "ar");
-          if (window.IBSS_RUNTIME?.setLanguage) {
-            window.IBSS_RUNTIME.setLanguage("ar");
-          }
+          if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage("ar");
           if (STATE.system) renderIndexCore(STATE.system);
         });
 
