@@ -1715,7 +1715,17 @@
 
       function wirePublisherButtons(){
         const bindings = [
-          ["btnGenerateSignalPost", () => window.IBSS_PUBLISHER?.generateTopSignalPost?.()],
+["btnGenerateSignalPost", () => {
+  try {
+    const system = window.IBSS_ENGINE.getSystemState();
+    const draft = window.IBSS_VIRAL.generate(system, APP.lang);
+
+    window.IBSS_PUBLISHER.saveDraft(draft);
+    renderPublisherConsole();
+  } catch (e) {
+    console.error("Viral generation error:", e);
+  }
+}],
           ["btnGenerateBriefPost", () => window.IBSS_PUBLISHER?.generateStrategicBrief?.()],
           ["btnGeneratePublicationPost", () => window.IBSS_PUBLISHER?.generateFeaturedPublicationPost?.()],
           ["btnGenerateLivingPost", () => window.IBSS_PUBLISHER?.generateLivingPresencePost?.()]
