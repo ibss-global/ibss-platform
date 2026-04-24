@@ -1,5 +1,5 @@
 // IBSS ENGINE CORE — Adaptive Living Presence Full Rebuild
-// Version: v3.1 Adaptive Living Engine Integrated
+// Version: v3.2 Adaptive Living Engine + L3 Integrated
 
 window.IBSS_ENGINE = (function () {
   "use strict";
@@ -9,7 +9,7 @@ window.IBSS_ENGINE = (function () {
     historyLimit: 180,
     reportLimit: 80,
     archiveLimit: 120,
-    storageKey: "ibss_engine_state_v31_adaptive_living_integrated",
+    storageKey: "ibss_engine_state_v32_l3_integrated",
     minLiveSignalScore: 40,
     scenarioHighThreshold: 85,
     scenarioPrepThreshold: 70,
@@ -108,7 +108,11 @@ window.IBSS_ENGINE = (function () {
   function average(list, selector) {
     const arr = asArray(list);
     if (!arr.length) return 0;
-    const sum = arr.reduce((acc, item) => acc + safeNumber(selector(item), 0), 0);
+
+    const sum = arr.reduce((acc, item) => {
+      return acc + safeNumber(selector(item), 0);
+    }, 0);
+
     return sum / arr.length;
   }
 
@@ -567,7 +571,7 @@ window.IBSS_ENGINE = (function () {
   }
 
   /* =========================================
-     Signal Normalization
+     Signal Normalization + L3 Integration
   ========================================= */
 
   function priorityBonus(priority) {
@@ -593,6 +597,7 @@ window.IBSS_ENGINE = (function () {
 
   function freshnessBonus(item) {
     const direct = safeNumber(item?.freshnessScore, NaN);
+
     if (Number.isFinite(direct)) {
       return Math.round(clamp(direct, 0, 1) * 8);
     }
@@ -666,6 +671,38 @@ window.IBSS_ENGINE = (function () {
     };
   }
 
+  function applyL3Layer(signals) {
+    if (!window.IBSS_L3_ENGINE?.classifySignals) {
+      return {
+        l3State: null,
+        rankedSignals: signals
+      };
+    }
+
+    try {
+      const l3Ranked = window.IBSS_L3_ENGINE.classifySignals(signals);
+      const l3State = window.IBSS_L3_ENGINE.buildL3State(signals);
+
+      if (!l3Ranked.length) {
+        return {
+          l3State,
+          rankedSignals: signals
+        };
+      }
+
+      return {
+        l3State,
+        rankedSignals: l3Ranked
+      };
+    } catch (error) {
+      console.error("IBSS_ENGINE L3 integration error:", error);
+      return {
+        l3State: null,
+        rankedSignals: signals
+      };
+    }
+  }
+
   function buildRankedSignals() {
     const ingestionSignals = getSignalsFromIngestion();
     const seedSignals = ingestionSignals.length ? [] : getSignalsFromSeedData();
@@ -695,15 +732,21 @@ window.IBSS_ENGINE = (function () {
       })
       .sort((a, b) => safeNumber(b.balancedScore100, 0) - safeNumber(a.balancedScore100, 0));
 
-    return dedupeBy(normalized, (item) => {
+    const deduped = dedupeBy(normalized, (item) => {
       return [
         normalizeText(getLocalizedText(item.title, "en")),
         normalizeText(item.country),
         normalizeText(item.domain)
       ].join("|");
     });
+
+    const l3Applied = applyL3Layer(deduped);
+    buildRankedSignals.lastL3State = l3Applied.l3State;
+
+    return l3Applied.rankedSignals;
   }
 
+  buildRankedSignals.lastL3State = null;
   /* =========================================
      Cluster + Theater Builders
   ========================================= */
@@ -1145,8 +1188,8 @@ window.IBSS_ENGINE = (function () {
           ar: `ضغط ${getLocalizedText(signal.title, "ar")}`
         },
         explanation: {
-          en: `Signal score ${safeNumber(signal.balancedScore100, 0)} contributed directly to system pressure.`,
-          ar: `درجة الإشارة ${safeNumber(signal.balancedScore100, 0)} ساهمت مباشرة في ضغط النظام.`
+          en: signal.l3?.interpretation?.en || `Signal score ${safeNumber(signal.balancedScore100, 0)} contributed directly to system pressure.`,
+          ar: signal.l3?.interpretation?.ar || `درجة الإشارة ${safeNumber(signal.balancedScore100, 0)} ساهمت مباشرة في ضغط النظام.`
         }
       });
     });
@@ -1202,6 +1245,23 @@ window.IBSS_ENGINE = (function () {
       });
     }
 
+    if (buildRankedSignals.lastL3State) {
+      drivers.push({
+        id: "DRV-L3-PRESSURE",
+        type: "l3",
+        priority: buildRankedSignals.lastL3State.l3Pressure >= 70 ? "HIGH" : "MEDIUM",
+        score: safeNumber(buildRankedSignals.lastL3State.l3Pressure, 0),
+        label: {
+          en: "L3 signal classification pressure",
+          ar: "ضغط تصنيف الإشارات L3"
+        },
+        explanation: {
+          en: `L3 classified ${safeNumber(buildRankedSignals.lastL3State.activeSignals, 0)} active signals with pressure ${safeNumber(buildRankedSignals.lastL3State.l3Pressure, 0)}.`,
+          ar: `صنّفت L3 عدد ${safeNumber(buildRankedSignals.lastL3State.activeSignals, 0)} إشارات نشطة بضغط ${safeNumber(buildRankedSignals.lastL3State.l3Pressure, 0)}.`
+        }
+      });
+    }
+
     return sortByScoreDesc(drivers, item => item.score).slice(0, CONFIG.maxDrivers);
   }
 
@@ -1215,6 +1275,7 @@ window.IBSS_ENGINE = (function () {
 
   function computePressureDrift(currentPressure) {
     const recent = getRecentHistory();
+
     if (!recent.length) {
       return {
         direction: "STABLE",
@@ -1235,6 +1296,7 @@ window.IBSS_ENGINE = (function () {
     else if (delta < -1) direction = "FALLING";
 
     let persistence = 0;
+
     for (let i = recent.length - 1; i >= 0; i -= 1) {
       const value = safeNumber(recent[i]?.systemPressure, 0);
       if (value >= 78) persistence += 1;
@@ -1242,6 +1304,7 @@ window.IBSS_ENGINE = (function () {
     }
 
     let volatility = 0;
+
     for (let i = 1; i < recent.length; i += 1) {
       volatility += Math.abs(
         safeNumber(recent[i]?.systemPressure, 0) -
@@ -1299,12 +1362,16 @@ window.IBSS_ENGINE = (function () {
   function formatDriverNames(driverNames, lang = "en") {
     const arr = asArray(driverNames).filter(Boolean);
     if (!arr.length) return lang === "ar" ? "لا شيء" : "none";
+
     if (arr.length === 1) return arr[0];
+
     if (arr.length === 2) {
       return lang === "ar" ? `${arr[0]} و ${arr[1]}` : `${arr[0]} and ${arr[1]}`;
     }
+
     const head = arr.slice(0, -1).join(lang === "ar" ? "، " : ", ");
     const tail = arr[arr.length - 1];
+
     return lang === "ar" ? `${head}، و ${tail}` : `${head}, and ${tail}`;
   }
 
@@ -1329,6 +1396,15 @@ window.IBSS_ENGINE = (function () {
     const driverNamesEn = drivers.slice(0, 3).map(item => getLocalizedText(item.label, "en"));
     const driverNamesAr = drivers.slice(0, 3).map(item => getLocalizedText(item.label, "ar"));
 
+    const l3State = system?.l3 || null;
+    const l3LineEn = l3State
+      ? ` L3 active signals: ${safeNumber(l3State.activeSignals, 0)}, L3 pressure: ${safeNumber(l3State.l3Pressure, 0)}.`
+      : "";
+
+    const l3LineAr = l3State
+      ? ` إشارات L3 النشطة: ${safeNumber(l3State.activeSignals, 0)}، ضغط L3: ${safeNumber(l3State.l3Pressure, 0)}.`
+      : "";
+
     let postureEn = "Monitoring posture";
     let postureAr = "وضعية مراقبة";
 
@@ -1351,8 +1427,8 @@ window.IBSS_ENGINE = (function () {
       summaryEn = `The platform is no longer reading isolated signals, but converging pressure around ${theaterNameEn}.`;
       summaryAr = `المنصة لم تعد تقرأ إشارات معزولة، بل ضغطاً متقارباً حول ${theaterNameAr}.`;
 
-      explanationEn = `${clusterNameEn} is emerging as a structured pressure file with directional significance.`;
-      explanationAr = `${clusterNameAr} يبرز كملف ضغط بنيوي ذي دلالة اتجاهية.`;
+      explanationEn = `${clusterNameEn} is emerging as a structured pressure file with directional significance.${l3LineEn}`;
+      explanationAr = `${clusterNameAr} يبرز كملف ضغط بنيوي ذي دلالة اتجاهية.${l3LineAr}`;
 
       advisoryEn = "Tighten monitoring, preserve causal linkage, and prepare for pressure transfer across files.";
       advisoryAr = "شدّد المراقبة، وحافظ على الربط السببي، واستعد لانتقال الضغط بين الملفات.";
@@ -1368,8 +1444,8 @@ window.IBSS_ENGINE = (function () {
       summaryEn = `System posture is tightening around ${signalNameEn} inside ${theaterNameEn}.`;
       summaryAr = `وضعية النظام تزداد إحكاماً حول ${signalNameAr} داخل ${theaterNameAr}.`;
 
-      explanationEn = `The system detects structured pressure with active contribution from ${formatDriverNames(driverNamesEn)}.`;
-      explanationAr = `النظام يرصد ضغطاً بنيوياً مع مساهمة نشطة من ${formatDriverNames(driverNamesAr, "ar")}.`;
+      explanationEn = `The system detects structured pressure with active contribution from ${formatDriverNames(driverNamesEn)}.${l3LineEn}`;
+      explanationAr = `النظام يرصد ضغطاً بنيوياً مع مساهمة نشطة من ${formatDriverNames(driverNamesAr, "ar")}.${l3LineAr}`;
 
       advisoryEn = "Raise readiness, reduce interpretive lag, and align live signals with publication context.";
       advisoryAr = "ارفع الجاهزية، وقلل فجوة التفسير، ونسّق بين الإشارات الحية وسياق المنشورات.";
@@ -1385,8 +1461,8 @@ window.IBSS_ENGINE = (function () {
       summaryEn = `The platform reads ${signalNameEn} as part of an active pressure architecture rather than a transient spike.`;
       summaryAr = `المنصة تقرأ ${signalNameAr} كجزء من بنية ضغط نشطة لا مجرد قفزة عابرة.`;
 
-      explanationEn = `Pressure ${pressure} with confidence ${confidence} indicates that convergence has moved beyond observation and into operational significance.`;
-      explanationAr = `الضغط ${pressure} مع ثقة ${confidence} يشير إلى أن التقارب تجاوز المراقبة ودخل في دلالة تشغيلية.`;
+      explanationEn = `Pressure ${pressure} with confidence ${confidence} indicates that convergence has moved beyond observation and into operational significance.${l3LineEn}`;
+      explanationAr = `الضغط ${pressure} مع ثقة ${confidence} يشير إلى أن التقارب تجاوز المراقبة ودخل في دلالة تشغيلية.${l3LineAr}`;
 
       advisoryEn = "Maintain response discipline, protect narrative coherence, and prioritize dominant pressure channels.";
       advisoryAr = "حافظ على انضباط الاستجابة، واحمِ تماسك السردية، وامنح الأولوية لقنوات الضغط المهيمنة.";
@@ -1402,8 +1478,8 @@ window.IBSS_ENGINE = (function () {
       summaryEn = "The platform is carrying sustained pressure, not just elevated pressure.";
       summaryAr = "المنصة تحمل ضغطاً مستداماً، لا مجرد ضغط مرتفع.";
 
-      explanationEn = `Persistence across recent cycles suggests strain accumulation around ${clusterNameEn} and ${theaterNameEn}.`;
-      explanationAr = `الاستمرار عبر الدورات الأخيرة يشير إلى تراكم إجهاد حول ${clusterNameAr} و${theaterNameAr}.`;
+      explanationEn = `Persistence across recent cycles suggests strain accumulation around ${clusterNameEn} and ${theaterNameEn}.${l3LineEn}`;
+      explanationAr = `الاستمرار عبر الدورات الأخيرة يشير إلى تراكم إجهاد حول ${clusterNameAr} و${theaterNameAr}.${l3LineAr}`;
 
       advisoryEn = "Avoid reactive overcorrection, prioritize continuity, and watch for pressure migration into secondary theaters.";
       advisoryAr = "تجنب التصحيح الانفعالي الزائد، وأعطِ الأولوية للاستمرارية، وراقب انتقال الضغط إلى مسارح ثانوية.";
@@ -1485,6 +1561,18 @@ window.IBSS_ENGINE = (function () {
     const lines = [];
 
     rankedToFeed(system.rankedSignals).forEach(item => lines.push(item));
+
+    if (system.l3) {
+      lines.push(
+        makeFeedItem(
+          "l3_pressure",
+          system.l3.l3Pressure >= 70 ? "HIGH" : system.l3.l3Pressure >= 45 ? "MEDIUM" : "LOW",
+          `L3 classification pressure: ${system.l3.l3Pressure} across ${system.l3.activeSignals} active signals`,
+          `ضغط تصنيف L3: ${system.l3.l3Pressure} عبر ${system.l3.activeSignals} إشارات نشطة`,
+          "L3"
+        )
+      );
+    }
 
     if (system.topSignal) {
       lines.push(
@@ -1663,7 +1751,8 @@ window.IBSS_ENGINE = (function () {
       unifiedRisk: system?.unifiedRisk || null,
       drivers: system?.drivers || [],
       voice: system?.voice || null,
-      presence: system?.presence || null
+      presence: system?.presence || null,
+      l3: system?.l3 || null
     };
   }
 
@@ -1696,9 +1785,15 @@ window.IBSS_ENGINE = (function () {
 
     const presenceText = getLocalizedText(system.voice?.summary, lang);
 
+    const l3Text = system.l3
+      ? lang === "ar"
+        ? ` ضغط L3 هو ${system.l3.l3Pressure} مع ${system.l3.activeSignals} إشارات نشطة.`
+        : ` L3 pressure is ${system.l3.l3Pressure} with ${system.l3.activeSignals} active signals.`
+      : "";
+
     if (lang === "ar") {
       return {
-        summary: `رصد المحرك ضغطًا مركبًا بقيمة ${system.systemPressure} مع ثقة ${system.confidenceScore}.`,
+        summary: `رصد المحرك ضغطًا مركبًا بقيمة ${system.systemPressure} مع ثقة ${system.confidenceScore}.${l3Text}`,
         body:
           `المسرح الأعلى هو ${topTheater}. ` +
           `الملف الاستراتيجي الأعلى هو ${topCluster}. ` +
@@ -1713,7 +1808,7 @@ window.IBSS_ENGINE = (function () {
     }
 
     return {
-      summary: `The engine detected composite pressure at ${system.systemPressure} with confidence ${system.confidenceScore}.`,
+      summary: `The engine detected composite pressure at ${system.systemPressure} with confidence ${system.confidenceScore}.${l3Text}`,
       body:
         `Top theater: ${topTheater}. ` +
         `Top strategic file: ${topCluster}. ` +
@@ -1753,6 +1848,7 @@ window.IBSS_ENGINE = (function () {
       topSignalId: system.topSignal?.id || null,
       topClusterId: system.topCluster?.id || null,
       topTheaterId: system.topTheater?.id || null,
+      l3Pressure: system.l3?.l3Pressure || null,
       title: {
         en: buildReportTitle(system, "en"),
         ar: buildReportTitle(system, "ar")
@@ -1794,7 +1890,8 @@ window.IBSS_ENGINE = (function () {
       topSignalId: system.topSignal?.id || null,
       topClusterId: system.topCluster?.id || null,
       topTheaterId: system.topTheater?.id || null,
-      presenceState: system.presence?.state || null
+      presenceState: system.presence?.state || null,
+      l3Pressure: system.l3?.l3Pressure || null
     });
 
     if (STATE.archive.length > CONFIG.archiveLimit) {
@@ -1813,7 +1910,8 @@ window.IBSS_ENGINE = (function () {
       topClusterId: system.topCluster?.id || null,
       topTheaterId: system.topTheater?.id || null,
       presenceState: system.presence?.state || null,
-      countryRiskFeed: system.countryRiskFeed
+      countryRiskFeed: system.countryRiskFeed,
+      l3Pressure: system.l3?.l3Pressure || null
     });
 
     if (STATE.history.length > CONFIG.historyLimit) {
@@ -1860,6 +1958,7 @@ window.IBSS_ENGINE = (function () {
 
   function computeSystemState() {
     const rankedSignals = buildRankedSignals();
+    const l3State = buildRankedSignals.lastL3State || null;
     const topSignal = rankedSignals[0] || null;
 
     const clusterState = buildClusterState(rankedSignals);
@@ -1882,6 +1981,13 @@ window.IBSS_ENGINE = (function () {
       (newsPressure.pressure * 0.18)
     );
 
+    if (l3State) {
+      systemPressure = Math.max(
+        systemPressure,
+        safeNumber(l3State.l3Pressure, 0)
+      );
+    }
+
     if (safeText(topTheater?.priority).toUpperCase() === "CORE") systemPressure += 4;
     if (safeText(topCluster?.priority).toUpperCase() === "CORE") systemPressure += 2;
 
@@ -1900,8 +2006,9 @@ window.IBSS_ENGINE = (function () {
     const presence = buildPresenceState(systemPressure, confidenceScore, drift);
 
     const system = {
-      source: rankedSignals.length ? "engine" : "fallback",
+      source: rankedSignals.length ? "engine+l3" : "fallback",
       updatedAt: nowIso(),
+
       ssi: systemPressure,
       systemPressure,
       signalPressure,
@@ -1909,6 +2016,8 @@ window.IBSS_ENGINE = (function () {
       level,
       decision: decisionState.decision,
       mode: decisionState.mode,
+
+      l3: l3State,
 
       topTheater,
       theaters,
@@ -1942,7 +2051,9 @@ window.IBSS_ENGINE = (function () {
       liveNews: rankedSignals,
       featuredPublication,
       snapshot: null,
-      metricsReference: "IBSS_METRICS_V3_ADAPTIVE"
+      metricsReference: l3State
+        ? "IBSS_METRICS_V3_ADAPTIVE + IBSS_L3_ENGINE"
+        : "IBSS_METRICS_V3_ADAPTIVE"
     };
 
     system.voice = buildVoice(system);
@@ -1951,6 +2062,7 @@ window.IBSS_ENGINE = (function () {
 
     if (shouldGenerateReport(system)) {
       const report = generateAutoReport(system);
+
       system.feed.unshift(
         makeFeedItem(
           "report",
@@ -1960,6 +2072,7 @@ window.IBSS_ENGINE = (function () {
           "ENGINE"
         )
       );
+
       system.feed = dedupeBy(system.feed, item =>
         `${item.type}|${normalizeText(getLocalizedText(item.text, "en"))}`
       ).slice(0, CONFIG.maxFeedItems);
@@ -2015,26 +2128,38 @@ window.IBSS_ENGINE = (function () {
     return clone(STATE.archive) || [];
   }
 
+  function getL3State() {
+    const system = STATE.lastSystem || computeSystemState();
+    return clone(system.l3 || null);
+  }
+
   loadState();
 
   const api = {
     CONFIG,
+
     getSystemState,
     getStaticSystemFallback,
     getLastSystemState,
+
     getCountryRiskFeed,
     getUnifiedRiskUnit,
+
     getReports,
     getLatestReport,
     getHistory,
     getArchive,
+    getL3State,
+
     getContentStats,
     getPublishedContent,
     getPublishedNewsContent,
+
     getHomeSnapshot: function () {
       const system = STATE.lastSystem || computeSystemState();
       return clone(system.snapshot || getHomeSnapshot(system));
     },
+
     riskLevelFromScore,
     buildUnifiedSignals: buildRankedSignals,
     buildNewsPressure
