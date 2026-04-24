@@ -1,11 +1,11 @@
-// IBSS PUBLISHER CORE — Full Living Presence Rebuild
-// Version: v8.1 Living Presence Publisher Aligned
+// IBSS PUBLISHER CORE — Final Unified Publisher
+// Version: v9.0 Final Unified Orchestrated Publisher
 
 window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_publisher_state_v81_living_presence_aligned",
+    storageKey: "ibss_publisher_state_v90_final_unified",
     maxQueueSize: 240,
     maxHistorySize: 320,
     maxSnapshots: 180,
@@ -13,6 +13,7 @@ window.IBSS_PUBLISHER = (function () {
     maxContentFeedItems: 6,
     maxNewsFeedItems: 6,
     maxSystemFeedItems: 10,
+    maxManualDrafts: 40,
     orchestrationKeyFields: [
       "updatedAt",
       "level",
@@ -27,6 +28,7 @@ window.IBSS_PUBLISHER = (function () {
     queue: [],
     history: [],
     snapshots: [],
+    manualDrafts: [],
     latestSystem: null,
     latestOrchestrated: null,
     latestDigest: null,
@@ -169,6 +171,7 @@ window.IBSS_PUBLISHER = (function () {
       STATE.queue = asArray(parsed.queue);
       STATE.history = asArray(parsed.history);
       STATE.snapshots = asArray(parsed.snapshots);
+      STATE.manualDrafts = asArray(parsed.manualDrafts);
       STATE.latestSystem = parsed.latestSystem || null;
       STATE.latestOrchestrated = parsed.latestOrchestrated || null;
       STATE.latestDigest = parsed.latestDigest || null;
@@ -189,6 +192,7 @@ window.IBSS_PUBLISHER = (function () {
           queue: STATE.queue,
           history: STATE.history,
           snapshots: STATE.snapshots,
+          manualDrafts: STATE.manualDrafts,
           latestSystem: STATE.latestSystem,
           latestOrchestrated: STATE.latestOrchestrated,
           latestDigest: STATE.latestDigest,
@@ -221,6 +225,7 @@ window.IBSS_PUBLISHER = (function () {
     try {
       const api = getContentApi();
       if (api?.getPublished) return asArray(api.getPublished());
+      if (api?.getPublishedContent) return asArray(api.getPublishedContent());
     } catch (error) {
       console.error("IBSS_PUBLISHER getPublishedContent error:", error);
     }
@@ -746,13 +751,10 @@ window.IBSS_PUBLISHER = (function () {
       key: buildSystemKey(system),
       updatedAt: safeText(system?.updatedAt, nowIso()),
       source: safeText(system?.source, "fallback"),
-
       level: safeText(system?.level, "LOW"),
       decision: safeText(system?.decision, "WATCH"),
       mode: safeText(system?.mode, "MONITORING"),
-
       pressure,
-
       liveSignalsCount: safeNumber(system?.liveSignalsCount ?? asArray(system?.liveSignals).length, 0),
       newsCount: safeNumber(system?.newsPressure?.count, 0),
       confidenceScore: safeNumber(system?.confidenceScore, 0),
@@ -915,76 +917,6 @@ window.IBSS_PUBLISHER = (function () {
   }
 
   /* =========================================
-     Public Readers
-  ========================================= */
-
-  function getLatestSystem() {
-    ensureInit();
-    return STATE.latestSystem ? clone(STATE.latestSystem) : null;
-  }
-
-  function getLatestOrchestratedSystem() {
-    ensureInit();
-
-    if (STATE.latestOrchestrated) {
-      return clone(STATE.latestOrchestrated);
-    }
-
-    const system = resolveSourceSystem();
-    if (!system) return null;
-
-    return orchestrateSystem(system, { force: true });
-  }
-
-  function getLatestDigest() {
-    ensureInit();
-
-    if (STATE.latestDigest) {
-      return clone(STATE.latestDigest);
-    }
-
-    const system = getLatestOrchestratedSystem();
-    return system?.publisherDigest ? clone(system.publisherDigest) : null;
-  }
-
-  function getUnifiedFeed() {
-    ensureInit();
-
-    if (STATE.latestFeed.length) {
-      return clone(STATE.latestFeed);
-    }
-
-    const system = getLatestOrchestratedSystem();
-    return clone(asArray(system?.publisherFeed || system?.unifiedFeed));
-  }
-
-  function getSnapshots() {
-    ensureInit();
-    return clone(STATE.snapshots);
-  }
-
-  function getLatestSnapshot() {
-    ensureInit();
-    return STATE.latestSnapshot ? clone(STATE.latestSnapshot) : null;
-  }
-
-  function getLatestFeaturedPublicationState() {
-    ensureInit();
-
-    if (STATE.latestFeaturedPublication) {
-      return clone(STATE.latestFeaturedPublication);
-    }
-
-    const system = getLatestOrchestratedSystem();
-    return clone(system?.featuredPublication || null);
-  }
-
-  function getPublicationContext() {
-    const system = getLatestOrchestratedSystem();
-    return clone(system?.publicationContext || null);
-  }
-
-  /* =========================================
      Draft / Queue
   ========================================= */
 
@@ -1000,6 +932,54 @@ window.IBSS_PUBLISHER = (function () {
 
   function enqueue(post) {
     ensureInit();
+
+    STATE.queue.unshift(post);
+    if (STATE.queue.length > CONFIG.maxQueueSize) {
+      STATE.queue = STATE.queue.slice(0, CONFIG.maxQueueSize);
+    }
+
+    saveState();
+    return clone(post);
+  }
+
+  function saveDraft(input) {
+    ensureInit();
+
+    let post = null;
+
+    if (typeof input === "string") {
+      post = createPostObject("manual", {
+        text_en: input,
+        text_ar: input
+      });
+    } else if (input && typeof input === "object") {
+      if (input.id && input.type && input.payload) {
+        post = {
+          ...input,
+          id: safeText(input.id, buildId("POST")),
+          createdAt: safeText(input.createdAt, nowIso()),
+          status: safeText(input.status, "draft")
+        };
+      } else {
+        post = createPostObject(safeText(input.type, "manual"), {
+          text_en: safeText(input.text_en || input.text || getLocalizedText(input.text, "en"), ""),
+          text_ar: safeText(input.text_ar || input.text || getLocalizedText(input.text, "ar"), ""),
+          presence_en: safeText(input.presence_en, ""),
+          presence_ar: safeText(input.presence_ar, ""),
+          sourceId: safeText(input.sourceId, ""),
+          signal: clone(input.signal || null),
+          publication: clone(input.publication || null),
+          meta: clone(input.meta || {})
+        });
+      }
+    }
+
+    if (!post) return null;
+
+    STATE.manualDrafts.unshift(post);
+    if (STATE.manualDrafts.length > CONFIG.maxManualDrafts) {
+      STATE.manualDrafts = STATE.manualDrafts.slice(0, CONFIG.maxManualDrafts);
+    }
 
     STATE.queue.unshift(post);
     if (STATE.queue.length > CONFIG.maxQueueSize) {
@@ -1241,7 +1221,7 @@ ${voiceIntent}
   function buildPresenceStatement(system, lang = "en") {
     const voice = getVoiceState(system);
     const presenceState =
-      getLocalizedText(system?.presence?.posture, lang) ||
+      safeText(system?.presence?.state, "") ||
       getLocalizedText(voice?.posture, lang) ||
       safeText(system?.mode, lang === "ar" ? "مراقبة" : "monitoring");
 
@@ -1468,7 +1448,84 @@ Guidance: ${advisory}`;
 
   function getLatestDraft() {
     ensureInit();
-    return STATE.queue[0] ? clone(STATE.queue[0]) : null;
+    if (STATE.queue[0]) return clone(STATE.queue[0]);
+    if (STATE.manualDrafts[0]) return clone(STATE.manualDrafts[0]);
+    return null;
+  }
+
+  function getManualDrafts() {
+    ensureInit();
+    return clone(STATE.manualDrafts);
+  }
+
+  function getLatestFeaturedPublicationState() {
+    ensureInit();
+
+    if (STATE.latestFeaturedPublication) {
+      return clone(STATE.latestFeaturedPublication);
+    }
+
+    const system = getLatestOrchestratedSystem();
+    return clone(system?.featuredPublication || null);
+  }
+
+  /* =========================================
+     Public Readers
+  ========================================= */
+
+  function getLatestSystem() {
+    ensureInit();
+    return STATE.latestSystem ? clone(STATE.latestSystem) : null;
+  }
+
+  function getLatestOrchestratedSystem() {
+    ensureInit();
+
+    if (STATE.latestOrchestrated) {
+      return clone(STATE.latestOrchestrated);
+    }
+
+    const system = resolveSourceSystem();
+    if (!system) return null;
+
+    return orchestrateSystem(system, { force: true });
+  }
+
+  function getLatestDigest() {
+    ensureInit();
+
+    if (STATE.latestDigest) {
+      return clone(STATE.latestDigest);
+    }
+
+    const system = getLatestOrchestratedSystem();
+    return system?.publisherDigest ? clone(system.publisherDigest) : null;
+  }
+
+  function getUnifiedFeed() {
+    ensureInit();
+
+    if (STATE.latestFeed.length) {
+      return clone(STATE.latestFeed);
+    }
+
+    const system = getLatestOrchestratedSystem();
+    return clone(asArray(system?.publisherFeed || system?.unifiedFeed));
+  }
+
+  function getSnapshots() {
+    ensureInit();
+    return clone(STATE.snapshots);
+  }
+
+  function getLatestSnapshot() {
+    ensureInit();
+    return STATE.latestSnapshot ? clone(STATE.latestSnapshot) : null;
+  }
+
+  function getPublicationContext() {
+    const system = getLatestOrchestratedSystem();
+    return clone(system?.publicationContext || null);
   }
 
   /* =========================================
@@ -1513,8 +1570,10 @@ Guidance: ${advisory}`;
     getQueue,
     getHistory,
     getLatestDraft,
+    getManualDrafts,
     clearQueue,
 
+    saveDraft,
     registerPublication,
     findPublicationForSignal,
 
