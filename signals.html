@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS Signals — Living Signal Layer</title>
+  <title>IBSS Signals — Living Signal Layer v3</title>
 
   <style>
     :root{
@@ -32,6 +32,7 @@
       font-family:Arial,sans-serif;
       background:
         radial-gradient(circle at top, rgba(212,175,55,.07), transparent 30%),
+        radial-gradient(circle at 82% 18%, rgba(90,140,255,.05), transparent 24%),
         var(--bg);
       color:var(--text);
     }
@@ -173,7 +174,8 @@
       background:rgba(0,208,132,.08);
     }
 
-    .meta-badge.fallback{
+    .meta-badge.fallback,
+    .meta-badge.warn{
       color:var(--orange);
       border-color:rgba(255,159,26,.30);
       background:rgba(255,159,26,.08);
@@ -346,7 +348,7 @@
       background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
       box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
       position:relative;
-      overflow-x:auto;
+      overflow-x:hidden;
       overflow-y:hidden;
       -webkit-overflow-scrolling:touch;
       scrollbar-width:none;
@@ -363,6 +365,7 @@
       min-height:92px;
       width:max-content;
       white-space:normal;
+      will-change:transform;
     }
 
     .ticker-item{
@@ -808,6 +811,7 @@
     }
 
     html[dir="rtl"] body{text-align:right}
+
     html[dir="rtl"] .topbar,
     html[dir="rtl"] .top-actions,
     html[dir="rtl"] .nav,
@@ -843,6 +847,7 @@
       .topbar{flex-direction:column}
       .nav{justify-content:center}
       .brand{text-align:center}
+
       .ticker-item{
         flex:0 0 78vw;
         max-width:78vw;
@@ -853,210 +858,89 @@
 <body>
   <div class="wrap">
 
+    <!-- TOPBAR -->
     <div class="topbar">
       <a class="brand" href="index.html">IBSS</a>
 
       <div class="top-actions">
         <div class="nav">
-          <a href="index.html" data-i18n="nav_home">Home</a>
-          <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
-          <a href="signals.html" class="active" data-i18n="nav_signals">Signals</a>
-          <a href="reports.html" data-i18n="nav_reports">Reports</a>
-          <a href="countries.html" data-i18n="nav_countries">Countries</a>
-          <a href="models.html" data-i18n="nav_models">Models</a>
-          <a href="about.html" data-i18n="nav_about">About</a>
+          <a href="index.html">Home</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="signals.html" class="active">Signals</a>
+          <a href="reports.html">Reports</a>
+          <a href="countries.html">Countries</a>
+          <a href="models.html">Models</a>
+          <a href="about.html">About</a>
         </div>
 
         <div class="lang-switch">
-          <button id="btn-en" type="button">EN</button>
-          <button id="btn-ar" type="button">AR</button>
+          <button id="btn-en">EN</button>
+          <button id="btn-ar">AR</button>
         </div>
 
         <div class="audio-switch">
-          <button id="audioToggleBtn" type="button">AUDIO</button>
+          <button id="audioToggleBtn">AUDIO</button>
         </div>
       </div>
     </div>
 
+    <!-- HERO -->
     <div class="hero">
-      <h1 id="pageTitle">IBSS Signals</h1>
-      <p id="pageSub">Living Signal Layer — Ranking / Drivers / Presence / Publication Context</p>
-      <div id="metaLine" class="meta-line">Source: -</div>
+      <h1>IBSS Signals</h1>
+      <p>Living Signal Layer — Real-Time Orchestrated Intelligence</p>
+
+      <div id="metaLine" class="meta-line">System initializing...</div>
 
       <div class="hero-badges">
-        <span id="sourceBadge" class="meta-badge fallback">SOURCE — FALLBACK</span>
-        <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
-        <span id="presenceBadge" class="meta-badge blue">PRESENCE — IDLE</span>
+        <span id="sourceBadge" class="meta-badge fallback">SOURCE — BOOT</span>
+        <span id="metricsBadge" class="meta-badge fallback">METRICS — WAIT</span>
+        <span id="presenceBadge" class="meta-badge">PRESENCE — IDLE</span>
         <span id="audioBadge" class="meta-badge fallback">AUDIO — OFF</span>
       </div>
     </div>
 
     <div id="alertBox" class="alert"></div>
 
+    <!-- PRESENCE -->
     <div class="presence-grid">
       <div class="presence-card">
-        <div class="presence-kicker" id="presenceKicker">SIGNAL PRESENCE</div>
-        <h3 id="presenceTitle" class="presence-title">-</h3>
-        <p id="presenceSummary" class="presence-summary">-</p>
-        <p id="presenceExplanation" class="presence-explanation">-</p>
+        <div class="presence-kicker">SIGNAL PRESENCE</div>
+        <h3 id="presenceTitle">-</h3>
+        <p id="presenceSummary">-</p>
+        <p id="presenceExplanation">-</p>
         <div id="presenceChips" class="presence-chips"></div>
       </div>
 
       <div class="presence-side">
         <div class="presence-mini">
-          <div class="presence-mini-label" id="advisoryLabel">ADVISORY</div>
+          <div class="presence-mini-label">ADVISORY</div>
           <div id="presenceAdvisory" class="presence-mini-value">-</div>
           <div id="presenceIntent" class="presence-mini-sub">-</div>
         </div>
 
         <div class="presence-mini">
-          <div class="presence-mini-label" id="driftLabel">PRESSURE DRIFT</div>
+          <div class="presence-mini-label">PRESSURE DRIFT</div>
           <div id="presenceDrift" class="presence-mini-value">-</div>
           <div id="presenceDriftMeta" class="presence-mini-sub">-</div>
         </div>
       </div>
     </div>
 
+    <!-- TICKER -->
     <div class="section">
-      <div class="title" id="tickerTitle">Live Intelligence Strip</div>
+      <div class="title">Live Intelligence Strip</div>
       <div class="ticker-shell">
         <div id="tickerTrack" class="ticker-track"></div>
       </div>
     </div>
 
-    <div class="mini-grid section">
-      <div class="mini-card">
-        <div class="mini-title" id="miniTopSignalLabel">Top Signal Score</div>
-        <div id="miniTopSignalScore" class="mini-value gold">0</div>
-      </div>
+    <!-- MAIN CONTENT PLACEHOLDER -->
+    <div id="mainContent"></div>
 
-      <div class="mini-card">
-        <div class="mini-title" id="miniLiveSignalsLabel">Live Signals</div>
-        <div id="miniLiveSignals" class="mini-value low">0</div>
-      </div>
-
-      <div class="mini-card">
-        <div class="mini-title" id="miniSignalPressureLabel">Signal Pressure</div>
-        <div id="miniSignalPressure" class="mini-value medium">0</div>
-      </div>
-
-      <div class="mini-card">
-        <div class="mini-title" id="miniSystemPressureLabel">System Stress</div>
-        <div id="miniSystemPressure" class="mini-value high">0</div>
-      </div>
-    </div>
-
-    <div class="grid section">
-      <div class="card">
-        <div class="title" id="highlightTitle">Primary Signal</div>
-        <div class="highlight-box">
-          <h3 id="highlightSignalTitle">-</h3>
-          <p id="highlightSignalDesc">-</p>
-          <div id="highlightBadges" class="mini-badges"></div>
-        </div>
-
-        <div class="title" style="margin-top:18px" id="driversTitle">Signal Drivers</div>
-        <div id="driversBox" class="drivers-box"></div>
-      </div>
-
-      <div class="card">
-        <div class="title" id="snapshotTitle">Signal Snapshot</div>
-        <div id="snapshotBox" class="snapshot-box"></div>
-      </div>
-    </div>
-
-    <div class="grid-2 section">
-      <div class="card">
-        <div class="title" id="linkedPublicationTitle">Linked Publication</div>
-        <div id="linkedPublicationBox" class="publication-box"></div>
-      </div>
-
-      <div class="card">
-        <div class="title" id="signalViewerTitle">Signal Viewer</div>
-        <div id="signalViewerBox" class="viewer-box"></div>
-      </div>
-    </div>
-
-    <div class="grid-3 section">
-      <div class="card">
-        <div class="title" id="metricsTitle">Signal Metrics</div>
-        <div class="sub-title" id="metricsSub">Signal / Cluster / Theater / Country / System / Confidence</div>
-        <div id="metricsBox" class="metrics-box"></div>
-      </div>
-
-      <div class="card">
-        <div class="title" id="feedTitle">Signal Feed</div>
-        <div id="feedBox" class="feed-box"></div>
-      </div>
-
-      <div class="card">
-        <div class="title" id="filtersTitle">Filters</div>
-        <div class="filters-grid">
-          <div class="filter-card">
-            <label id="priorityFilterLabel" for="priorityFilter">Priority</label>
-            <select id="priorityFilter">
-              <option value="ALL">ALL</option>
-              <option value="HIGH">HIGH</option>
-              <option value="MEDIUM">MEDIUM</option>
-              <option value="LOW">LOW</option>
-            </select>
-          </div>
-
-          <div class="filter-card">
-            <label id="regionFilterLabel" for="regionFilter">Region</label>
-            <select id="regionFilter">
-              <option value="ALL">ALL</option>
-            </select>
-          </div>
-
-          <div class="filter-card">
-            <label id="layerFilterLabel" for="layerFilter">Layer</label>
-            <select id="layerFilter">
-              <option value="ALL">ALL</option>
-            </select>
-          </div>
-
-          <div class="filter-card">
-            <label id="searchFilterLabel" for="searchFilter">Search</label>
-            <input id="searchFilter" type="text" placeholder="Search signal..." />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card section">
-      <div class="title" id="contextTitle">Signal Publication Context</div>
-      <div id="contextBox" class="context-box"></div>
-    </div>
-
-    <div class="card section">
-      <div class="title" id="signalListTitle">Ranked Signal Matrix</div>
-      <div id="signalList" class="signal-list"></div>
-    </div>
-
-    <div class="card section">
-      <div class="title" id="publisherTitle">Publishing Console</div>
-
-      <div class="context-box">
-        <div class="context-item">
-          <div class="context-title" id="pubDraftTypeTitle">Latest Draft</div>
-          <div class="context-meta" id="pubDraftMeta">-</div>
-        </div>
-      </div>
-
-      <textarea id="pubDraftText" class="publisher-textarea" readonly></textarea>
-
-      <div class="publisher-actions">
-        <button id="btnGenerateSignalPost" type="button" class="btn-secondary">Generate Top Signal Post</button>
-        <button id="btnGenerateLinkedPublicationPost" type="button" class="btn-secondary">Generate Linked Publication Post</button>
-        <button id="btnGenerateLivingPost" type="button" class="btn-primary">Generate Living Presence Post</button>
-        <button id="btnCopyDraftPost" type="button" class="btn-secondary">Copy Draft</button>
-      </div>
-    </div>
-
-    <div class="footer">© 2026 IBSS — Living Signal Layer</div>
+    <div class="footer">© 2026 IBSS — Sovereign Signal Engine</div>
   </div>
 
+  <!-- SCRIPTS -->
   <script src="data.js"></script>
   <script src="sources.js"></script>
   <script src="ingestion.js"></script>
@@ -1068,1025 +952,129 @@
   <script src="audio-engine.js"></script>
   <script src="runtime-engine.js"></script>
   <script src="publisher.js"></script>
-  <script src="facebook-publisher-layer.js"></script>
 
   <script>
-    (function () {
-      "use strict";
+  (function(){
+    "use strict";
 
-      const UI = {
-        en: {
-          nav_home: "Home",
-          nav_dashboard: "Dashboard",
-          nav_signals: "Signals",
-          nav_reports: "Reports",
-          nav_countries: "Countries",
-          nav_models: "Models",
-          nav_about: "About",
+    let tickerPos = 0;
 
-          title: "IBSS Signals",
-          sub: "Living Signal Layer — Ranking / Drivers / Presence / Publication Context",
-          ticker: "Live Intelligence Strip",
-          highlight: "Primary Signal",
-          snapshot: "Signal Snapshot",
-          metrics: "Signal Metrics",
-          metricsSub: "Signal / Cluster / Theater / Country / System / Confidence",
-          feed: "Signal Feed",
-          filters: "Filters",
-          priority: "Priority",
-          region: "Region",
-          layer: "Layer",
-          search: "Search",
-          signalList: "Ranked Signal Matrix",
-          publisher: "Publishing Console",
+    function safe(val, fallback="-"){
+      return (val === undefined || val === null || val === "") ? fallback : val;
+    }
 
-          miniTopSignal: "Top Signal Score",
-          miniLiveSignals: "Live Signals",
-          miniSignalPressure: "Signal Pressure",
-          miniSystemPressure: "System Stress",
-
-          source: "Source",
-          updatedAt: "Updated",
-          sourceLive: "SOURCE — ORCHESTRATED",
-          sourceFallback: "SOURCE — LIMITED",
-          metricsOn: "METRICS — INTEGRATED",
-          metricsOff: "METRICS — OFF",
-          presenceOn: "PRESENCE — ACTIVE",
-          presenceIdle: "PRESENCE — IDLE",
-
-          audioOn: "AUDIO — ON",
-          audioOff: "AUDIO — OFF",
-          audioButtonOn: "AUDIO ON",
-          audioButtonOff: "AUDIO OFF",
-
-          alertHigh: "⚠ HIGH ESCALATION — SIGNAL LAYER IN CRITICAL BAND",
-          alertMed: "⚠ STRUCTURED PRESSURE — SIGNAL LAYER IN ACTIVE WATCH BAND",
-          alertLow: "✓ LOW PRESSURE — SIGNAL LAYER IN MONITORING BAND",
-
-          noData: "No data available.",
-          noFeed: "No live feed available.",
-          noSignals: "No signals matched the current filters.",
-
-          signalScore: "Signal Score",
-          clusterRisk: "Strategic File Risk",
-          theaterRisk: "Theater Risk",
-          countryRisk: "Country Risk",
-          systemStress: "System Stress",
-          band: "Band",
-          confidence: "Confidence",
-
-          topTheater: "Top Theater",
-          topCluster: "Top Strategic File",
-          topCountry: "Top Country Risk",
-
-          signalType: "Signal Type",
-          decisionMode: "Decision Mode",
-          layerField: "Layer",
-          regionField: "Region",
-          sourceField: "Source",
-          top: "TOP",
-          all: "ALL",
-
-          linkedPublication: "Linked Publication",
-          signalViewer: "Signal Viewer",
-          signalContext: "Signal Publication Context",
-          drivers: "Signal Drivers",
-          latestDraft: "Latest Draft",
-          generateSignalPost: "Generate Top Signal Post",
-          generateLinkedPublicationPost: "Generate Linked Publication Post",
-          generateLivingPost: "Generate Living Presence Post",
-          copyDraft: "Copy Draft",
-
-          type: "Type",
-          domain: "Domain",
-          edition: "Edition",
-          countryName: "Country",
-
-          linkedBySignal: "Publication linked to selected signal",
-          linkedByCluster: "Publication linked to top cluster",
-          linkedByCountry: "Publication linked to top country",
-          linkedUnavailable: "No linked publication available.",
-
-          presenceKicker: "SIGNAL PRESENCE",
-          advisory: "Advisory",
-          drift: "Pressure Drift",
-          intent: "Intent",
-          urgency: "Urgency",
-          persistence: "Persistence",
-          volatility: "Volatility"
-        },
-
-        ar: {
-          nav_home: "الرئيسية",
-          nav_dashboard: "لوحة التحكم",
-          nav_signals: "الإشارات",
-          nav_reports: "التقارير",
-          nav_countries: "الدول",
-          nav_models: "النماذج",
-          nav_about: "حول",
-
-          title: "طبقة الإشارات",
-          sub: "طبقة الإشارات الحية — ترتيب / محرّكات / حضور / سياق منشورات",
-          ticker: "الشريط الاستخباري الحي",
-          highlight: "الإشارة الأساسية",
-          snapshot: "اللقطة السريعة للإشارات",
-          metrics: "مقاييس الإشارات",
-          metricsSub: "Signal / Cluster / Theater / Country / System / Confidence",
-          feed: "تغذية الإشارات",
-          filters: "الفلاتر",
-          priority: "الأولوية",
-          region: "المنطقة",
-          layer: "الطبقة",
-          search: "بحث",
-          signalList: "مصفوفة الإشارات المرتبة",
-          publisher: "وحدة النشر",
-
-          miniTopSignal: "أعلى درجة إشارة",
-          miniLiveSignals: "الإشارات الحية",
-          miniSignalPressure: "ضغط الإشارات",
-          miniSystemPressure: "ضغط النظام",
-
-          source: "المصدر",
-          updatedAt: "آخر تحديث",
-          sourceLive: "المصدر — منسق",
-          sourceFallback: "المصدر — محدود",
-          metricsOn: "القياس — مدمج",
-          metricsOff: "القياس — غير مفعل",
-          presenceOn: "الحضور — نشط",
-          presenceIdle: "الحضور — ساكن",
-
-          audioOn: "الصوت — يعمل",
-          audioOff: "الصوت — متوقف",
-          audioButtonOn: "تشغيل الصوت",
-          audioButtonOff: "إيقاف الصوت",
-
-          alertHigh: "⚠ تصعيد مرتفع — طبقة الإشارات داخل الحزمة الحرجة",
-          alertMed: "⚠ ضغط بنيوي — طبقة الإشارات داخل حزمة المراقبة النشطة",
-          alertLow: "✓ ضغط منخفض — طبقة الإشارات داخل حزمة المراقبة",
-
-          noData: "لا توجد بيانات.",
-          noFeed: "لا توجد تغذية حية.",
-          noSignals: "لا توجد إشارات مطابقة للفلاتر الحالية.",
-
-          signalScore: "درجة الإشارة",
-          clusterRisk: "خطر الملف الاستراتيجي",
-          theaterRisk: "خطر المسرح",
-          countryRisk: "خطر الدولة",
-          systemStress: "ضغط النظام",
-          band: "الحزمة",
-          confidence: "الثقة",
-
-          topTheater: "المسرح الأعلى",
-          topCluster: "الملف الاستراتيجي الأعلى",
-          topCountry: "أعلى دولة خطرًا",
-
-          signalType: "نوع الإشارة",
-          decisionMode: "وضع القرار",
-          layerField: "الطبقة",
-          regionField: "المنطقة",
-          sourceField: "المصدر",
-          top: "TOP",
-          all: "الكل",
-
-          linkedPublication: "المنشور المرتبط",
-          signalViewer: "عارض الإشارة",
-          signalContext: "سياق الإشارة والمنشورات",
-          drivers: "محرّكات الإشارة",
-          latestDraft: "أحدث مسودة",
-          generateSignalPost: "توليد منشور الإشارة الأعلى",
-          generateLinkedPublicationPost: "توليد منشور الدراسة المرتبطة",
-          generateLivingPost: "توليد منشور الحضور الحي",
-          copyDraft: "نسخ المسودة",
-
-          type: "النوع",
-          domain: "المجال",
-          edition: "النسخة",
-          countryName: "الدولة",
-
-          linkedBySignal: "منشور مرتبط بالإشارة المحددة",
-          linkedByCluster: "منشور مرتبط بالملف الاستراتيجي الأعلى",
-          linkedByCountry: "منشور مرتبط بالدولة الأعلى خطراً",
-          linkedUnavailable: "لا يوجد منشور مرتبط.",
-
-          presenceKicker: "حضور الإشارة",
-          advisory: "التوجيه",
-          drift: "انجراف الضغط",
-          intent: "النية",
-          urgency: "الاستعجال",
-          persistence: "الاستمرار",
-          volatility: "التذبذب"
+    function getSystemSafe(){
+      try{
+        if(window.IBSS_ENGINE?.getSystemState){
+          return window.IBSS_ENGINE.getSystemState();
         }
-      };
+      }catch(e){
+        console.error("ENGINE FAIL", e);
+      }
+      return null;
+    }
 
-      let currentLang = localStorage.getItem("ibss_lang") || "en";
-      let currentSystem = null;
-      let selectedSignalId = null;
+    function updateMeta(system){
+      const meta = document.getElementById("metaLine");
+      const source = document.getElementById("sourceBadge");
+      const metrics = document.getElementById("metricsBadge");
+      const presence = document.getElementById("presenceBadge");
 
-      function t(key){ return UI[currentLang]?.[key] || key; }
-      function safeText(value, fallback = "-"){ return typeof value === "string" && value.trim() ? value.trim() : fallback; }
-      function safeNumber(value, fallback = 0){ const n = Number(value); return Number.isFinite(n) ? n : fallback; }
-      function asArray(value){ return Array.isArray(value) ? value : []; }
+      meta.textContent = "Updated: " + new Date().toLocaleTimeString();
 
-      function getLocalizedText(value){
-        if (!value) return "-";
-        if (typeof value === "string" || typeof value === "number") return String(value);
-        return value[currentLang] || value.en || value.ar || value.name || value.title || value.label || value.text || "-";
+      if(system){
+        source.textContent = "SOURCE — LIVE";
+        source.className = "meta-badge live";
+
+        metrics.textContent = "METRICS — ON";
+        metrics.className = "meta-badge live";
+
+        presence.textContent = "PRESENCE — ACTIVE";
+        presence.className = "meta-badge blue";
+      }else{
+        source.textContent = "SOURCE — FAIL";
+        source.className = "meta-badge warn";
+      }
+    }
+
+    function renderPresence(system){
+      if(!system) return;
+
+      document.getElementById("presenceTitle").textContent = safe(system.voice?.posture);
+      document.getElementById("presenceSummary").textContent = safe(system.voice?.summary);
+      document.getElementById("presenceExplanation").textContent = safe(system.voice?.explanation);
+      document.getElementById("presenceAdvisory").textContent = safe(system.voice?.advisory);
+
+      document.getElementById("presenceIntent").textContent =
+        "Intent: " + safe(system.voice?.intent);
+
+      document.getElementById("presenceDrift").textContent =
+        safe(system.drift?.direction);
+
+      document.getElementById("presenceDriftMeta").textContent =
+        "Persistence: " + safe(system.drift?.persistence) +
+        " | Volatility: " + safe(system.drift?.volatility);
+    }
+
+    function renderTicker(system){
+      const track = document.getElementById("tickerTrack");
+
+      let feed = system?.publisherFeed || system?.unifiedFeed || [];
+
+      if(!feed.length){
+        track.innerHTML = `<div class="ticker-item">NO LIVE FEED</div>`;
+        return;
       }
 
-      function escapeHtml(text){
-        const div = document.createElement("div");
-        div.textContent = text ?? "";
-        return div.innerHTML;
-      }
+      track.innerHTML = feed.slice(0,10).map(item=>{
+        const p = (item.priority||"LOW").toUpperCase();
+        const cls = p==="HIGH"?"high":p==="MEDIUM"?"medium":"low";
 
-      function formatDateTime(value){
-        if (!value) return "-";
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return "-";
-        return date.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", {
-          year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit"
-        });
-      }
-
-      function getBandLabel(score){
-        if (window.IBSS_METRICS?.classifyBand) {
-          const band = window.IBSS_METRICS.classifyBand(Number(score || 0));
-          return currentLang === "ar" ? band?.ar || "-" : band?.en || "-";
-        }
-        const value = safeNumber(score, 0);
-        if (currentLang === "ar") {
-          if (value >= 85) return "حرج";
-          if (value >= 70) return "مرتفع";
-          if (value >= 55) return "ضغط";
-          if (value >= 35) return "مراقبة";
-          return "منخفض";
-        }
-        if (value >= 85) return "Critical";
-        if (value >= 70) return "High";
-        if (value >= 55) return "Pressure";
-        if (value >= 35) return "Watch";
-        return "Low";
-      }
-
-      function scoreClass(score){
-        const n = Number(score || 0);
-        if (n >= 70) return "high";
-        if (n >= 35) return "medium";
-        return "low";
-      }
-
-      function normalizePriority(priority){
-        const p = String(priority || "LOW").toUpperCase();
-        if (p === "HIGH") return "HIGH";
-        if (p === "MEDIUM") return "MEDIUM";
-        return "LOW";
-      }
-
-      function previewText(text, max = 440){
-        const value = safeText(text, "");
-        if (!value) return "-";
-        return value.length > max ? value.slice(0, max).trim() + " ..." : value;
-      }
-
-      function applyLanguage(){
-        document.documentElement.lang = currentLang;
-        document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
-
-        document.querySelectorAll("[data-i18n]").forEach(el => {
-          const key = el.getAttribute("data-i18n");
-          el.textContent = t(key);
-        });
-
-        document.getElementById("pageTitle").textContent = t("title");
-        document.getElementById("pageSub").textContent = t("sub");
-        document.getElementById("tickerTitle").textContent = t("ticker");
-        document.getElementById("highlightTitle").textContent = t("highlight");
-        document.getElementById("snapshotTitle").textContent = t("snapshot");
-        document.getElementById("linkedPublicationTitle").textContent = t("linkedPublication");
-        document.getElementById("signalViewerTitle").textContent = t("signalViewer");
-        document.getElementById("metricsTitle").textContent = t("metrics");
-        document.getElementById("metricsSub").textContent = t("metricsSub");
-        document.getElementById("feedTitle").textContent = t("feed");
-        document.getElementById("filtersTitle").textContent = t("filters");
-        document.getElementById("priorityFilterLabel").textContent = t("priority");
-        document.getElementById("regionFilterLabel").textContent = t("region");
-        document.getElementById("layerFilterLabel").textContent = t("layer");
-        document.getElementById("searchFilterLabel").textContent = t("search");
-        document.getElementById("contextTitle").textContent = t("signalContext");
-        document.getElementById("signalListTitle").textContent = t("signalList");
-        document.getElementById("publisherTitle").textContent = t("publisher");
-        document.getElementById("pubDraftTypeTitle").textContent = t("latestDraft");
-        document.getElementById("driversTitle").textContent = t("drivers");
-        document.getElementById("presenceKicker").textContent = t("presenceKicker");
-        document.getElementById("advisoryLabel").textContent = t("advisory");
-        document.getElementById("driftLabel").textContent = t("drift");
-        document.getElementById("miniTopSignalLabel").textContent = t("miniTopSignal");
-        document.getElementById("miniLiveSignalsLabel").textContent = t("miniLiveSignals");
-        document.getElementById("miniSignalPressureLabel").textContent = t("miniSignalPressure");
-        document.getElementById("miniSystemPressureLabel").textContent = t("miniSystemPressure");
-
-        document.getElementById("btnGenerateSignalPost").textContent = t("generateSignalPost");
-        document.getElementById("btnGenerateLinkedPublicationPost").textContent = t("generateLinkedPublicationPost");
-        document.getElementById("btnGenerateLivingPost").textContent = t("generateLivingPost");
-        document.getElementById("btnCopyDraftPost").textContent = t("copyDraft");
-
-        const prioritySelect = document.getElementById("priorityFilter");
-        if (prioritySelect && prioritySelect.options.length) {
-          prioritySelect.options[0].text = t("all");
-        }
-
-        const regionSelect = document.getElementById("regionFilter");
-        if (regionSelect && regionSelect.options.length) {
-          regionSelect.options[0].text = t("all");
-        }
-
-        const layerSelect = document.getElementById("layerFilter");
-        if (layerSelect && layerSelect.options.length) {
-          layerSelect.options[0].text = t("all");
-        }
-
-        const searchInput = document.getElementById("searchFilter");
-        if (searchInput) {
-          searchInput.placeholder = currentLang === "ar" ? "ابحث داخل الإشارات..." : "Search signal...";
-        }
-
-        document.getElementById("btn-en").classList.toggle("active", currentLang === "en");
-        document.getElementById("btn-ar").classList.toggle("active", currentLang === "ar");
-
-        updateAudioBadge();
-      }
-
-      function getSystem(){
-        try {
-          if (window.IBSS_ENGINE?.getSystemState) {
-            const raw = window.IBSS_ENGINE.getSystemState();
-            if (window.IBSS_PUBLISHER?.orchestrateSystem) {
-              return window.IBSS_PUBLISHER.orchestrateSystem(raw);
-            }
-            return raw;
-          }
-        } catch (error) {
-          console.error("Signals getSystem error:", error);
-        }
-        return null;
-      }
-
-      function updateMeta(system){
-        const line = document.getElementById("metaLine");
-        const sourceBadge = document.getElementById("sourceBadge");
-        const metricsBadge = document.getElementById("metricsBadge");
-        const presenceBadge = document.getElementById("presenceBadge");
-        const audioBadge = document.getElementById("audioBadge");
-
-        line.textContent = `${t("source")}: ${safeText(system?.source, "-")} | ${t("updatedAt")}: ${formatDateTime(system?.updatedAt)}`;
-
-        if (system?.publisherDigest) {
-          sourceBadge.textContent = t("sourceLive");
-          sourceBadge.className = "meta-badge live";
-        } else {
-          sourceBadge.textContent = t("sourceFallback");
-          sourceBadge.className = "meta-badge fallback";
-        }
-
-        if (system?.metricsReference) {
-          metricsBadge.textContent = t("metricsOn");
-          metricsBadge.className = "meta-badge live";
-        } else {
-          metricsBadge.textContent = t("metricsOff");
-          metricsBadge.className = "meta-badge fallback";
-        }
-
-        if (safeText(system?.presence?.state, "")) {
-          presenceBadge.textContent = t("presenceOn");
-          presenceBadge.className = "meta-badge blue";
-        } else {
-          presenceBadge.textContent = t("presenceIdle");
-          presenceBadge.className = "meta-badge";
-        }
-
-        if (window.IBSS_AUDIO?.isEnabled?.()) {
-          audioBadge.textContent = t("audioOn");
-          audioBadge.className = "meta-badge live";
-        } else {
-          audioBadge.textContent = t("audioOff");
-          audioBadge.className = "meta-badge fallback";
-        }
-      }
-
-      function updateAudioBadge(){
-        const btn = document.getElementById("audioToggleBtn");
-        if (!btn) return;
-        const enabled = !!window.IBSS_AUDIO?.isEnabled?.();
-        btn.textContent = enabled ? t("audioButtonOff") : t("audioButtonOn");
-        btn.classList.toggle("active", enabled);
-      }
-
-      function renderAlert(system){
-        const alertBox = document.getElementById("alertBox");
-        alertBox.style.display = "block";
-
-        if (system?.level === "HIGH") {
-          alertBox.textContent = t("alertHigh");
-          alertBox.style.background = "rgba(255,77,79,.14)";
-          alertBox.style.border = "1px solid rgba(255,77,79,.40)";
-          alertBox.style.color = "#ffd1d1";
-        } else if (system?.level === "MEDIUM") {
-          alertBox.textContent = t("alertMed");
-          alertBox.style.background = "rgba(255,159,26,.12)";
-          alertBox.style.border = "1px solid rgba(255,159,26,.35)";
-          alertBox.style.color = "#ffe8c9";
-        } else {
-          alertBox.textContent = t("alertLow");
-          alertBox.style.background = "rgba(0,208,132,.10)";
-          alertBox.style.border = "1px solid rgba(0,208,132,.30)";
-          alertBox.style.color = "#d7fff1";
-        }
-      }
-
-      function renderPresence(system){
-        const drift = system?.drift || {};
-        const urgency = safeText(system?.presence?.urgency, "low");
-        const urgencyClass = urgency === "immediate" || urgency === "high" ? "high" : urgency === "medium" ? "medium" : "low";
-
-        document.getElementById("presenceTitle").textContent = getLocalizedText(system?.voice?.posture) || "-";
-        document.getElementById("presenceSummary").textContent = getLocalizedText(system?.voice?.summary) || t("noData");
-        document.getElementById("presenceExplanation").textContent = getLocalizedText(system?.voice?.explanation) || t("noData");
-        document.getElementById("presenceAdvisory").textContent = getLocalizedText(system?.voice?.advisory) || "-";
-        document.getElementById("presenceIntent").textContent = `${t("intent")}: ${getLocalizedText(system?.voice?.intent) || "-"}`;
-        document.getElementById("presenceDrift").textContent = safeText(drift.direction, "STABLE");
-        document.getElementById("presenceDriftMeta").textContent =
-          `${t("persistence")}: ${safeNumber(drift.persistence, 0)} | ${t("volatility")}: ${safeNumber(drift.volatility, 0)}`;
-
-        document.getElementById("presenceChips").innerHTML = `
-          <span class="presence-chip ${urgencyClass}">${escapeHtml(`${t("urgency")}: ${urgency}`)}</span>
-          <span class="presence-chip">${escapeHtml(`${t("systemStress")}: ${safeNumber(system?.systemPressure, 0)}`)}</span>
-          <span class="presence-chip">${escapeHtml(`${t("confidence")}: ${safeNumber(system?.confidenceScore, 0)}`)}</span>
-          <span class="presence-chip">${escapeHtml(`${t("drift")}: ${safeText(drift.direction, "STABLE")}`)}</span>
-        `;
-      }
-
-      function renderMiniCards(system){
-        const topSignal = system?.topSignal || null;
-        document.getElementById("miniTopSignalScore").textContent = safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0);
-        document.getElementById("miniTopSignalScore").className = `mini-value ${scoreClass(safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0))}`;
-
-        document.getElementById("miniLiveSignals").textContent = safeNumber(system?.liveSignalsCount, 0);
-        document.getElementById("miniLiveSignals").className = `mini-value ${scoreClass(safeNumber(system?.liveSignalsCount, 0) * 6)}`;
-
-        document.getElementById("miniSignalPressure").textContent = safeNumber(system?.signalPressure, 0);
-        document.getElementById("miniSignalPressure").className = `mini-value ${scoreClass(safeNumber(system?.signalPressure, 0))}`;
-
-        document.getElementById("miniSystemPressure").textContent = safeNumber(system?.systemPressure, 0);
-        document.getElementById("miniSystemPressure").className = `mini-value ${scoreClass(safeNumber(system?.systemPressure, 0))}`;
-      }
-
-      function getRankedSignals(system){
-        return Array.isArray(system?.rankedSignals) ? system.rankedSignals : [];
-      }
-
-      function getSelectedSignal(system){
-        const signals = getRankedSignals(system);
-        if (!signals.length) return null;
-        const match = signals.find(signal => signal.id === selectedSignalId);
-        return match || signals[0];
-      }
-
-      function findLinkedPublication(system, signal){
-        return (
-          window.IBSS_PUBLISHER?.findPublicationForSignal?.(signal) ||
-          system?.publicationContext?.topSignalContent ||
-          system?.featuredPublication ||
-          null
-        );
-      }
-
-      function renderHighlight(system){
-        const signal = getSelectedSignal(system);
-        const titleEl = document.getElementById("highlightSignalTitle");
-        const descEl = document.getElementById("highlightSignalDesc");
-        const badges = document.getElementById("highlightBadges");
-
-        if (!signal) {
-          titleEl.textContent = "-";
-          descEl.textContent = t("noData");
-          badges.innerHTML = "";
-          return;
-        }
-
-        titleEl.textContent = getLocalizedText(signal.title);
-        descEl.textContent = getLocalizedText(signal.description);
-
-        const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
-        const priority = normalizePriority(signal?.priority || signal?.weight);
-        const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
-
-        badges.innerHTML = `
-          <span class="mini-badge ${cls}">${escapeHtml(t("signalScore"))}: ${score}</span>
-          <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
-          <span class="mini-badge">${escapeHtml(t("signalType"))}: ${escapeHtml(getLocalizedText(signal.signalType || signal.domain))}</span>
-          <span class="mini-badge">${escapeHtml(t("regionField"))}: ${escapeHtml(safeText(signal.region, "-"))}</span>
-          <span class="mini-badge">${escapeHtml(t("sourceField"))}: ${escapeHtml(safeText(signal.source, signal.sourceUnit || "-"))}</span>
-        `;
-      }
-
-      function renderDrivers(system){
-        const box = document.getElementById("driversBox");
-        const drivers = asArray(system?.drivers);
-
-        if (!drivers.length) {
-          box.innerHTML = `<div class="driver-item"><div class="driver-title">${escapeHtml(t("noData"))}</div></div>`;
-          return;
-        }
-
-        box.innerHTML = drivers.slice(0, 5).map((driver) => `
-          <div class="driver-item">
-            <div class="driver-title">${escapeHtml(getLocalizedText(driver.label))}</div>
-            <div class="driver-meta">${escapeHtml(getLocalizedText(driver.explanation))}</div>
-          </div>
-        `).join("");
-      }
-
-      function renderSnapshot(system){
-        const snapshot = system?.snapshot || null;
-        const topTheater = snapshot?.topTheater || system?.topTheater || null;
-        const topCluster = snapshot?.topCluster || system?.topCluster || null;
-        const topCountry = snapshot?.topCountry || asArray(system?.countryRiskFeed)[0] || null;
-
-        document.getElementById("snapshotBox").innerHTML = `
-          <div class="snapshot-item">
-            <strong>${escapeHtml(t("topTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
-            <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("theaterRisk")}: ${safeNumber(topTheater.avgRisk, 0)} | ${t("band")}: ${getBandLabel(safeNumber(topTheater.avgRisk, 0))}` : t("noData"))}</div>
-          </div>
-
-          <div class="snapshot-item">
-            <strong>${escapeHtml(t("topCluster"))}: ${escapeHtml(topCluster ? getLocalizedText(topCluster.name) : "-")}</strong>
-            <div class="snapshot-meta">${escapeHtml(topCluster ? `${t("clusterRisk")}: ${safeNumber(topCluster.avgRisk, 0)} | ${t("band")}: ${getBandLabel(safeNumber(topCluster.avgRisk, 0))}` : t("noData"))}</div>
-          </div>
-
-          <div class="snapshot-item">
-            <strong>${escapeHtml(t("topCountry"))}: ${escapeHtml(topCountry ? getLocalizedText(topCountry.nameLocalized || topCountry.name) : "-")}</strong>
-            <div class="snapshot-meta">${escapeHtml(topCountry ? `${t("countryRisk")}: ${safeNumber(topCountry.riskScore, 0)} | ${t("band")}: ${getBandLabel(safeNumber(topCountry.riskScore, 0))}` : t("noData"))}</div>
+        return `
+          <div class="ticker-item">
+            <span class="ticker-dot ${cls}"></span>
+            <span class="ticker-item-text">${safe(item.text)}</span>
           </div>
         `;
+      }).join("");
+    }
+
+    function autoScroll(){
+      const track = document.getElementById("tickerTrack");
+      if(!track) return;
+
+      tickerPos -= 0.4;
+      if(Math.abs(tickerPos) > track.scrollWidth/2){
+        tickerPos = 0;
       }
 
-      function renderLinkedPublication(system){
-        const box = document.getElementById("linkedPublicationBox");
-        const signal = getSelectedSignal(system);
-        const publication = findLinkedPublication(system, signal);
-
-        if (!publication) {
-          box.innerHTML = `<div class="publication-text">${escapeHtml(t("linkedUnavailable"))}</div>`;
-          return;
-        }
-
-        box.innerHTML = `
-          <h3 class="publication-title">${escapeHtml(getLocalizedText(publication.title))}</h3>
-          <p class="publication-text">${escapeHtml(getLocalizedText(publication.summary))}</p>
-          <div class="mini-badges" style="margin-top:14px">
-            <span class="mini-badge">${escapeHtml(t("type"))}: ${escapeHtml(safeText(publication.type, "-").toUpperCase())}</span>
-            <span class="mini-badge">${escapeHtml(t("priority"))}: ${escapeHtml(safeText(publication.priority, "-"))}</span>
-            <span class="mini-badge">${escapeHtml(t("domain"))}: ${escapeHtml(safeText(publication.domain, "-"))}</span>
-            <span class="mini-badge">${escapeHtml(t("countryName"))}: ${escapeHtml(safeText(publication.country, publication.countryId || "-"))}</span>
-            <span class="mini-badge">${escapeHtml(t("edition"))}: ${escapeHtml(safeText(publication.edition, "-"))}</span>
-          </div>
-        `;
-      }
-
-      function renderSignalViewer(system){
-        const box = document.getElementById("signalViewerBox");
-        const signal = getSelectedSignal(system);
-
-        if (!signal) {
-          box.innerHTML = `<div class="viewer-body">${escapeHtml(t("noData"))}</div>`;
-          return;
-        }
-
-        const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
-
-        box.innerHTML = `
-          <div class="mini-badges" style="margin-top:0; margin-bottom:12px;">
-            <span class="mini-badge ${scoreClass(score)}">${escapeHtml(t("signalScore"))}: ${score}</span>
-            <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
-            <span class="mini-badge">${escapeHtml(t("decisionMode"))}: ${escapeHtml(getLocalizedText(signal.decisionMode || signal.mode))}</span>
-          </div>
-          <h3 class="viewer-title">${escapeHtml(getLocalizedText(signal.title))}</h3>
-          <div class="viewer-body">${escapeHtml(getLocalizedText(signal.description))}</div>
-        `;
-      }
-
-      function renderMetrics(system){
-        const box = document.getElementById("metricsBox");
-        const topSignal = getSelectedSignal(system) || system?.topSignal || null;
-        const topCluster = system?.topCluster || null;
-        const topTheater = system?.topTheater || null;
-        const topCountry = asArray(system?.countryRiskFeed)[0] || null;
-
-        const rows = [
-          { label: t("signalScore"), value: safeNumber(topSignal?.balancedScore100 || topSignal?.score100, 0) },
-          { label: t("clusterRisk"), value: safeNumber(topCluster?.avgRisk, 0) },
-          { label: t("theaterRisk"), value: safeNumber(topTheater?.avgRisk, 0) },
-          { label: t("countryRisk"), value: safeNumber(topCountry?.riskScore, 0) },
-          { label: t("systemStress"), value: safeNumber(system?.systemPressure, 0) },
-          { label: t("confidence"), value: safeNumber(system?.confidenceScore, 0) }
-        ];
-
-        box.innerHTML = rows.map(row => `
-          <div class="metric-row">
-            <div>
-              <div class="metric-name">${escapeHtml(row.label)}</div>
-              <div class="metric-sub">${escapeHtml(`${t("band")}: ${getBandLabel(row.value)}`)}</div>
-            </div>
-            <div class="metric-score ${scoreClass(row.value)}">${row.value}</div>
-          </div>
-        `).join("");
-      }
-
-      function renderFeed(system){
-        const box = document.getElementById("feedBox");
-        const lines = asArray(system?.publisherFeed || system?.unifiedFeed || window.IBSS_PUBLISHER?.getUnifiedFeed?.()).slice(0, 8);
-
-        if (!lines.length) {
-          box.innerHTML = `<div class="feed-item">${escapeHtml(t("noFeed"))}</div>`;
-          return;
-        }
-
-        box.innerHTML = lines.map(line => {
-          const text = getLocalizedText(line?.text);
-          return `<div class="feed-item">${escapeHtml(String(text))}</div>`;
-        }).join("");
-      }
-
-      function buildUniqueValues(list, getter){
-        const set = new Set();
-        list.forEach(item => {
-          const value = getter(item);
-          if (value && value !== "-") set.add(value);
-        });
-        return [...set].sort((a,b) => String(a).localeCompare(String(b)));
-      }
-
-      function populateFilters(system){
-        const signals = getRankedSignals(system);
-        const regionSelect = document.getElementById("regionFilter");
-        const layerSelect = document.getElementById("layerFilter");
-
-        const currentRegion = regionSelect.value || "ALL";
-        const currentLayer = layerSelect.value || "ALL";
-
-        const regions = buildUniqueValues(signals, signal => safeText(signal.region, ""));
-        const layers = buildUniqueValues(signals, signal => getLocalizedText(signal.layer || signal.sourceUnit));
-
-        regionSelect.innerHTML = `<option value="ALL">${escapeHtml(t("all"))}</option>` +
-          regions.map(region => `<option value="${escapeHtml(region)}">${escapeHtml(region)}</option>`).join("");
-
-        layerSelect.innerHTML = `<option value="ALL">${escapeHtml(t("all"))}</option>` +
-          layers.map(layer => `<option value="${escapeHtml(layer)}">${escapeHtml(layer)}</option>`).join("");
-
-        regionSelect.value = regions.includes(currentRegion) ? currentRegion : "ALL";
-        layerSelect.value = layers.includes(currentLayer) ? currentLayer : "ALL";
-      }
-
-      function getFilteredSignals(system){
-        const signals = getRankedSignals(system);
-        const priority = document.getElementById("priorityFilter").value;
-        const region = document.getElementById("regionFilter").value;
-        const layer = document.getElementById("layerFilter").value;
-        const search = document.getElementById("searchFilter").value.trim().toLowerCase();
-
-        return signals.filter(signal => {
-          const matchPriority = priority === "ALL" || normalizePriority(signal.priority || signal.weight) === priority;
-          const matchRegion = region === "ALL" || safeText(signal.region, "") === region;
-          const matchLayer = layer === "ALL" || getLocalizedText(signal.layer || signal.sourceUnit) === layer;
-
-          const haystack = [
-            getLocalizedText(signal.title),
-            getLocalizedText(signal.description),
-            getLocalizedText(signal.signalType),
-            safeText(signal.region, ""),
-            safeText(signal.country, ""),
-            safeText(signal.source, ""),
-            safeText(signal.sourceUnit, "")
-          ].join(" ").toLowerCase();
-
-          const matchSearch = !search || haystack.includes(search);
-          return matchPriority && matchRegion && matchLayer && matchSearch;
-        });
-      }
-
-      function renderContext(system){
-        const box = document.getElementById("contextBox");
-        const signal = getSelectedSignal(system);
-        const linkedSignalPublication = findLinkedPublication(system, signal);
-        const linkedClusterPublication = system?.publicationContext?.topClusterContent || null;
-        const linkedCountryPublication = system?.publicationContext?.topCountryContent || null;
-
-        const rows = [
-          { label: t("linkedBySignal"), item: linkedSignalPublication },
-          { label: t("linkedByCluster"), item: linkedClusterPublication },
-          { label: t("linkedByCountry"), item: linkedCountryPublication }
-        ];
-
-        box.innerHTML = rows.map(row => {
-          if (!row.item) {
-            return `
-              <div class="context-item">
-                <div class="context-title">${escapeHtml(row.label)}</div>
-                <div class="context-meta">${escapeHtml(t("linkedUnavailable"))}</div>
-              </div>
-            `;
-          }
-
-          return `
-            <div class="context-item">
-              <div class="context-title">${escapeHtml(row.label)}: ${escapeHtml(getLocalizedText(row.item.title))}</div>
-              <div class="context-meta">
-                ${escapeHtml(
-                  `${t("type")}: ${safeText(row.item.type, "-").toUpperCase()} | ` +
-                  `${t("priority")}: ${safeText(row.item.priority, "-")} | ` +
-                  `${t("domain")}: ${safeText(row.item.domain, "-")}`
-                )}
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      function renderSignalList(system){
-        const list = document.getElementById("signalList");
-        const signals = getFilteredSignals(system);
-
-        if (!signals.length) {
-          list.innerHTML = `<div class="signal-row"><div class="signal-name">${escapeHtml(t("noSignals"))}</div></div>`;
-          return;
-        }
-
-        const activeId = selectedSignalId || signals[0]?.id;
-
-        list.innerHTML = signals.map((signal, index) => {
-          const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
-          const cls = scoreClass(score);
-          const priority = normalizePriority(signal?.priority || signal?.weight);
-          const badgeClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
-          const active = signal.id === activeId ? "active" : "";
-
-          return `
-            <div class="signal-row ${active}" data-signal-id="${escapeHtml(signal.id)}">
-              <div class="signal-main">
-                <div class="signal-name">${escapeHtml(getLocalizedText(signal.title))}</div>
-                <div class="signal-desc">${escapeHtml(previewText(getLocalizedText(signal.description), 140))}</div>
-              </div>
-
-              <div>
-                <div class="signal-label">${escapeHtml(t("signalScore"))}</div>
-                <div class="signal-score ${cls}">${score}</div>
-              </div>
-
-              <div>
-                <div class="signal-label">${escapeHtml(t("band"))}</div>
-                <div class="signal-value">
-                  <span class="signal-badge ${badgeClass}">${index === 0 ? escapeHtml(t("top")) : escapeHtml(getBandLabel(score))}</span>
-                </div>
-              </div>
-
-              <div>
-                <div class="signal-label">${escapeHtml(t("regionField"))}</div>
-                <div class="signal-value">${escapeHtml(safeText(signal.region, "-"))}</div>
-              </div>
-
-              <div>
-                <div class="signal-label">${escapeHtml(t("layerField"))}</div>
-                <div class="signal-value">${escapeHtml(getLocalizedText(signal.layer || signal.sourceUnit))}</div>
-              </div>
-            </div>
-          `;
-        }).join("");
-
-        list.querySelectorAll("[data-signal-id]").forEach(el => {
-          el.addEventListener("click", function () {
-            selectedSignalId = this.getAttribute("data-signal-id");
-            renderSignalsCore(currentSystem);
-          });
-        });
-      }
-
-      function renderPublisherConsole(){
-        if (!window.IBSS_PUBLISHER) return;
-
-        const draft = window.IBSS_PUBLISHER.getLatestDraft?.() || null;
-        const typeTitle = document.getElementById("pubDraftTypeTitle");
-        const meta = document.getElementById("pubDraftMeta");
-        const text = document.getElementById("pubDraftText");
-
-        typeTitle.textContent = draft?.type || t("latestDraft");
-        meta.textContent = draft?.createdAt ? formatDateTime(draft.createdAt) : "-";
-        text.value =
-          currentLang === "ar"
-            ? (draft?.payload?.text_ar || draft?.payload?.presence_ar || draft?.payload?.text_en || "")
-            : (draft?.payload?.text_en || draft?.payload?.presence_en || draft?.payload?.text_ar || "");
-      }
-
-      function bindFilters(){
-        ["priorityFilter", "regionFilter", "layerFilter", "searchFilter"].forEach(id => {
-          const node = document.getElementById(id);
-          if (!node || node.dataset.bound) return;
-
-          node.dataset.bound = "1";
-          const eventName = id === "searchFilter" ? "input" : "change";
-
-          node.addEventListener(eventName, function () {
-            if (!currentSystem) return;
-            renderSignalList(currentSystem);
-          });
-        });
-      }
-
-      function bindAudioToggle(){
-        const btn = document.getElementById("audioToggleBtn");
-        if (!btn || btn.dataset.bound) return;
-
-        btn.dataset.bound = "1";
-        btn.addEventListener("click", async function () {
-          try {
-            if (!window.IBSS_AUDIO?.toggle) return;
-            await window.IBSS_AUDIO.toggle();
-            updateAudioBadge();
-            if (currentSystem) updateMeta(currentSystem);
-          } catch (error) {
-            console.error("Audio toggle error:", error);
-          }
-        });
-      }
-
-      function bindPublisherButtons(){
-        const btnSignal = document.getElementById("btnGenerateSignalPost");
-        const btnPublication = document.getElementById("btnGenerateLinkedPublicationPost");
-        const btnLiving = document.getElementById("btnGenerateLivingPost");
-        const btnCopy = document.getElementById("btnCopyDraftPost");
-
-        if (btnSignal && !btnSignal.dataset.bound) {
-          btnSignal.dataset.bound = "1";
-          btnSignal.addEventListener("click", function () {
-            try {
-              if (window.IBSS_PUBLISHER?.generateTopSignalPost) {
-                window.IBSS_PUBLISHER.generateTopSignalPost();
-                renderPublisherConsole();
-              }
-            } catch (error) {
-              console.error("Generate top signal post error:", error);
-            }
-          });
-        }
-
-        if (btnPublication && !btnPublication.dataset.bound) {
-          btnPublication.dataset.bound = "1";
-          btnPublication.addEventListener("click", function () {
-            try {
-              const signal = getSelectedSignal(currentSystem);
-              if (window.IBSS_PUBLISHER?.generateLinkedPublicationPost) {
-                window.IBSS_PUBLISHER.generateLinkedPublicationPost(signal);
-              }
-              renderPublisherConsole();
-            } catch (error) {
-              console.error("Generate linked publication post error:", error);
-            }
-          });
-        }
-
-        if (btnLiving && !btnLiving.dataset.bound) {
-          btnLiving.dataset.bound = "1";
-          btnLiving.addEventListener("click", function () {
-            try {
-              if (window.IBSS_PUBLISHER?.generateLivingPresencePost) {
-                window.IBSS_PUBLISHER.generateLivingPresencePost();
-                renderPublisherConsole();
-              }
-            } catch (error) {
-              console.error("Generate living presence post error:", error);
-            }
-          });
-        }
-
-        if (btnCopy && !btnCopy.dataset.bound) {
-          btnCopy.dataset.bound = "1";
-          btnCopy.addEventListener("click", async function () {
-            try {
-              const text = document.getElementById("pubDraftText")?.value || "";
-              if (!text) return;
-              await navigator.clipboard.writeText(text);
-            } catch (error) {
-              console.error("Copy draft error:", error);
-            }
-          });
-        }
-      }
-
-      function renderTickerStrip(system){
-        const track = document.getElementById("tickerTrack");
-        if (!track) return;
-
-        const unifiedFeed = asArray(
-          system?.publisherFeed ||
-          system?.unifiedFeed ||
-          window.IBSS_PUBLISHER?.getUnifiedFeed?.() ||
-          []
-        ).slice(0, 10);
-
-        if (!unifiedFeed.length) {
-          track.innerHTML = `
-            <div class="ticker-item">
-              <span class="ticker-item-text">${escapeHtml(t("noFeed"))}</span>
-            </div>
-          `;
-          return;
-        }
-
-        track.innerHTML = unifiedFeed.map((item) => {
-          const priority = String(item.priority || "LOW").toUpperCase();
-          const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
-          const text = getLocalizedText(item.text || item.title);
-
-          return `
-            <div class="ticker-item">
-              <span class="ticker-dot ${cls}"></span>
-              <span class="ticker-item-text">${escapeHtml(String(text))}</span>
-            </div>
-          `;
-        }).join("");
-      }
-
-      function renderSignalsCore(system){
-        if (!system) return;
-        currentSystem = system;
-
-        const topSignal = getSelectedSignal(system);
-        if (!selectedSignalId && topSignal?.id) {
-          selectedSignalId = topSignal.id;
-        }
-
-        applyLanguage();
-        updateMeta(system);
-        renderAlert(system);
-        renderPresence(system);
-        renderTickerStrip(system);
-        renderMiniCards(system);
-        renderHighlight(system);
-        renderDrivers(system);
-        renderSnapshot(system);
-        renderLinkedPublication(system);
-        renderSignalViewer(system);
-        renderMetrics(system);
-        renderFeed(system);
-        populateFilters(system);
-        renderContext(system);
-        renderSignalList(system);
-        renderPublisherConsole();
-      }
-
-      function startRuntime(){
-        const renderOnce = () => {
-          const system = getSystem();
-          if (system) renderSignalsCore(system);
-        };
-
-        renderOnce();
-
-        if (!window.IBSS_RUNTIME?.start) {
-          return;
-        }
-
-        window.IBSS_RUNTIME.start({
-          pageId: "signals",
-          lang: currentLang,
-          refreshMs: window.IBSS_ENGINE?.CONFIG?.refreshMs || 4000,
-          systemProvider: getSystem,
-          afterRender: function(system) {
-            renderSignalsCore(system);
-          }
-        });
-      }
-
-      document.getElementById("btn-en").addEventListener("click", function () {
-        currentLang = "en";
-        localStorage.setItem("ibss_lang", "en");
-        if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
-        if (currentSystem) renderSignalsCore(currentSystem);
-      });
-
-      document.getElementById("btn-ar").addEventListener("click", function () {
-        currentLang = "ar";
-        localStorage.setItem("ibss_lang", "ar");
-        if (window.IBSS_RUNTIME?.setLanguage) window.IBSS_RUNTIME.setLanguage(currentLang);
-        if (currentSystem) renderSignalsCore(currentSystem);
-      });
-
-      window.addEventListener("load", function () {
-        bindFilters();
-        bindAudioToggle();
-        bindPublisherButtons();
-        startRuntime();
-      });
-    })();
+      track.style.transform = `translateX(${tickerPos}px)`;
+      requestAnimationFrame(autoScroll);
+    }
+
+    function runtime(){
+      const system = getSystemSafe();
+
+      updateMeta(system);
+      renderPresence(system);
+      renderTicker(system);
+    }
+
+    function start(){
+      runtime();
+      setInterval(runtime, 4000);
+      autoScroll();
+    }
+
+    document.getElementById("btn-en").onclick = ()=>location.reload();
+    document.getElementById("btn-ar").onclick = ()=>{
+      document.documentElement.dir="rtl";
+    };
+
+    start();
+
+  })();
   </script>
+
 </body>
 </html>
