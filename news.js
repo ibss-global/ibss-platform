@@ -1,192 +1,232 @@
-window.IBSS_NEWS_UTILS = (function () {
+// IBSS NEWS ENGINE — Stable Live News Layer
+// Version: v2.0
+
+window.IBSS_NEWS_ENGINE = (function () {
   "use strict";
 
   const CONFIG = {
-    maxNews: 120,
-    maxTickerItems: 24,
-    maxFeedItems: 40,
-    highPriorityThreshold: 7,
-    mediumPriorityThreshold: 4
+    version: "v2.0-stable-live-news-layer",
+    maxItems: 40,
+    defaultPriority: "LOW"
   };
 
-  const STATE = {
-    initialized: false,
-    lastUpdate: null,
-    cache: [],
-    tickerCache: [],
-    feedCache: []
-  };
+  function safeText(value, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+  }
 
-  function ensureInit() {
-    if (STATE.initialized) return;
+  function safeNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
 
-    window.addEventListener("ibss:ingestion-updated", handleIngestionUpdate);
+  function asArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
 
-    STATE.initialized = true;
-    refreshFromIngestion();
+  function clone(value) {
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      console.error("IBSS_NEWS_ENGINE clone error:", error);
+      return null;
+    }
+  }
+
+  function normalizePriority(value) {
+    const p = String(value || CONFIG.defaultPriority).toUpperCase().trim();
+    if (p === "HIGH") return "HIGH";
+    if (p === "MEDIUM") return "MEDIUM";
+    return "LOW";
+  }
+
+  function priorityWeight(priority) {
+    const p = normalizePriority(priority);
+    if (p === "HIGH") return 3;
+    if (p === "MEDIUM") return 2;
+    return 1;
+  }
+
+  function normalizeText(value) {
+    return safeText(String(value || ""))
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getLocalizedText(value, lang = "en") {
+    if (!value) return "";
+    if (typeof value === "string" || typeof value === "number") return String(value);
+
+    return (
+      value?.[lang] ||
+      value?.en ||
+      value?.ar ||
+      value?.name ||
+      value?.title ||
+      value?.label ||
+      value?.text ||
+      ""
+    );
   }
 
   function nowIso() {
     return new Date().toISOString();
   }
 
-  function clone(v) {
-    return JSON.parse(JSON.stringify(v));
+  function buildId(prefix = "NEWS") {
+    return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
   }
 
-  function safeText(v, f = "") {
-    return typeof v === "string" && v.trim() ? v.trim() : f;
-  }
+  function normalizeNewsItem(item, index = 0) {
+    const title = item?.title || item?.text || {
+      en: "Untitled news item",
+      ar: "خبر غير معنُون"
+    };
 
-  function normalizePriority(item) {
-    const p = String(item?.priority || "").toUpperCase();
-    if (p === "HIGH") return "HIGH";
-    if (p === "MEDIUM") return "MEDIUM";
+    const summary = item?.summary || item?.description || item?.text || title;
 
-    const severity = Number(item?.severity || 0);
-
-    if (severity >= CONFIG.highPriorityThreshold) return "HIGH";
-    if (severity >= CONFIG.mediumPriorityThreshold) return "MEDIUM";
-
-    return "LOW";
-  }
-
-  function buildNewsObject(item) {
     return {
-      id: safeText(item.id, "news-" + Math.random()),
-
-      title: item.title || { en: "-", ar: "-" },
-      summary: item.summary || { en: "-", ar: "-" },
-
-      source: safeText(item.source, "unknown"),
-      sourceProfile: item.sourceProfile || { reliabilityScore: 50 },
-
-      domain: safeText(item.domain, "general"),
-      region: safeText(item.region, "global"),
-      country: safeText(item.country, "global"),
-
-      priority: normalizePriority(item),
-      severity: Number(item.severity || 0),
-
-      confidence: Number(item.confidence || 0),
-      impact: Number(item.impact || 0),
-      urgency: Number(item.urgency || 0),
-
-      tags: item.tags || [],
-      actors: item.actors || [],
-
-      publishedAt: item.timestamp || nowIso(),
-      url: item.url || "#"
+      id: safeText(item?.id, `NEWS-${index + 1}`),
+      type: "news",
+      title,
+      summary,
+      text: item?.text || title,
+      region: safeText(item?.region, safeText(item?.country, "global")),
+      country: safeText(item?.country, safeText(item?.region, "global")),
+      domain: safeText(item?.domain || item?.category, "general"),
+      priority: normalizePriority(item?.priority || item?.severity),
+      source: safeText(item?.source || item?.sourceName, "IBSS_NEWS"),
+      publishedAt: safeText(item?.publishedAt || item?.timestamp || item?.createdAt, nowIso()),
+      score100: safeNumber(item?.score100, 0),
+      raw: item
     };
   }
 
-  function refreshFromIngestion() {
-    try {
-      if (!window.IBSS_INGESTION) return;
-
-      const raw = window.IBSS_INGESTION.getAllNormalized();
-
-      const mapped = raw.map(buildNewsObject);
-
-      const sorted = mapped.sort((a, b) => {
-        if (b.severity !== a.severity) return b.severity - a.severity;
-        return new Date(b.publishedAt) - new Date(a.publishedAt);
-      });
-
-      STATE.cache = sorted.slice(0, CONFIG.maxNews);
-
-      buildDerivedCaches();
-
-      STATE.lastUpdate = nowIso();
-
-    } catch (err) {
-      console.error("NEWS refresh error:", err);
-    }
+  function contentToNewsItem(content, index = 0) {
+    return {
+      id: safeText(content?.id, `CONTENT-NEWS-${index + 1}`),
+      type: "news",
+      title: content?.title || {
+        en: "Published update",
+        ar: "تحديث منشور"
+      },
+      summary: content?.summary || content?.body || content?.title,
+      text: content?.summary || content?.title,
+      region: safeText(content?.region, "global"),
+      country: safeText(content?.country || content?.countryId, "global"),
+      domain: safeText(content?.domain, "general"),
+      priority: normalizePriority(content?.priority),
+      source: safeText(content?.unit || content?.sourcePlatform, "IBSS_CONTENT"),
+      publishedAt: safeText(content?.publishedAt || content?.updatedAt || content?.createdAt, nowIso()),
+      score100: safeNumber(content?.metrics?.strategicWeight, 0),
+      raw: content
+    };
   }
 
-  function buildDerivedCaches() {
-    STATE.tickerCache = STATE.cache.slice(0, CONFIG.maxTickerItems);
-
-    STATE.feedCache = STATE.cache.slice(0, CONFIG.maxFeedItems);
+  function getSeedNews() {
+    return asArray(window.IBSS_NEWS || window.IBSS_DATA?.newsFeed);
   }
 
-  function handleIngestionUpdate() {
-    refreshFromIngestion();
+  function getContentNews() {
+    return asArray(window.IBSS_CONTENT || window.IBSS_DATA?.content)
+      .filter(item => item?.status === "published" && item?.type === "news");
   }
 
   function getAllNews() {
-    ensureInit();
-    return clone(STATE.cache);
+    const seed = getSeedNews().map(normalizeNewsItem);
+    const contentNews = getContentNews().map(contentToNewsItem);
+
+    const merged = [...seed, ...contentNews];
+
+    const deduped = [];
+    const seen = new Set();
+
+    merged.forEach(item => {
+      const key = [
+        normalizeText(getLocalizedText(item.title, "en")),
+        normalizeText(item.region),
+        normalizeText(item.domain)
+      ].join("|");
+
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(item);
+      }
+    });
+
+    return deduped
+      .sort((a, b) => {
+        const p = priorityWeight(b.priority) - priorityWeight(a.priority);
+        if (p !== 0) return p;
+
+        return new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime();
+      })
+      .slice(0, CONFIG.maxItems);
   }
 
-  function getLatestNews(limit = 10) {
-    ensureInit();
-    return clone(STATE.cache.slice(0, limit));
+  function getLatest(limit = 10) {
+    return getAllNews().slice(0, Math.max(1, safeNumber(limit, 10)));
   }
 
-  function getTickerNews(limit = CONFIG.maxTickerItems) {
-    ensureInit();
-    return clone(STATE.tickerCache.slice(0, limit));
+  function getByRegion(region, limit = 10) {
+    const target = normalizeText(region);
+
+    return getAllNews()
+      .filter(item => normalizeText(item.region) === target || normalizeText(item.country) === target)
+      .slice(0, Math.max(1, safeNumber(limit, 10)));
   }
 
-  function getFeedNews(limit = CONFIG.maxFeedItems) {
-    ensureInit();
-    return clone(STATE.feedCache.slice(0, limit));
+  function getHighPriority(limit = 10) {
+    return getAllNews()
+      .filter(item => normalizePriority(item.priority) === "HIGH")
+      .slice(0, Math.max(1, safeNumber(limit, 10)));
   }
 
-  function getHighPriorityNews() {
-    ensureInit();
-    return clone(STATE.cache.filter(n => n.priority === "HIGH"));
+  function addLocalNews(item) {
+    if (!window.IBSS_NEWS) window.IBSS_NEWS = [];
+
+    const normalized = normalizeNewsItem({
+      ...item,
+      id: item?.id || buildId("NEWS-LOCAL"),
+      publishedAt: item?.publishedAt || nowIso(),
+      source: item?.source || "IBSS_LOCAL"
+    });
+
+    window.IBSS_NEWS.unshift(normalized);
+
+    window.dispatchEvent(new CustomEvent("ibss:ingestion-updated", {
+      detail: {
+        source: "news-engine",
+        item: clone(normalized)
+      }
+    }));
+
+    return clone(normalized);
   }
 
-  function getByCountry(country) {
-    ensureInit();
-    const key = String(country || "").toLowerCase();
-    return clone(
-      STATE.cache.filter(n =>
-        String(n.country || "").toLowerCase() === key
-      )
-    );
-  }
-
-  function getByDomain(domain) {
-    ensureInit();
-    const key = String(domain || "").toLowerCase();
-    return clone(
-      STATE.cache.filter(n =>
-        String(n.domain || "").toLowerCase() === key
-      )
-    );
-  }
-
-  function autoRefreshIfNeeded() {
-    ensureInit();
-
-    if (!STATE.lastUpdate) {
-      refreshFromIngestion();
-      return true;
-    }
-
-    const diff = Date.now() - new Date(STATE.lastUpdate).getTime();
-
-    if (diff > 60000) {
-      refreshFromIngestion();
-      return true;
-    }
-
-    return false;
+  function toFeedItems(limit = 10, lang = "en") {
+    return getLatest(limit).map(item => ({
+      id: item.id,
+      type: "news",
+      priority: item.priority,
+      source: item.source,
+      text: {
+        en: getLocalizedText(item.text || item.title, "en"),
+        ar: getLocalizedText(item.text || item.title, "ar")
+      },
+      createdAt: item.publishedAt,
+      lang
+    }));
   }
 
   return {
+    CONFIG,
+    normalizeNewsItem,
     getAllNews,
-    getLatestNews,
-    getTickerNews,
-    getFeedNews,
-
-    getHighPriorityNews,
-    getByCountry,
-    getByDomain,
-
-    autoRefreshIfNeeded
+    getLatest,
+    getByRegion,
+    getHighPriority,
+    addLocalNews,
+    toFeedItems
   };
 })();
