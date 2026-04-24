@@ -3,33 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS Signals — Living Signal Layer v3</title>
+  <title>IBSS Signals — Living Signal Layer</title>
 
   <style>
     :root{
-      --gold:#d4af37;
-      --bg:#040404;
-      --panel:#0d0d0d;
-      --panel2:#121212;
-      --panel3:#171717;
-      --text:#ffffff;
-      --muted:#9d9d9d;
-      --red:#ff4d4f;
-      --orange:#ff9f1a;
-      --green:#00d084;
-      --blue:#5a8cff;
-      --border:rgba(212,175,55,.28);
-      --soft-border:rgba(255,255,255,.08);
-      --soft-border-2:rgba(255,255,255,.06);
+      --gold:#d4af37; --bg:#040404; --panel:#0d0d0d; --panel2:#121212;
+      --text:#fff; --muted:#9d9d9d; --red:#ff4d4f; --orange:#ff9f1a;
+      --green:#00d084; --blue:#5a8cff; --border:rgba(212,175,55,.28);
+      --soft:rgba(255,255,255,.08); --soft2:rgba(255,255,255,.06);
       --shadow:0 10px 24px rgba(0,0,0,.18);
     }
 
     *{box-sizing:border-box}
 
     html,body{
-      margin:0;
-      padding:0;
-      font-family:Arial,sans-serif;
+      margin:0; padding:0; font-family:Arial,sans-serif;
       background:
         radial-gradient(circle at top, rgba(212,175,55,.07), transparent 30%),
         radial-gradient(circle at 82% 18%, rgba(90,140,255,.05), transparent 24%),
@@ -37,196 +25,72 @@
       color:var(--text);
     }
 
-    body{min-height:100vh}
-
-    .wrap{
-      width:min(1260px,92%);
-      margin:auto;
-      padding:20px 0 42px;
-    }
+    .wrap{width:min(1260px,92%);margin:auto;padding:20px 0 42px}
 
     .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:16px;
-      padding:14px 0 22px;
-      border-bottom:1px solid rgba(255,255,255,.05);
+      display:flex;justify-content:space-between;align-items:center;gap:16px;
+      padding:14px 0 22px;border-bottom:1px solid rgba(255,255,255,.05);
       flex-wrap:wrap;
     }
 
-    .brand{
-      color:var(--gold);
-      font-size:30px;
-      font-weight:900;
-      text-decoration:none;
-      letter-spacing:1px;
-    }
+    .brand{color:var(--gold);font-size:30px;font-weight:900;text-decoration:none;letter-spacing:1px}
 
-    .top-actions{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
-
-    .nav{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
+    .top-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+    .nav{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 
     .nav a{
-      color:var(--muted);
-      text-decoration:none;
-      border:1px solid var(--soft-border);
-      padding:10px 14px;
-      border-radius:12px;
-      font-size:14px;
-      transition:.2s ease;
+      color:var(--muted);text-decoration:none;border:1px solid var(--soft);
+      padding:10px 14px;border-radius:12px;font-size:14px;transition:.2s ease;
     }
 
-    .nav a:hover,
-    .nav a.active{
-      color:var(--gold);
-      border-color:var(--border);
+    .nav a:hover,.nav a.active{
+      color:var(--gold);border-color:var(--border);
       box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
     }
 
-    .lang-switch,
-    .audio-switch{
-      display:flex;
-      gap:6px;
+    .lang-switch,.audio-switch{display:flex;gap:6px}
+
+    button{
+      background:none;border:1px solid rgba(255,255,255,.1);color:#ccc;
+      padding:8px 10px;border-radius:10px;cursor:pointer;transition:.2s ease;font-size:13px;
     }
 
-    .lang-switch button,
-    .audio-switch button{
-      background:none;
-      border:1px solid rgba(255,255,255,.1);
-      color:#ccc;
-      padding:8px 10px;
-      border-radius:10px;
-      cursor:pointer;
-      transition:.2s ease;
-      font-size:13px;
-    }
+    button:hover,button.active{color:var(--gold);border-color:var(--gold)}
 
-    .lang-switch button:hover,
-    .lang-switch button.active,
-    .audio-switch button:hover,
-    .audio-switch button.active{
-      color:var(--gold);
-      border-color:var(--gold);
-    }
+    .hero{text-align:center;padding:30px 0 18px}
+    .hero h1{margin:0 0 10px;font-size:42px;color:var(--gold);font-weight:900}
+    .hero p{margin:0;color:var(--muted);font-size:16px;line-height:1.8}
 
-    .hero{
-      text-align:center;
-      padding:30px 0 18px;
-    }
+    .meta-line{margin-top:10px;color:#8a8a8a;font-size:13px}
 
-    .hero h1{
-      margin:0 0 10px;
-      font-size:42px;
-      color:var(--gold);
-      font-weight:900;
-      letter-spacing:.5px;
-    }
-
-    .hero p{
-      margin:0;
-      color:var(--muted);
-      font-size:16px;
-      line-height:1.8;
-    }
-
-    .meta-line{
-      margin-top:10px;
-      color:#8a8a8a;
-      font-size:13px;
-    }
-
-    .hero-badges{
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
+    .hero-badges{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
 
     .meta-badge{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:8px 12px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:700;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      color:#ddd;
+      display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;
+      border-radius:999px;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);color:#ddd;
     }
 
-    .meta-badge.live{
-      color:var(--green);
-      border-color:rgba(0,208,132,.25);
-      background:rgba(0,208,132,.08);
-    }
-
-    .meta-badge.fallback,
-    .meta-badge.warn{
-      color:var(--orange);
-      border-color:rgba(255,159,26,.30);
-      background:rgba(255,159,26,.08);
-    }
-
-    .meta-badge.blue{
-      color:#bfd2ff;
-      border-color:rgba(90,140,255,.35);
-      background:rgba(90,140,255,.10);
-    }
+    .meta-badge.live{color:var(--green);border-color:rgba(0,208,132,.25);background:rgba(0,208,132,.08)}
+    .meta-badge.warn{color:var(--orange);border-color:rgba(255,159,26,.30);background:rgba(255,159,26,.08)}
+    .meta-badge.blue{color:#bfd2ff;border-color:rgba(90,140,255,.35);background:rgba(90,140,255,.10)}
 
     .alert{
-      display:none;
-      margin:18px 0 0;
-      text-align:center;
-      padding:14px;
-      border-radius:14px;
-      font-weight:800;
-      line-height:1.7;
+      display:none;margin:18px 0 0;text-align:center;padding:14px;border-radius:14px;
+      font-weight:800;line-height:1.7;
     }
 
     .section{margin-top:18px}
 
-    .card{
-      background:var(--panel);
-      border:1px solid var(--soft-border);
-      border-radius:22px;
-      padding:22px;
-      box-shadow:var(--shadow);
+    .card,.presence-mini{
+      background:var(--panel);border:1px solid var(--soft);border-radius:22px;
+      padding:22px;box-shadow:var(--shadow);
     }
 
-    .title{
-      color:var(--gold);
-      font-size:24px;
-      font-weight:900;
-      margin-bottom:16px;
-    }
-
-    .sub-title{
-      color:#b8b8b8;
-      font-size:13px;
-      margin-top:-8px;
-      margin-bottom:16px;
-      line-height:1.7;
-    }
+    .title{color:var(--gold);font-size:24px;font-weight:900;margin-bottom:16px}
 
     .presence-grid{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:18px;
-      margin-top:22px;
+      display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:22px;
     }
 
     .presence-card{
@@ -234,631 +98,117 @@
         radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 38%),
         linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008)),
         var(--panel);
-      border:1px solid rgba(212,175,55,.14);
-      border-radius:24px;
-      padding:22px;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,.02) inset,
-        0 14px 28px rgba(0,0,0,.2);
+      border:1px solid rgba(212,175,55,.14);border-radius:24px;padding:22px;
+      box-shadow:0 14px 28px rgba(0,0,0,.2);
     }
 
-    .presence-kicker{
-      color:var(--gold);
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.08em;
-      margin-bottom:10px;
+    .presence-kicker{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.08em;margin-bottom:10px}
+    .presence-title{font-size:28px;font-weight:900;color:#fff;line-height:1.4;margin:0 0 12px}
+    .presence-summary{color:#ddd;font-size:15px;line-height:1.9;margin:0 0 12px}
+    .presence-explanation{color:var(--muted);font-size:14px;line-height:1.9;margin:0 0 14px}
+
+    .presence-side{display:grid;gap:18px}
+    .presence-mini-label{color:#8f8f8f;font-size:12px;letter-spacing:.08em;margin-bottom:10px}
+    .presence-mini-value{color:var(--gold);font-size:22px;font-weight:900;line-height:1.5;margin-bottom:8px}
+    .presence-mini-sub{color:var(--muted);font-size:13px;line-height:1.8}
+
+    .chips,.mini-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+
+    .chip,.mini-badge{
+      display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;
+      border-radius:999px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);color:#ddd;
     }
 
-    .presence-title{
-      font-size:28px;
-      font-weight:900;
-      color:#fff;
-      line-height:1.4;
-      margin:0 0 12px;
-    }
-
-    .presence-summary{
-      color:#ddd;
-      font-size:15px;
-      line-height:1.9;
-      margin:0 0 12px;
-    }
-
-    .presence-explanation{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.9;
-      margin:0 0 14px;
-    }
-
-    .presence-chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    .presence-chip{
-      display:inline-flex;
-      align-items:center;
-      padding:7px 11px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      color:#ddd;
-    }
-
-    .presence-chip.high{
-      color:#ffd7d7;
-      background:rgba(255,77,79,.12);
-      border-color:rgba(255,77,79,.28);
-    }
-
-    .presence-chip.medium{
-      color:#ffe2b8;
-      background:rgba(255,159,26,.12);
-      border-color:rgba(255,159,26,.28);
-    }
-
-    .presence-chip.low{
-      color:#d6fff1;
-      background:rgba(0,208,132,.12);
-      border-color:rgba(0,208,132,.28);
-    }
-
-    .presence-side{
-      display:grid;
-      gap:18px;
-    }
-
-    .presence-mini{
-      background:var(--panel);
-      border:1px solid var(--soft-border);
-      border-radius:22px;
-      padding:22px;
-      box-shadow:var(--shadow);
-    }
-
-    .presence-mini-label{
-      color:#8f8f8f;
-      font-size:12px;
-      letter-spacing:.08em;
-      margin-bottom:10px;
-    }
-
-    .presence-mini-value{
-      color:var(--gold);
-      font-size:22px;
-      font-weight:900;
-      line-height:1.5;
-      margin-bottom:8px;
-    }
-
-    .presence-mini-sub{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.8;
-    }
+    .high{color:var(--red)} .medium{color:var(--orange)} .low{color:var(--green)} .gold{color:var(--gold)}
+    .chip.high,.mini-badge.high{color:#ffd7d7;background:rgba(255,77,79,.12);border-color:rgba(255,77,79,.28)}
+    .chip.medium,.mini-badge.medium{color:#ffe2b8;background:rgba(255,159,26,.12);border-color:rgba(255,159,26,.28)}
+    .chip.low,.mini-badge.low{color:#d6fff1;background:rgba(0,208,132,.12);border-color:rgba(0,208,132,.28)}
 
     .ticker-shell{
-      border:1px solid rgba(212,175,55,.18);
-      border-radius:18px;
+      border:1px solid rgba(212,175,55,.18);border-radius:18px;
       background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.008));
-      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset;
-      position:relative;
-      overflow-x:hidden;
-      overflow-y:hidden;
-      -webkit-overflow-scrolling:touch;
-      scrollbar-width:none;
-      margin-top:18px;
+      overflow:hidden;margin-top:18px;
     }
 
-    .ticker-shell::-webkit-scrollbar{display:none}
-
     .ticker-track{
-      display:flex;
-      align-items:stretch;
-      gap:12px;
-      padding:14px 16px;
-      min-height:92px;
-      width:max-content;
-      white-space:normal;
-      will-change:transform;
+      display:flex;align-items:stretch;gap:12px;padding:14px 16px;
+      min-height:92px;width:max-content;will-change:transform;
     }
 
     .ticker-item{
-      flex:0 0 280px;
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      min-height:72px;
-      max-width:280px;
-      padding:14px 16px;
-      border-radius:18px;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.05);
-      color:#f0f0f0;
-      font-size:13px;
-      line-height:1.6;
-      white-space:normal;
+      flex:0 0 280px;display:flex;align-items:flex-start;gap:10px;
+      min-height:72px;max-width:280px;padding:14px 16px;border-radius:18px;
+      background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);
+      color:#f0f0f0;font-size:13px;line-height:1.6;
     }
 
     .ticker-item-text{
-      display:-webkit-box;
-      -webkit-line-clamp:3;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      word-break:break-word;
-      unicode-bidi:plaintext;
+      display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+      overflow:hidden;word-break:break-word;unicode-bidi:plaintext;
     }
 
-    .ticker-dot{
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      flex:0 0 8px;
-      margin-top:5px;
+    .ticker-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px;margin-top:5px}
+    .ticker-dot.high{background:var(--red)}
+    .ticker-dot.medium{background:var(--orange)}
+    .ticker-dot.low{background:var(--green)}
+
+    .mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}
+    .mini-card{background:var(--panel);border:1px solid var(--soft);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+    .mini-title{color:var(--muted);font-size:13px;margin-bottom:10px}
+    .mini-value{font-size:28px;font-weight:900;color:#fff}
+
+    .grid{display:grid;grid-template-columns:1.08fr .92fr;gap:18px;margin-top:18px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
+
+    .box,.metric-row,.snapshot-item,.feed-item,.driver-item,.signal-row,.publication-box,.viewer-box{
+      background:var(--panel2);border:1px solid var(--soft2);border-radius:16px;padding:15px;
     }
 
-    .ticker-dot.high{background:var(--red); box-shadow:0 0 10px rgba(255,77,79,.45)}
-    .ticker-dot.medium{background:var(--orange); box-shadow:0 0 10px rgba(255,159,26,.4)}
-    .ticker-dot.low{background:var(--green); box-shadow:0 0 10px rgba(0,208,132,.35)}
+    .box h3,.publication-title,.viewer-title{margin:0 0 10px;font-size:24px;line-height:1.4;color:#fff}
+    .box p,.publication-text,.viewer-body{margin:0;color:#ddd;line-height:1.9;font-size:15px;white-space:pre-wrap}
 
-    .mini-grid{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:18px;
-      margin-top:18px;
+    .list{display:grid;gap:12px}
+
+    .metric-row,.signal-row{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
     }
 
-    .mini-card{
-      background:var(--panel);
-      border:1px solid var(--soft-border);
-      border-radius:20px;
-      padding:20px;
-      box-shadow:var(--shadow);
-    }
+    .metric-name,.snapshot-item strong,.driver-title{display:block;color:#fff;margin-bottom:6px;font-size:15px}
+    .metric-sub,.snapshot-meta,.driver-meta{color:var(--muted);font-size:12px;line-height:1.7}
+    .metric-score{color:var(--gold);font-size:21px;font-weight:900}
 
-    .mini-card .mini-title{
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:10px;
-    }
-
-    .mini-card .mini-value{
-      font-size:28px;
-      font-weight:900;
-      color:#fff;
-    }
-
-    .mini-card .mini-value.high{color:var(--red)}
-    .mini-card .mini-value.medium{color:var(--orange)}
-    .mini-card .mini-value.low{color:var(--green)}
-    .mini-card .mini-value.gold{color:var(--gold)}
-
-    .grid{
-      display:grid;
-      grid-template-columns:1.08fr .92fr;
-      gap:18px;
-      margin-top:18px;
-    }
-
-    .grid-3{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:18px;
-      margin-top:18px;
-    }
-
-    .grid-2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px;
-      margin-top:18px;
-    }
-
-    .highlight-box,
-    .metric-row,
-    .snapshot-item,
-    .signal-row,
-    .feed-item,
-    .context-item,
-    .publication-box,
-    .viewer-box,
-    .driver-item{
-      background:var(--panel2);
-      border:1px solid var(--soft-border-2);
-      border-radius:16px;
-    }
-
-    .highlight-box{
-      padding:18px;
-    }
-
-    .highlight-box h3{
-      margin:0 0 10px;
-      font-size:28px;
-      line-height:1.35;
-      color:#fff;
-    }
-
-    .highlight-box p{
-      margin:0;
-      color:#ddd;
-      line-height:1.9;
-      font-size:15px;
-    }
-
-    .mini-badges{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:12px;
-    }
-
-    .mini-badge{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:7px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      color:#ddd;
-    }
-
-    .mini-badge.high{
-      color:#ffd7d7;
-      background:rgba(255,77,79,.12);
-      border-color:rgba(255,77,79,.28);
-    }
-
-    .mini-badge.medium{
-      color:#ffe2b8;
-      background:rgba(255,159,26,.12);
-      border-color:rgba(255,159,26,.28);
-    }
-
-    .mini-badge.low{
-      color:#d6fff1;
-      background:rgba(0,208,132,.12);
-      border-color:rgba(0,208,132,.28);
-    }
-
-    .snapshot-box,
-    .metrics-box,
-    .feed-box,
-    .context-box,
-    .drivers-box{
-      display:grid;
-      gap:12px;
-    }
-
-    .snapshot-item,
-    .metric-row,
-    .feed-item,
-    .context-item,
-    .driver-item{
-      padding:14px 15px;
-    }
-
-    .snapshot-item strong,
-    .metric-name,
-    .context-title,
-    .driver-title{
-      display:block;
-      color:#fff;
-      margin-bottom:6px;
-      font-size:15px;
-    }
-
-    .snapshot-meta,
-    .metric-sub,
-    .context-meta,
-    .driver-meta{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.7;
-    }
-
-    .metric-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-
-    .metric-score{
-      color:var(--gold);
-      font-size:21px;
-      font-weight:900;
-      flex:0 0 auto;
-    }
-
-    .metric-score.high{color:var(--red)}
-    .metric-score.medium{color:var(--orange)}
-    .metric-score.low{color:var(--green)}
-
-    .signal-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .signal-row{
-      padding:16px;
-      display:grid;
-      grid-template-columns:1.5fr .8fr .8fr .8fr .9fr;
-      gap:14px;
-      align-items:center;
-      cursor:pointer;
-      transition:.2s ease;
-    }
-
-    .signal-row:hover{
-      border-color:rgba(212,175,55,.26);
-    }
-
-    .signal-row.active{
-      border-color:rgba(212,175,55,.38);
-      box-shadow:0 0 0 1px rgba(212,175,55,.08) inset;
-      background:linear-gradient(180deg, rgba(212,175,55,.06), rgba(255,255,255,.01));
-    }
-
-    .signal-main{min-width:0}
-
-    .signal-name{
-      color:#fff;
-      font-size:16px;
-      font-weight:800;
-      line-height:1.6;
-      margin-bottom:6px;
-    }
-
-    .signal-desc{
-      color:#bcbcbc;
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .signal-label{
-      color:#8d8d8d;
-      font-size:11px;
-      margin-bottom:6px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-    }
-
-    .signal-value{
-      color:#fff;
-      font-size:14px;
-      line-height:1.6;
-      word-break:break-word;
-    }
-
-    .signal-score{
-      color:var(--gold);
-      font-size:28px;
-      font-weight:900;
-      line-height:1;
-    }
-
-    .signal-score.high{color:var(--red)}
-    .signal-score.medium{color:var(--orange)}
-    .signal-score.low{color:var(--green)}
-
-    .signal-badge{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:32px;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      color:#ddd;
-    }
-
-    .signal-badge.high{
-      color:#ffd7d7;
-      background:rgba(255,77,79,.12);
-      border-color:rgba(255,77,79,.28);
-    }
-
-    .signal-badge.medium{
-      color:#ffe2b8;
-      background:rgba(255,159,26,.12);
-      border-color:rgba(255,159,26,.28);
-    }
-
-    .signal-badge.low{
-      color:#d6fff1;
-      background:rgba(0,208,132,.12);
-      border-color:rgba(0,208,132,.28);
-    }
-
-    .publication-box{
-      padding:18px;
-      border-color:rgba(212,175,55,.24);
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.05), transparent 35%),
-        var(--panel2);
-    }
-
-    .publication-title{
-      color:#fff;
-      font-size:28px;
-      line-height:1.45;
-      font-weight:900;
-      margin:0 0 10px;
-    }
-
-    .publication-text{
-      color:#ddd;
-      line-height:1.9;
-      font-size:15px;
-      margin:0;
-      white-space:pre-wrap;
-    }
-
-    .viewer-box{
-      padding:16px;
-    }
-
-    .viewer-title{
-      color:#fff;
-      font-size:22px;
-      font-weight:900;
-      line-height:1.5;
-      margin:0 0 10px;
-    }
-
-    .viewer-body{
-      color:#f0f0f0;
-      line-height:1.95;
-      font-size:14px;
-      white-space:pre-wrap;
-    }
-
-    .filters-grid{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-      margin-top:12px;
-    }
-
-    .filter-card{
-      background:var(--panel2);
-      border:1px solid var(--soft-border-2);
-      border-radius:16px;
-      padding:14px;
-    }
-
-    .filter-card label{
-      display:block;
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:8px;
-    }
-
-    .filter-card select,
-    .filter-card input{
-      width:100%;
-      background:#101010;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:12px;
-      padding:11px 12px;
-      font-size:14px;
-      outline:none;
-    }
-
-    .publisher-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
-
-    .publisher-actions button{
-      padding:12px 16px;
-      border-radius:12px;
-      font-weight:700;
-      cursor:pointer;
-      font-size:14px;
-      transition:.2s ease;
-    }
-
-    .btn-primary{
-      border:none;
-      background:#d4af37;
-      color:#000;
-    }
-
-    .btn-secondary{
-      border:1px solid rgba(255,255,255,.1);
-      background:transparent;
-      color:#ddd;
-    }
-
-    .publisher-textarea{
-      width:100%;
-      min-height:180px;
-      background:#121212;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:14px;
-      padding:14px;
-      font-family:Arial,sans-serif;
-      font-size:14px;
-      line-height:1.8;
-      resize:vertical;
-      margin-top:14px;
-    }
+    .signal-row{cursor:pointer}
+    .signal-row.active{border-color:rgba(212,175,55,.38);background:rgba(212,175,55,.06)}
+    .signal-name{font-weight:900;color:#fff;line-height:1.5}
+    .signal-desc{color:#bbb;font-size:13px;line-height:1.7}
 
     .footer{
-      margin-top:26px;
-      text-align:center;
-      color:#777;
-      font-size:14px;
-      border-top:1px solid rgba(255,255,255,.05);
-      padding-top:22px;
+      margin-top:26px;text-align:center;color:#777;font-size:14px;
+      border-top:1px solid rgba(255,255,255,.05);padding-top:22px;
     }
 
     html[dir="rtl"] body{text-align:right}
+    html[dir="rtl"] .topbar,html[dir="rtl"] .top-actions,html[dir="rtl"] .nav{direction:rtl}
+    html[dir="rtl"] .hero,html[dir="rtl"] .footer,html[dir="rtl"] .alert{text-align:center}
 
-    html[dir="rtl"] .topbar,
-    html[dir="rtl"] .top-actions,
-    html[dir="rtl"] .nav,
-    html[dir="rtl"] .metric-row,
-    html[dir="rtl"] .signal-row,
-    html[dir="rtl"] .presence-chips{
-      direction:rtl;
+    @media(max-width:1100px){
+      .presence-grid,.grid,.grid-2,.grid-3,.mini-grid{grid-template-columns:1fr}
+      .metric-row,.signal-row{align-items:flex-start;flex-direction:column}
     }
 
-    html[dir="rtl"] .hero,
-    html[dir="rtl"] .footer,
-    html[dir="rtl"] .alert{
-      text-align:center;
-    }
-
-    @media (max-width:1100px){
-      .presence-grid,
-      .grid,
-      .grid-3,
-      .grid-2,
-      .mini-grid,
-      .filters-grid{
-        grid-template-columns:1fr;
-      }
-
-      .signal-row{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width:640px){
+    @media(max-width:640px){
       .hero h1{font-size:34px}
       .topbar{flex-direction:column}
-      .nav{justify-content:center}
-      .brand{text-align:center}
-
-      .ticker-item{
-        flex:0 0 78vw;
-        max-width:78vw;
-      }
+      .ticker-item{flex:0 0 78vw;max-width:78vw}
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
 
-    <!-- TOPBAR -->
     <div class="topbar">
       <a class="brand" href="index.html">IBSS</a>
 
@@ -874,73 +224,133 @@
         </div>
 
         <div class="lang-switch">
-          <button id="btn-en">EN</button>
-          <button id="btn-ar">AR</button>
+          <button id="btn-en" type="button">EN</button>
+          <button id="btn-ar" type="button">AR</button>
         </div>
 
         <div class="audio-switch">
-          <button id="audioToggleBtn">AUDIO</button>
+          <button id="audioToggleBtn" type="button">AUDIO</button>
         </div>
       </div>
     </div>
 
-    <!-- HERO -->
     <div class="hero">
-      <h1>IBSS Signals</h1>
-      <p>Living Signal Layer — Real-Time Orchestrated Intelligence</p>
+      <h1 id="pageTitle">IBSS Signals</h1>
+      <p id="pageSub">Living Signal Layer — Real-Time Orchestrated Intelligence</p>
 
       <div id="metaLine" class="meta-line">System initializing...</div>
 
       <div class="hero-badges">
-        <span id="sourceBadge" class="meta-badge fallback">SOURCE — BOOT</span>
-        <span id="metricsBadge" class="meta-badge fallback">METRICS — WAIT</span>
+        <span id="sourceBadge" class="meta-badge warn">SOURCE — BOOT</span>
+        <span id="metricsBadge" class="meta-badge warn">METRICS — WAIT</span>
         <span id="presenceBadge" class="meta-badge">PRESENCE — IDLE</span>
-        <span id="audioBadge" class="meta-badge fallback">AUDIO — OFF</span>
+        <span id="audioBadge" class="meta-badge warn">AUDIO — OFF</span>
       </div>
     </div>
 
     <div id="alertBox" class="alert"></div>
 
-    <!-- PRESENCE -->
     <div class="presence-grid">
       <div class="presence-card">
-        <div class="presence-kicker">SIGNAL PRESENCE</div>
-        <h3 id="presenceTitle">-</h3>
-        <p id="presenceSummary">-</p>
-        <p id="presenceExplanation">-</p>
-        <div id="presenceChips" class="presence-chips"></div>
+        <div id="presenceKicker" class="presence-kicker">SIGNAL PRESENCE</div>
+        <h3 id="presenceTitle" class="presence-title">-</h3>
+        <p id="presenceSummary" class="presence-summary">-</p>
+        <p id="presenceExplanation" class="presence-explanation">-</p>
+        <div id="presenceChips" class="chips"></div>
       </div>
 
       <div class="presence-side">
         <div class="presence-mini">
-          <div class="presence-mini-label">ADVISORY</div>
+          <div id="advisoryLabel" class="presence-mini-label">ADVISORY</div>
           <div id="presenceAdvisory" class="presence-mini-value">-</div>
           <div id="presenceIntent" class="presence-mini-sub">-</div>
         </div>
 
         <div class="presence-mini">
-          <div class="presence-mini-label">PRESSURE DRIFT</div>
+          <div id="driftLabel" class="presence-mini-label">PRESSURE DRIFT</div>
           <div id="presenceDrift" class="presence-mini-value">-</div>
           <div id="presenceDriftMeta" class="presence-mini-sub">-</div>
         </div>
       </div>
     </div>
 
-    <!-- TICKER -->
     <div class="section">
-      <div class="title">Live Intelligence Strip</div>
+      <div id="tickerTitle" class="title">Live Intelligence Strip</div>
       <div class="ticker-shell">
         <div id="tickerTrack" class="ticker-track"></div>
       </div>
     </div>
 
-    <!-- MAIN CONTENT PLACEHOLDER -->
-    <div id="mainContent"></div>
+    <div class="mini-grid section">
+      <div class="mini-card">
+        <div id="miniTopSignalLabel" class="mini-title">Top Signal Score</div>
+        <div id="miniTopSignalScore" class="mini-value gold">0</div>
+      </div>
+      <div class="mini-card">
+        <div id="miniLiveSignalsLabel" class="mini-title">Live Signals</div>
+        <div id="miniLiveSignals" class="mini-value low">0</div>
+      </div>
+      <div class="mini-card">
+        <div id="miniSignalPressureLabel" class="mini-title">Signal Pressure</div>
+        <div id="miniSignalPressure" class="mini-value medium">0</div>
+      </div>
+      <div class="mini-card">
+        <div id="miniSystemPressureLabel" class="mini-title">System Stress</div>
+        <div id="miniSystemPressure" class="mini-value high">0</div>
+      </div>
+    </div>
+
+    <div class="grid section">
+      <div class="card">
+        <div id="highlightTitle" class="title">Primary Signal</div>
+        <div class="box">
+          <h3 id="highlightSignalTitle">-</h3>
+          <p id="highlightSignalDesc">-</p>
+          <div id="highlightBadges" class="mini-badges"></div>
+        </div>
+
+        <div id="driversTitle" class="title" style="margin-top:18px">Signal Drivers</div>
+        <div id="driversBox" class="list"></div>
+      </div>
+
+      <div class="card">
+        <div id="snapshotTitle" class="title">Signal Snapshot</div>
+        <div id="snapshotBox" class="list"></div>
+      </div>
+    </div>
+
+    <div class="grid-2 section">
+      <div class="card">
+        <div id="publicationTitle" class="title">Linked Publication</div>
+        <div id="publicationBox" class="publication-box"></div>
+      </div>
+
+      <div class="card">
+        <div id="viewerTitle" class="title">Signal Viewer</div>
+        <div id="viewerBox" class="viewer-box"></div>
+      </div>
+    </div>
+
+    <div class="grid-3 section">
+      <div class="card">
+        <div id="metricsTitle" class="title">Signal Metrics</div>
+        <div id="metricsBox" class="list"></div>
+      </div>
+
+      <div class="card">
+        <div id="feedTitle" class="title">Signal Feed</div>
+        <div id="feedBox" class="list"></div>
+      </div>
+
+      <div class="card">
+        <div id="signalListTitle" class="title">Ranked Signals</div>
+        <div id="signalList" class="list"></div>
+      </div>
+    </div>
 
     <div class="footer">© 2026 IBSS — Sovereign Signal Engine</div>
   </div>
 
-  <!-- SCRIPTS -->
   <script src="data.js"></script>
   <script src="sources.js"></script>
   <script src="ingestion.js"></script>
@@ -948,133 +358,640 @@
   <script src="analysis.js"></script>
   <script src="metrics-engine.js"></script>
   <script src="cluster-engine.js"></script>
+  <script src="l3-engine.js"></script>
   <script src="engine.js"></script>
   <script src="audio-engine.js"></script>
   <script src="runtime-engine.js"></script>
   <script src="publisher.js"></script>
+  <script src="facebook-publisher-layer.js"></script>
 
   <script>
-  (function(){
-    "use strict";
+    (function(){
+      "use strict";
 
-    let tickerPos = 0;
+      const APP = {
+        lang: localStorage.getItem("ibss_lang") || "en",
+        system: null,
+        selectedSignalId: null,
+        tickerPos: 0,
+        tickerStarted: false
+      };
 
-    function safe(val, fallback="-"){
-      return (val === undefined || val === null || val === "") ? fallback : val;
-    }
-
-    function getSystemSafe(){
-      try{
-        if(window.IBSS_ENGINE?.getSystemState){
-          return window.IBSS_ENGINE.getSystemState();
+      const I18N = {
+        en:{
+          title:"IBSS Signals",
+          sub:"Living Signal Layer — Real-Time Orchestrated Intelligence",
+          sourceLive:"SOURCE — LIVE",
+          sourceFail:"SOURCE — FAIL",
+          metricsOn:"METRICS — ON",
+          metricsOff:"METRICS — OFF",
+          presenceActive:"PRESENCE — ACTIVE",
+          presenceIdle:"PRESENCE — IDLE",
+          audioOn:"AUDIO — ON",
+          audioOff:"AUDIO — OFF",
+          signalPresence:"SIGNAL PRESENCE",
+          advisory:"ADVISORY",
+          drift:"PRESSURE DRIFT",
+          updated:"Updated",
+          noData:"No data available",
+          noFeed:"No live feed",
+          topSignal:"Top Signal Score",
+          liveSignals:"Live Signals",
+          signalPressure:"Signal Pressure",
+          systemStress:"System Stress",
+          primarySignal:"Primary Signal",
+          drivers:"Signal Drivers",
+          snapshot:"Signal Snapshot",
+          publication:"Linked Publication",
+          viewer:"Signal Viewer",
+          metrics:"Signal Metrics",
+          feed:"Signal Feed",
+          ranked:"Ranked Signals",
+          score:"Score",
+          band:"Band",
+          priority:"Priority",
+          region:"Region",
+          source:"Source",
+          confidence:"Confidence",
+          intent:"Intent",
+          persistence:"Persistence",
+          volatility:"Volatility",
+          state:"State",
+          urgency:"Urgency"
+        },
+        ar:{
+          title:"إشارات IBSS",
+          sub:"طبقة الإشارات الحية — استخبارات منسقة لحظيًا",
+          sourceLive:"المصدر — حي",
+          sourceFail:"المصدر — فشل",
+          metricsOn:"القياس — يعمل",
+          metricsOff:"القياس — متوقف",
+          presenceActive:"الحضور — نشط",
+          presenceIdle:"الحضور — ساكن",
+          audioOn:"الصوت — يعمل",
+          audioOff:"الصوت — متوقف",
+          signalPresence:"حضور الإشارة",
+          advisory:"التوجيه",
+          drift:"انجراف الضغط",
+          updated:"آخر تحديث",
+          noData:"لا توجد بيانات",
+          noFeed:"لا توجد تغذية حية",
+          topSignal:"أعلى درجة إشارة",
+          liveSignals:"الإشارات الحية",
+          signalPressure:"ضغط الإشارات",
+          systemStress:"ضغط النظام",
+          primarySignal:"الإشارة الأساسية",
+          drivers:"محرّكات الإشارة",
+          snapshot:"لقطة الإشارة",
+          publication:"المنشور المرتبط",
+          viewer:"عارض الإشارة",
+          metrics:"مقاييس الإشارة",
+          feed:"تغذية الإشارة",
+          ranked:"الإشارات المرتبة",
+          score:"الدرجة",
+          band:"الحزمة",
+          priority:"الأولوية",
+          region:"المنطقة",
+          source:"المصدر",
+          confidence:"الثقة",
+          intent:"النية",
+          persistence:"الاستمرار",
+          volatility:"التذبذب",
+          state:"الحالة",
+          urgency:"الاستعجال"
         }
-      }catch(e){
-        console.error("ENGINE FAIL", e);
-      }
-      return null;
-    }
+      };
 
-    function updateMeta(system){
-      const meta = document.getElementById("metaLine");
-      const source = document.getElementById("sourceBadge");
-      const metrics = document.getElementById("metricsBadge");
-      const presence = document.getElementById("presenceBadge");
+      function el(id){ return document.getElementById(id); }
+      function t(key){ return I18N[APP.lang]?.[key] || key; }
 
-      meta.textContent = "Updated: " + new Date().toLocaleTimeString();
-
-      if(system){
-        source.textContent = "SOURCE — LIVE";
-        source.className = "meta-badge live";
-
-        metrics.textContent = "METRICS — ON";
-        metrics.className = "meta-badge live";
-
-        presence.textContent = "PRESENCE — ACTIVE";
-        presence.className = "meta-badge blue";
-      }else{
-        source.textContent = "SOURCE — FAIL";
-        source.className = "meta-badge warn";
-      }
-    }
-
-    function renderPresence(system){
-      if(!system) return;
-
-      document.getElementById("presenceTitle").textContent = safe(system.voice?.posture);
-      document.getElementById("presenceSummary").textContent = safe(system.voice?.summary);
-      document.getElementById("presenceExplanation").textContent = safe(system.voice?.explanation);
-      document.getElementById("presenceAdvisory").textContent = safe(system.voice?.advisory);
-
-      document.getElementById("presenceIntent").textContent =
-        "Intent: " + safe(system.voice?.intent);
-
-      document.getElementById("presenceDrift").textContent =
-        safe(system.drift?.direction);
-
-      document.getElementById("presenceDriftMeta").textContent =
-        "Persistence: " + safe(system.drift?.persistence) +
-        " | Volatility: " + safe(system.drift?.volatility);
-    }
-
-    function renderTicker(system){
-      const track = document.getElementById("tickerTrack");
-
-      let feed = system?.publisherFeed || system?.unifiedFeed || [];
-
-      if(!feed.length){
-        track.innerHTML = `<div class="ticker-item">NO LIVE FEED</div>`;
-        return;
+      function asArray(value){
+        return Array.isArray(value) ? value : [];
       }
 
-      track.innerHTML = feed.slice(0,10).map(item=>{
-        const p = (item.priority||"LOW").toUpperCase();
-        const cls = p==="HIGH"?"high":p==="MEDIUM"?"medium":"low";
+      function safeNumber(value, fallback=0){
+        const n = Number(value);
+        return Number.isFinite(n) ? n : fallback;
+      }
 
-        return `
-          <div class="ticker-item">
-            <span class="ticker-dot ${cls}"></span>
-            <span class="ticker-item-text">${safe(item.text)}</span>
+      function text(value, fallback="-"){
+        if (value === undefined || value === null || value === "") return fallback;
+
+        if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+          return String(value);
+        }
+
+        if (Array.isArray(value)) {
+          return value.map(item => text(item, "")).filter(Boolean).join(", ") || fallback;
+        }
+
+        if (typeof value === "object") {
+          return (
+            value[APP.lang] ??
+            value.en ??
+            value.ar ??
+            value.name ??
+            value.title ??
+            value.label ??
+            value.text ??
+            value.summary ??
+            value.description ??
+            fallback
+          );
+        }
+
+        return fallback;
+      }
+
+      function html(value){
+        const div = document.createElement("div");
+        div.textContent = text(value, "");
+        return div.innerHTML;
+      }
+
+      function scoreClass(score){
+        const n = safeNumber(score, 0);
+        if (n >= 70) return "high";
+        if (n >= 35) return "medium";
+        return "low";
+      }
+
+      function priorityClass(priority){
+        const p = String(priority || "LOW").toUpperCase();
+        if (p === "HIGH") return "high";
+        if (p === "MEDIUM") return "medium";
+        return "low";
+      }
+
+      function band(score){
+        const n = safeNumber(score, 0);
+
+        if (window.IBSS_METRICS?.classifyBand) {
+          const b = window.IBSS_METRICS.classifyBand(n);
+          return APP.lang === "ar" ? text(b?.ar) : text(b?.en);
+        }
+
+        if (APP.lang === "ar") {
+          if (n >= 85) return "حرج";
+          if (n >= 70) return "مرتفع";
+          if (n >= 55) return "ضغط";
+          if (n >= 35) return "مراقبة";
+          return "منخفض";
+        }
+
+        if (n >= 85) return "Critical";
+        if (n >= 70) return "High";
+        if (n >= 55) return "Pressure";
+        if (n >= 35) return "Watch";
+        return "Low";
+      }
+
+      function getSystem(){
+        try{
+          if (!window.IBSS_ENGINE?.getSystemState) return null;
+
+          const raw = window.IBSS_ENGINE.getSystemState();
+
+          if (window.IBSS_PUBLISHER?.orchestrateSystem) {
+            return window.IBSS_PUBLISHER.orchestrateSystem(raw) || raw;
+          }
+
+          return raw;
+        }catch(error){
+          console.error("IBSS Signals getSystem error:", error);
+          return null;
+        }
+      }
+
+      function applyLanguage(){
+        document.documentElement.lang = APP.lang;
+        document.documentElement.dir = APP.lang === "ar" ? "rtl" : "ltr";
+
+        el("pageTitle").textContent = t("title");
+        el("pageSub").textContent = t("sub");
+        el("presenceKicker").textContent = t("signalPresence");
+        el("advisoryLabel").textContent = t("advisory");
+        el("driftLabel").textContent = t("drift");
+
+        el("miniTopSignalLabel").textContent = t("topSignal");
+        el("miniLiveSignalsLabel").textContent = t("liveSignals");
+        el("miniSignalPressureLabel").textContent = t("signalPressure");
+        el("miniSystemPressureLabel").textContent = t("systemStress");
+
+        el("highlightTitle").textContent = t("primarySignal");
+        el("driversTitle").textContent = t("drivers");
+        el("snapshotTitle").textContent = t("snapshot");
+        el("publicationTitle").textContent = t("publication");
+        el("viewerTitle").textContent = t("viewer");
+        el("metricsTitle").textContent = t("metrics");
+        el("feedTitle").textContent = t("feed");
+        el("signalListTitle").textContent = t("ranked");
+
+        el("btn-en").classList.toggle("active", APP.lang === "en");
+        el("btn-ar").classList.toggle("active", APP.lang === "ar");
+      }
+
+      function updateMeta(system){
+        el("metaLine").textContent = `${t("updated")}: ${new Date().toLocaleTimeString(APP.lang === "ar" ? "ar-EG" : "en-US")}`;
+
+        if (system) {
+          el("sourceBadge").textContent = t("sourceLive");
+          el("sourceBadge").className = "meta-badge live";
+
+          el("metricsBadge").textContent = system.metricsReference ? t("metricsOn") : t("metricsOff");
+          el("metricsBadge").className = system.metricsReference ? "meta-badge live" : "meta-badge warn";
+
+          el("presenceBadge").textContent = system.presence ? t("presenceActive") : t("presenceIdle");
+          el("presenceBadge").className = system.presence ? "meta-badge blue" : "meta-badge";
+        } else {
+          el("sourceBadge").textContent = t("sourceFail");
+          el("sourceBadge").className = "meta-badge warn";
+        }
+
+        const audioOn = !!window.IBSS_AUDIO?.isEnabled?.();
+        el("audioBadge").textContent = audioOn ? t("audioOn") : t("audioOff");
+        el("audioBadge").className = audioOn ? "meta-badge live" : "meta-badge warn";
+      }
+
+      function renderAlert(system){
+        const box = el("alertBox");
+        if (!system) {
+          box.style.display = "none";
+          return;
+        }
+
+        box.style.display = "block";
+
+        if (system.level === "HIGH") {
+          box.textContent = APP.lang === "ar"
+            ? "⚠ طبقة الإشارات داخل حزمة ضغط مرتفعة"
+            : "⚠ Signal layer operating inside high pressure band";
+          box.style.background = "rgba(255,77,79,.14)";
+          box.style.border = "1px solid rgba(255,77,79,.40)";
+          box.style.color = "#ffd1d1";
+          return;
+        }
+
+        if (system.level === "MEDIUM") {
+          box.textContent = APP.lang === "ar"
+            ? "⚠ طبقة الإشارات داخل حزمة مراقبة نشطة"
+            : "⚠ Signal layer operating inside active watch band";
+          box.style.background = "rgba(255,159,26,.12)";
+          box.style.border = "1px solid rgba(255,159,26,.35)";
+          box.style.color = "#ffe8c9";
+          return;
+        }
+
+        box.textContent = APP.lang === "ar"
+          ? "✓ طبقة الإشارات داخل حزمة مراقبة منخفضة"
+          : "✓ Signal layer operating inside monitoring band";
+        box.style.background = "rgba(0,208,132,.10)";
+        box.style.border = "1px solid rgba(0,208,132,.30)";
+        box.style.color = "#d7fff1";
+      }
+
+      function renderPresence(system){
+        if (!system) return;
+
+        const voice = system.voice || {};
+        const presence = system.presence || {};
+        const drift = system.drift || {};
+
+        el("presenceTitle").textContent = text(voice.posture);
+        el("presenceSummary").textContent = text(voice.summary);
+        el("presenceExplanation").textContent = text(voice.explanation);
+        el("presenceAdvisory").textContent = text(voice.advisory);
+        el("presenceIntent").textContent = `${t("intent")}: ${text(voice.intent)}`;
+        el("presenceDrift").textContent = text(drift.direction, "STABLE");
+        el("presenceDriftMeta").textContent =
+          `${t("persistence")}: ${text(drift.persistence, "0")} | ${t("volatility")}: ${text(drift.volatility, "0")}`;
+
+        el("presenceChips").innerHTML = `
+          <span class="chip">${html(t("state") + ": " + text(presence.state))}</span>
+          <span class="chip ${priorityClass(presence.urgency)}">${html(t("urgency") + ": " + text(presence.urgency))}</span>
+          <span class="chip">${html(t("systemStress") + ": " + text(system.systemPressure))}</span>
+          <span class="chip">${html(t("confidence") + ": " + text(system.confidenceScore))}</span>
+        `;
+      }
+
+      function getSignals(system){
+        return asArray(system?.rankedSignals);
+      }
+
+      function getSelectedSignal(system){
+        const signals = getSignals(system);
+        if (!signals.length) return null;
+
+        if (!APP.selectedSignalId) APP.selectedSignalId = signals[0].id;
+
+        return signals.find(s => s.id === APP.selectedSignalId) || signals[0];
+      }
+
+      function renderMiniCards(system){
+        const top = system?.topSignal || getSelectedSignal(system);
+        const topScore = safeNumber(top?.balancedScore100 ?? top?.score100, 0);
+
+        el("miniTopSignalScore").textContent = topScore;
+        el("miniTopSignalScore").className = `mini-value ${scoreClass(topScore)}`;
+
+        el("miniLiveSignals").textContent = safeNumber(system?.liveSignalsCount, 0);
+        el("miniLiveSignals").className = `mini-value ${scoreClass(safeNumber(system?.liveSignalsCount, 0) * 8)}`;
+
+        el("miniSignalPressure").textContent = safeNumber(system?.signalPressure, 0);
+        el("miniSignalPressure").className = `mini-value ${scoreClass(system?.signalPressure)}`;
+
+        el("miniSystemPressure").textContent = safeNumber(system?.systemPressure, 0);
+        el("miniSystemPressure").className = `mini-value ${scoreClass(system?.systemPressure)}`;
+      }
+
+      function renderTicker(system){
+        const track = el("tickerTrack");
+        const feed = asArray(system?.publisherFeed || system?.unifiedFeed || system?.feed);
+
+        if (!feed.length) {
+          track.innerHTML = `<div class="ticker-item"><span class="ticker-item-text">${html(t("noFeed"))}</span></div>`;
+          return;
+        }
+
+        const items = [...feed.slice(0, 10), ...feed.slice(0, 10)];
+
+        track.innerHTML = items.map(item => {
+          const cls = priorityClass(item.priority);
+          const value = text(item.text || item.title || item.summary || item.description);
+          return `
+            <div class="ticker-item">
+              <span class="ticker-dot ${cls}"></span>
+              <span class="ticker-item-text">${html(value)}</span>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function startTicker(){
+        if (APP.tickerStarted) return;
+        APP.tickerStarted = true;
+
+        function frame(){
+          const track = el("tickerTrack");
+          if (track) {
+            APP.tickerPos -= 0.35;
+            if (Math.abs(APP.tickerPos) > track.scrollWidth / 2) APP.tickerPos = 0;
+            track.style.transform = `translateX(${APP.tickerPos}px)`;
+          }
+          requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      function renderPrimarySignal(system){
+        const signal = getSelectedSignal(system);
+
+        if (!signal) {
+          el("highlightSignalTitle").textContent = "-";
+          el("highlightSignalDesc").textContent = t("noData");
+          el("highlightBadges").innerHTML = "";
+          return;
+        }
+
+        const score = safeNumber(signal.balancedScore100 ?? signal.score100, 0);
+
+        el("highlightSignalTitle").textContent = text(signal.title);
+        el("highlightSignalDesc").textContent = text(signal.description || signal.summary);
+
+        el("highlightBadges").innerHTML = `
+          <span class="mini-badge ${scoreClass(score)}">${html(t("score") + ": " + score)}</span>
+          <span class="mini-badge">${html(t("band") + ": " + band(score))}</span>
+          <span class="mini-badge">${html(t("priority") + ": " + text(signal.priority))}</span>
+          <span class="mini-badge">${html(t("region") + ": " + text(signal.region))}</span>
+          <span class="mini-badge">${html(t("source") + ": " + text(signal.source || signal.sourceUnit))}</span>
+        `;
+      }
+
+      function renderDrivers(system){
+        const drivers = asArray(system?.drivers);
+
+        if (!drivers.length) {
+          el("driversBox").innerHTML = `<div class="driver-item"><div class="driver-title">${html(t("noData"))}</div></div>`;
+          return;
+        }
+
+        el("driversBox").innerHTML = drivers.slice(0,5).map(driver => `
+          <div class="driver-item">
+            <div class="driver-title">${html(text(driver.label))}</div>
+            <div class="driver-meta">${html(text(driver.explanation))}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderSnapshot(system){
+        const topTheater = system?.topTheater;
+        const topCluster = system?.topCluster;
+        const topCountry = system?.topCountry || asArray(system?.countryRiskFeed)[0];
+
+        el("snapshotBox").innerHTML = `
+          <div class="snapshot-item">
+            <strong>${html(APP.lang === "ar" ? "المسرح الأعلى" : "Top Theater")}: ${html(text(topTheater?.name))}</strong>
+            <div class="snapshot-meta">${html(t("score") + ": " + safeNumber(topTheater?.avgRisk, 0) + " | " + t("band") + ": " + band(topTheater?.avgRisk))}</div>
+          </div>
+          <div class="snapshot-item">
+            <strong>${html(APP.lang === "ar" ? "الملف الأعلى" : "Top Strategic File")}: ${html(text(topCluster?.name))}</strong>
+            <div class="snapshot-meta">${html(t("score") + ": " + safeNumber(topCluster?.avgRisk, 0) + " | " + t("band") + ": " + band(topCluster?.avgRisk))}</div>
+          </div>
+          <div class="snapshot-item">
+            <strong>${html(APP.lang === "ar" ? "أعلى دولة خطرًا" : "Top Country Risk")}: ${html(text(topCountry?.nameLocalized || topCountry?.name))}</strong>
+            <div class="snapshot-meta">${html(t("score") + ": " + safeNumber(topCountry?.riskScore, 0) + " | " + t("band") + ": " + band(topCountry?.riskScore))}</div>
           </div>
         `;
-      }).join("");
-    }
-
-    function autoScroll(){
-      const track = document.getElementById("tickerTrack");
-      if(!track) return;
-
-      tickerPos -= 0.4;
-      if(Math.abs(tickerPos) > track.scrollWidth/2){
-        tickerPos = 0;
       }
 
-      track.style.transform = `translateX(${tickerPos}px)`;
-      requestAnimationFrame(autoScroll);
-    }
+      function renderPublication(system){
+        const signal = getSelectedSignal(system);
+        let publication = null;
 
-    function runtime(){
-      const system = getSystemSafe();
+        try {
+          publication = window.IBSS_PUBLISHER?.findPublicationForSignal?.(signal) || null;
+        } catch(error) {
+          publication = null;
+        }
 
-      updateMeta(system);
-      renderPresence(system);
-      renderTicker(system);
-    }
+        publication =
+          publication ||
+          system?.publicationContext?.topSignalContent ||
+          system?.featuredPublication ||
+          system?.snapshot?.latestStudy ||
+          null;
 
-    function start(){
-      runtime();
-      setInterval(runtime, 4000);
-      autoScroll();
-    }
+        if (!publication) {
+          el("publicationBox").innerHTML = `<p class="publication-text">${html(t("noData"))}</p>`;
+          return;
+        }
 
-    document.getElementById("btn-en").onclick = ()=>location.reload();
-    document.getElementById("btn-ar").onclick = ()=>{
-      document.documentElement.dir="rtl";
-    };
+        el("publicationBox").innerHTML = `
+          <h3 class="publication-title">${html(text(publication.title))}</h3>
+          <p class="publication-text">${html(text(publication.summary || publication.body))}</p>
+          <div class="mini-badges">
+            <span class="mini-badge">${html(text(publication.type, "-").toUpperCase())}</span>
+            <span class="mini-badge">${html(text(publication.domain))}</span>
+            <span class="mini-badge">${html(text(publication.country || publication.countryId))}</span>
+          </div>
+        `;
+      }
 
-    start();
+      function renderViewer(system){
+        const signal = getSelectedSignal(system);
 
-  })();
+        if (!signal) {
+          el("viewerBox").innerHTML = `<div class="viewer-body">${html(t("noData"))}</div>`;
+          return;
+        }
+
+        const score = safeNumber(signal.balancedScore100 ?? signal.score100, 0);
+
+        el("viewerBox").innerHTML = `
+          <h3 class="viewer-title">${html(text(signal.title))}</h3>
+          <div class="viewer-body">${html(text(signal.description || signal.summary))}</div>
+          <div class="mini-badges">
+            <span class="mini-badge ${scoreClass(score)}">${html(t("score") + ": " + score)}</span>
+            <span class="mini-badge">${html(t("band") + ": " + band(score))}</span>
+            <span class="mini-badge">${html(t("priority") + ": " + text(signal.priority))}</span>
+          </div>
+        `;
+      }
+
+      function renderMetrics(system){
+        const signal = getSelectedSignal(system);
+        const cluster = system?.topCluster;
+        const theater = system?.topTheater;
+        const country = system?.topCountry || asArray(system?.countryRiskFeed)[0];
+
+        const rows = [
+          [APP.lang === "ar" ? "درجة الإشارة" : "Signal Score", safeNumber(signal?.balancedScore100 ?? signal?.score100, 0)],
+          [APP.lang === "ar" ? "خطر الملف" : "Strategic File Risk", safeNumber(cluster?.avgRisk, 0)],
+          [APP.lang === "ar" ? "خطر المسرح" : "Theater Risk", safeNumber(theater?.avgRisk, 0)],
+          [APP.lang === "ar" ? "خطر الدولة" : "Country Risk", safeNumber(country?.riskScore, 0)],
+          [t("systemStress"), safeNumber(system?.systemPressure, 0)],
+          [t("confidence"), safeNumber(system?.confidenceScore, 0)]
+        ];
+
+        el("metricsBox").innerHTML = rows.map(([name, value]) => `
+          <div class="metric-row">
+            <div>
+              <div class="metric-name">${html(name)}</div>
+              <div class="metric-sub">${html(t("band") + ": " + band(value))}</div>
+            </div>
+            <div class="metric-score ${scoreClass(value)}">${html(value)}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderFeed(system){
+        const feed = asArray(system?.publisherFeed || system?.unifiedFeed || system?.feed);
+
+        if (!feed.length) {
+          el("feedBox").innerHTML = `<div class="feed-item">${html(t("noFeed"))}</div>`;
+          return;
+        }
+
+        el("feedBox").innerHTML = feed.slice(0, 8).map(item => `
+          <div class="feed-item">${html(text(item.text || item.title || item.summary || item.description))}</div>
+        `).join("");
+      }
+
+      function renderSignalList(system){
+        const signals = getSignals(system);
+
+        if (!signals.length) {
+          el("signalList").innerHTML = `<div class="signal-row">${html(t("noData"))}</div>`;
+          return;
+        }
+
+        el("signalList").innerHTML = signals.slice(0, 6).map(signal => {
+          const score = safeNumber(signal.balancedScore100 ?? signal.score100, 0);
+          const active = signal.id === APP.selectedSignalId ? "active" : "";
+
+          return `
+            <div class="signal-row ${active}" data-signal-id="${html(signal.id)}">
+              <div>
+                <div class="signal-name">${html(text(signal.title))}</div>
+                <div class="signal-desc">${html(text(signal.description || signal.summary)).slice(0,180)}</div>
+              </div>
+              <div class="${scoreClass(score)}" style="font-weight:900;font-size:22px">${html(score)}</div>
+            </div>
+          `;
+        }).join("");
+
+        el("signalList").querySelectorAll("[data-signal-id]").forEach(node => {
+          node.addEventListener("click", function(){
+            APP.selectedSignalId = this.getAttribute("data-signal-id");
+            renderAll(APP.system);
+          });
+        });
+      }
+
+      function renderAll(system){
+        if (!system) return;
+
+        APP.system = system;
+
+        if (!APP.selectedSignalId && system.topSignal?.id) {
+          APP.selectedSignalId = system.topSignal.id;
+        }
+
+        applyLanguage();
+        updateMeta(system);
+        renderAlert(system);
+        renderPresence(system);
+        renderMiniCards(system);
+        renderTicker(system);
+        renderPrimarySignal(system);
+        renderDrivers(system);
+        renderSnapshot(system);
+        renderPublication(system);
+        renderViewer(system);
+        renderMetrics(system);
+        renderFeed(system);
+        renderSignalList(system);
+        startTicker();
+      }
+
+      function runtime(){
+        const system = getSystem();
+        updateMeta(system);
+        if (system) renderAll(system);
+      }
+
+      function start(){
+        applyLanguage();
+        runtime();
+        setInterval(runtime, 4000);
+      }
+
+      el("btn-en").addEventListener("click", function(){
+        APP.lang = "en";
+        localStorage.setItem("ibss_lang", "en");
+        renderAll(APP.system || getSystem());
+      });
+
+      el("btn-ar").addEventListener("click", function(){
+        APP.lang = "ar";
+        localStorage.setItem("ibss_lang", "ar");
+        renderAll(APP.system || getSystem());
+      });
+
+      el("audioToggleBtn").addEventListener("click", async function(){
+        try {
+          if (window.IBSS_AUDIO?.toggle) {
+            await window.IBSS_AUDIO.toggle();
+            updateMeta(APP.system);
+          }
+        } catch(error) {
+          console.error("Audio toggle error:", error);
+        }
+      });
+
+      window.addEventListener("load", start);
+    })();
   </script>
-
 </body>
 </html>
