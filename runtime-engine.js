@@ -1,9 +1,11 @@
+// IBSS RUNTIME ENGINE — Clean Stable Runtime
+// Version: v8.0 Stable Dashboard Runtime
+
 window.IBSS_RUNTIME = (function () {
   "use strict";
 
   const CONFIG = {
-    storageKey: "ibss_runtime_state_v7_full",
-
+    storageKey: "ibss_runtime_state_v80_stable",
     defaultRefreshMs: 4000,
     minRefreshMs: 1000,
     maxRefreshMs: 60000,
@@ -11,12 +13,10 @@ window.IBSS_RUNTIME = (function () {
     tickerStepPx: 0.7,
     tickerFrameThrottleMs: 20,
     minTickerCopies: 3,
-    deadTickerRetryEvery: 18,
     resizeDebounceMs: 180,
 
     autoAudio: true,
     autoIngestionRefresh: true,
-    maxConsecutiveResolveErrors: 6,
     staleSystemFallbackMs: 30000
   };
 
@@ -24,7 +24,6 @@ window.IBSS_RUNTIME = (function () {
     started: false,
     pageId: null,
     lang: "en",
-
     refreshMs: CONFIG.defaultRefreshMs,
     refreshTimer: null,
 
@@ -42,23 +41,17 @@ window.IBSS_RUNTIME = (function () {
     tickerOffset: 0,
     tickerCycleWidth: 0,
     tickerLastFrameAt: 0,
-    tickerFrameCounter: 0,
-    tickerFrozenChecks: 0,
 
     afterRender: null,
     beforeResolve: null,
     afterResolve: null,
     onError: null,
-
     systemProvider: null,
     tickerItemsProvider: null,
 
-    resizeTimer: null
+    resizeTimer: null,
+    rendering: false
   };
-
-  /* =========================================
-     Utilities
-  ========================================= */
 
   function safeText(value, fallback = "") {
     return typeof value === "string" && value.trim() ? value.trim() : fallback;
@@ -77,15 +70,11 @@ window.IBSS_RUNTIME = (function () {
     return Math.max(min, Math.min(max, value));
   }
 
-  function nowMs() {
-    return Date.now();
-  }
-
   function deepClone(value) {
     try {
       return JSON.parse(JSON.stringify(value));
     } catch (error) {
-      console.error("IBSS_RUNTIME deepClone error:", error);
+      console.error("IBSS_RUNTIME clone error:", error);
       return null;
     }
   }
@@ -137,10 +126,6 @@ window.IBSS_RUNTIME = (function () {
     }
   }
 
-  /* =========================================
-     Storage
-  ========================================= */
-
   function saveState() {
     try {
       localStorage.setItem(CONFIG.storageKey, JSON.stringify({
@@ -173,9 +158,10 @@ window.IBSS_RUNTIME = (function () {
     }
   }
 
-  /* =========================================
-     Ticker Engine
-  ========================================= */
+  function resolveTickerElement(options = {}) {
+    if (options.tickerTrackEl) return options.tickerTrackEl;
+    return document.getElementById("tickerTrack") || null;
+  }
 
   function stopTicker() {
     if (STATE.tickerAnimationId) {
@@ -186,8 +172,6 @@ window.IBSS_RUNTIME = (function () {
     STATE.tickerOffset = 0;
     STATE.tickerCycleWidth = 0;
     STATE.tickerLastFrameAt = 0;
-    STATE.tickerFrameCounter = 0;
-    STATE.tickerFrozenChecks = 0;
 
     if (STATE.tickerTrackEl) {
       STATE.tickerTrackEl.style.transform = "translateX(0px)";
@@ -209,10 +193,9 @@ window.IBSS_RUNTIME = (function () {
   function normalizeTickerItems(items) {
     const fallback = STATE.lang === "ar" ? "لا توجد بيانات." : "No data available.";
 
-    const base = asArray(items).length ? asArray(items) : [{
-      priority: "LOW",
-      text: fallback
-    }];
+    const base = asArray(items).length
+      ? asArray(items)
+      : [{ priority: "LOW", text: fallback }];
 
     return base.map(item => ({
       priority: normalizePriority(item?.priority || "LOW"),
@@ -234,31 +217,27 @@ window.IBSS_RUNTIME = (function () {
 
     const unifiedFeed = asArray(system?.publisherFeed || system?.unifiedFeed);
     if (unifiedFeed.length) {
-      return normalizeTickerItems(
-        unifiedFeed.map(item => ({
-          priority: normalizePriority(item?.priority || system?.level || "LOW"),
-          text: getLocalizedText(item?.text, STATE.lang) || "-"
-        }))
-      );
+      return normalizeTickerItems(unifiedFeed.map(item => ({
+        priority: normalizePriority(item?.priority || system?.level || "LOW"),
+        text: getLocalizedText(item?.text, STATE.lang) || "-"
+      })));
     }
 
     const feed = asArray(system?.feed);
     if (feed.length) {
-      return normalizeTickerItems(
-        feed.map(item => {
-          if (typeof item === "string") {
-            return {
-              priority: normalizePriority(system?.level || "LOW"),
-              text: item
-            };
-          }
-
+      return normalizeTickerItems(feed.map(item => {
+        if (typeof item === "string") {
           return {
-            priority: normalizePriority(item?.priority || system?.level || "LOW"),
-            text: getLocalizedText(item?.text, STATE.lang) || "-"
+            priority: normalizePriority(system?.level || "LOW"),
+            text: item
           };
-        })
-      );
+        }
+
+        return {
+          priority: normalizePriority(item?.priority || system?.level || "LOW"),
+          text: getLocalizedText(item?.text, STATE.lang) || "-"
+        };
+      }));
     }
 
     const synthetic = [];
@@ -321,6 +300,7 @@ window.IBSS_RUNTIME = (function () {
     if (!singleSetCount) return 0;
 
     let width = 0;
+
     for (let i = 0; i < singleSetCount; i += 1) {
       width += children[i].offsetWidth;
     }
@@ -369,6 +349,7 @@ window.IBSS_RUNTIME = (function () {
     }
 
     const elapsed = ts - STATE.tickerLastFrameAt;
+
     if (elapsed < CONFIG.tickerFrameThrottleMs) {
       STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
       return;
@@ -390,21 +371,6 @@ window.IBSS_RUNTIME = (function () {
 
     const translateX = STATE.lang === "ar" ? STATE.tickerOffset : -STATE.tickerOffset;
     STATE.tickerTrackEl.style.transform = `translateX(${translateX}px)`;
-    STATE.tickerFrameCounter += 1;
-
-    if (STATE.tickerFrameCounter % CONFIG.deadTickerRetryEvery === 0) {
-      const transform = STATE.tickerTrackEl.style.transform || "";
-      if (!transform.includes("translateX")) {
-        STATE.tickerFrozenChecks += 1;
-      } else {
-        STATE.tickerFrozenChecks = 0;
-      }
-
-      if (STATE.tickerFrozenChecks >= 2) {
-        STATE.tickerTrackEl.style.transform = `translateX(${translateX}px)`;
-        STATE.tickerFrozenChecks = 0;
-      }
-    }
 
     STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
   }
@@ -413,15 +379,20 @@ window.IBSS_RUNTIME = (function () {
     if (!STATE.tickerTrackEl || !STATE.system) return;
 
     const items = buildTickerItemsFromSystem(STATE.system);
+
     STATE.tickerItems = deepClone(items) || [];
     STATE.tickerSignature = JSON.stringify(items);
 
-    renderTickerMarkup(items);
     stopTicker();
+    renderTickerMarkup(items);
     STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
   }
 
   function refreshTicker(system) {
+    if (!STATE.tickerTrackEl) {
+      STATE.tickerTrackEl = document.getElementById("tickerTrack") || null;
+    }
+
     if (!STATE.tickerTrackEl) return;
 
     const items = buildTickerItemsFromSystem(system);
@@ -431,8 +402,8 @@ window.IBSS_RUNTIME = (function () {
       STATE.tickerItems = deepClone(items) || [];
       STATE.tickerSignature = signature;
 
-      renderTickerMarkup(items);
       stopTicker();
+      renderTickerMarkup(items);
       STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
       return;
     }
@@ -442,10 +413,6 @@ window.IBSS_RUNTIME = (function () {
       STATE.tickerAnimationId = requestAnimationFrame(animateTicker);
     }
   }
-
-  /* =========================================
-     Refresh Loop
-  ========================================= */
 
   function destroyRefreshTimer() {
     if (STATE.refreshTimer) {
@@ -457,7 +424,7 @@ window.IBSS_RUNTIME = (function () {
   function getFallbackSystem() {
     const isFreshEnough =
       STATE.lastResolvedSystem &&
-      (nowMs() - STATE.lastResolvedAt <= CONFIG.staleSystemFallbackMs);
+      Date.now() - STATE.lastResolvedAt <= CONFIG.staleSystemFallbackMs;
 
     return isFreshEnough ? STATE.lastResolvedSystem : null;
   }
@@ -486,6 +453,18 @@ window.IBSS_RUNTIME = (function () {
     return null;
   }
 
+  function isAlreadyOrchestrated(system) {
+    return !!(
+      system &&
+      (
+        system.source === "orchestrated" ||
+        system.publisherDigest ||
+        system.publisherFeed ||
+        system.unifiedFeed
+      )
+    );
+  }
+
   function getResolvedSystem() {
     const rawSystem = getRawSystem();
 
@@ -497,7 +476,7 @@ window.IBSS_RUNTIME = (function () {
     let resolved = rawSystem;
 
     try {
-      if (window.IBSS_PUBLISHER?.orchestrateSystem) {
+      if (!isAlreadyOrchestrated(rawSystem) && window.IBSS_PUBLISHER?.orchestrateSystem) {
         resolved = window.IBSS_PUBLISHER.orchestrateSystem(rawSystem) || rawSystem;
       }
     } catch (error) {
@@ -514,38 +493,44 @@ window.IBSS_RUNTIME = (function () {
     }
 
     STATE.lastResolvedSystem = resolved;
-    STATE.lastResolvedAt = nowMs();
+    STATE.lastResolvedAt = Date.now();
     STATE.consecutiveResolveErrors = 0;
 
     return resolved;
   }
 
   function render(system) {
-    if (!system) return null;
+    if (!system || STATE.rendering) return null;
 
-    STATE.system = system;
-    refreshTicker(system);
+    STATE.rendering = true;
 
-    if (CONFIG.autoAudio) {
-      try {
-        if (window.IBSS_AUDIO?.updateFromSystem) {
-          window.IBSS_AUDIO.updateFromSystem(system);
+    try {
+      STATE.system = system;
+
+      refreshTicker(system);
+
+      if (CONFIG.autoAudio) {
+        try {
+          if (window.IBSS_AUDIO?.updateFromSystem) {
+            window.IBSS_AUDIO.updateFromSystem(system);
+          }
+        } catch (error) {
+          logError("audioUpdate", error);
         }
-      } catch (error) {
-        logError("audioUpdate", error);
       }
-    }
 
-    if (typeof STATE.afterRender === "function") {
-      try {
+      if (typeof STATE.afterRender === "function") {
         STATE.afterRender(system);
-      } catch (error) {
-        logError("afterRender", error);
       }
-    }
 
-    STATE.lastSuccessfulRenderAt = nowMs();
-    return system;
+      STATE.lastSuccessfulRenderAt = Date.now();
+      return system;
+    } catch (error) {
+      logError("render", error);
+      return null;
+    } finally {
+      STATE.rendering = false;
+    }
   }
 
   function runFrame() {
@@ -561,10 +546,6 @@ window.IBSS_RUNTIME = (function () {
       runFrame();
     }, clamp(STATE.refreshMs, CONFIG.minRefreshMs, CONFIG.maxRefreshMs));
   }
-
-  /* =========================================
-     Event Binding
-  ========================================= */
 
   function bindGlobalEvents() {
     if (window.__IBSS_RUNTIME_EVENTS_BOUND__) return;
@@ -584,6 +565,15 @@ window.IBSS_RUNTIME = (function () {
         restartTicker();
       }, CONFIG.resizeDebounceMs);
     });
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) {
+        stopTicker();
+      } else if (STATE.started) {
+        restartTicker();
+        runFrame();
+      }
+    });
   }
 
   function ensureIngestionRefresh() {
@@ -602,11 +592,11 @@ window.IBSS_RUNTIME = (function () {
     }
   }
 
-  /* =========================================
-     Public API
-  ========================================= */
-
   function start(options = {}) {
+    if (STATE.started) {
+      stop();
+    }
+
     loadState();
 
     STATE.started = true;
@@ -618,7 +608,8 @@ window.IBSS_RUNTIME = (function () {
       CONFIG.maxRefreshMs
     );
 
-    STATE.tickerTrackEl = options.tickerTrackEl || null;
+    STATE.tickerTrackEl = resolveTickerElement(options);
+
     STATE.afterRender = typeof options.afterRender === "function" ? options.afterRender : null;
     STATE.beforeResolve = typeof options.beforeResolve === "function" ? options.beforeResolve : null;
     STATE.afterResolve = typeof options.afterResolve === "function" ? options.afterResolve : null;
@@ -661,6 +652,7 @@ window.IBSS_RUNTIME = (function () {
       CONFIG.minRefreshMs,
       CONFIG.maxRefreshMs
     );
+
     saveState();
 
     if (STATE.started) {
