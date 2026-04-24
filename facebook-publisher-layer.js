@@ -1,153 +1,284 @@
-// IBSS FACEBOOK PUBLISHER LAYER — Clean Bridge // Version: v1.0 Manual Review Mode
+// IBSS FACEBOOK PUBLISHER LAYER — Safe Social Export Layer
+// Version: v2.0
 
-window.IBSS_FACEBOOK = (function () { "use strict";
+window.IBSS_FACEBOOK_LAYER = (function () {
+  "use strict";
 
-const CONFIG = { storageKey: "ibss_facebook_publisher_v1", maxDrafts: 120, maxPublished: 200 };
+  const CONFIG = {
+    version: "v2.0-safe-social-export-layer",
+    storageKey: "ibss_facebook_layer_v20",
+    maxHistory: 80,
+    defaultHashtags: ["IBSS", "StrategicIntelligence", "SovereignStudies"]
+  };
 
-const STATE = { initialized: false, drafts: [], published: [], connection: { status: "disconnected", // disconnected | connected pageName: "", pageId: "" } };
+  const STATE = {
+    history: []
+  };
 
-/* ============================= Utilities ============================= */
+  function safeText(value, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+  }
 
-function nowIso() { return new Date().toISOString(); }
+  function asArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
 
-function clone(v) { try { return JSON.parse(JSON.stringify(v)); } catch { return null; } }
+  function clone(value) {
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      console.error("IBSS_FACEBOOK_LAYER clone error:", error);
+      return null;
+    }
+  }
 
-function safeText(v, f = "") { return typeof v === "string" && v.trim() ? v.trim() : f; }
+  function nowIso() {
+    return new Date().toISOString();
+  }
 
-function asArray(v) { return Array.isArray(v) ? v : []; }
+  function getLang() {
+    return safeText(localStorage.getItem("ibss_lang") || document.documentElement.lang || "en", "en");
+  }
 
-function buildId(prefix = "FB") { return ${prefix}-${Date.now()}-${Math.floor(Math.random()*10000)}; }
+  function getLocalizedText(value, lang = "en") {
+    if (!value) return "";
+    if (typeof value === "string" || typeof value === "number") return String(value);
 
-/* ============================= Storage ============================= */
+    return (
+      value?.[lang] ||
+      value?.en ||
+      value?.ar ||
+      value?.name ||
+      value?.title ||
+      value?.label ||
+      value?.text ||
+      ""
+    );
+  }
 
-function load() { try { const raw = localStorage.getItem(CONFIG.storageKey); if (!raw) return; const p = JSON.parse(raw); STATE.drafts = asArray(p.drafts); STATE.published = asArray(p.published); STATE.connection = p.connection || STATE.connection; } catch (e) { console.error("FB load error", e); } }
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      if (!raw) return;
 
-function save() { try { localStorage.setItem(CONFIG.storageKey, JSON.stringify({ drafts: STATE.drafts, published: STATE.published, connection: STATE.connection })); } catch (e) { console.error("FB save error", e); } }
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return;
 
-function init() { if (STATE.initialized) return; load(); STATE.initialized = true; }
+      STATE.history = asArray(parsed.history);
+    } catch (error) {
+      console.error("IBSS_FACEBOOK_LAYER loadState error:", error);
+    }
+  }
 
-/* ============================= Draft Builder ============================= */
+  function saveState() {
+    try {
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+        history: STATE.history
+      }));
+    } catch (error) {
+      console.error("IBSS_FACEBOOK_LAYER saveState error:", error);
+    }
+  }
 
-function createDraft(type, payload) { init();
+  function normalizeHashtags(tags = CONFIG.defaultHashtags) {
+    return asArray(tags)
+      .map(tag => safeText(String(tag || "").replace(/^#/, ""), ""))
+      .filter(Boolean)
+      .map(tag => `#${tag.replace(/\s+/g, "")}`)
+      .join(" ");
+  }
 
-const draft = {
-  id: buildId("FBPOST"),
-  type,
-  createdAt: nowIso(),
-  status: "draft",
-  payload
-};
+  function getLatestDraft() {
+    try {
+      return window.IBSS_PUBLISHER?.getLatestDraft?.() || null;
+    } catch (error) {
+      console.error("IBSS_FACEBOOK_LAYER getLatestDraft error:", error);
+      return null;
+    }
+  }
 
-STATE.drafts.unshift(draft);
-if (STATE.drafts.length > CONFIG.maxDrafts) {
-  STATE.drafts = STATE.drafts.slice(0, CONFIG.maxDrafts);
-}
+  function getDraftText(draft, lang = getLang()) {
+    if (!draft) return "";
 
-save();
-return clone(draft);
+    if (lang === "ar") {
+      return (
+        draft?.payload?.text_ar ||
+        draft?.payload?.text_en ||
+        draft?.text_ar ||
+        draft?.text_en ||
+        draft?.text ||
+        ""
+      );
+    }
 
-}
+    return (
+      draft?.payload?.text_en ||
+      draft?.payload?.text_ar ||
+      draft?.text_en ||
+      draft?.text_ar ||
+      draft?.text ||
+      ""
+    );
+  }
 
-/* ============================= Generators from IBSS ============================= */
+  function buildFacebookPost(input = {}, lang = getLang()) {
+    const baseText =
+      typeof input === "string"
+        ? input
+        : getDraftText(input, lang) ||
+          getLocalizedText(input?.text, lang) ||
+          getLocalizedText(input?.title, lang) ||
+          "";
 
-function generateFromTopSignal() { const post = window.IBSS_PUBLISHER?.generateTopSignalPost?.(); if (!post) return null;
+    const hashtags = normalizeHashtags(input?.hashtags || CONFIG.defaultHashtags);
 
-return createDraft("signal", post.payload);
+    const text = safeText(baseText, lang === "ar" ? "تحديث IBSS" : "IBSS Update");
 
-}
+    if (text.includes("#IBSS")) {
+      return text;
+    }
 
-function generateStrategicBrief() { const post = window.IBSS_PUBLISHER?.generateStrategicBrief?.(); if (!post) return null;
+    return `${text}\n\n${hashtags}`.trim();
+  }
 
-return createDraft("brief", post.payload);
+  async function copyText(text) {
+    const value = safeText(text, "");
+    if (!value) return false;
 
-}
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
 
-function generateFeaturedPublication() { const post = window.IBSS_PUBLISHER?.generateFeaturedPublicationPost?.(); if (!post) return null;
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.setAttribute("readonly", "readonly");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
 
-return createDraft("publication", post.payload);
+      const success = document.execCommand("copy");
+      document.body.removeChild(textarea);
 
-}
+      return success;
+    } catch (error) {
+      console.error("IBSS_FACEBOOK_LAYER copyText error:", error);
+      return false;
+    }
+  }
 
-function generateLinkedPublication(signal) { const post = window.IBSS_PUBLISHER?.generateLinkedPublicationPost?.(signal); if (!post) return null;
+  function recordExport(text, meta = {}) {
+    const item = {
+      id: `FB-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+      createdAt: nowIso(),
+      text,
+      meta
+    };
 
-return createDraft("linked_publication", post.payload);
+    STATE.history.unshift(item);
 
-}
+    if (STATE.history.length > CONFIG.maxHistory) {
+      STATE.history = STATE.history.slice(0, CONFIG.maxHistory);
+    }
 
-function generateCustom(text_en, text_ar) { return createDraft("custom", { text_en: safeText(text_en, "-"), text_ar: safeText(text_ar, text_en || "-") }); }
+    saveState();
+    return clone(item);
+  }
 
-/* ============================= Publish (Manual Mode) ============================= */
+  async function copyLatestDraft(lang = getLang()) {
+    const draft = getLatestDraft();
+    const text = buildFacebookPost(draft || {}, lang);
 
-function markAsPublished(id) { init();
+    const copied = await copyText(text);
 
-const i = STATE.drafts.findIndex(d => d.id === id);
-if (i === -1) return null;
+    if (copied) {
+      recordExport(text, {
+        action: "copyLatestDraft",
+        draftId: draft?.id || null,
+        lang
+      });
+    }
 
-const post = {
-  ...STATE.drafts[i],
-  status: "published",
-  publishedAt: nowIso()
-};
+    return copied;
+  }
 
-STATE.drafts.splice(i, 1);
-STATE.published.unshift(post);
+  async function copyPost(input = {}, lang = getLang()) {
+    const text = buildFacebookPost(input, lang);
+    const copied = await copyText(text);
 
-if (STATE.published.length > CONFIG.maxPublished) {
-  STATE.published = STATE.published.slice(0, CONFIG.maxPublished);
-}
+    if (copied) {
+      recordExport(text, {
+        action: "copyPost",
+        lang
+      });
+    }
 
-save();
-return clone(post);
+    return copied;
+  }
 
-}
+  function openShareDialog(input = {}, lang = getLang()) {
+    const text = buildFacebookPost(input, lang);
+    const encoded = encodeURIComponent(text);
 
-function removeDraft(id) { init(); STATE.drafts = STATE.drafts.filter(d => d.id !== id); save(); }
+    try {
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?quote=${encoded}`,
+        "_blank",
+        "noopener,noreferrer,width=720,height=640"
+      );
 
-/* ============================= Connection (Phase B ready) ============================= */
+      recordExport(text, {
+        action: "openShareDialog",
+        lang
+      });
 
-function connect(pageName, pageId) { init();
+      return true;
+    } catch (error) {
+      console.error("IBSS_FACEBOOK_LAYER openShareDialog error:", error);
+      return false;
+    }
+  }
 
-STATE.connection = {
-  status: "connected",
-  pageName: safeText(pageName, "IBSS Page"),
-  pageId: safeText(pageId, "unknown")
-};
+  function getHistory() {
+    return clone(STATE.history) || [];
+  }
 
-save();
-return clone(STATE.connection);
+  function clearHistory() {
+    STATE.history = [];
+    saveState();
+    return true;
+  }
 
-}
+  function attachToPublisherConsole() {
+    const copyBtn = document.getElementById("btnCopyDraftPost");
+    if (!copyBtn || copyBtn.dataset.facebookLayerBound === "1") return false;
 
-function disconnect() { init();
+    copyBtn.dataset.facebookLayerBound = "1";
 
-STATE.connection = {
-  status: "disconnected",
-  pageName: "",
-  pageId: ""
-};
+    copyBtn.addEventListener("dblclick", async function () {
+      await copyLatestDraft(getLang());
+    });
 
-save();
+    return true;
+  }
 
-}
+  loadState();
 
-/* ============================= Readers ============================= */
+  window.addEventListener("load", function () {
+    attachToPublisherConsole();
+  });
 
-function getDrafts() { init(); return clone(STATE.drafts); }
-
-function getPublished() { init(); return clone(STATE.published); }
-
-function getConnection() { init(); return clone(STATE.connection); }
-
-return { generateFromTopSignal, generateStrategicBrief, generateFeaturedPublication, generateLinkedPublication, generateCustom,
-
-markAsPublished,
-removeDraft,
-
-getDrafts,
-getPublished,
-
-connect,
-disconnect,
-getConnection
-
-}; })();
+  return {
+    CONFIG,
+    buildFacebookPost,
+    copyText,
+    copyPost,
+    copyLatestDraft,
+    openShareDialog,
+    getHistory,
+    clearHistory,
+    attachToPublisherConsole
+  };
+})();
