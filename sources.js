@@ -1,237 +1,381 @@
-// IBSS SOURCES CORE — Living Integration Layer
-// Version: v1.0 Full System Bridge (DATA → ENGINE)
+// IBSS SOURCES REGISTRY — Real Source Registry
+// Version: v3.0
 
 window.IBSS_SOURCES = (function () {
   "use strict";
 
-  /* =========================
-     STATE
-  ========================= */
-
-  const STATE = {
-    initialized: false,
-
-    signals: [],
-    news: [],
-    countries: [],
-    content: [],
-
-    lastUpdate: null,
-    sourceMode: "fallback" // fallback | hybrid | live
+  const CONFIG = {
+    version: "v3.0-real-source-registry",
+    storageKey: "ibss_sources_registry_v30",
+    defaultReliability: 60
   };
 
-  /* =========================
-     UTILITIES
-  ========================= */
+  const STATE = {
+    registry: {}
+  };
 
-  function nowIso() {
-    return new Date().toISOString();
+  function safeText(value, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
   }
 
-  function asArray(value) {
-    return Array.isArray(value) ? value : [];
+  function safeNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function clamp(value, min = 0, max = 100) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function normalizeKey(value) {
+    return safeText(String(value || ""))
+      .toUpperCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^A-Z0-9_:-]/g, "")
+      .trim();
   }
 
   function clone(value) {
     try {
       return JSON.parse(JSON.stringify(value));
-    } catch (e) {
-      console.error("IBSS_SOURCES clone error:", e);
+    } catch (error) {
+      console.error("IBSS_SOURCES clone error:", error);
       return null;
     }
   }
 
-  function safeText(v, f = "") {
-    return typeof v === "string" && v.trim() ? v.trim() : f;
+  function nowIso() {
+    return new Date().toISOString();
   }
 
-  /* =========================
-     LOAD FROM DATA
-  ========================= */
+  const DEFAULT_SOURCES = {
+    IBSS_SEED: {
+      id: "IBSS_SEED",
+      name: "IBSS Seed Dataset",
+      type: "internal",
+      url: "",
+      active: true,
+      reliabilityScore: 72,
+      confidenceWeight: 0.72,
+      parser: "internal",
+      region: "global",
+      domain: "geopolitical"
+    },
 
-  function loadFromDataCore() {
-    const data = window.IBSS_DATA;
+    IBSS_NEWS: {
+      id: "IBSS_NEWS",
+      name: "IBSS News Layer",
+      type: "internal",
+      url: "",
+      active: true,
+      reliabilityScore: 68,
+      confidenceWeight: 0.68,
+      parser: "internal",
+      region: "global",
+      domain: "geopolitical"
+    },
 
-    if (!data) {
-      console.warn("IBSS_SOURCES: No IBSS_DATA found");
-      return;
+    IBSS_CONTENT: {
+      id: "IBSS_CONTENT",
+      name: "IBSS Content Registry",
+      type: "internal",
+      url: "",
+      active: true,
+      reliabilityScore: 82,
+      confidenceWeight: 0.82,
+      parser: "internal",
+      region: "global",
+      domain: "geopolitical"
+    },
+
+    IBSS_INGESTION: {
+      id: "IBSS_INGESTION",
+      name: "IBSS Live Ingestion",
+      type: "internal",
+      url: "",
+      active: true,
+      reliabilityScore: 64,
+      confidenceWeight: 0.64,
+      parser: "internal",
+      region: "global",
+      domain: "geopolitical"
+    },
+
+    IBSS_LIVE_DEMO: {
+      id: "IBSS_LIVE_DEMO",
+      name: "IBSS Live Demo Source",
+      type: "demo",
+      url: "",
+      active: true,
+      reliabilityScore: 66,
+      confidenceWeight: 0.66,
+      parser: "demo",
+      region: "global",
+      domain: "geopolitical"
     }
+  };
 
-    STATE.signals = asArray(data.signals);
-    STATE.news = asArray(data.newsFeed);
-    STATE.countries = asArray(data.countries);
-    STATE.content = asArray(data.content);
+  function normalizeSource(source = {}) {
+    const id = normalizeKey(source.id || source.name || "UNKNOWN_SOURCE");
 
-    STATE.lastUpdate = nowIso();
-  }
-
-  /* =========================
-     GLOBAL EXPOSURE (CRITICAL)
-  ========================= */
-
-  function exposeToWindow() {
-    // Engine compatibility layer
-
-    window.IBSS_SIGNALS = clone(STATE.signals) || [];
-    window.IBSS_NEWS = clone(STATE.news) || [];
-    window.IBSS_COUNTRIES = clone(STATE.countries) || [];
-    window.IBSS_CONTENT = clone(STATE.content) || [];
-
-    // Indexes (important for speed)
-
-    window.IBSS_SIGNAL_INDEX = buildIndex(window.IBSS_SIGNALS);
-    window.IBSS_COUNTRY_INDEX = buildIndex(window.IBSS_COUNTRIES);
-    window.IBSS_CONTENT_INDEX = buildIndex(window.IBSS_CONTENT);
-
-    // Metadata
-
-    window.IBSS_SOURCE_META = {
-      mode: STATE.sourceMode,
-      lastUpdate: STATE.lastUpdate,
-      counts: {
-        signals: window.IBSS_SIGNALS.length,
-        news: window.IBSS_NEWS.length,
-        countries: window.IBSS_COUNTRIES.length,
-        content: window.IBSS_CONTENT.length
-      }
-    };
-  }
-
-  function buildIndex(list) {
-    const index = {};
-    asArray(list).forEach(item => {
-      if (item?.id) index[item.id] = item;
-    });
-    return index;
-  }
-
-  /* =========================
-     LIVE EXTENSION (READY)
-  ========================= */
-
-  function injectLiveSignals(newSignals = []) {
-    const merged = [...newSignals, ...STATE.signals];
-
-    STATE.signals = dedupeById(merged);
-    STATE.sourceMode = "hybrid";
-
-    sync();
-  }
-
-  function injectLiveNews(newNews = []) {
-    const merged = [...newNews, ...STATE.news];
-
-    STATE.news = dedupeById(merged);
-    STATE.sourceMode = "hybrid";
-
-    sync();
-  }
-
-  function injectLiveContent(newContent = []) {
-    const merged = [...newContent, ...STATE.content];
-
-    STATE.content = dedupeById(merged);
-    STATE.sourceMode = "hybrid";
-
-    sync();
-  }
-
-  function dedupeById(list) {
-    const map = new Map();
-
-    asArray(list).forEach(item => {
-      if (!item?.id) return;
-      map.set(item.id, item);
-    });
-
-    return [...map.values()];
-  }
-
-  /* =========================
-     SYNC
-  ========================= */
-
-  function sync() {
-    STATE.lastUpdate = nowIso();
-    exposeToWindow();
-
-    dispatchUpdate();
-  }
-
-  function dispatchUpdate() {
-    try {
-      window.dispatchEvent(
-        new CustomEvent("ibss:sources-updated", {
-          detail: {
-            mode: STATE.sourceMode,
-            timestamp: STATE.lastUpdate
-          }
-        })
-      );
-    } catch (e) {
-      console.error("IBSS_SOURCES dispatch error:", e);
-    }
-  }
-
-  /* =========================
-     PUBLIC API
-  ========================= */
-
-  function getSignals() {
-    return clone(STATE.signals);
-  }
-
-  function getNews() {
-    return clone(STATE.news);
-  }
-
-  function getCountries() {
-    return clone(STATE.countries);
-  }
-
-  function getContent() {
-    return clone(STATE.content);
-  }
-
-  function getState() {
     return {
-      mode: STATE.sourceMode,
-      lastUpdate: STATE.lastUpdate,
-      signals: STATE.signals.length,
-      news: STATE.news.length,
-      countries: STATE.countries.length,
-      content: STATE.content.length
+      id,
+      name: safeText(source.name, id),
+      type: safeText(source.type, "json"),
+      url: safeText(source.url, ""),
+      active: source.active !== false,
+      reliabilityScore: clamp(safeNumber(source.reliabilityScore, CONFIG.defaultReliability), 0, 100),
+      confidenceWeight: Math.max(0, Math.min(1, safeNumber(source.confidenceWeight, safeNumber(source.reliabilityScore, CONFIG.defaultReliability) / 100))),
+      parser: safeText(source.parser, "auto"),
+      region: safeText(source.region, "global"),
+      domain: safeText(source.domain, "geopolitical"),
+      description: source.description || {
+        en: safeText(source.description_en, "No description available."),
+        ar: safeText(source.description_ar, "لا يوجد وصف.")
+      },
+      createdAt: safeText(source.createdAt, nowIso()),
+      updatedAt: nowIso()
     };
   }
 
-  /* =========================
-     INIT
-  ========================= */
-
-  function init() {
-    if (STATE.initialized) return;
-
-    loadFromDataCore();
-    exposeToWindow();
-
-    STATE.initialized = true;
-
-    dispatchUpdate();
+  function saveState() {
+    try {
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+        registry: STATE.registry
+      }));
+    } catch (error) {
+      console.error("IBSS_SOURCES saveState error:", error);
+    }
   }
 
-  init();
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return;
+
+      STATE.registry = parsed.registry || {};
+    } catch (error) {
+      console.error("IBSS_SOURCES loadState error:", error);
+    }
+  }
+
+  function seedDefaults() {
+    Object.values(DEFAULT_SOURCES).forEach(source => {
+      const normalized = normalizeSource(source);
+      if (!STATE.registry[normalized.id]) {
+        STATE.registry[normalized.id] = normalized;
+      }
+    });
+
+    saveState();
+  }
+
+  function registerSource(source) {
+    const normalized = normalizeSource(source);
+    STATE.registry[normalized.id] = normalized;
+    saveState();
+
+    try {
+      if (window.IBSS_INGESTION?.registerSource && normalized.url) {
+        window.IBSS_INGESTION.registerSource(normalized);
+      }
+    } catch (error) {
+      console.error("IBSS_SOURCES ingestion register bridge error:", error);
+    }
+
+    return clone(normalized);
+  }
+
+  function registerSources(sources = []) {
+    return Array.isArray(sources) ? sources.map(registerSource) : [];
+  }
+
+  function getSource(id) {
+    const key = normalizeKey(id);
+    return clone(STATE.registry[key] || null);
+  }
+
+  function getSourceProfile(id) {
+    const key = normalizeKey(id);
+
+    if (STATE.registry[key]) {
+      return clone(STATE.registry[key]);
+    }
+
+    return normalizeSource({
+      id: key || "UNKNOWN_SOURCE",
+      name: key || "Unknown Source",
+      type: "unknown",
+      reliabilityScore: CONFIG.defaultReliability,
+      active: true
+    });
+  }
+
+  function getAllSources() {
+    return Object.values(STATE.registry).map(item => clone(item));
+  }
+
+  function getActiveSources() {
+    return getAllSources().filter(source => source.active);
+  }
+
+  function getExternalSources() {
+    return getAllSources().filter(source => source.active && source.url);
+  }
+
+  function setActive(id, active) {
+    const key = normalizeKey(id);
+
+    if (!STATE.registry[key]) return null;
+
+    STATE.registry[key].active = !!active;
+    STATE.registry[key].updatedAt = nowIso();
+    saveState();
+
+    return clone(STATE.registry[key]);
+  }
+
+  function removeSource(id) {
+    const key = normalizeKey(id);
+
+    if (!STATE.registry[key]) return false;
+
+    delete STATE.registry[key];
+    saveState();
+
+    return true;
+  }
+
+  function clearCustomSources() {
+    Object.keys(STATE.registry).forEach(key => {
+      if (!DEFAULT_SOURCES[key]) {
+        delete STATE.registry[key];
+      }
+    });
+
+    saveState();
+    return true;
+  }
+
+  function getReliability(id) {
+    return safeNumber(getSourceProfile(id)?.reliabilityScore, CONFIG.defaultReliability);
+  }
+
+  function getConfidenceWeight(id) {
+    return safeNumber(getSourceProfile(id)?.confidenceWeight, CONFIG.defaultReliability / 100);
+  }
+
+  function enrichItem(item = {}) {
+    const sourceId =
+      item.source ||
+      item.sourceUnit ||
+      item.unit ||
+      item.sourceName ||
+      "UNKNOWN_SOURCE";
+
+    const profile = getSourceProfile(sourceId);
+
+    return {
+      ...item,
+      sourceProfile: profile,
+      reliabilityScore: item.reliabilityScore != null
+        ? clamp(safeNumber(item.reliabilityScore, profile.reliabilityScore), 0, 100)
+        : profile.reliabilityScore
+    };
+  }
+
+  function syncExternalSourcesToIngestion() {
+    const externalSources = getExternalSources();
+
+    if (!window.IBSS_INGESTION?.registerSources) {
+      return {
+        ok: false,
+        count: externalSources.length,
+        error: "IBSS_INGESTION not available"
+      };
+    }
+
+    window.IBSS_INGESTION.registerSources(externalSources);
+
+    return {
+      ok: true,
+      count: externalSources.length,
+      error: null
+    };
+  }
+
+  function registerJsonFeed(id, name, url, options = {}) {
+    return registerSource({
+      id,
+      name,
+      url,
+      type: "json",
+      parser: "json",
+      active: options.active !== false,
+      reliabilityScore: options.reliabilityScore || CONFIG.defaultReliability,
+      region: options.region || "global",
+      domain: options.domain || "geopolitical",
+      description: options.description || undefined
+    });
+  }
+
+  function registerRssFeed(id, name, url, options = {}) {
+    return registerSource({
+      id,
+      name,
+      url,
+      type: "rss",
+      parser: "rss",
+      active: options.active !== false,
+      reliabilityScore: options.reliabilityScore || CONFIG.defaultReliability,
+      region: options.region || "global",
+      domain: options.domain || "geopolitical",
+      description: options.description || undefined
+    });
+  }
+
+  function getDiagnostics() {
+    const all = getAllSources();
+    const external = getExternalSources();
+
+    return {
+      version: CONFIG.version,
+      totalSources: all.length,
+      activeSources: all.filter(item => item.active).length,
+      externalSources: external.length,
+      sourceIds: all.map(item => item.id)
+    };
+  }
+
+  loadState();
+  seedDefaults();
 
   return {
-    getSignals,
-    getNews,
-    getCountries,
-    getContent,
-    getState,
+    CONFIG,
 
-    injectLiveSignals,
-    injectLiveNews,
-    injectLiveContent,
+    registerSource,
+    registerSources,
+    registerJsonFeed,
+    registerRssFeed,
 
-    sync
+    getSource,
+    getSourceProfile,
+    getAllSources,
+    getActiveSources,
+    getExternalSources,
+
+    setActive,
+    removeSource,
+    clearCustomSources,
+
+    getReliability,
+    getConfidenceWeight,
+    enrichItem,
+
+    syncExternalSourcesToIngestion,
+    getDiagnostics
   };
 })();
