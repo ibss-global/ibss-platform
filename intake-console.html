@@ -1325,7 +1325,25 @@
         if (Array.isArray(window.IBSS_DATA?.signals)) return window.IBSS_DATA.signals;
         return [];
       }
+function getDecisionContext(){
+  try {
+    if (!window.IBSS_DECISION_ENGINE) return null;
 
+    if (window.IBSS_DECISION_ENGINE.getDecisionFromEngine) {
+      return window.IBSS_DECISION_ENGINE.getDecisionFromEngine();
+    }
+
+    if (window.IBSS_ENGINE?.getSystemState) {
+      return window.IBSS_DECISION_ENGINE.getDecision(
+        window.IBSS_ENGINE.getSystemState()
+      );
+    }
+  } catch (error) {
+    console.error("Decision context read error:", error);
+  }
+
+  return null;
+    }
       function collectFormData(overrideStatus = null){
         const status = overrideStatus || qs("status").value;
 
