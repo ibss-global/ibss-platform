@@ -1409,7 +1409,7 @@ function getDecisionContext(){
             regionalSensitivity: safeNumber(qs("regionalSensitivity").value, 0),
             strategicWeight: safeNumber(qs("strategicWeight").value, 0)
           },
-
+decisionContext: getDecisionContext(),
           meta: {
             featured: qs("featured").value === "true",
             pinned: qs("pinned").value === "true",
