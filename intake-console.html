@@ -1338,12 +1338,13 @@ function getDecisionContext(){
         window.IBSS_ENGINE.getSystemState()
       );
     }
+
   } catch (error) {
     console.error("Decision context read error:", error);
   }
 
   return null;
-    }
+}
       function collectFormData(overrideStatus = null){
         const status = overrideStatus || qs("status").value;
 
