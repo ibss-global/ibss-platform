@@ -1510,30 +1510,39 @@
         }
       }
 
-      function updateSourceBadge(system) {
-        const badge = qs("systemSourceBadge");
-        if (!badge) return;
+function updateSourceBadge(system) {
+  const badge = qs("systemSourceBadge");
+  if (!badge) return;
 
-        if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed || system?.source === "orchestrated") {
-          badge.textContent = t("source_orchestrated");
-          badge.className = "meta-badge live";
-        } else {
-          badge.textContent = t("source_fallback");
-          badge.className = "meta-badge warn";
-        }
-      }
+  if (
+    system?.publisherDigest ||
+    system?.publisherFeed ||
+    system?.unifiedFeed ||
+    String(system?.source || "").startsWith("engine") ||
+    system?.source === "orchestrated"
+  ) {
+    badge.textContent = t("source_orchestrated");
+    badge.className = "meta-badge live";
+  } else {
+    badge.textContent = t("source_fallback");
+    badge.className = "meta-badge warn";
+  }
+}
 
-      function updateHealthBadge(system) {
-        const badge = qs("systemHealthBadge");
-        if (!badge) return;
+function updateHealthBadge(system) {
+  const badge = qs("systemHealthBadge");
+  if (!badge) return;
 
-        if (system?.source === "orchestrated" || system?.source === "engine") {
-          badge.textContent = t("engine_ready");
-          badge.className = "meta-badge live";
-        } else {
-          badge.textContent = t("engine_limited");
-          badge.className = "meta-badge warn";
-        }
+  if (
+    String(system?.source || "").startsWith("engine") ||
+    system?.source === "orchestrated"
+  ) {
+    badge.textContent = t("engine_ready");
+    badge.className = "meta-badge live";
+  } else {
+    badge.textContent = t("engine_limited");
+    badge.className = "meta-badge warn";
+  }
       }
 
       function updateMetricsBadge(system) {
