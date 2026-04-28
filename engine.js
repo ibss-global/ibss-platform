@@ -2060,23 +2060,43 @@ window.IBSS_ENGINE = (function () {
     system.snapshot = getHomeSnapshot(system);
     system.feed = buildFeed(system);
 
-    if (shouldGenerateReport(system)) {
-      const report = generateAutoReport(system);
+if (shouldGenerateReport(system)) {
+  const report = generateAutoReport(system);
 
-      system.feed.unshift(
-        makeFeedItem(
-          "report",
-          system.level,
-          `Auto report generated: ${report.title.en}`,
-          `تم توليد تقرير تلقائي: ${report.title.ar}`,
-          "ENGINE"
-        )
-      );
+  let draft = null;
 
-      system.feed = dedupeBy(system.feed, item =>
-        `${item.type}|${normalizeText(getLocalizedText(item.text, "en"))}`
-      ).slice(0, CONFIG.maxFeedItems);
+  try {
+    if (
+      window.IBSS_PUBLISHER?.buildPublicationFromReport &&
+      window.IBSS_PUBLISHER?.createDraftFromPublication
+    ) {
+      const publication = window.IBSS_PUBLISHER.buildPublicationFromReport(report);
+      draft = window.IBSS_PUBLISHER.createDraftFromPublication(publication);
     }
+  } catch (error) {
+    console.error("IBSS_ENGINE publisher draft generation error:", error);
+  }
+
+  system.latestDraftId = draft?.id || null;
+
+  system.feed.unshift(
+    makeFeedItem(
+      "report",
+      system.level,
+      draft
+        ? `Auto report and publisher draft generated: ${report.title.en}`
+        : `Auto report generated: ${report.title.en}`,
+      draft
+        ? `تم توليد تقرير ومسودة نشر تلقائية: ${report.title.ar}`
+        : `تم توليد تقرير تلقائي: ${report.title.ar}`,
+      "ENGINE"
+    )
+  );
+
+  system.feed = dedupeBy(system.feed, item =>
+    `${item.type}|${normalizeText(getLocalizedText(item.text, "en"))}`
+  ).slice(0, CONFIG.maxFeedItems);
+        }
 
     updateHistory(system);
     archiveSnapshot(system);
