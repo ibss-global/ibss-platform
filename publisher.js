@@ -1,29 +1,22 @@
 // IBSS PUBLISHER — Doctrine Output & Draft Layer
-// Version: v1.1-clean-operational-publisher-layer
+// Version: v1.1-clean-command-publisher-layer
 
 window.IBSS_PUBLISHER = (function () {
   "use strict";
 
   const CONFIG = {
-    version: "v1.1-clean-operational-publisher-layer",
+    version: "v1.1-clean-command-publisher-layer",
     storageKey: "ibss_publisher_v11",
     maxDrafts: 80,
-    maxFeedItems: 14,
     defaultSignature: "— IBSS / Σ-9X"
   };
 
   const STATE = {
-    drafts: [],
-    lastUnifiedFeed: []
+    drafts: []
   };
 
   function safeText(value, fallback = "") {
     return typeof value === "string" && value.trim() ? value.trim() : fallback;
-  }
-
-  function safeNumber(value, fallback = 0) {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : fallback;
   }
 
   function asArray(value) {
@@ -59,6 +52,34 @@ window.IBSS_PUBLISHER = (function () {
     );
   }
 
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return;
+
+      STATE.drafts = asArray(parsed.drafts);
+    } catch (error) {
+      console.error("IBSS_PUBLISHER loadState error:", error);
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+        drafts: STATE.drafts
+      }));
+    } catch (error) {
+      console.error("IBSS_PUBLISHER saveState error:", error);
+    }
+  }
+
+  function buildId(prefix = "DRAFT") {
+    return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+  }
+
   function cleanLines(lines) {
     return asArray(lines)
       .map(line => String(line ?? "").trim())
@@ -70,39 +91,7 @@ window.IBSS_PUBLISHER = (function () {
       .trim();
   }
 
-  function buildId(prefix = "DRAFT") {
-    return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-  }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(CONFIG.storageKey);
-      if (!raw) return;
-
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return;
-
-      STATE.drafts = asArray(parsed.drafts);
-      STATE.lastUnifiedFeed = asArray(parsed.lastUnifiedFeed);
-    } catch (error) {
-      console.error("IBSS_PUBLISHER loadState error:", error);
-    }
-  }
-
-  function saveState() {
-    try {
-      localStorage.setItem(CONFIG.storageKey, JSON.stringify({
-        drafts: STATE.drafts,
-        lastUnifiedFeed: STATE.lastUnifiedFeed
-      }));
-    } catch (error) {
-      console.error("IBSS_PUBLISHER saveState error:", error);
-    }
-  }
-
-  function getSystem(options = {}) {
-    if (options.system) return options.system;
-
+  function getSystemState() {
     try {
       return (
         window.IBSS_ENGINE?.getLastSystemState?.() ||
@@ -111,55 +100,18 @@ window.IBSS_PUBLISHER = (function () {
         null
       );
     } catch (error) {
-      console.error("IBSS_PUBLISHER getSystem error:", error);
+      console.error("IBSS_PUBLISHER getSystemState error:", error);
       return null;
     }
   }
 
-  function createDraft(input = {}) {
-    const draft = {
-      id: input.id || buildId("DRAFT"),
-      createdAt: input.createdAt || nowIso(),
-      updatedAt: nowIso(),
-      type: input.type || "facebook_post",
-      source: input.source || "publisher",
-      publicationId: input.publicationId || null,
-      payload: {
-        text_ar: safeText(input.text_ar, ""),
-        text_en: safeText(input.text_en, ""),
-        publication: input.publication || null,
-        system: input.system || null,
-        meta: input.meta || {}
-      }
-    };
-
-    STATE.drafts.unshift(draft);
-
-    if (STATE.drafts.length > CONFIG.maxDrafts) {
-      STATE.drafts = STATE.drafts.slice(0, CONFIG.maxDrafts);
-    }
-
-    saveState();
-    return clone(draft);
-  }
-
-  function saveDraft(input = {}) {
-    if (!input) return null;
-
-    if (input.payload) {
-      return createDraft({
-        type: input.type || "facebook_post",
-        source: input.source || "external",
-        publicationId: input.publicationId || null,
-        text_ar: input.payload.text_ar || input.text_ar || "",
-        text_en: input.payload.text_en || input.text_en || "",
-        publication: input.payload.publication || input.publication || null,
-        system: input.payload.system || input.system || null,
-        meta: input.payload.meta || input.meta || {}
-      });
-    }
-
-    return createDraft(input);
+  function getFeaturedPublication(system) {
+    return (
+      system?.featuredPublication ||
+      system?.publicationContext?.featuredPublication ||
+      system?.snapshot?.latestStudy ||
+      null
+    );
   }
 
   function buildPublicationFromReport(report) {
@@ -217,6 +169,104 @@ window.IBSS_PUBLISHER = (function () {
     ]);
   }
 
+  function buildBlackPostFromSystem(system, options = {}) {
+    const lang = options.lang || "ar";
+    const signature = options.signature || CONFIG.defaultSignature;
+
+    const topTheater =
+      getLocalizedText(system?.topTheater?.name, lang) ||
+      getLocalizedText(system?.topCluster?.name, lang) ||
+      (lang === "ar" ? "النظام" : "System");
+
+    const pressure = system?.systemPressure ?? system?.ssi ?? "-";
+    const level = system?.level || "-";
+    const decision = system?.decision || "-";
+    const mode = system?.mode || "-";
+
+    const voiceSummary = getLocalizedText(system?.voice?.summary, lang);
+    const advisory = getLocalizedText(system?.voice?.advisory, lang);
+    const topSignal = getLocalizedText(system?.topSignal?.title, lang);
+
+    if (lang === "ar") {
+      return cleanLines([
+        `${topTheater} — قراءة سيادية`,
+        "",
+        topSignal ? `الإشارة الأعلى: ${topSignal}` : "",
+        "",
+        voiceSummary || "هذا ليس حدثًا منفصلًا، بل ضغط بنيوي يتحرك داخل طبقات القرار.",
+        "",
+        `ضغط النظام: ${pressure}`,
+        `المستوى: ${level}`,
+        `القرار: ${decision}`,
+        `الوضع: ${mode}`,
+        "",
+        advisory || "المطلوب هو الحفاظ على تماسك القراءة وعدم التعامل مع الإشارة كعنوان منفرد.",
+        "",
+        signature
+      ]);
+    }
+
+    return cleanLines([
+      `${topTheater} — Sovereign Reading`,
+      "",
+      topSignal ? `Top Signal: ${topSignal}` : "",
+      "",
+      voiceSummary || "This is not an isolated event. It is structural pressure moving through decision layers.",
+      "",
+      `System Pressure: ${pressure}`,
+      `Level: ${level}`,
+      `Decision: ${decision}`,
+      `Mode: ${mode}`,
+      "",
+      advisory || "Maintain narrative coherence and avoid reading the signal as a detached headline.",
+      "",
+      signature
+    ]);
+  }
+
+  function createDraft(input = {}) {
+    const draft = {
+      id: buildId("DRAFT"),
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+      type: input.type || "facebook_post",
+      source: input.source || "publisher",
+      publicationId: input.publicationId || null,
+      payload: {
+        text_ar: safeText(input.text_ar, ""),
+        text_en: safeText(input.text_en, ""),
+        publication: input.publication || null,
+        system: input.system || null,
+        meta: input.meta || {}
+      }
+    };
+
+    STATE.drafts.unshift(draft);
+
+    if (STATE.drafts.length > CONFIG.maxDrafts) {
+      STATE.drafts = STATE.drafts.slice(0, CONFIG.maxDrafts);
+    }
+
+    saveState();
+    return clone(draft);
+  }
+
+  function saveDraft(draftLike = {}) {
+    if (draftLike?.payload?.text_ar || draftLike?.payload?.text_en) {
+      return createDraft({
+        type: draftLike.type || "viral_signal",
+        source: draftLike.source || draftLike?.payload?.meta?.generatedBy || "external",
+        text_ar: draftLike.payload.text_ar || "",
+        text_en: draftLike.payload.text_en || "",
+        publication: draftLike.payload.publication || null,
+        system: draftLike.payload.system || null,
+        meta: draftLike.payload.meta || {}
+      });
+    }
+
+    return createDraft(draftLike);
+  }
+
   function createDraftFromPublication(publication, options = {}) {
     if (!publication) return null;
 
@@ -248,273 +298,8 @@ window.IBSS_PUBLISHER = (function () {
     return createDraftFromPublication(publication, options);
   }
 
-  function buildTopSignalPost(system, lang = "ar") {
-    const signature = CONFIG.defaultSignature;
-    const signal = system?.topSignal || system?.dominantSignal || asArray(system?.rankedSignals)[0] || null;
-
-    const title = getLocalizedText(signal?.title, lang) || (lang === "ar" ? "إشارة غير محددة" : "Undefined Signal");
-    const desc = getLocalizedText(signal?.description || signal?.summary, lang);
-    const pressure = safeNumber(system?.systemPressure || system?.ssi, 0);
-    const score = safeNumber(signal?.balancedScore100 || signal?.score100, 0);
-    const decision = safeText(system?.decision || system?.mode, "-");
-
-    if (lang === "ar") {
-      return cleanLines([
-        "قراءة سيادية — الإشارة الأعلى",
-        "",
-        title,
-        "",
-        desc,
-        "",
-        `درجة الإشارة: ${score}`,
-        `ضغط النظام: ${pressure}`,
-        `وضع القرار: ${decision}`,
-        "",
-        "هذه الإشارة لا تُقرأ كخبر منفصل، بل كمؤشر داخل بنية ضغط أوسع.",
-        "",
-        signature
-      ]);
-    }
-
-    return cleanLines([
-      "Sovereign Reading — Top Signal",
-      "",
-      title,
-      "",
-      desc,
-      "",
-      `Signal Score: ${score}`,
-      `System Pressure: ${pressure}`,
-      `Decision Mode: ${decision}`,
-      "",
-      "This signal is not read as an isolated item, but as an indicator within a wider pressure architecture.",
-      "",
-      signature
-    ]);
-  }
-
-  function buildStrategicBriefPost(system, lang = "ar") {
-    const signature = CONFIG.defaultSignature;
-
-    const topTheater = getLocalizedText(system?.topTheater?.name, lang) || (lang === "ar" ? "المسرح النشط" : "Active Theater");
-    const topCluster = getLocalizedText(system?.topCluster?.name, lang) || (lang === "ar" ? "الملف الاستراتيجي النشط" : "Active Strategic File");
-    const topSignal = getLocalizedText(system?.topSignal?.title || system?.dominantSignal?.title, lang) || "-";
-
-    const pressure = safeNumber(system?.systemPressure || system?.ssi, 0);
-    const confidence = safeNumber(system?.confidenceScore, 0);
-    const level = safeText(system?.level, "-");
-    const decision = safeText(system?.decision || system?.mode, "-");
-
-    const drivers = asArray(system?.drivers)
-      .slice(0, 3)
-      .map(item => getLocalizedText(item?.label, lang))
-      .filter(Boolean)
-      .join(lang === "ar" ? "، " : ", ");
-
-    if (lang === "ar") {
-      return cleanLines([
-        "موجز استراتيجي سيادي",
-        "",
-        `المسرح الأعلى: ${topTheater}`,
-        `الملف الأعلى: ${topCluster}`,
-        `الإشارة الأعلى: ${topSignal}`,
-        "",
-        `ضغط النظام: ${pressure}`,
-        `الثقة: ${confidence}`,
-        `المستوى: ${level}`,
-        `القرار: ${decision}`,
-        "",
-        `المحرّكات الأساسية: ${drivers || "غير محدد"}`,
-        "",
-        "التقدير:",
-        "النظام يقرأ ضغطًا مركبًا لا يتحرك من إشارة واحدة فقط، بل من تقاطع الإشارة مع الملف والمسرح والمحرّكات.",
-        "",
-        signature
-      ]);
-    }
-
-    return cleanLines([
-      "Sovereign Strategic Brief",
-      "",
-      `Top Theater: ${topTheater}`,
-      `Top File: ${topCluster}`,
-      `Top Signal: ${topSignal}`,
-      "",
-      `System Pressure: ${pressure}`,
-      `Confidence: ${confidence}`,
-      `Level: ${level}`,
-      `Decision: ${decision}`,
-      "",
-      `Primary Drivers: ${drivers || "undefined"}`,
-      "",
-      "Estimate:",
-      "The system reads composite pressure, not a single isolated signal. The movement emerges from the intersection of signal, file, theater, and drivers.",
-      "",
-      signature
-    ]);
-  }
-
-  function buildFeaturedPublicationPost(system, lang = "ar") {
-    const signature = CONFIG.defaultSignature;
-    const publication =
-      system?.featuredPublication ||
-      system?.snapshot?.latestStudy ||
-      window.IBSS_PUBLICATIONS?.getLatest?.() ||
-      null;
-
-    if (!publication) {
-      return lang === "ar"
-        ? cleanLines(["منشور مميز", "", "لا توجد ورقة منشورة متاحة حاليًا.", "", signature])
-        : cleanLines(["Featured Publication", "", "No featured publication is currently available.", "", signature]);
-    }
-
-    const title = getLocalizedText(publication.title, lang);
-    const summary = getLocalizedText(publication.summary, lang);
-    const type = safeText(publication.type || publication.classification, "publication");
-    const domain = safeText(publication.domain, "-");
-
-    if (lang === "ar") {
-      return cleanLines([
-        "منشور مؤسسي مميز",
-        "",
-        title,
-        "",
-        summary,
-        "",
-        `التصنيف: ${type}`,
-        `المجال: ${domain}`,
-        "",
-        "هذه الورقة لا تُقرأ كمنشور منفصل، بل كمرجع داخل مسار التحليل السيادي الحي.",
-        "",
-        signature
-      ]);
-    }
-
-    return cleanLines([
-      "Featured Institutional Publication",
-      "",
-      title,
-      "",
-      summary,
-      "",
-      `Classification: ${type}`,
-      `Domain: ${domain}`,
-      "",
-      "This paper is not read as a standalone publication, but as a reference within the living sovereign analysis track.",
-      "",
-      signature
-    ]);
-  }
-
-  function buildLivingPresencePost(system, lang = "ar") {
-    const signature = CONFIG.defaultSignature;
-    const voice = system?.voice || {};
-    const presence = system?.presence || {};
-
-    const posture = getLocalizedText(voice.posture, lang) || "-";
-    const summary = getLocalizedText(voice.summary, lang) || "-";
-    const explanation = getLocalizedText(voice.explanation, lang) || "-";
-    const advisory = getLocalizedText(voice.advisory, lang) || "-";
-
-    const pressure = safeNumber(system?.systemPressure || system?.ssi, 0);
-    const urgency = safeText(presence.urgency, "-");
-    const drift = safeText(presence.drift, "-");
-
-    if (lang === "ar") {
-      return cleanLines([
-        "الحضور الحي للنظام",
-        "",
-        posture,
-        "",
-        summary,
-        "",
-        explanation,
-        "",
-        `ضغط النظام: ${pressure}`,
-        `الاستعجال: ${urgency}`,
-        `الانجراف: ${drift}`,
-        "",
-        `التوجيه: ${advisory}`,
-        "",
-        signature
-      ]);
-    }
-
-    return cleanLines([
-      "Living System Presence",
-      "",
-      posture,
-      "",
-      summary,
-      "",
-      explanation,
-      "",
-      `System Pressure: ${pressure}`,
-      `Urgency: ${urgency}`,
-      `Drift: ${drift}`,
-      "",
-      `Advisory: ${advisory}`,
-      "",
-      signature
-    ]);
-  }
-
-  function buildBlackPostFromSystem(system, options = {}) {
-    const lang = options.lang || "ar";
-    const signature = options.signature || CONFIG.defaultSignature;
-
-    const topTheater =
-      getLocalizedText(system?.topTheater?.name, lang) ||
-      getLocalizedText(system?.topCluster?.name, lang) ||
-      (lang === "ar" ? "النظام" : "System");
-
-    const pressure = system?.systemPressure ?? system?.ssi ?? "-";
-    const level = system?.level || "-";
-    const decision = system?.decision || "-";
-
-    if (lang === "ar") {
-      return cleanLines([
-        `${topTheater} — النظام`,
-        "",
-        "هذا ليس حدثًا منفصلًا.",
-        "",
-        "إنه ضغط بنيوي يتحرك داخل طبقات القرار.",
-        "",
-        `ضغط النظام: ${pressure}`,
-        `المستوى: ${level}`,
-        `القرار: ${decision}`,
-        "",
-        "السؤال ليس ماذا يحدث…",
-        "",
-        "السؤال:",
-        "من يملك القرار؟",
-        "",
-        signature
-      ]);
-    }
-
-    return cleanLines([
-      `${topTheater} — System`,
-      "",
-      "This is not an isolated event.",
-      "",
-      "It is structural pressure moving through decision layers.",
-      "",
-      `System Pressure: ${pressure}`,
-      `Level: ${level}`,
-      `Decision: ${decision}`,
-      "",
-      "The question is not what is happening…",
-      "",
-      "The question is:",
-      "Who owns the decision?",
-      "",
-      signature
-    ]);
-  }
-
   function createBlackDraftFromSystem(options = {}) {
-    const system = getSystem(options);
+    const system = getSystemState();
 
     if (!system) {
       console.warn("IBSS_PUBLISHER: No system state found.");
@@ -539,31 +324,78 @@ window.IBSS_PUBLISHER = (function () {
     });
   }
 
-  function generateTopSignalPost(options = {}) {
-    const system = getSystem(options);
-    if (!system) return null;
+  function generateTopSignalPost() {
+    const system = getSystemState();
 
-    return createDraft({
-      type: "signal_post",
-      source: "publisher",
-      text_ar: buildTopSignalPost(system, "ar"),
-      text_en: buildTopSignalPost(system, "en"),
-      system,
-      meta: {
-        mode: "top_signal_post"
-      }
+    if (!system) {
+      console.warn("IBSS_PUBLISHER: No system state found for top signal post.");
+      return null;
+    }
+
+    if (window.IBSS_VIRAL?.generate) {
+      const viralDraft = window.IBSS_VIRAL.generate(system, "ar");
+      return saveDraft(viralDraft);
+    }
+
+    return createBlackDraftFromSystem({
+      mode: "top_signal_fallback"
     });
   }
 
-  function generateStrategicBrief(options = {}) {
-    const system = getSystem(options);
-    if (!system) return null;
+  function generateStrategicBrief() {
+    const system = getSystemState();
+
+    if (!system) {
+      console.warn("IBSS_PUBLISHER: No system state found for strategic brief.");
+      return null;
+    }
+
+    const voiceSummaryAr = getLocalizedText(system?.voice?.summary, "ar");
+    const voiceSummaryEn = getLocalizedText(system?.voice?.summary, "en");
+
+    const advisoryAr = getLocalizedText(system?.voice?.advisory, "ar");
+    const advisoryEn = getLocalizedText(system?.voice?.advisory, "en");
+
+    const topSignalAr = getLocalizedText(system?.topSignal?.title, "ar") || "غير محدد";
+    const topSignalEn = getLocalizedText(system?.topSignal?.title, "en") || "Undefined";
+
+    const text_ar = cleanLines([
+      "موجز سيادي استراتيجي",
+      "",
+      `الإشارة الأعلى: ${topSignalAr}`,
+      `ضغط النظام: ${system.systemPressure ?? system.ssi ?? "-"}`,
+      `الثقة: ${system.confidenceScore ?? "-"}`,
+      `القرار: ${system.decision || "-"}`,
+      `الوضع: ${system.mode || "-"}`,
+      "",
+      voiceSummaryAr,
+      "",
+      advisoryAr,
+      "",
+      CONFIG.defaultSignature
+    ]);
+
+    const text_en = cleanLines([
+      "Strategic Sovereign Brief",
+      "",
+      `Top Signal: ${topSignalEn}`,
+      `System Pressure: ${system.systemPressure ?? system.ssi ?? "-"}`,
+      `Confidence: ${system.confidenceScore ?? "-"}`,
+      `Decision: ${system.decision || "-"}`,
+      `Mode: ${system.mode || "-"}`,
+      "",
+      voiceSummaryEn,
+      "",
+      advisoryEn,
+      "",
+      CONFIG.defaultSignature
+    ]);
 
     return createDraft({
       type: "strategic_brief",
-      source: "publisher",
-      text_ar: buildStrategicBriefPost(system, "ar"),
-      text_en: buildStrategicBriefPost(system, "en"),
+      source: "publisher_command",
+      text_ar,
+      text_en,
       system,
       meta: {
         mode: "strategic_brief"
@@ -571,132 +403,52 @@ window.IBSS_PUBLISHER = (function () {
     });
   }
 
-  function generateFeaturedPublicationPost(options = {}) {
-    const system = getSystem(options);
+  function generateFeaturedPublicationPost() {
+    const system = getSystemState();
+    const publication = getFeaturedPublication(system);
 
-    return createDraft({
-      type: "publication_post",
-      source: "publisher",
-      text_ar: buildFeaturedPublicationPost(system, "ar"),
-      text_en: buildFeaturedPublicationPost(system, "en"),
-      publication: system?.featuredPublication || system?.snapshot?.latestStudy || null,
-      system,
-      meta: {
-        mode: "featured_publication_post"
-      }
-    });
-  }
-
-  function generateLivingPresencePost(options = {}) {
-    const system = getSystem(options);
-    if (!system) return null;
-
-    return createDraft({
-      type: "living_presence_post",
-      source: "publisher",
-      text_ar: buildLivingPresencePost(system, "ar"),
-      text_en: buildLivingPresencePost(system, "en"),
-      system,
-      meta: {
-        mode: "living_presence_post"
-      }
-    });
-  }
-
-  function buildFeedItem(type, priority, text_ar, text_en, source = "PUBLISHER") {
-    return {
-      id: buildId("FEED"),
-      type,
-      priority: safeText(priority, "LOW"),
-      source,
-      text: {
-        ar: safeText(text_ar, "-"),
-        en: safeText(text_en, "-")
-      },
-      createdAt: nowIso()
-    };
-  }
-
-  function buildUnifiedFeed(system) {
-    const baseFeed = asArray(system?.feed);
-    const drivers = asArray(system?.drivers);
-    const feed = [];
-
-    baseFeed.forEach(item => feed.push(item));
-
-    if (system?.voice?.summary) {
-      feed.push(buildFeedItem(
-        "living_voice",
-        system.level,
-        getLocalizedText(system.voice.summary, "ar"),
-        getLocalizedText(system.voice.summary, "en"),
-        "PUBLISHER"
-      ));
+    if (publication) {
+      return createDraftFromPublication(publication);
     }
 
-    drivers.slice(0, 3).forEach(driver => {
-      feed.push(buildFeedItem(
-        "driver",
-        driver.priority,
-        getLocalizedText(driver.label, "ar"),
-        getLocalizedText(driver.label, "en"),
-        "PUBLISHER"
-      ));
+    return createDraftFromLatestReport();
+  }
+
+  function generateLivingPresencePost() {
+    return createBlackDraftFromSystem({
+      mode: "living_presence"
     });
-
-    const deduped = [];
-    const seen = new Set();
-
-    feed.forEach(item => {
-      const key = `${item.type}|${getLocalizedText(item.text, "en")}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      deduped.push(item);
-    });
-
-    STATE.lastUnifiedFeed = deduped.slice(0, CONFIG.maxFeedItems);
-    saveState();
-
-    return clone(STATE.lastUnifiedFeed);
   }
 
   function orchestrateSystem(system) {
-    if (!system) return null;
+    if (!system || typeof system !== "object") return system;
 
-    const unifiedFeed = buildUnifiedFeed(system);
-
-    const publisherDigest = {
-      source: "orchestrated",
-      updatedAt: nowIso(),
-      feedItems: unifiedFeed.length,
-      latestDraftId: STATE.drafts[0]?.id || null,
-      latestDraftType: STATE.drafts[0]?.type || null
-    };
+    const featuredPublication = getFeaturedPublication(system);
+    const feed = asArray(system.feed);
 
     return {
       ...system,
       source: "orchestrated",
-      publisherDigest,
-      unifiedFeed,
-      publisherFeed: unifiedFeed,
-      publicationContext: {
-        featuredPublication: system.featuredPublication || system.snapshot?.latestStudy || null,
-        topSignalContent: null,
-        topClusterContent: null,
-        topCountryContent: null
+      featuredPublication,
+      unifiedFeed: feed,
+      publisherFeed: feed,
+      publisherDigest: {
+        source: "IBSS_PUBLISHER",
+        version: CONFIG.version,
+        latestDraftId: STATE.drafts[0]?.id || null,
+        draftsCount: STATE.drafts.length
       }
     };
   }
 
   function getUnifiedFeed() {
-    return clone(STATE.lastUnifiedFeed) || [];
+    const system = getSystemState();
+    return asArray(system?.feed);
   }
 
   function getLatestFeaturedPublication() {
-    return (
-      window.IBSS_PUBLICATIONS?.getLatest?.() ||
-      null
-    );
+    const system = getSystemState();
+    return getFeaturedPublication(system);
   }
 
   function getLatestDraft() {
@@ -705,6 +457,12 @@ window.IBSS_PUBLISHER = (function () {
 
   function getDrafts() {
     return clone(STATE.drafts) || [];
+  }
+
+  function clearDrafts() {
+    STATE.drafts = [];
+    saveState();
+    return true;
   }
 
   function getDraftText(draft = getLatestDraft(), lang = "ar") {
@@ -717,12 +475,6 @@ window.IBSS_PUBLISHER = (function () {
     return draft?.payload?.text_en || draft?.payload?.text_ar || "";
   }
 
-  function clearDrafts() {
-    STATE.drafts = [];
-    saveState();
-    return true;
-  }
-
   loadState();
 
   return {
@@ -731,11 +483,6 @@ window.IBSS_PUBLISHER = (function () {
     buildPublicationFromReport,
     buildStructuredPost,
     buildBlackPostFromSystem,
-
-    buildTopSignalPost,
-    buildStrategicBriefPost,
-    buildFeaturedPublicationPost,
-    buildLivingPresencePost,
 
     createDraft,
     saveDraft,
@@ -749,7 +496,6 @@ window.IBSS_PUBLISHER = (function () {
     generateLivingPresencePost,
 
     orchestrateSystem,
-    buildUnifiedFeed,
     getUnifiedFeed,
     getLatestFeaturedPublication,
 
