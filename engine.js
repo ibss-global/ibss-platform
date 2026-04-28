@@ -2051,6 +2051,7 @@ window.IBSS_ENGINE = (function () {
       liveNews: rankedSignals,
       featuredPublication,
       snapshot: null,
+      latestDraftId: null,
       metricsReference: l3State
         ? "IBSS_METRICS_V3_ADAPTIVE + IBSS_L3_ENGINE"
         : "IBSS_METRICS_V3_ADAPTIVE"
