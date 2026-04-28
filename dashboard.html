@@ -1324,15 +1324,15 @@
         const sourceBadge = el("sourceBadge");
         const metricsBadge = el("metricsBadge");
 
-        if (sourceBadge) {
-          if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed || system?.source === "orchestrated") {
-            sourceBadge.textContent = t("sourceLive");
-            sourceBadge.className = "meta-badge live";
-          } else {
-            sourceBadge.textContent = t("sourceFallback");
-            sourceBadge.className = "meta-badge warn";
-          }
-        }
+if (sourceBadge) {
+  if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed || system?.source === "orchestrated") {
+    sourceBadge.textContent = t("sourceLive");
+    sourceBadge.className = "meta-badge live";
+  } else {
+    sourceBadge.textContent = t("sourceFallback");
+    sourceBadge.className = "meta-badge warn";
+  }
+}
 
         if (metricsBadge) {
           if (system?.metricsReference || window.IBSS_METRICS) {
