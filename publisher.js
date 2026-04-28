@@ -304,34 +304,23 @@ window.IBSS_PUBLISHER = (function () {
     if (!draft) return "";
 
     if (lang === "ar") {
-      return (
-        draft?.payload?.text_ar ||
-        draft?.payload?.text_en ||
-        ""
-      );
+      return draft?.payload?.text_ar || draft?.payload?.text_en || "";
     }
 
-    return (
-      draft?.payload?.text_en ||
-      draft?.payload?.text_ar ||
-      ""
-    );
+    return draft?.payload?.text_en || draft?.payload?.text_ar || "";
   }
 
   loadState();
 
   return {
     CONFIG,
-
     buildPublicationFromReport,
     buildStructuredPost,
     buildBlackPostFromSystem,
-
     createDraft,
     createDraftFromPublication,
     createDraftFromLatestReport,
     createBlackDraftFromSystem,
-
     getLatestDraft,
     getDrafts,
     getDraftText,
