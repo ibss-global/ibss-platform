@@ -940,28 +940,44 @@
     <div class="footer">© 2026 IBSS — Living Command Center v3</div>
   </div>
 
+<!-- ===================== IBSS CORE DATA ===================== -->
 <script src="data.js"></script>
 <script src="sources.js"></script>
 <script src="ingestion.js"></script>
 <script src="news.js"></script>
 <script src="analysis.js"></script>
+
+<!-- ===================== METRICS & STRUCTURE ===================== -->
 <script src="metrics-engine.js"></script>
 <script src="cluster-engine.js"></script>
 
+<!-- ===================== PUBLICATIONS ===================== -->
 <script src="publications-factory.js"></script>
 <script src="publications-registry.js"></script>
 <script src="content.js"></script>
 
+<!-- ===================== SIGNAL LAYER ===================== -->
 <script src="l3-engine.js"></script>
+
+<!-- ===================== PUBLISHER CORE ===================== -->
 <script src="publisher.js"></script>
+
+<!-- 🔴 AUTO MODE (must be right after publisher) -->
+<script src="auto-publish-orchestrator.js"></script>
+
+<!-- ===================== DECISION ENGINE ===================== -->
 <script src="engine.js"></script>
 <script src="decision-engine.js"></script>
 
+<!-- ===================== MEDIA ===================== -->
 <script src="audio-engine.js"></script>
-<script src="auto-publish-orchestrator.js"></script> <script src="viral-engine.js"></script>
-<script src="facebook-publisher-layer.js"></script>
-<script src="runtime-engine.js"></script>
 
+<!-- ===================== VIRAL + SOCIAL ===================== -->
+<script src="viral-engine.js"></script>
+<script src="facebook-publisher-layer.js"></script>
+
+<!-- ===================== RUNTIME (LAST ALWAYS) ===================== -->
+<script src="runtime-engine.js"></script>
 <script>
     (function () {
       "use strict";
