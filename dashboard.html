@@ -1517,33 +1517,39 @@
         return level;
       }
 
-      function renderDecision(level, system){
-        setText("decision", safeText(system?.decision, "-"));
-        setText("decisionWord", safeText(system?.decision, "-"));
-        setText("mode", safeText(system?.mode, "-"));
+function renderDecision(level, system){
+  setText("decision", safeText(system?.decision, "-"));
+  setText("decisionWord", safeText(system?.decision, "-"));
+  setText("mode", safeText(system?.mode, "-"));
 
-        const voiceSummary = getLocalizedText(system?.voice?.summary, "");
-        const voiceAdvisory = getLocalizedText(system?.voice?.advisory, "");
+  const voiceSummary = getLocalizedText(system?.voice?.summary, "");
+  const voiceAdvisory = getLocalizedText(system?.voice?.advisory, "");
 
-        if (level === "HIGH") {
-          setText("decisionNote", [t("noteHigh"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n"));
-        } else if (level === "MEDIUM") {
-          setText("decisionNote", [t("noteMedium"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n"));
-        } else {
-          setText("decisionNote", [t("noteLow"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n"));
-        }
-      const doctrineStateEl = document.getElementById("doctrineState");
+  let note = "";
 
-if (doctrineStateEl) {
-  if (system.doctrineOverride) {
-    doctrineStateEl.textContent = "ACTIVE";
-    doctrineStateEl.className = "value high";
+  if (level === "HIGH") {
+    note = t("noteHigh");
+  } else if (level === "MEDIUM") {
+    note = t("noteMedium");
   } else {
-    doctrineStateEl.textContent = "PASSIVE";
-    doctrineStateEl.className = "value low";
+    note = t("noteLow");
+  }
+
+  setText("decisionNote", [note, voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n"));
+
+  // 🔥 DOCTRINE STATE FIX
+  const doctrineStateEl = document.getElementById("doctrineState");
+
+  if (doctrineStateEl) {
+    if (system?.doctrineOverride) {
+      doctrineStateEl.textContent = "ACTIVE";
+      doctrineStateEl.className = "value high";
+    } else {
+      doctrineStateEl.textContent = "PASSIVE";
+      doctrineStateEl.className = "value low";
+    }
   }
 }
-
       function renderDoctrine(system){
         const doctrine = system?.doctrine || null;
         const top = system?.topDoctrineSeries || doctrine?.topSeries || null;
