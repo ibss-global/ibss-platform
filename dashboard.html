@@ -1532,7 +1532,17 @@
         } else {
           setText("decisionNote", [t("noteLow"), voiceSummary, voiceAdvisory].filter(Boolean).join("\n\n"));
         }
-      }
+      const doctrineStateEl = document.getElementById("doctrineState");
+
+if (doctrineStateEl) {
+  if (system.doctrineOverride) {
+    doctrineStateEl.textContent = "ACTIVE";
+    doctrineStateEl.className = "value high";
+  } else {
+    doctrineStateEl.textContent = "PASSIVE";
+    doctrineStateEl.className = "value low";
+  }
+}
 
       function renderDoctrine(system){
         const doctrine = system?.doctrine || null;
