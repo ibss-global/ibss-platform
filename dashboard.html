@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBSS Dashboard — Living Command Center v3</title>
+  <title>IBSS Dashboard — Σ-9X Doctrine Layer v3.4</title>
 
   <style>
     :root{
@@ -228,6 +228,17 @@
       box-shadow:0 14px 28px rgba(0,0,0,.2);
     }
 
+    .doctrine-card{
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.13), transparent 34%),
+        linear-gradient(180deg, rgba(212,175,55,.06), rgba(255,255,255,.01)),
+        var(--panel);
+      border:1px solid rgba(212,175,55,.30);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:0 14px 34px rgba(0,0,0,.24);
+    }
+
     .title{
       color:var(--gold);
       font-size:24px;
@@ -344,7 +355,8 @@
     .presence-box,
     .driver-item,
     .context-item,
-    .publication-box{
+    .publication-box,
+    .doctrine-item{
       background:var(--panel2);
       border:1px solid var(--soft-border-2);
       border-radius:18px;
@@ -405,6 +417,64 @@
     .presence-box,
     .publication-box{
       padding:18px;
+    }
+
+    .doctrine-item{
+      padding:16px;
+      border-color:rgba(212,175,55,.18);
+      background:rgba(255,255,255,.02);
+    }
+
+    .doctrine-main{
+      font-size:28px;
+      line-height:1.35;
+      font-weight:900;
+      color:#fff;
+      margin-bottom:10px;
+    }
+
+    .doctrine-question{
+      color:#ddd;
+      line-height:1.9;
+      font-size:15px;
+      white-space:pre-wrap;
+    }
+
+    .doctrine-series-list{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .doctrine-row{
+      padding:12px;
+      border-radius:14px;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.06);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .doctrine-row-name{
+      color:#fff;
+      font-weight:800;
+      font-size:14px;
+    }
+
+    .doctrine-row-meta{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:4px;
+      line-height:1.6;
+    }
+
+    .doctrine-row-score{
+      color:var(--gold);
+      font-size:20px;
+      font-weight:900;
+      flex:0 0 auto;
     }
 
     .signal-box h3,
@@ -742,7 +812,8 @@
       .brand{text-align:center}
       .state{grid-template-columns:1fr}
 
-      .legend-item{
+      .legend-item,
+      .doctrine-row{
         align-items:flex-start;
         flex-direction:column;
       }
@@ -787,13 +858,14 @@
 
     <div class="hero">
       <h1 id="pageTitle">IBSS Dashboard</h1>
-      <p id="pageSub">Living Command Center — Adaptive Voice / Pressure / Decision Layer</p>
+      <p id="pageSub">Living Command Center — Adaptive Voice / Pressure / Doctrine / Decision Layer</p>
       <div id="metaLine" class="meta-line">Engine source: -</div>
       <div id="presenceLine" class="presence-line">-</div>
 
       <div class="hero-badges">
         <span id="sourceBadge" class="meta-badge warn">SOURCE — LIMITED</span>
         <span id="metricsBadge" class="meta-badge">METRICS — OFF</span>
+        <span id="doctrineBadge" class="meta-badge warn">DOCTRINE — OFF</span>
         <span id="audioBadge" class="meta-badge warn">AUDIO — OFF</span>
       </div>
     </div>
@@ -839,6 +911,22 @@
         </div>
       </div>
 
+      <div class="doctrine-card">
+        <div class="title" id="doctrineTitle">Σ-9X Doctrine Layer</div>
+        <div class="sub-title" id="doctrineSub">Black Doctrine / Conflict Systems / Regional Engines</div>
+
+        <div class="doctrine-item">
+          <div id="doctrineMain" class="doctrine-main">-</div>
+          <div id="doctrineQuestion" class="doctrine-question">-</div>
+
+          <div id="doctrineBadges" class="mini-badges"></div>
+        </div>
+
+        <div id="doctrineSeriesList" class="doctrine-series-list"></div>
+      </div>
+    </div>
+
+    <div class="grid">
       <div class="feature-card">
         <div class="title" id="voicePanelTitle">Living Voice</div>
 
@@ -854,9 +942,7 @@
           <div id="presenceBadges" class="mini-badges"></div>
         </div>
       </div>
-    </div>
 
-    <div class="grid-2">
       <div class="card">
         <div class="title" id="signalTitleLabel">Primary Signal</div>
 
@@ -869,10 +955,18 @@
         <div class="title" style="margin-top:18px" id="driversTitle">Primary Drivers</div>
         <div id="driversBox" class="drivers-box"></div>
       </div>
+    </div>
 
+    <div class="grid-2">
       <div class="card">
         <div class="title" id="radarTitle">Top Strategic Matrix</div>
         <div class="legend" id="radarLegend"></div>
+      </div>
+
+      <div class="card">
+        <div class="title" id="metricsTitle">Unified Metrics</div>
+        <div class="sub-title" id="metricsSub">SSI / Doctrine / Signal / Cluster / Theater</div>
+        <div id="metricsBox" class="metrics-box"></div>
       </div>
     </div>
 
@@ -883,14 +977,13 @@
       </div>
 
       <div class="card">
-        <div class="title" id="metricsTitle">Unified Metrics</div>
-        <div class="sub-title" id="metricsSub">SSI / CRI / Signal / Cluster / Theater</div>
-        <div id="metricsBox" class="metrics-box"></div>
+        <div class="title" id="scenarioTitle">Scenario Engine</div>
+        <div id="scenarioBox" class="scenario-box"></div>
       </div>
 
       <div class="card">
-        <div class="title" id="scenarioTitle">Scenario Engine</div>
-        <div id="scenarioBox" class="scenario-box"></div>
+        <div class="title" id="countryTitle">Country Risk Unit</div>
+        <div id="countryBox" class="country-box"></div>
       </div>
     </div>
 
@@ -904,11 +997,6 @@
         <div class="title" id="contextTitle">Publication Context</div>
         <div id="contextBox" class="context-box"></div>
       </div>
-    </div>
-
-    <div class="card section">
-      <div class="title" id="countryTitle">Country Risk Unit</div>
-      <div id="countryBox" class="country-box"></div>
     </div>
 
     <div class="card section">
@@ -937,49 +1025,31 @@
       </div>
     </div>
 
-    <div class="footer">© 2026 IBSS — Living Command Center v3</div>
+    <div class="footer">© 2026 IBSS — Living Command Center v3.4 / Σ-9X Doctrine Layer</div>
   </div>
 
-<!-- ===================== IBSS CORE DATA ===================== -->
-<script src="data.js"></script>
-<script src="sources.js"></script>
-<script src="ingestion.js"></script>
-<script src="news.js"></script>
-<script src="analysis.js"></script>
+  <script src="data.js"></script>
+  <script src="sources.js"></script>
+  <script src="ingestion.js"></script>
+  <script src="news.js"></script>
+  <script src="analysis.js"></script>
+  <script src="metrics-engine.js"></script>
+  <script src="cluster-engine.js"></script>
+  <script src="publications-factory.js"></script>
+  <script src="publications-registry.js"></script>
+  <script src="content.js"></script>
+  <script src="l3-engine.js"></script>
+  <script src="publisher.js"></script>
+  <script src="auto-publish-orchestrator.js"></script>
+  <script src="engine.js"></script>
+  <script src="decision-engine.js"></script>
+  <script src="audio-engine.js"></script>
+  <script src="viral-engine.js"></script>
+  <script src="facebook-publisher-layer.js"></script>
+  <script src="health-check.js"></script>
+  <script src="runtime-engine.js"></script>
 
-<!-- ===================== METRICS & STRUCTURE ===================== -->
-<script src="metrics-engine.js"></script>
-<script src="cluster-engine.js"></script>
-
-<!-- ===================== PUBLICATIONS ===================== -->
-<script src="publications-factory.js"></script>
-<script src="publications-registry.js"></script>
-<script src="content.js"></script>
-
-<!-- ===================== SIGNAL LAYER ===================== -->
-<script src="l3-engine.js"></script>
-
-<!-- ===================== PUBLISHER CORE ===================== -->
-<script src="publisher.js"></script>
-
-<!-- 🔴 AUTO MODE (must be right after publisher) -->
-<script src="auto-publish-orchestrator.js"></script>
-
-<!-- ===================== DECISION ENGINE ===================== -->
-<script src="engine.js"></script>
-<script src="decision-engine.js"></script>
-
-<!-- ===================== MEDIA ===================== -->
-<script src="audio-engine.js"></script>
-
-<!-- ===================== VIRAL + SOCIAL ===================== -->
-<script src="viral-engine.js"></script>
-<script src="facebook-publisher-layer.js"></script>
-
-<script src="health-check.js"></script>
-  <!-- ===================== RUNTIME (LAST ALWAYS) ===================== -->
-<script src="runtime-engine.js"></script>
-<script>
+  <script>
     (function () {
       "use strict";
 
@@ -987,7 +1057,7 @@
         en: {
           nav_home:"Home", nav_dashboard:"Dashboard", nav_signals:"Signals", nav_reports:"Reports", nav_countries:"Countries", nav_models:"Models", nav_about:"About",
           title:"IBSS Dashboard",
-          sub:"Living Command Center — Adaptive Voice / Pressure / Decision Layer",
+          sub:"Living Command Center — Adaptive Voice / Pressure / Doctrine / Decision Layer",
           ticker:"Live Intelligence Strip",
           state:"System State",
           level:"Level",
@@ -1001,12 +1071,21 @@
           country:"Country Risk Unit",
           snapshot:"Strategic Snapshot",
           metrics:"Unified Metrics",
-          metricsSub:"SSI / CRI / Signal / Cluster / Theater",
+          metricsSub:"SSI / Doctrine / Signal / Cluster / Theater",
           publication:"Featured Publication",
           context:"Publication Context",
           drivers:"Primary Drivers",
           publisher:"Publishing Console",
           voicePanel:"Living Voice",
+          doctrineTitle:"Σ-9X Doctrine Layer",
+          doctrineSub:"Black Doctrine / Conflict Systems / Regional Engines",
+          doctrineSeries:"Doctrine Series",
+          doctrineQuestion:"Sovereign Question",
+          doctrineAlert:"Doctrine Alert",
+          doctrineSignals:"Signals",
+          doctrineAvg:"Average Alert",
+          doctrineActive:"Active Series",
+          noDoctrine:"No doctrine layer data available.",
           levelHigh:"HIGH",
           levelMed:"MEDIUM",
           levelLow:"LOW",
@@ -1031,9 +1110,12 @@
           sourceFallback:"SOURCE — LIMITED",
           metricsOn:"METRICS — INTEGRATED",
           metricsOff:"METRICS — OFF",
+          doctrineOn:"DOCTRINE — ACTIVE",
+          doctrineOff:"DOCTRINE — OFF",
           snapshotTheater:"Top Theater",
           snapshotCluster:"Top Strategic File",
           snapshotCountry:"Top Country Risk",
+          snapshotDoctrine:"Top Doctrine Series",
           latestDraft:"Latest Draft",
           signalScore:"Signal Score",
           clusterRisk:"Strategic File Risk",
@@ -1062,7 +1144,7 @@
         ar: {
           nav_home:"الرئيسية", nav_dashboard:"لوحة التحكم", nav_signals:"الإشارات", nav_reports:"التقارير", nav_countries:"الدول", nav_models:"النماذج", nav_about:"حول",
           title:"لوحة تحكم IBSS",
-          sub:"مركز القيادة الحي — الصوت التكيفي / الضغط / القرار",
+          sub:"مركز القيادة الحي — الصوت التكيفي / الضغط / العقيدة / القرار",
           ticker:"الشريط الاستخباري الحي",
           state:"حالة النظام",
           level:"المستوى",
@@ -1076,12 +1158,21 @@
           country:"وحدة مخاطر الدول",
           snapshot:"اللقطة الاستراتيجية",
           metrics:"المقاييس الموحدة",
-          metricsSub:"SSI / CRI / Signal / Cluster / Theater",
+          metricsSub:"SSI / العقيدة / الإشارة / الملف / المسرح",
           publication:"المنشور المميز",
           context:"سياق المنشورات",
           drivers:"المحرّكات الأساسية",
           publisher:"وحدة النشر",
           voicePanel:"الصوت الحي",
+          doctrineTitle:"طبقة Σ-9X العقائدية",
+          doctrineSub:"العقيدة السوداء / أنظمة الصراع / المحركات الإقليمية",
+          doctrineSeries:"السلسلة العقائدية",
+          doctrineQuestion:"السؤال السيادي",
+          doctrineAlert:"إنذار العقيدة",
+          doctrineSignals:"الإشارات",
+          doctrineAvg:"متوسط الإنذار",
+          doctrineActive:"السلاسل النشطة",
+          noDoctrine:"لا توجد بيانات عقائدية متاحة.",
           levelHigh:"مرتفع",
           levelMed:"متوسط",
           levelLow:"منخفض",
@@ -1106,9 +1197,12 @@
           sourceFallback:"المصدر — محدود",
           metricsOn:"القياس — مدمج",
           metricsOff:"القياس — غير مفعل",
+          doctrineOn:"العقيدة — نشطة",
+          doctrineOff:"العقيدة — غير مفعلة",
           snapshotTheater:"المسرح الأعلى",
           snapshotCluster:"الملف الاستراتيجي الأعلى",
           snapshotCountry:"أعلى دولة خطرًا",
+          snapshotDoctrine:"السلسلة العقائدية الأعلى",
           latestDraft:"أحدث مسودة",
           signalScore:"درجة الإشارة",
           clusterRisk:"خطر الملف الاستراتيجي",
@@ -1158,6 +1252,14 @@
         if (value == null) return fallback;
         if (typeof value === "string" || typeof value === "number") return String(value);
         return value[APP.lang] || value.en || value.ar || value.name || value.title || value.label || value.text || fallback;
+      }
+
+      function getDoctrineName(series){
+        return getLocalizedText(series?.name || series?.series?.name, "-");
+      }
+
+      function getDoctrineQuestion(series){
+        return getLocalizedText(series?.question || series?.series?.question, "-");
       }
 
       function escapeHtml(text){
@@ -1212,7 +1314,7 @@
       function levelClass(level){
         const v = String(level || "LOW").toUpperCase();
         if (v === "HIGH" || v === "IMMEDIATE" || v === "CRITICAL") return "high";
-        if (v === "MEDIUM" || v === "ELEVATED" || v === "HIGH") return "medium";
+        if (v === "MEDIUM" || v === "ELEVATED") return "medium";
         return "low";
       }
 
@@ -1253,6 +1355,8 @@
         setText("driversTitle", t("drivers"));
         setText("publisherTitle", t("publisher"));
         setText("voicePanelTitle", t("voicePanel"));
+        setText("doctrineTitle", t("doctrineTitle"));
+        setText("doctrineSub", t("doctrineSub"));
         setText("pubDraftTypeTitle", t("latestDraft"));
 
         document.querySelectorAll("[data-i18n]").forEach(node => {
@@ -1288,17 +1392,11 @@
 
       function getRawSystem(){
         try {
-          if (window.IBSS_ENGINE?.getSystemState) {
-            return window.IBSS_ENGINE.getSystemState();
-          }
-
-          if (window.IBSS_ENGINE?.getStaticSystemFallback) {
-            return window.IBSS_ENGINE.getStaticSystemFallback();
-          }
+          if (window.IBSS_ENGINE?.getSystemState) return window.IBSS_ENGINE.getSystemState();
+          if (window.IBSS_ENGINE?.getStaticSystemFallback) return window.IBSS_ENGINE.getStaticSystemFallback();
         } catch (error) {
           console.error("Dashboard getRawSystem error:", error);
         }
-
         return null;
       }
 
@@ -1342,16 +1440,17 @@
 
         const sourceBadge = el("sourceBadge");
         const metricsBadge = el("metricsBadge");
+        const doctrineBadge = el("doctrineBadge");
 
-if (sourceBadge) {
-  if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed || system?.source === "orchestrated") {
-    sourceBadge.textContent = t("sourceLive");
-    sourceBadge.className = "meta-badge live";
-  } else {
-    sourceBadge.textContent = t("sourceFallback");
-    sourceBadge.className = "meta-badge warn";
-  }
-}
+        if (sourceBadge) {
+          if (system?.publisherDigest || system?.publisherFeed || system?.unifiedFeed || system?.source === "orchestrated") {
+            sourceBadge.textContent = t("sourceLive");
+            sourceBadge.className = "meta-badge live";
+          } else {
+            sourceBadge.textContent = t("sourceFallback");
+            sourceBadge.className = "meta-badge warn";
+          }
+        }
 
         if (metricsBadge) {
           if (system?.metricsReference || window.IBSS_METRICS) {
@@ -1360,6 +1459,16 @@ if (sourceBadge) {
           } else {
             metricsBadge.textContent = t("metricsOff");
             metricsBadge.className = "meta-badge warn";
+          }
+        }
+
+        if (doctrineBadge) {
+          if (system?.doctrine?.topSeries || system?.topDoctrineSeries) {
+            doctrineBadge.textContent = t("doctrineOn");
+            doctrineBadge.className = "meta-badge live";
+          } else {
+            doctrineBadge.textContent = t("doctrineOff");
+            doctrineBadge.className = "meta-badge warn";
           }
         }
 
@@ -1421,6 +1530,63 @@ if (sourceBadge) {
         }
       }
 
+      function renderDoctrine(system){
+        const doctrine = system?.doctrine || null;
+        const top = system?.topDoctrineSeries || doctrine?.topSeries || null;
+        const series = top?.series || top || null;
+        const activeSeries = asArray(doctrine?.activeSeries);
+
+        if (!top || !series) {
+          setText("doctrineMain", "-");
+          setText("doctrineQuestion", t("noDoctrine"));
+          el("doctrineBadges").innerHTML = "";
+          el("doctrineSeriesList").innerHTML = "";
+          return;
+        }
+
+        const name = getDoctrineName(series);
+        const question = getDoctrineQuestion(series);
+        const maxAlert = safeNumber(top.maxAlert ?? top.alertScore ?? top.score, 0);
+        const avgAlert = safeNumber(top.avgAlert, 0);
+        const count = safeNumber(top.count ?? top.signalCount, 0);
+        const alertClass = metricLevelClass(maxAlert);
+
+        setText("doctrineMain", name);
+        setText("doctrineQuestion", question);
+
+        el("doctrineBadges").innerHTML = `
+          <span class="mini-badge ${alertClass}">${escapeHtml(t("doctrineAlert"))}: ${maxAlert}</span>
+          <span class="mini-badge">${escapeHtml(t("doctrineSignals"))}: ${count}</span>
+          <span class="mini-badge">${escapeHtml(t("doctrineAvg"))}: ${avgAlert}</span>
+          <span class="mini-badge">${escapeHtml(safeText(series.layer, "-"))}</span>
+        `;
+
+        if (!activeSeries.length) {
+          el("doctrineSeriesList").innerHTML = "";
+          return;
+        }
+
+        el("doctrineSeriesList").innerHTML = activeSeries.slice(0, 5).map(item => {
+          const rowSeries = item.series || item;
+          const rowName = getDoctrineName(rowSeries);
+          const rowQuestion = getDoctrineQuestion(rowSeries);
+          const rowAlert = safeNumber(item.maxAlert ?? item.alertScore ?? 0);
+          const rowCount = safeNumber(item.count ?? 0);
+          const rowAvg = safeNumber(item.avgAlert ?? 0);
+
+          return `
+            <div class="doctrine-row">
+              <div>
+                <div class="doctrine-row-name">${escapeHtml(rowName)}</div>
+                <div class="doctrine-row-meta">${escapeHtml(rowQuestion)}</div>
+                <div class="doctrine-row-meta">${escapeHtml(`${t("doctrineSignals")}: ${rowCount} | ${t("doctrineAvg")}: ${rowAvg}`)}</div>
+              </div>
+              <div class="doctrine-row-score ${metricLevelClass(rowAlert)}">${rowAlert}</div>
+            </div>
+          `;
+        }).join("");
+      }
+
       function renderVoice(system){
         const voice = system?.voice || {};
         const presence = system?.presence || {};
@@ -1464,6 +1630,7 @@ if (sourceBadge) {
         const score = safeNumber(signal?.balancedScore100 ?? signal?.score100, 0);
         const priority = normalizePriority(signal?.priority);
         const signalClass = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
+        const doctrineName = getDoctrineName(signal?.doctrine?.primary);
 
         setText("signalTitle", getLocalizedText(signal.title));
         setText("signalDesc", getLocalizedText(signal.description || signal.summary));
@@ -1473,6 +1640,7 @@ if (sourceBadge) {
           <span class="mini-badge">${escapeHtml(t("band"))}: ${escapeHtml(getBandLabel(score))}</span>
           <span class="mini-badge">${escapeHtml(t("mode"))}: ${escapeHtml(getLocalizedText(signal?.decisionMode, safeText(signal?.mode, "-")))}</span>
           <span class="mini-badge">${escapeHtml(t("country"))}: ${escapeHtml(safeText(signal.country || signal.region, "-"))}</span>
+          <span class="mini-badge gold">${escapeHtml(t("doctrineSeries"))}: ${escapeHtml(doctrineName)}</span>
         `;
       }
 
@@ -1512,7 +1680,7 @@ if (sourceBadge) {
           const priority = normalizePriority(signal?.priority || signal?.weight);
           const cls = priority === "HIGH" ? "high" : priority === "MEDIUM" ? "medium" : "low";
           const title = getLocalizedText(signal.title);
-          const sub = safeText(signal.region || signal.domain || "-", "-");
+          const sub = `${safeText(signal.region || signal.domain || "-", "-")} | ${getDoctrineName(signal?.doctrine?.primary)}`;
 
           return `
             <div class="legend-item">
@@ -1538,8 +1706,14 @@ if (sourceBadge) {
         const topCluster = snapshot?.topCluster || system?.topCluster || null;
         const topCountry = snapshot?.topCountry || system?.topCountry || asArray(system?.countryRiskFeed)[0] || null;
         const featuredPublication = system?.featuredPublication || snapshot?.latestStudy || null;
+        const topDoctrine = system?.topDoctrineSeries || snapshot?.topDoctrineSeries || system?.doctrine?.topSeries || null;
 
         el("snapshotBox").innerHTML = `
+          <div class="snapshot-item">
+            <strong>${escapeHtml(t("snapshotDoctrine"))}: ${escapeHtml(topDoctrine ? getDoctrineName(topDoctrine.series || topDoctrine) : "-")}</strong>
+            <div class="snapshot-meta">${escapeHtml(topDoctrine ? `${t("doctrineAlert")}: ${safeNumber(topDoctrine.maxAlert, 0)} | ${t("doctrineSignals")}: ${safeNumber(topDoctrine.count, 0)}` : t("noDoctrine"))}</div>
+          </div>
+
           <div class="snapshot-item">
             <strong>${escapeHtml(t("snapshotTheater"))}: ${escapeHtml(topTheater ? getLocalizedText(topTheater.name) : "-")}</strong>
             <div class="snapshot-meta">${escapeHtml(topTheater ? `${t("riskScore")}: ${safeNumber(topTheater.avgRisk, 0)} | ${t("band")}: ${getBandLabel(topTheater.avgRisk)}` : t("noData"))}</div>
@@ -1567,9 +1741,11 @@ if (sourceBadge) {
         const topCluster = system?.topCluster || null;
         const topTheater = system?.topTheater || null;
         const topCountry = system?.topCountry || asArray(system?.countryRiskFeed)[0] || null;
+        const topDoctrine = system?.topDoctrineSeries || system?.doctrine?.topSeries || null;
 
         const rows = [
           { label:t("systemStress"), value:safeNumber(system?.systemPressure, 0), sub:`${t("band")}: ${getBandLabel(system?.systemPressure)}` },
+          { label:t("doctrineAlert"), value:safeNumber(topDoctrine?.maxAlert, 0), sub:`${t("doctrineSeries")}: ${topDoctrine ? getDoctrineName(topDoctrine.series || topDoctrine) : "-"}` },
           { label:t("signalScore"), value:safeNumber(topSignal?.balancedScore100 ?? topSignal?.score100, 0), sub:`${t("band")}: ${getBandLabel(topSignal?.balancedScore100 ?? topSignal?.score100)}` },
           { label:t("clusterRisk"), value:safeNumber(topCluster?.avgRisk, 0), sub:`${t("band")}: ${getBandLabel(topCluster?.avgRisk)}` },
           { label:t("theaterRisk"), value:safeNumber(topTheater?.avgRisk, 0), sub:`${t("band")}: ${getBandLabel(topTheater?.avgRisk)}` },
@@ -1800,6 +1976,7 @@ if (sourceBadge) {
         const level = renderLevel(system);
 
         renderDecision(level, system);
+        renderDoctrine(system);
         renderVoice(system);
         renderPrimarySignal(system.topSignal || system.dominantSignal || null);
         renderDrivers(system);
