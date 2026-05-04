@@ -1,18 +1,23 @@
-// IBSS FACEBOOK PUBLISHER LAYER — Safe Social Export Layer
-// Version: v2.0
+// IBSS FACEBOOK PUBLISHER LAYER — Secure Social Bridge
+// Version: v3.0
+// Safe frontend layer: copy/share/export + secure backend publishing bridge
+// IMPORTANT: Never place Facebook Page Access Token inside this file.
 
 window.IBSS_FACEBOOK_LAYER = (function () {
   "use strict";
 
   const CONFIG = {
-    version: "v2.0-safe-social-export-layer",
-    storageKey: "ibss_facebook_layer_v20",
-    maxHistory: 80,
-    defaultHashtags: ["IBSS", "StrategicIntelligence", "SovereignStudies"]
+    version: "v3.0-secure-social-bridge",
+    storageKey: "ibss_facebook_layer_v30",
+    maxHistory: 120,
+    defaultHashtags: ["IBSS", "StrategicIntelligence", "SovereignStudies"],
+    backendEndpoint: "",
+    requestTimeoutMs: 15000
   };
 
   const STATE = {
-    history: []
+    history: [],
+    lastResult: null
   };
 
   function safeText(value, fallback = "") {
@@ -65,6 +70,7 @@ window.IBSS_FACEBOOK_LAYER = (function () {
       if (!parsed || typeof parsed !== "object") return;
 
       STATE.history = asArray(parsed.history);
+      STATE.lastResult = parsed.lastResult || null;
     } catch (error) {
       console.error("IBSS_FACEBOOK_LAYER loadState error:", error);
     }
@@ -73,11 +79,17 @@ window.IBSS_FACEBOOK_LAYER = (function () {
   function saveState() {
     try {
       localStorage.setItem(CONFIG.storageKey, JSON.stringify({
-        history: STATE.history
+        history: STATE.history,
+        lastResult: STATE.lastResult
       }));
     } catch (error) {
       console.error("IBSS_FACEBOOK_LAYER saveState error:", error);
     }
+  }
+
+  function setBackendEndpoint(endpoint) {
+    CONFIG.backendEndpoint = safeText(endpoint, "");
+    return CONFIG.backendEndpoint;
   }
 
   function normalizeHashtags(tags = CONFIG.defaultHashtags) {
@@ -93,6 +105,15 @@ window.IBSS_FACEBOOK_LAYER = (function () {
       return window.IBSS_PUBLISHER?.getLatestDraft?.() || null;
     } catch (error) {
       console.error("IBSS_FACEBOOK_LAYER getLatestDraft error:", error);
+      return null;
+    }
+  }
+
+  function getSystemState() {
+    try {
+      return window.IBSS_ENGINE?.getSystemState?.() || null;
+    } catch (error) {
+      console.error("IBSS_FACEBOOK_LAYER getSystemState error:", error);
       return null;
     }
   }
@@ -121,6 +142,47 @@ window.IBSS_FACEBOOK_LAYER = (function () {
     );
   }
 
+  function buildSystemPost(system = getSystemState(), lang = getLang()) {
+    if (!system) return "";
+
+    const topSignal = system.topSignal || system.dominantSignal || {};
+    const title = getLocalizedText(topSignal.title, lang) || "IBSS Strategic Signal";
+    const reading =
+      getLocalizedText(system.voice?.summary, lang) ||
+      getLocalizedText(topSignal.description || topSignal.summary, lang) ||
+      "";
+
+    if (lang === "ar") {
+      return [
+        "قراءة سيادية — IBSS / Σ-9X",
+        "",
+        `الإشارة الأعلى: ${title}`,
+        `ضغط النظام: ${system.systemPressure ?? system.ssi ?? "-"}`,
+        `الثقة: ${system.confidenceScore ?? "-"}`,
+        `القرار: ${system.decision ?? "-"}`,
+        `الوضع: ${system.mode ?? "-"}`,
+        "",
+        reading,
+        "",
+        "— IBSS / Σ-9X"
+      ].join("\n");
+    }
+
+    return [
+      "IBSS Strategic Signal",
+      "",
+      `Top Signal: ${title}`,
+      `System Pressure: ${system.systemPressure ?? system.ssi ?? "-"}`,
+      `Confidence: ${system.confidenceScore ?? "-"}`,
+      `Decision: ${system.decision ?? "-"}`,
+      `Mode: ${system.mode ?? "-"}`,
+      "",
+      reading,
+      "",
+      "— IBSS / Σ-9X"
+    ].join("\n");
+  }
+
   function buildFacebookPost(input = {}, lang = getLang()) {
     const baseText =
       typeof input === "string"
@@ -128,15 +190,13 @@ window.IBSS_FACEBOOK_LAYER = (function () {
         : getDraftText(input, lang) ||
           getLocalizedText(input?.text, lang) ||
           getLocalizedText(input?.title, lang) ||
+          buildSystemPost(input?.system || null, lang) ||
           "";
 
     const hashtags = normalizeHashtags(input?.hashtags || CONFIG.defaultHashtags);
-
     const text = safeText(baseText, lang === "ar" ? "تحديث IBSS" : "IBSS Update");
 
-    if (text.includes("#IBSS")) {
-      return text;
-    }
+    if (text.includes("#IBSS")) return text;
 
     return `${text}\n\n${hashtags}`.trim();
   }
@@ -190,7 +250,6 @@ window.IBSS_FACEBOOK_LAYER = (function () {
   async function copyLatestDraft(lang = getLang()) {
     const draft = getLatestDraft();
     const text = buildFacebookPost(draft || {}, lang);
-
     const copied = await copyText(text);
 
     if (copied) {
@@ -241,12 +300,121 @@ window.IBSS_FACEBOOK_LAYER = (function () {
     }
   }
 
+  async function sendToBackend(input = {}, options = {}) {
+    const endpoint = safeText(options.endpoint || CONFIG.backendEndpoint, "");
+
+    if (!endpoint) {
+      const result = {
+        ok: false,
+        status: "NO_BACKEND_ENDPOINT",
+        message: "No backend endpoint configured. Direct Facebook publishing requires a secure backend."
+      };
+
+      STATE.lastResult = result;
+      saveState();
+      return result;
+    }
+
+    const lang = safeText(options.lang || getLang(), "en");
+    const text = buildFacebookPost(input, lang);
+
+    if (!text) {
+      const result = {
+        ok: false,
+        status: "EMPTY_POST",
+        message: "No post text generated."
+      };
+
+      STATE.lastResult = result;
+      saveState();
+      return result;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), CONFIG.requestTimeoutMs);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-IBSS-Client": CONFIG.version
+        },
+        body: JSON.stringify({
+          platform: "facebook",
+          text,
+          lang,
+          meta: {
+            source: "IBSS_FACEBOOK_LAYER",
+            createdAt: nowIso(),
+            draftId: input?.id || input?.draftId || null,
+            systemPressure: input?.system?.systemPressure || input?.system?.ssi || null,
+            decision: input?.system?.decision || null,
+            mode: input?.system?.mode || null
+          }
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      const data = await response.json().catch(() => ({}));
+
+      const result = {
+        ok: response.ok,
+        status: response.status,
+        data
+      };
+
+      STATE.lastResult = result;
+
+      recordExport(text, {
+        action: "sendToBackend",
+        lang,
+        ok: response.ok,
+        status: response.status
+      });
+
+      saveState();
+      return result;
+    } catch (error) {
+      clearTimeout(timeout);
+
+      console.error("IBSS_FACEBOOK_LAYER sendToBackend error:", error);
+
+      const result = {
+        ok: false,
+        status: "SEND_FAILED",
+        message: error.message || "Backend request failed."
+      };
+
+      STATE.lastResult = result;
+      saveState();
+      return result;
+    }
+  }
+
+  async function sendLatestDraftToBackend(options = {}) {
+    const draft = getLatestDraft();
+    return sendToBackend(draft || {}, options);
+  }
+
+  async function sendSystemPostToBackend(options = {}) {
+    const system = getSystemState();
+    return sendToBackend({ system }, options);
+  }
+
   function getHistory() {
     return clone(STATE.history) || [];
   }
 
+  function getLastResult() {
+    return clone(STATE.lastResult);
+  }
+
   function clearHistory() {
     STATE.history = [];
+    STATE.lastResult = null;
     saveState();
     return true;
   }
@@ -272,12 +440,24 @@ window.IBSS_FACEBOOK_LAYER = (function () {
 
   return {
     CONFIG,
+
+    setBackendEndpoint,
+
     buildFacebookPost,
+    buildSystemPost,
+
     copyText,
     copyPost,
     copyLatestDraft,
+
     openShareDialog,
+
+    sendToBackend,
+    sendLatestDraftToBackend,
+    sendSystemPostToBackend,
+
     getHistory,
+    getLastResult,
     clearHistory,
     attachToPublisherConsole
   };
