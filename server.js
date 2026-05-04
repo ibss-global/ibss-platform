@@ -1,48 +1,87 @@
-// IBSS FACEBOOK BACKEND PUBLISHER
-// Secure backend for Facebook Page publishing
+// IBSS FACEBOOK BRIDGE SERVER
+// Version: v1.1 — Render Ready / Secure Backend
+// Endpoint: POST /publish/facebook
 
 import express from "express";
-import fetch from "node-fetch";
+import cors from "cors";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
-app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
-
-const PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
+const GRAPH_VERSION = process.env.FB_GRAPH_VERSION || "v20.0";
 const PAGE_ID = process.env.FB_PAGE_ID;
+const PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
+
+const ALLOWED_ORIGINS = [
+  "https://ibss-global.github.io",
+  "https://ibss-global.github.io/ibss-platform"
+];
+
+app.use(express.json({ limit: "1mb" }));
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS_NOT_ALLOWED"));
+      }
+    },
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "X-IBSS-Client"]
+  })
+);
+
+function safeText(value, fallback = "") {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function hasFacebookConfig() {
+  return Boolean(PAGE_ID && PAGE_ACCESS_TOKEN);
+}
 
 app.get("/", (req, res) => {
   res.json({
     ok: true,
-    status: "IBSS Facebook Backend Running"
+    service: "IBSS Facebook Bridge",
+    status: "RUNNING",
+    graphVersion: GRAPH_VERSION,
+    facebookConfigured: hasFacebookConfig()
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({
+    ok: true,
+    status: "HEALTHY"
   });
 });
 
 app.post("/publish/facebook", async (req, res) => {
   try {
-    const { text } = req.body;
+    const text = safeText(req.body?.text || req.body?.message, "");
 
     if (!text) {
       return res.status(400).json({
         ok: false,
-        error: "No text provided"
+        error: "EMPTY_POST_TEXT"
       });
     }
 
-    if (!PAGE_ACCESS_TOKEN || !PAGE_ID) {
+    if (!hasFacebookConfig()) {
       return res.status(500).json({
         ok: false,
-        error: "Facebook credentials missing"
+        error: "FACEBOOK_ENV_MISSING"
       });
     }
 
-    const url = `https://graph.facebook.com/${PAGE_ID}/feed`;
+    const url = `https://graph.facebook.com/${GRAPH_VERSION}/${PAGE_ID}/feed`;
 
-    const fbRes = await fetch(url, {
+    const fbResponse = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -53,28 +92,40 @@ app.post("/publish/facebook", async (req, res) => {
       })
     });
 
-    const data = await fbRes.json();
+    const data = await fbResponse.json();
 
-    if (!fbRes.ok) {
-      return res.status(500).json({
+    if (!fbResponse.ok) {
+      return res.status(fbResponse.status).json({
         ok: false,
-        error: data
+        error: "FACEBOOK_PUBLISH_FAILED",
+        details: data
       });
     }
 
     return res.json({
       ok: true,
-      postId: data.id
+      platform: "facebook",
+      postId: data.id,
+      response: data
     });
-
   } catch (error) {
+    console.error("IBSS Facebook publish error:", error);
+
     return res.status(500).json({
       ok: false,
-      error: error.message
+      error: "SERVER_ERROR",
+      message: error.message
     });
   }
 });
 
+app.use((req, res) => {
+  res.status(404).json({
+    ok: false,
+    error: "ROUTE_NOT_FOUND"
+  });
+});
+
 app.listen(PORT, () => {
-  console.log(`IBSS Facebook Backend running on port ${PORT}`);
+  console.log(`IBSS Facebook Bridge running on port ${PORT}`);
 });
