@@ -1,5 +1,6 @@
 // IBSS ENGINE CORE — Adaptive Living Presence Full Rebuild
-// Version: v3.2 Adaptive Living Engine + L3 Integrated
+// Version: v3.3 Sovereign Doctrine Integrated + L3 Integrated
+// Clean Full Replacement for engine.js
 
 window.IBSS_ENGINE = (function () {
   "use strict";
@@ -9,7 +10,7 @@ window.IBSS_ENGINE = (function () {
     historyLimit: 180,
     reportLimit: 80,
     archiveLimit: 120,
-    storageKey: "ibss_engine_state_v32_l3_integrated",
+    storageKey: "ibss_engine_state_v33_doctrine_l3_integrated",
     minLiveSignalScore: 40,
     scenarioHighThreshold: 85,
     scenarioPrepThreshold: 70,
@@ -29,9 +30,192 @@ window.IBSS_ENGINE = (function () {
     lastSystem: null
   };
 
-  /* =========================================
-     Utilities
-  ========================================= */
+  const DOCTRINE = {
+    SERIES: {
+      BLACK_BOX: {
+        id: "BLACK_BOX",
+        layer: "BLACK_DOCTRINE",
+        name: { en: "Black Box", ar: "الصندوق الأسود" },
+        question: {
+          en: "Who inserted the decision into the system?",
+          ar: "من أدخل القرار إلى النظام؟"
+        },
+        keywords: [
+          "unknown source", "hidden actor", "unexplained decision", "decision source",
+          "مصدر مجهول", "فاعل غير ظاهر", "قرار غير مفسر", "من أدخل القرار"
+        ]
+      },
+      INVISIBLE_INK: {
+        id: "INVISIBLE_INK",
+        layer: "BLACK_DOCTRINE",
+        name: { en: "Invisible Ink", ar: "الحبر السري" },
+        question: {
+          en: "What is written but not read?",
+          ar: "ماذا كُتب… لكن لم يُقرأ؟"
+        },
+        keywords: [
+          "statement", "proposal", "message", "unacceptable", "acceptable", "victory", "failure",
+          "تصريح", "مقترح", "رسالة", "غير مقبول", "مقبول", "نصر", "فشل", "قال"
+        ]
+      },
+      SHOCK_ARCHITECTURE: {
+        id: "SHOCK_ARCHITECTURE",
+        layer: "BLACK_DOCTRINE",
+        name: { en: "Shock Architecture", ar: "الصدمة" },
+        question: {
+          en: "Is the shock a result or a tool?",
+          ar: "هل الصدمة نتيجة… أم أداة؟"
+        },
+        keywords: [
+          "attack", "explosion", "assassination", "urgent", "killed", "strike",
+          "هجوم", "انفجار", "اغتيال", "عاجل", "قتل", "ضربة", "صدمة"
+        ]
+      },
+      BEHIND_CURTAIN: {
+        id: "BEHIND_CURTAIN",
+        layer: "BLACK_DOCTRINE",
+        name: { en: "Behind the Curtain", ar: "ما وراء الستار" },
+        question: {
+          en: "Who wants this information to be known now?",
+          ar: "من يريدك أن تعرف هذا الآن؟"
+        },
+        keywords: [
+          "channel", "source", "officials", "senior official", "according to", "leak", "axios",
+          "القناة", "مصدر", "مسؤولون", "مسؤول رفيع", "بحسب", "تسريب", "أكسيوس", "كان", "العبرية"
+        ]
+      },
+      BEYOND_WALL: {
+        id: "BEYOND_WALL",
+        layer: "BLACK_DOCTRINE",
+        name: { en: "Beyond the Wall", ar: "خلف الجدار" },
+        question: {
+          en: "What is structurally forming before it appears?",
+          ar: "ماذا يتشكل… قبل أن يظهر؟"
+        },
+        keywords: [
+          "scenario", "trajectory", "future", "structural", "forecast", "trend",
+          "سيناريو", "مسار", "استشراف", "بنيوي", "اتجاه", "توقع", "خلف الجدار"
+        ]
+      },
+      BLACK_GATE: {
+        id: "BLACK_GATE",
+        layer: "BLACK_DOCTRINE",
+        name: { en: "Black Gate", ar: "البوابة السوداء" },
+        question: {
+          en: "Is the system transitioning from deterrence to action?",
+          ar: "هل بدأت البوابة تُفتح؟"
+        },
+        keywords: [
+          "deployment", "troops", "missiles", "dark eagle", "centcom", "readiness", "military movement",
+          "نشر", "قوات", "صواريخ", "دارك إيغل", "سنتكوم", "جاهزية", "تحشيد", "ألوية", "البوابة"
+        ]
+      },
+      TEMPORAL_WARFARE: {
+        id: "TEMPORAL_WARFARE",
+        layer: "CONFLICT_SYSTEMS",
+        name: { en: "Temporal Warfare", ar: "الحرب الزمنية" },
+        question: {
+          en: "Who gains time and who is consumed by it?",
+          ar: "من يربح الوقت… ومن يُستهلك به؟"
+        },
+        keywords: [
+          "ceasefire", "delay", "phase", "gradual", "30 days", "timeline",
+          "وقف إطلاق", "تأجيل", "مرحلة", "تدريجي", "الوقت", "زمني"
+        ]
+      },
+      WAAD: {
+        id: "WAAD",
+        layer: "CONFLICT_SYSTEMS",
+        name: { en: "War Acceptance Architecture", ar: "هندسة قبول الحرب" },
+        question: {
+          en: "Is war being prepared, or are people being prepared for it?",
+          ar: "هل يتم تحضير الحرب… أم تحضير الناس لها؟"
+        },
+        keywords: [
+          "prepare public", "war time", "public opinion", "war acceptance",
+          "تهيئة", "زمن حرب", "الجمهور", "الرأي العام", "قبول الحرب"
+        ]
+      },
+      INFORMATION_WARFARE: {
+        id: "INFORMATION_WARFARE",
+        layer: "CONFLICT_SYSTEMS",
+        name: { en: "Information Warfare", ar: "الحرب المعلوماتية" },
+        question: {
+          en: "Who owns the narrative?",
+          ar: "من يملك الرواية؟"
+        },
+        keywords: [
+          "narrative", "media", "image", "claim", "information war",
+          "رواية", "إعلام", "صورة", "ادعاء", "سردية", "حرب معلوماتية"
+        ]
+      },
+      STRATEGIC_REFRAMING: {
+        id: "STRATEGIC_REFRAMING",
+        layer: "CONFLICT_SYSTEMS",
+        name: { en: "Strategic Reframing", ar: "إعادة تعريف النصر" },
+        question: {
+          en: "Did the goal of war change during the war?",
+          ar: "هل تغيّر هدف الحرب أثناء الحرب؟"
+        },
+        keywords: [
+          "victory", "failure", "objective", "end goal", "war goal",
+          "نصر", "فشل", "هدف", "نهاية الحرب", "معيار النصر"
+        ]
+      },
+      IRAN_NUCLEAR_THRESHOLD: {
+        id: "IRAN_NUCLEAR_THRESHOLD",
+        layer: "REGIONAL_ENGINES",
+        name: { en: "Iran Nuclear Threshold", ar: "إيران — العتبة النووية" },
+        question: {
+          en: "Is this deterrence or existential prevention?",
+          ar: "هل نحن أمام ردع… أم منع وجودي؟"
+        },
+        keywords: [
+          "iran", "nuclear", "uranium", "enrichment", "tehran",
+          "إيران", "نووي", "يورانيوم", "تخصيب", "طهران"
+        ]
+      },
+      GAZA_RESTRUCTURING: {
+        id: "GAZA_RESTRUCTURING",
+        layer: "REGIONAL_ENGINES",
+        name: { en: "Gaza Restructuring", ar: "غزة — إعادة التشكيل" },
+        question: {
+          en: "Who will own Gaza after the war?",
+          ar: "من سيملك غزة بعد الحرب؟"
+        },
+        keywords: [
+          "gaza", "yellow line", "civil military", "kiryat gat", "day after",
+          "غزة", "الخط الأصفر", "كريات غات", "اليوم التالي", "وقف إطلاق النار"
+        ]
+      },
+      NORTHERN_PRESSURE: {
+        id: "NORTHERN_PRESSURE",
+        layer: "REGIONAL_ENGINES",
+        name: { en: "Northern Pressure", ar: "الجبهة الشمالية" },
+        question: {
+          en: "Is the pressure controlled or escaping control?",
+          ar: "هل الضغط مضبوط… أم يتصاعد؟"
+        },
+        keywords: [
+          "lebanon", "hezbollah", "drone", "north", "northern front",
+          "لبنان", "حزب الله", "مسيّرة", "الشمال", "الجبهة الشمالية"
+        ]
+      },
+      REGIONAL_RECONSTRUCTION: {
+        id: "REGIONAL_RECONSTRUCTION",
+        layer: "REGIONAL_ENGINES",
+        name: { en: "Regional Order Reconstruction", ar: "إعادة هندسة المنطقة" },
+        question: {
+          en: "Is the region being managed or redesigned?",
+          ar: "هل المنطقة تُدار… أم يُعاد تصميمها؟"
+        },
+        keywords: [
+          "uae", "centcom", "regional security", "gulf", "middle east order",
+          "الإمارات", "سنتكوم", "الأمن الإقليمي", "الخليج", "إعادة هندسة المنطقة"
+        ]
+      }
+    }
+  };
 
   function nowIso() {
     return new Date().toISOString();
@@ -133,30 +317,6 @@ window.IBSS_ENGINE = (function () {
     return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
   }
 
-  function makeFeedItem(type, priority, en, ar, source = "") {
-    return {
-      id: buildId("FEED"),
-      type: safeText(type, "system"),
-      priority: normalizePriority(priority),
-      source: safeText(source, ""),
-      text: {
-        en: safeText(en, "-"),
-        ar: safeText(ar, "-")
-      },
-      createdAt: nowIso()
-    };
-  }
-
-  function sortByScoreDesc(list, selector) {
-    return asArray(list)
-      .slice()
-      .sort((a, b) => safeNumber(selector(b), 0) - safeNumber(selector(a), 0));
-  }
-
-  /* =========================================
-     Classification + Banding
-  ========================================= */
-
   function normalizePriority(value) {
     const p = String(value || "LOW").toUpperCase().trim();
     if (p === "HIGH") return "HIGH";
@@ -212,9 +372,133 @@ window.IBSS_ENGINE = (function () {
     return { decision: "WATCH", mode: "MONITORING" };
   }
 
-  /* =========================================
-     Source Readers
-  ========================================= */
+  function sortByScoreDesc(list, selector) {
+    return asArray(list)
+      .slice()
+      .sort((a, b) => safeNumber(selector(b), 0) - safeNumber(selector(a), 0));
+  }
+
+  function makeFeedItem(type, priority, en, ar, source = "") {
+    return {
+      id: buildId("FEED"),
+      type: safeText(type, "system"),
+      priority: normalizePriority(priority),
+      source: safeText(source, ""),
+      text: {
+        en: safeText(en, "-"),
+        ar: safeText(ar, "-")
+      },
+      createdAt: nowIso()
+    };
+  }
+
+  function doctrineText(signal) {
+    return [
+      getLocalizedText(signal?.title, "en"),
+      getLocalizedText(signal?.title, "ar"),
+      getLocalizedText(signal?.summary, "en"),
+      getLocalizedText(signal?.summary, "ar"),
+      getLocalizedText(signal?.description, "en"),
+      getLocalizedText(signal?.description, "ar"),
+      signal?.country,
+      signal?.region,
+      signal?.domain,
+      signal?.source,
+      signal?.sourceUnit,
+      signal?.signalType,
+      signal?.decisionMode,
+      signal?.layer,
+      JSON.stringify(signal?.raw || {})
+    ].filter(Boolean).join(" ");
+  }
+
+  function classifyDoctrineSignal(signal) {
+    const text = normalizeText(doctrineText(signal));
+    const scored = Object.values(DOCTRINE.SERIES)
+      .map(series => {
+        const score = asArray(series.keywords).reduce((acc, keyword) => {
+          return text.includes(normalizeText(keyword)) ? acc + 1 : acc;
+        }, 0);
+
+        return { series, score };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    const primary = scored[0]?.score > 0 ? scored[0].series : DOCTRINE.SERIES.BEYOND_WALL;
+
+    const secondary = scored
+      .filter(item => item.score > 0 && item.series.id !== primary.id)
+      .slice(0, 4)
+      .map(item => item.series);
+
+    const regional =
+      primary.layer === "REGIONAL_ENGINES"
+        ? primary
+        : secondary.find(item => item.layer === "REGIONAL_ENGINES") || null;
+
+    const conflict =
+      primary.layer === "CONFLICT_SYSTEMS"
+        ? primary
+        : secondary.find(item => item.layer === "CONFLICT_SYSTEMS") || null;
+
+    const alertScore = clamp(
+      Math.round(((scored[0]?.score || 1) * 18) + (secondary.length * 7)),
+      0,
+      100
+    );
+
+    return {
+      primary,
+      secondary,
+      regional,
+      conflict,
+      alertScore,
+      alertLevel: alertScore >= 70 ? "HIGH" : alertScore >= 40 ? "MEDIUM" : "LOW",
+      question: primary.question,
+      interpretation: {
+        en: `Signal classified under ${primary.name.en}. ${primary.question.en}`,
+        ar: `تم تصنيف الإشارة ضمن ${primary.name.ar}. ${primary.question.ar}`
+      }
+    };
+  }
+
+  function summarizeDoctrine(signals) {
+    const map = new Map();
+
+    asArray(signals).forEach(signal => {
+      const primary = signal?.doctrine?.primary || DOCTRINE.SERIES.BEYOND_WALL;
+      const id = primary.id;
+      const current = map.get(id) || {
+        series: primary,
+        count: 0,
+        maxAlert: 0,
+        avgAlertSum: 0
+      };
+
+      current.count += 1;
+      current.maxAlert = Math.max(current.maxAlert, safeNumber(signal?.doctrine?.alertScore, 0));
+      current.avgAlertSum += safeNumber(signal?.doctrine?.alertScore, 0);
+
+      map.set(id, current);
+    });
+
+    const activeSeries = [...map.values()]
+      .map(item => ({
+        ...item,
+        avgAlert: item.count ? Math.round(item.avgAlertSum / item.count) : 0
+      }))
+      .sort((a, b) => {
+        if (b.maxAlert !== a.maxAlert) return b.maxAlert - a.maxAlert;
+        return b.count - a.count;
+      });
+
+    return {
+      activeSeries,
+      topSeries: activeSeries[0] || null,
+      count: activeSeries.length,
+      updatedAt: nowIso()
+    };
+  }
 
   function getDataRoot() {
     return window.IBSS_DATA || {};
@@ -352,7 +636,6 @@ window.IBSS_ENGINE = (function () {
       raw: item
     }));
   }
-
   /* =========================================
      Content API Integration
   ========================================= */
@@ -571,7 +854,7 @@ window.IBSS_ENGINE = (function () {
   }
 
   /* =========================================
-     Signal Normalization + L3 Integration
+     Signal Normalization + L3 + Doctrine
   ========================================= */
 
   function priorityBonus(priority) {
@@ -592,6 +875,8 @@ window.IBSS_ENGINE = (function () {
     if (d.includes("diplomatic")) return 2;
     if (d.includes("economic")) return 2;
     if (d.includes("governance")) return 4;
+    if (d.includes("data")) return 4;
+    if (d.includes("technology")) return 4;
     return 3;
   }
 
@@ -644,7 +929,7 @@ window.IBSS_ENGINE = (function () {
       100
     );
 
-    return {
+    const normalized = {
       id: safeText(signal?.id, `SIG-${index + 1}`),
       title,
       summary: signal?.summary || description,
@@ -669,6 +954,27 @@ window.IBSS_ENGINE = (function () {
       active: preliminaryScore >= CONFIG.minLiveSignalScore,
       raw: signal
     };
+
+    normalized.doctrine = classifyDoctrineSignal(normalized);
+
+    const doctrineBoost = normalized.doctrine.alertLevel === "HIGH"
+      ? 5
+      : normalized.doctrine.alertLevel === "MEDIUM"
+        ? 3
+        : 1;
+
+    const doctrineAdjustedScore = clamp(preliminaryScore + doctrineBoost, 0, 100);
+
+    return {
+      ...normalized,
+      doctrineBoost,
+      score: doctrineAdjustedScore / 100,
+      score100: doctrineAdjustedScore,
+      balancedScore100: doctrineAdjustedScore,
+      priority: normalizePriority(normalized.priority || inferPriorityFromScore(doctrineAdjustedScore)),
+      live: doctrineAdjustedScore >= CONFIG.minLiveSignalScore,
+      active: doctrineAdjustedScore >= CONFIG.minLiveSignalScore
+    };
   }
 
   function applyL3Layer(signals) {
@@ -690,14 +996,40 @@ window.IBSS_ENGINE = (function () {
         };
       }
 
+      const reclassified = l3Ranked.map(signal => ({
+        ...signal,
+        doctrine: signal.doctrine || classifyDoctrineSignal(signal)
+      }));
+
       return {
         l3State,
-        rankedSignals: l3Ranked
+        rankedSignals: reclassified
       };
     } catch (error) {
       console.error("IBSS_ENGINE L3 integration error:", error);
       return {
         l3State: null,
+        rankedSignals: signals
+      };
+    }
+  }
+
+  function applyDoctrineState(signals) {
+    try {
+      const classified = asArray(signals).map(signal => ({
+        ...signal,
+        doctrine: signal.doctrine || classifyDoctrineSignal(signal)
+      }));
+
+      return {
+        doctrineState: summarizeDoctrine(classified),
+        rankedSignals: classified
+      };
+    } catch (error) {
+      console.error("IBSS_ENGINE doctrine integration error:", error);
+
+      return {
+        doctrineState: null,
         rankedSignals: signals
       };
     }
@@ -743,10 +1075,17 @@ window.IBSS_ENGINE = (function () {
     const l3Applied = applyL3Layer(deduped);
     buildRankedSignals.lastL3State = l3Applied.l3State;
 
-    return l3Applied.rankedSignals;
+    const doctrineApplied = applyDoctrineState(l3Applied.rankedSignals);
+    buildRankedSignals.lastDoctrineState = doctrineApplied.doctrineState;
+
+    return doctrineApplied.rankedSignals
+      .slice()
+      .sort((a, b) => safeNumber(b.balancedScore100, 0) - safeNumber(a.balancedScore100, 0));
   }
 
   buildRankedSignals.lastL3State = null;
+  buildRankedSignals.lastDoctrineState = null;
+
   /* =========================================
      Cluster + Theater Builders
   ========================================= */
@@ -798,7 +1137,8 @@ window.IBSS_ENGINE = (function () {
           signals: [],
           totalRisk: 0,
           maxRisk: 0,
-          avgReliabilitySum: 0
+          avgReliabilitySum: 0,
+          doctrineAlertSum: 0
         });
       }
 
@@ -809,6 +1149,7 @@ window.IBSS_ENGINE = (function () {
       bucket.totalRisk += risk;
       bucket.maxRisk = Math.max(bucket.maxRisk, risk);
       bucket.avgReliabilitySum += safeNumber(signal.reliabilityScore, 55);
+      bucket.doctrineAlertSum += safeNumber(signal.doctrine?.alertScore, 0);
     });
 
     const clusters = [...groupMap.values()]
@@ -816,12 +1157,14 @@ window.IBSS_ENGINE = (function () {
         const count = group.signals.length || 1;
         const avgRisk = Math.round(group.totalRisk / count);
         const avgReliability = Math.round(group.avgReliabilitySum / count);
+        const avgDoctrineAlert = Math.round(group.doctrineAlertSum / count);
         const densityBonus = Math.min(count * 2, 8);
         const peakBonus = Math.round(group.maxRisk * 0.08);
+        const doctrineBonus = avgDoctrineAlert >= 70 ? 4 : avgDoctrineAlert >= 40 ? 2 : 0;
         const contentBoost = getClusterContentBoost(group.region, group.domain);
 
         const calibratedRisk = clamp(
-          Math.round((avgRisk * 0.78) + peakBonus + densityBonus + contentBoost),
+          Math.round((avgRisk * 0.76) + peakBonus + densityBonus + doctrineBonus + contentBoost),
           0,
           100
         );
@@ -831,7 +1174,7 @@ window.IBSS_ENGINE = (function () {
           key: group.key,
           name: buildClusterName(group.region, group.domain),
           avgRisk: calibratedRisk,
-          maxRisk: clamp(group.maxRisk + contentBoost, 0, 100),
+          maxRisk: clamp(group.maxRisk + contentBoost + doctrineBonus, 0, 100),
           escalationLevel: riskLevelFromScore(calibratedRisk),
           priority: calibratedRisk >= 78 ? "CORE" : calibratedRisk >= 55 ? "SUPPORT" : "WATCH",
           trend: "STABLE",
@@ -839,7 +1182,10 @@ window.IBSS_ENGINE = (function () {
           region: group.region,
           domain: group.domain,
           avgReliability,
+          avgDoctrineAlert,
           contentBoost,
+          doctrineBonus,
+          topDoctrineSeries: summarizeDoctrine(group.signals).topSeries,
           signals: group.signals
         };
       })
@@ -858,7 +1204,8 @@ window.IBSS_ENGINE = (function () {
           clusters: [],
           avgSum: 0,
           maxRisk: 0,
-          avgReliabilitySum: 0
+          avgReliabilitySum: 0,
+          doctrineAlertSum: 0
         });
       }
 
@@ -867,6 +1214,7 @@ window.IBSS_ENGINE = (function () {
       theater.avgSum += safeNumber(cluster.avgRisk, 0);
       theater.maxRisk = Math.max(theater.maxRisk, safeNumber(cluster.maxRisk, 0));
       theater.avgReliabilitySum += safeNumber(cluster.avgReliability, 55);
+      theater.doctrineAlertSum += safeNumber(cluster.avgDoctrineAlert, 0);
     });
 
     const theaters = [...theaterMap.values()]
@@ -874,11 +1222,13 @@ window.IBSS_ENGINE = (function () {
         const count = item.clusters.length || 1;
         const avgRisk = Math.round(item.avgSum / count);
         const avgReliability = Math.round(item.avgReliabilitySum / count);
+        const avgDoctrineAlert = Math.round(item.doctrineAlertSum / count);
         const densityBonus = Math.min(count * 2, 6);
         const peakBonus = Math.round(item.maxRisk * 0.06);
+        const doctrineBonus = avgDoctrineAlert >= 70 ? 3 : avgDoctrineAlert >= 40 ? 2 : 0;
 
         const calibratedRisk = clamp(
-          Math.round((avgRisk * 0.82) + peakBonus + densityBonus),
+          Math.round((avgRisk * 0.80) + peakBonus + densityBonus + doctrineBonus),
           0,
           100
         );
@@ -892,6 +1242,9 @@ window.IBSS_ENGINE = (function () {
           priority: calibratedRisk >= 80 ? "CORE" : calibratedRisk >= 58 ? "SUPPORT" : "WATCH",
           trend: "STABLE",
           avgReliability,
+          avgDoctrineAlert,
+          doctrineBonus,
+          topDoctrineSeries: summarizeDoctrine(item.clusters.flatMap(cluster => cluster.signals)).topSeries,
           clusters: item.clusters
         };
       })
@@ -903,7 +1256,6 @@ window.IBSS_ENGINE = (function () {
       lastUpdate: nowIso()
     };
   }
-
   /* =========================================
      Pressure Engines
   ========================================= */
@@ -915,9 +1267,11 @@ window.IBSS_ENGINE = (function () {
     const avgScore = Math.round(average(list, item => item.balancedScore100));
     const maxScore = safeNumber(list[0]?.balancedScore100, 0);
     const liveCount = list.filter(signal => signal.live).length;
+    const doctrineAvg = Math.round(average(list, item => item.doctrine?.alertScore || 0));
+    const doctrineBonus = doctrineAvg >= 70 ? 5 : doctrineAvg >= 40 ? 3 : 0;
 
     return clamp(
-      Math.round((avgScore * 0.68) + (maxScore * 0.18) + Math.min(liveCount, 10)),
+      Math.round((avgScore * 0.66) + (maxScore * 0.18) + Math.min(liveCount, 10) + doctrineBonus),
       0,
       100
     );
@@ -935,9 +1289,11 @@ window.IBSS_ENGINE = (function () {
 
     const topCluster = list[0];
     const avgRisk = Math.round(average(list, cluster => cluster.avgRisk));
+    const doctrineAvg = Math.round(average(list, cluster => cluster.avgDoctrineAlert || 0));
+    const doctrineBonus = doctrineAvg >= 70 ? 4 : doctrineAvg >= 40 ? 2 : 0;
 
     const pressure = clamp(
-      Math.round((avgRisk * 0.72) + (safeNumber(topCluster?.maxRisk, 0) * 0.12) + Math.min(list.length * 2, 8)),
+      Math.round((avgRisk * 0.70) + (safeNumber(topCluster?.maxRisk, 0) * 0.12) + Math.min(list.length * 2, 8) + doctrineBonus),
       0,
       100
     );
@@ -961,9 +1317,11 @@ window.IBSS_ENGINE = (function () {
 
     const topTheater = list[0];
     const avgRisk = Math.round(average(list, theater => theater.avgRisk));
+    const doctrineAvg = Math.round(average(list, theater => theater.avgDoctrineAlert || 0));
+    const doctrineBonus = doctrineAvg >= 70 ? 4 : doctrineAvg >= 40 ? 2 : 0;
 
     const pressure = clamp(
-      Math.round((avgRisk * 0.74) + (safeNumber(topTheater?.maxRisk, 0) * 0.10) + Math.min(list.length * 2, 6)),
+      Math.round((avgRisk * 0.72) + (safeNumber(topTheater?.maxRisk, 0) * 0.10) + Math.min(list.length * 2, 6) + doctrineBonus),
       0,
       100
     );
@@ -982,13 +1340,23 @@ window.IBSS_ENGINE = (function () {
     const mediumCount = list.filter(item => normalizePriority(item.priority) === "MEDIUM").length;
     const lowCount = list.filter(item => normalizePriority(item.priority) === "LOW").length;
 
-    const weighted = (highCount * 16) + (mediumCount * 9) + (lowCount * 4);
+    const doctrineHighCount = list.filter(item => item.doctrine?.alertLevel === "HIGH").length;
+    const doctrineMediumCount = list.filter(item => item.doctrine?.alertLevel === "MEDIUM").length;
+
+    const weighted =
+      (highCount * 16) +
+      (mediumCount * 9) +
+      (lowCount * 4) +
+      (doctrineHighCount * 4) +
+      (doctrineMediumCount * 2);
 
     return {
       count: list.length,
       highCount,
       mediumCount,
       lowCount,
+      doctrineHighCount,
+      doctrineMediumCount,
       pressure: clamp(weighted, 0, 100)
     };
   }
@@ -1048,6 +1416,10 @@ window.IBSS_ENGINE = (function () {
           if (relatedSignals.length) {
             const avgSignal = Math.round(average(relatedSignals, signal => signal.balancedScore100));
             baseScore = Math.round((baseScore * 0.50) + (avgSignal * 0.50));
+
+            const doctrineAvg = Math.round(average(relatedSignals, signal => signal.doctrine?.alertScore || 0));
+            if (doctrineAvg >= 70) baseScore += 3;
+            else if (doctrineAvg >= 40) baseScore += 1;
           }
 
           if (relatedClusters.length) {
@@ -1078,7 +1450,8 @@ window.IBSS_ENGINE = (function () {
             trend,
             band: normalizeBandCode(baseScore),
             contentBoost,
-            primaryDrivers: asArray(country.primaryDrivers?.en || country.primaryDrivers || [])
+            primaryDrivers: asArray(country.primaryDrivers?.en || country.primaryDrivers || []),
+            doctrine: summarizeDoctrine(relatedSignals)
           };
         })
         .sort((a, b) => b.riskScore - a.riskScore)
@@ -1089,7 +1462,8 @@ window.IBSS_ENGINE = (function () {
       const name = getLocalizedText(signal.title, "en");
       const baseRisk = Math.round(safeNumber(signal.balancedScore100, 0) * 0.92);
       const contentBoost = getCountryContentBoost(signal.country || name);
-      const riskScore = clamp(baseRisk + contentBoost, 0, 100);
+      const doctrineBonus = signal.doctrine?.alertLevel === "HIGH" ? 3 : signal.doctrine?.alertLevel === "MEDIUM" ? 1 : 0;
+      const riskScore = clamp(baseRisk + contentBoost + doctrineBonus, 0, 100);
       const previous = findPreviousCountryRisk(name);
       const trend = detectTrend(riskScore, previous);
 
@@ -1106,7 +1480,8 @@ window.IBSS_ENGINE = (function () {
           getLocalizedText(signal.title, "en"),
           safeText(signal.domain, "geopolitical"),
           signal.priority
-        ]
+        ],
+        doctrine: summarizeDoctrine([signal])
       };
     });
   }
@@ -1133,7 +1508,8 @@ window.IBSS_ENGINE = (function () {
       riskLevel: safeText(topCountry.riskLevel, "LOW"),
       band: safeText(topCountry.band, normalizeBandCode(topCountry.riskScore)),
       liveSignals: safeNumber(liveSignalsCount, 0),
-      drivers: asArray(topCountry.primaryDrivers).slice(0, 5)
+      drivers: asArray(topCountry.primaryDrivers).slice(0, 5),
+      doctrine: topCountry.doctrine || null
     };
   }
 
@@ -1154,15 +1530,20 @@ window.IBSS_ENGINE = (function () {
       ? average(theaters, theater => theater.avgReliability)
       : 0;
 
+    const doctrineSignal = rankedSignals.length
+      ? average(rankedSignals, signal => signal.doctrine?.alertScore || 0)
+      : 0;
+
     const densityBoost =
       Math.min(rankedSignals.length, 12) * 1.0 +
       Math.min(clusters.length, 6) * 1.5 +
       Math.min(theaters.length, 4) * 2.0;
 
     const reliabilityComposite =
-      (signalReliability * 0.50) +
-      (clusterReliability * 0.30) +
-      (theaterReliability * 0.20);
+      (signalReliability * 0.48) +
+      (clusterReliability * 0.29) +
+      (theaterReliability * 0.19) +
+      (doctrineSignal * 0.04);
 
     let score = reliabilityComposite + densityBoost;
     score += getSystemContentConfidenceBoost();
@@ -1174,7 +1555,7 @@ window.IBSS_ENGINE = (function () {
      Drivers / Causality
   ========================================= */
 
-  function buildSystemDrivers(rankedSignals, clusters, theaters, countryRiskFeed) {
+  function buildSystemDrivers(rankedSignals, clusters, theaters, countryRiskFeed, doctrineState) {
     const drivers = [];
 
     rankedSignals.slice(0, 2).forEach(signal => {
@@ -1188,11 +1569,28 @@ window.IBSS_ENGINE = (function () {
           ar: `ضغط ${getLocalizedText(signal.title, "ar")}`
         },
         explanation: {
-          en: signal.l3?.interpretation?.en || `Signal score ${safeNumber(signal.balancedScore100, 0)} contributed directly to system pressure.`,
-          ar: signal.l3?.interpretation?.ar || `درجة الإشارة ${safeNumber(signal.balancedScore100, 0)} ساهمت مباشرة في ضغط النظام.`
+          en: signal.l3?.interpretation?.en || signal.doctrine?.interpretation?.en || `Signal score ${safeNumber(signal.balancedScore100, 0)} contributed directly to system pressure.`,
+          ar: signal.l3?.interpretation?.ar || signal.doctrine?.interpretation?.ar || `درجة الإشارة ${safeNumber(signal.balancedScore100, 0)} ساهمت مباشرة في ضغط النظام.`
         }
       });
     });
+
+    if (doctrineState?.topSeries) {
+      drivers.push({
+        id: `DRV-DOCTRINE-${doctrineState.topSeries.series.id}`,
+        type: "doctrine",
+        priority: doctrineState.topSeries.maxAlert >= 70 ? "HIGH" : doctrineState.topSeries.maxAlert >= 40 ? "MEDIUM" : "LOW",
+        score: safeNumber(doctrineState.topSeries.maxAlert, 0),
+        label: {
+          en: `${doctrineState.topSeries.series.name.en} doctrine pressure`,
+          ar: `ضغط سلسلة ${doctrineState.topSeries.series.name.ar}`
+        },
+        explanation: {
+          en: `${doctrineState.topSeries.count} signals are concentrated under ${doctrineState.topSeries.series.name.en}. ${doctrineState.topSeries.series.question.en}`,
+          ar: `${doctrineState.topSeries.count} إشارات متركزة ضمن ${doctrineState.topSeries.series.name.ar}. ${doctrineState.topSeries.series.question.ar}`
+        }
+      });
+    }
 
     if (clusters[0]) {
       drivers.push({
@@ -1379,6 +1777,7 @@ window.IBSS_ENGINE = (function () {
     const topSignal = system?.topSignal || null;
     const topTheater = system?.topTheater || null;
     const topCluster = system?.topCluster || null;
+    const topDoctrine = system?.topDoctrineSeries || null;
     const presence = system?.presence || {};
     const drivers = asArray(system?.drivers || []);
     const pressure = safeNumber(system?.systemPressure, 0);
@@ -1393,6 +1792,9 @@ window.IBSS_ENGINE = (function () {
     const clusterNameEn = topCluster ? getLocalizedText(topCluster.name, "en") : "the strategic file";
     const clusterNameAr = topCluster ? getLocalizedText(topCluster.name, "ar") : "الملف الاستراتيجي";
 
+    const doctrineNameEn = topDoctrine?.series?.name?.en || "the doctrine layer";
+    const doctrineNameAr = topDoctrine?.series?.name?.ar || "الطبقة العقائدية";
+
     const driverNamesEn = drivers.slice(0, 3).map(item => getLocalizedText(item.label, "en"));
     const driverNamesAr = drivers.slice(0, 3).map(item => getLocalizedText(item.label, "ar"));
 
@@ -1403,6 +1805,14 @@ window.IBSS_ENGINE = (function () {
 
     const l3LineAr = l3State
       ? ` إشارات L3 النشطة: ${safeNumber(l3State.activeSignals, 0)}، ضغط L3: ${safeNumber(l3State.l3Pressure, 0)}.`
+      : "";
+
+    const doctrineLineEn = topDoctrine
+      ? ` Doctrine series: ${doctrineNameEn}, alert ${safeNumber(topDoctrine.maxAlert, 0)}.`
+      : "";
+
+    const doctrineLineAr = topDoctrine
+      ? ` السلسلة العقائدية: ${doctrineNameAr}، إنذار ${safeNumber(topDoctrine.maxAlert, 0)}.`
       : "";
 
     let postureEn = "Monitoring posture";
@@ -1427,8 +1837,8 @@ window.IBSS_ENGINE = (function () {
       summaryEn = `The platform is no longer reading isolated signals, but converging pressure around ${theaterNameEn}.`;
       summaryAr = `المنصة لم تعد تقرأ إشارات معزولة، بل ضغطاً متقارباً حول ${theaterNameAr}.`;
 
-      explanationEn = `${clusterNameEn} is emerging as a structured pressure file with directional significance.${l3LineEn}`;
-      explanationAr = `${clusterNameAr} يبرز كملف ضغط بنيوي ذي دلالة اتجاهية.${l3LineAr}`;
+      explanationEn = `${clusterNameEn} is emerging as a structured pressure file with directional significance.${l3LineEn}${doctrineLineEn}`;
+      explanationAr = `${clusterNameAr} يبرز كملف ضغط بنيوي ذي دلالة اتجاهية.${l3LineAr}${doctrineLineAr}`;
 
       advisoryEn = "Tighten monitoring, preserve causal linkage, and prepare for pressure transfer across files.";
       advisoryAr = "شدّد المراقبة، وحافظ على الربط السببي، واستعد لانتقال الضغط بين الملفات.";
@@ -1444,11 +1854,11 @@ window.IBSS_ENGINE = (function () {
       summaryEn = `System posture is tightening around ${signalNameEn} inside ${theaterNameEn}.`;
       summaryAr = `وضعية النظام تزداد إحكاماً حول ${signalNameAr} داخل ${theaterNameAr}.`;
 
-      explanationEn = `The system detects structured pressure with active contribution from ${formatDriverNames(driverNamesEn)}.${l3LineEn}`;
-      explanationAr = `النظام يرصد ضغطاً بنيوياً مع مساهمة نشطة من ${formatDriverNames(driverNamesAr, "ar")}.${l3LineAr}`;
+      explanationEn = `The system detects structured pressure with active contribution from ${formatDriverNames(driverNamesEn)}.${l3LineEn}${doctrineLineEn}`;
+      explanationAr = `النظام يرصد ضغطاً بنيوياً مع مساهمة نشطة من ${formatDriverNames(driverNamesAr, "ar")}.${l3LineAr}${doctrineLineAr}`;
 
-      advisoryEn = "Raise readiness, reduce interpretive lag, and align live signals with publication context.";
-      advisoryAr = "ارفع الجاهزية، وقلل فجوة التفسير، ونسّق بين الإشارات الحية وسياق المنشورات.";
+      advisoryEn = "Raise readiness, reduce interpretive lag, and align live signals with doctrine and publication context.";
+      advisoryAr = "ارفع الجاهزية، وقلل فجوة التفسير، ونسّق بين الإشارات الحية والعقيدة وسياق المنشورات.";
 
       intentEn = "Prepare and align.";
       intentAr = "تحضّر ونسّق.";
@@ -1461,8 +1871,8 @@ window.IBSS_ENGINE = (function () {
       summaryEn = `The platform reads ${signalNameEn} as part of an active pressure architecture rather than a transient spike.`;
       summaryAr = `المنصة تقرأ ${signalNameAr} كجزء من بنية ضغط نشطة لا مجرد قفزة عابرة.`;
 
-      explanationEn = `Pressure ${pressure} with confidence ${confidence} indicates that convergence has moved beyond observation and into operational significance.${l3LineEn}`;
-      explanationAr = `الضغط ${pressure} مع ثقة ${confidence} يشير إلى أن التقارب تجاوز المراقبة ودخل في دلالة تشغيلية.${l3LineAr}`;
+      explanationEn = `Pressure ${pressure} with confidence ${confidence} indicates that convergence has moved beyond observation and into operational significance.${l3LineEn}${doctrineLineEn}`;
+      explanationAr = `الضغط ${pressure} مع ثقة ${confidence} يشير إلى أن التقارب تجاوز المراقبة ودخل في دلالة تشغيلية.${l3LineAr}${doctrineLineAr}`;
 
       advisoryEn = "Maintain response discipline, protect narrative coherence, and prioritize dominant pressure channels.";
       advisoryAr = "حافظ على انضباط الاستجابة، واحمِ تماسك السردية، وامنح الأولوية لقنوات الضغط المهيمنة.";
@@ -1478,8 +1888,8 @@ window.IBSS_ENGINE = (function () {
       summaryEn = "The platform is carrying sustained pressure, not just elevated pressure.";
       summaryAr = "المنصة تحمل ضغطاً مستداماً، لا مجرد ضغط مرتفع.";
 
-      explanationEn = `Persistence across recent cycles suggests strain accumulation around ${clusterNameEn} and ${theaterNameEn}.${l3LineEn}`;
-      explanationAr = `الاستمرار عبر الدورات الأخيرة يشير إلى تراكم إجهاد حول ${clusterNameAr} و${theaterNameAr}.${l3LineAr}`;
+      explanationEn = `Persistence across recent cycles suggests strain accumulation around ${clusterNameEn}, ${theaterNameEn}, and ${doctrineNameEn}.${l3LineEn}`;
+      explanationAr = `الاستمرار عبر الدورات الأخيرة يشير إلى تراكم إجهاد حول ${clusterNameAr} و${theaterNameAr} و${doctrineNameAr}.${l3LineAr}`;
 
       advisoryEn = "Avoid reactive overcorrection, prioritize continuity, and watch for pressure migration into secondary theaters.";
       advisoryAr = "تجنب التصحيح الانفعالي الزائد، وأعطِ الأولوية للاستمرارية، وراقب انتقال الضغط إلى مسارح ثانوية.";
@@ -1496,7 +1906,6 @@ window.IBSS_ENGINE = (function () {
       intent: { en: intentEn, ar: intentAr }
     };
   }
-
   /* =========================================
      Scenarios
   ========================================= */
@@ -1561,6 +1970,18 @@ window.IBSS_ENGINE = (function () {
     const lines = [];
 
     rankedToFeed(system.rankedSignals).forEach(item => lines.push(item));
+
+    if (system.doctrine?.topSeries) {
+      lines.push(
+        makeFeedItem(
+          "doctrine_series",
+          system.doctrine.topSeries.maxAlert >= 70 ? "HIGH" : system.doctrine.topSeries.maxAlert >= 40 ? "MEDIUM" : "LOW",
+          `Doctrine series: ${system.doctrine.topSeries.series.name.en} — ${system.doctrine.topSeries.series.question.en}`,
+          `السلسلة العقائدية: ${system.doctrine.topSeries.series.name.ar} — ${system.doctrine.topSeries.series.question.ar}`,
+          "Σ-9X"
+        )
+      );
+    }
 
     if (system.l3) {
       lines.push(
@@ -1747,12 +2168,14 @@ window.IBSS_ENGINE = (function () {
       topSignal: system?.topSignal || null,
       topCountry,
       latestStudy,
-      latestNews: system?.rankedSignals?.slice(0, 3) || [],
       unifiedRisk: system?.unifiedRisk || null,
       drivers: system?.drivers || [],
       voice: system?.voice || null,
       presence: system?.presence || null,
-      l3: system?.l3 || null
+      l3: system?.l3 || null,
+      doctrine: system?.doctrine || null,
+      topDoctrineSeries: system?.topDoctrineSeries || null,
+      latestNews: system?.rankedSignals?.slice(0, 3) || []
     };
   }
 
@@ -1774,6 +2197,7 @@ window.IBSS_ENGINE = (function () {
     const topTheater = system.topTheater ? getLocalizedText(system.topTheater.name, lang) : (lang === "ar" ? "غير محدد" : "Undefined");
     const topCluster = system.topCluster ? getLocalizedText(system.topCluster.name, lang) : (lang === "ar" ? "غير محدد" : "Undefined");
     const topSignal = system.topSignal ? getLocalizedText(system.topSignal.title, lang) : (lang === "ar" ? "غير محدد" : "Undefined");
+
     const latestStudy = system.snapshot?.latestStudy
       ? getLocalizedText(system.snapshot.latestStudy.title, lang)
       : (lang === "ar" ? "لا يوجد" : "None");
@@ -1791,9 +2215,15 @@ window.IBSS_ENGINE = (function () {
         : ` L3 pressure is ${system.l3.l3Pressure} with ${system.l3.activeSignals} active signals.`
       : "";
 
+    const doctrineTextLine = system.doctrine?.topSeries
+      ? lang === "ar"
+        ? ` السلسلة العقائدية الأعلى هي ${system.doctrine.topSeries.series.name.ar} بإنذار ${system.doctrine.topSeries.maxAlert}.`
+        : ` Top doctrine series is ${system.doctrine.topSeries.series.name.en} with alert ${system.doctrine.topSeries.maxAlert}.`
+      : "";
+
     if (lang === "ar") {
       return {
-        summary: `رصد المحرك ضغطًا مركبًا بقيمة ${system.systemPressure} مع ثقة ${system.confidenceScore}.${l3Text}`,
+        summary: `رصد المحرك ضغطًا مركبًا بقيمة ${system.systemPressure} مع ثقة ${system.confidenceScore}.${l3Text}${doctrineTextLine}`,
         body:
           `المسرح الأعلى هو ${topTheater}. ` +
           `الملف الاستراتيجي الأعلى هو ${topCluster}. ` +
@@ -1802,13 +2232,13 @@ window.IBSS_ENGINE = (function () {
           `المحرّكات الأساسية: ${driverText || "لا يوجد"}. ` +
           `الحضور التشغيلي: ${presenceText || "لا يوجد"}.`,
         recommendation: system.systemPressure >= 78
-          ? "يوصى بالتحضير ورفع الجاهزية على مستوى المسرح الأعلى وتعزيز الربط بين الإشارات والدراسات والمنشورات الميدانية."
-          : "يوصى باستمرار المراقبة وتعزيز جمع الإشارات وتنظيف مسارات الربط مع الإنتاج التحليلي المنشور."
+          ? "يوصى بالتحضير ورفع الجاهزية على مستوى المسرح الأعلى وتعزيز الربط بين الإشارات والسلاسل العقائدية والدراسات والمنشورات الميدانية."
+          : "يوصى باستمرار المراقبة وتعزيز جمع الإشارات وتنظيف مسارات الربط مع الإنتاج التحليلي المنشور والسلاسل العقائدية."
       };
     }
 
     return {
-      summary: `The engine detected composite pressure at ${system.systemPressure} with confidence ${system.confidenceScore}.${l3Text}`,
+      summary: `The engine detected composite pressure at ${system.systemPressure} with confidence ${system.confidenceScore}.${l3Text}${doctrineTextLine}`,
       body:
         `Top theater: ${topTheater}. ` +
         `Top strategic file: ${topCluster}. ` +
@@ -1817,8 +2247,8 @@ window.IBSS_ENGINE = (function () {
         `Primary drivers: ${driverText || "none"}. ` +
         `Operational presence: ${presenceText || "none"}.`,
       recommendation: system.systemPressure >= 78
-        ? "Maintain preparation posture, raise readiness on the dominant theater, and reinforce linkage between signals, publications, and strategic files."
-        : "Continue monitoring, improve signal collection, and clean linkage between live signals and published analytical content."
+        ? "Maintain preparation posture, raise readiness on the dominant theater, and reinforce linkage between signals, doctrine series, publications, and strategic files."
+        : "Continue monitoring, improve signal collection, and clean linkage between live signals, doctrine series, and published analytical content."
     };
   }
 
@@ -1830,6 +2260,7 @@ window.IBSS_ENGINE = (function () {
     if (last.topSignalId !== (system.topSignal?.id || null)) return true;
     if (last.topClusterId !== (system.topCluster?.id || null)) return true;
     if (last.topTheaterId !== (system.topTheater?.id || null)) return true;
+    if (last.topDoctrineId !== (system.topDoctrineSeries?.series?.id || null)) return true;
     if (Math.abs(last.systemPressure - system.systemPressure) >= 8) return true;
 
     return false;
@@ -1848,7 +2279,9 @@ window.IBSS_ENGINE = (function () {
       topSignalId: system.topSignal?.id || null,
       topClusterId: system.topCluster?.id || null,
       topTheaterId: system.topTheater?.id || null,
+      topDoctrineId: system.topDoctrineSeries?.series?.id || null,
       l3Pressure: system.l3?.l3Pressure || null,
+      doctrineAlert: system.topDoctrineSeries?.maxAlert || null,
       title: {
         en: buildReportTitle(system, "en"),
         ar: buildReportTitle(system, "ar")
@@ -1890,6 +2323,8 @@ window.IBSS_ENGINE = (function () {
       topSignalId: system.topSignal?.id || null,
       topClusterId: system.topCluster?.id || null,
       topTheaterId: system.topTheater?.id || null,
+      topDoctrineId: system.topDoctrineSeries?.series?.id || null,
+      doctrineAlert: system.topDoctrineSeries?.maxAlert || null,
       presenceState: system.presence?.state || null,
       l3Pressure: system.l3?.l3Pressure || null
     });
@@ -1909,6 +2344,8 @@ window.IBSS_ENGINE = (function () {
       topSignalId: system.topSignal?.id || null,
       topClusterId: system.topCluster?.id || null,
       topTheaterId: system.topTheater?.id || null,
+      topDoctrineId: system.topDoctrineSeries?.series?.id || null,
+      doctrineAlert: system.topDoctrineSeries?.maxAlert || null,
       presenceState: system.presence?.state || null,
       countryRiskFeed: system.countryRiskFeed,
       l3Pressure: system.l3?.l3Pressure || null
@@ -1959,6 +2396,7 @@ window.IBSS_ENGINE = (function () {
   function computeSystemState() {
     const rankedSignals = buildRankedSignals();
     const l3State = buildRankedSignals.lastL3State || null;
+    const doctrineState = buildRankedSignals.lastDoctrineState || null;
     const topSignal = rankedSignals[0] || null;
 
     const clusterState = buildClusterState(rankedSignals);
@@ -1975,10 +2413,11 @@ window.IBSS_ENGINE = (function () {
     const confidenceScore = buildConfidenceScore(rankedSignals, clusters, theaters);
 
     let systemPressure = Math.round(
-      (signalPressure * 0.36) +
+      (signalPressure * 0.35) +
       (clusterPressure.pressure * 0.24) +
-      (theaterPressure.pressure * 0.22) +
-      (newsPressure.pressure * 0.18)
+      (theaterPressure.pressure * 0.21) +
+      (newsPressure.pressure * 0.16) +
+      (safeNumber(doctrineState?.topSeries?.maxAlert, 0) * 0.04)
     );
 
     if (l3State) {
@@ -1990,6 +2429,7 @@ window.IBSS_ENGINE = (function () {
 
     if (safeText(topTheater?.priority).toUpperCase() === "CORE") systemPressure += 4;
     if (safeText(topCluster?.priority).toUpperCase() === "CORE") systemPressure += 2;
+    if (safeNumber(doctrineState?.topSeries?.maxAlert, 0) >= 70) systemPressure += 2;
 
     systemPressure = clamp(systemPressure, 0, 100);
 
@@ -2001,12 +2441,12 @@ window.IBSS_ENGINE = (function () {
     const topCountry = countryRiskFeed[0] || null;
     const unifiedRisk = buildUnifiedRisk(topCountry, liveSignals.length);
     const featuredPublication = getLatestFeaturedContent();
-    const drivers = buildSystemDrivers(rankedSignals, clusters, theaters, countryRiskFeed);
+    const drivers = buildSystemDrivers(rankedSignals, clusters, theaters, countryRiskFeed, doctrineState);
     const drift = computePressureDrift(systemPressure);
     const presence = buildPresenceState(systemPressure, confidenceScore, drift);
 
     const system = {
-      source: rankedSignals.length ? "engine+l3" : "fallback",
+      source: rankedSignals.length ? "engine+l3+doctrine" : "fallback",
       updatedAt: nowIso(),
 
       ssi: systemPressure,
@@ -2018,6 +2458,9 @@ window.IBSS_ENGINE = (function () {
       mode: decisionState.mode,
 
       l3: l3State,
+
+      doctrine: doctrineState,
+      topDoctrineSeries: doctrineState?.topSeries || null,
 
       topTheater,
       theaters,
@@ -2053,51 +2496,51 @@ window.IBSS_ENGINE = (function () {
       snapshot: null,
       latestDraftId: null,
       metricsReference: l3State
-        ? "IBSS_METRICS_V3_ADAPTIVE + IBSS_L3_ENGINE"
-        : "IBSS_METRICS_V3_ADAPTIVE"
+        ? "IBSS_METRICS_V3_ADAPTIVE + IBSS_L3_ENGINE + Σ-9X_DOCTRINE_MATRIX"
+        : "IBSS_METRICS_V3_ADAPTIVE + Σ-9X_DOCTRINE_MATRIX"
     };
 
     system.voice = buildVoice(system);
     system.snapshot = getHomeSnapshot(system);
     system.feed = buildFeed(system);
 
-if (shouldGenerateReport(system)) {
-  const report = generateAutoReport(system);
+    if (shouldGenerateReport(system)) {
+      const report = generateAutoReport(system);
 
-  let draft = null;
+      let draft = null;
 
-  try {
-    if (
-      window.IBSS_PUBLISHER?.buildPublicationFromReport &&
-      window.IBSS_PUBLISHER?.createDraftFromPublication
-    ) {
-      const publication = window.IBSS_PUBLISHER.buildPublicationFromReport(report);
-      draft = window.IBSS_PUBLISHER.createDraftFromPublication(publication);
-    }
-  } catch (error) {
-    console.error("IBSS_ENGINE publisher draft generation error:", error);
-  }
-
-  system.latestDraftId = draft?.id || null;
-
-  system.feed.unshift(
-    makeFeedItem(
-      "report",
-      system.level,
-      draft
-        ? `Auto report and publisher draft generated: ${report.title.en}`
-        : `Auto report generated: ${report.title.en}`,
-      draft
-        ? `تم توليد تقرير ومسودة نشر تلقائية: ${report.title.ar}`
-        : `تم توليد تقرير تلقائي: ${report.title.ar}`,
-      "ENGINE"
-    )
-  );
-
-  system.feed = dedupeBy(system.feed, item =>
-    `${item.type}|${normalizeText(getLocalizedText(item.text, "en"))}`
-  ).slice(0, CONFIG.maxFeedItems);
+      try {
+        if (
+          window.IBSS_PUBLISHER?.buildPublicationFromReport &&
+          window.IBSS_PUBLISHER?.createDraftFromPublication
+        ) {
+          const publication = window.IBSS_PUBLISHER.buildPublicationFromReport(report);
+          draft = window.IBSS_PUBLISHER.createDraftFromPublication(publication);
         }
+      } catch (error) {
+        console.error("IBSS_ENGINE publisher draft generation error:", error);
+      }
+
+      system.latestDraftId = draft?.id || null;
+
+      system.feed.unshift(
+        makeFeedItem(
+          "report",
+          system.level,
+          draft
+            ? `Auto report and publisher draft generated: ${report.title.en}`
+            : `Auto report generated: ${report.title.en}`,
+          draft
+            ? `تم توليد تقرير ومسودة نشر تلقائية: ${report.title.ar}`
+            : `تم توليد تقرير تلقائي: ${report.title.ar}`,
+          "ENGINE"
+        )
+      );
+
+      system.feed = dedupeBy(system.feed, item =>
+        `${item.type}|${normalizeText(getLocalizedText(item.text, "en"))}`
+      ).slice(0, CONFIG.maxFeedItems);
+    }
 
     updateHistory(system);
     archiveSnapshot(system);
@@ -2120,7 +2563,7 @@ if (shouldGenerateReport(system)) {
   }
 
   function getLastSystemState() {
-    return STATE.lastSystem;
+    return clone(STATE.lastSystem);
   }
 
   function getCountryRiskFeed() {
@@ -2154,10 +2597,20 @@ if (shouldGenerateReport(system)) {
     return clone(system.l3 || null);
   }
 
+  function getDoctrineState() {
+    const system = STATE.lastSystem || computeSystemState();
+    return clone(system.doctrine || null);
+  }
+
+  function getDoctrineMatrix() {
+    return clone(DOCTRINE) || {};
+  }
+
   loadState();
 
   const api = {
     CONFIG,
+    DOCTRINE,
 
     getSystemState,
     getStaticSystemFallback,
@@ -2171,6 +2624,8 @@ if (shouldGenerateReport(system)) {
     getHistory,
     getArchive,
     getL3State,
+    getDoctrineState,
+    getDoctrineMatrix,
 
     getContentStats,
     getPublishedContent,
@@ -2183,7 +2638,15 @@ if (shouldGenerateReport(system)) {
 
     riskLevelFromScore,
     buildUnifiedSignals: buildRankedSignals,
-    buildNewsPressure
+    buildNewsPressure,
+
+    classifyDoctrineSignal: function (signal) {
+      return clone(classifyDoctrineSignal(signal));
+    },
+
+    summarizeDoctrine: function (signals) {
+      return clone(summarizeDoctrine(signals));
+    }
   };
 
   window.IBSS_UTILS = {
