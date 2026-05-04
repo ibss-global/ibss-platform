@@ -356,22 +356,86 @@ window.IBSS_ENGINE = (function () {
     return "LOW";
   }
 
-  function decisionFromSystem(systemPressure, confidenceScore) {
-    if (systemPressure >= 90 && confidenceScore >= 78) {
-      return { decision: "ACT", mode: "ACTIVE RESPONSE" };
-    }
+  function decisionFromSystem(systemPressure, confidenceScore, doctrineState = null, l3State = null) {
+  const topDoctrine = doctrineState?.topSeries || null;
+  const doctrineId = topDoctrine?.series?.id || null;
+  const doctrineAlert = safeNumber(topDoctrine?.maxAlert, 0);
+  const l3Pressure = safeNumber(l3State?.l3Pressure, 0);
 
-    if (systemPressure >= 78) {
-      return { decision: "PRD", mode: "PREPARATION" };
-    }
+  let decision = "WATCH";
+  let mode = "MONITORING";
+  let doctrineDecision = "OBSERVE";
+  let override = false;
 
-    if (systemPressure >= 55) {
-      return { decision: "WATCH+", mode: "HEIGHTENED MONITORING" };
-    }
-
-    return { decision: "WATCH", mode: "MONITORING" };
+  if (systemPressure >= 90 && confidenceScore >= 78) {
+    decision = "ACT";
+    mode = "ACTIVE RESPONSE";
+  } else if (systemPressure >= 78) {
+    decision = "PRD";
+    mode = "PREPARATION";
+  } else if (systemPressure >= 55) {
+    decision = "WATCH+";
+    mode = "HEIGHTENED MONITORING";
   }
 
+  if (doctrineId === "BLACK_GATE" && doctrineAlert >= 70) {
+    decision = "PRD";
+    mode = "BLACK GATE PREPARATION";
+    doctrineDecision = "PREPARE_GATE";
+    override = true;
+  }
+
+  if (doctrineId === "SHOCK_ARCHITECTURE" && doctrineAlert >= 70) {
+    decision = "WATCH+";
+    mode = "SHOCK CONTAINMENT";
+    doctrineDecision = "CONTAIN_SHOCK";
+    override = true;
+  }
+
+  if (doctrineId === "BEHIND_CURTAIN" && doctrineAlert >= 60) {
+    decision = systemPressure >= 78 ? "PRD" : "WATCH+";
+    mode = "CONTROLLED LEAK MONITORING";
+    doctrineDecision = "READ_BEHIND_CURTAIN";
+    override = true;
+  }
+
+  if (doctrineId === "INVISIBLE_INK" && doctrineAlert >= 60) {
+    decision = systemPressure >= 70 ? "PRD" : "WATCH+";
+    mode = "MESSAGE DECODING";
+    doctrineDecision = "DECODE_SIGNAL";
+    override = true;
+  }
+
+  if (doctrineId === "BEYOND_WALL" && doctrineAlert >= 55) {
+    decision = "WATCH+";
+    mode = "STRUCTURAL FORECASTING";
+    doctrineDecision = "FORECAST_STRUCTURE";
+    override = true;
+  }
+
+  if (doctrineId === "BLACK_BOX" && doctrineAlert >= 65) {
+    decision = "WATCH+";
+    mode = "HIDDEN DECISION TRACE";
+    doctrineDecision = "TRACE_HIDDEN_DECISION";
+    override = true;
+  }
+
+  if (l3Pressure >= 85 && doctrineAlert >= 70) {
+    decision = "ACT";
+    mode = "DOCTRINE-L3 CONVERGENCE";
+    doctrineDecision = "CONVERGENCE_RESPONSE";
+    override = true;
+  }
+
+  return {
+    decision,
+    mode,
+    doctrineDecision,
+    doctrineOverride: override,
+    doctrineId,
+    doctrineAlert
+  };
+}
   function sortByScoreDesc(list, selector) {
     return asArray(list)
       .slice()
