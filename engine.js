@@ -2498,7 +2498,7 @@ window.IBSS_ENGINE = (function () {
     systemPressure = clamp(systemPressure, 0, 100);
 
     const level = riskLevelFromScore(systemPressure);
-    const decisionState = decisionFromSystem(systemPressure, confidenceScore);
+    const decisionState = decisionFromSystem(systemPressure, confidenceScore, doctrineState, l3State);
     const liveSignals = rankedSignals.filter(signal => signal.live);
     const scenarios = buildScenarios(systemPressure, confidenceScore);
     const countryRiskFeed = buildCountryRiskFeed(rankedSignals, clusters, theaters, newsPressure);
@@ -2520,7 +2520,10 @@ window.IBSS_ENGINE = (function () {
       level,
       decision: decisionState.decision,
       mode: decisionState.mode,
-
+doctrineDecision: decisionState.doctrineDecision,
+doctrineOverride: decisionState.doctrineOverride,
+doctrineDecisionId: decisionState.doctrineId,
+doctrineDecisionAlert: decisionState.doctrineAlert,
       l3: l3State,
 
       doctrine: doctrineState,
